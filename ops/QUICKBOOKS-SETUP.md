@@ -80,6 +80,37 @@ Click **Sync invoices** next to your connected company. Pulls the most recent
 200 invoices from QuickBooks and mirrors them into `dbo.Invoices`, linking to
 any matching client by BillEmail.
 
+## Webhooks (real-time event notifications from QB)
+
+Once HTTPS is live on `api.greencommllc.com`:
+
+1. In your Intuit app: **Webhooks → Production Settings → Endpoint URL**:
+   ```
+   https://api.greencommllc.com/api/qb/webhook
+   ```
+2. Pick the events you want (Invoice Create/Update/Delete, etc.)
+3. Save. Intuit will reveal a **Verifier Token** — click "Show verifier token" and copy it.
+4. Save the token to `appsettings.json` → `Qb.WebhookVerifierToken`:
+   ```json
+   "Qb": {
+     ...
+     "WebhookVerifierToken": "paste-token-here"
+   }
+   ```
+5. Restart the API:
+   ```powershell
+   Stop-ScheduledTask  -TaskName "GCC-Api-Service"
+   Start-ScheduledTask -TaskName "GCC-Api-Service"
+   ```
+6. Click **Verify** in Intuit's webhook setup. They send a test POST to
+   `/api/qb/webhook` with an `intuit-signature` header (HMAC-SHA256 of body
+   with verifier token). Our server verifies the signature in constant time
+   and responds 200.
+
+After verification, Intuit will deliver webhook events on every QB change:
+- Each event is logged into `dbo.Activity` with action `qb-webhook`
+- Invoice events trigger an automatic mirror sync (no need to click Sync)
+
 ## Going to production
 
 Once sandbox testing works:

@@ -5,7 +5,7 @@
 
 $LogPath = "C:\Users\nmorr\AppData\Local\Temp\dns-watcher.log"
 $TargetIp = "150.195.183.104"
-$Hosts = @("greencommllc.com", "www.greencommllc.com", "proposal.greencommllc.com")
+$Hosts = @("greencommllc.com", "www.greencommllc.com", "proposal.greencommllc.com", "api.greencommllc.com")
 $WacsPath = "C:\tools\win-acme\wacs.exe"
 $MarkerFile = "C:\Users\nmorr\.unifi\cert-issued.marker"
 
@@ -53,7 +53,7 @@ Log "DNS propagated. Running win-acme..."
 
 $wacArgs = @(
     "--target", "manual",
-    "--host", "greencommllc.com,www.greencommllc.com,proposal.greencommllc.com",
+    "--host", "greencommllc.com,www.greencommllc.com,proposal.greencommllc.com,api.greencommllc.com",
     "--store", "certificatestore",
     "--certificatestore", "WebHosting",
     "--installation", "iis",
