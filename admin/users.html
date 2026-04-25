@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Admin · Users · GCC LLC</title>
+<meta name="theme-color" content="#1E4D2B" />
+<meta name="robots" content="noindex" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%231E4D2B'/%3E%3Ctext x='50' y='65' font-family='Helvetica' font-size='42' font-weight='800' fill='white' text-anchor='middle'%3EGC%3C/text%3E%3Ccircle cx='86' cy='14' r='8' fill='%23D4AF37'/%3E%3C/svg%3E" type="image/svg+xml" />
+<link rel="stylesheet" href="/assets/css/site.css" />
+<style>
+.dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 24px; }
+.kpi { background: white; border: 1px solid var(--hairline); border-radius: var(--r-md); padding: 16px; box-shadow: var(--shadow-xs); }
+.kpi .lbl { font-size: 11px; font-weight: 700; color: var(--slate-light); letter-spacing: 0.06em; text-transform: uppercase; }
+.kpi .val { font-size: 28px; font-weight: 800; color: var(--forest); margin-top: 4px; line-height: 1; font-family: var(--font-display); letter-spacing: -0.01em; }
+
+.toolbar { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+.search-box { flex: 1; min-width: 220px; padding: 9px 14px; border: 1px solid var(--hairline-strong); border-radius: var(--r-sm); font-size: 14px; font-family: inherit; background: white; }
+.search-box:focus { outline: none; border-color: var(--forest); box-shadow: 0 0 0 3px rgba(30,77,43,0.15); }
+
+.tabs { display: inline-flex; background: white; border: 1px solid var(--hairline); border-radius: var(--r-pill); padding: 3px; gap: 2px; }
+.tab {
+  padding: 6px 14px; border: 0; background: transparent; font-size: 13px; font-weight: 600;
+  color: var(--slate); cursor: pointer; border-radius: var(--r-pill); font-family: inherit;
+  transition: all 0.15s;
+}
+.tab:hover { color: var(--ink); }
+.tab.active { background: var(--forest); color: white; }
+.tab .count { display: inline-block; margin-left: 5px; padding: 1px 7px; background: rgba(255,255,255,0.25); border-radius: 8px; font-size: 11px; font-weight: 700; }
+.tab:not(.active) .count { background: rgba(0,0,0,0.06); color: var(--slate); }
+
+.tbl { width: 100%; border-collapse: collapse; background: white; border: 1px solid var(--hairline); border-radius: var(--r-md); overflow: hidden; font-size: 14px; }
+.tbl th { text-align: left; padding: 11px 12px; background: var(--paper); font-size: 11px; font-weight: 700; color: var(--slate); letter-spacing: 0.04em; text-transform: uppercase; border-bottom: 1px solid var(--hairline); }
+.tbl td { padding: 11px 12px; border-top: 1px solid var(--hairline); vertical-align: middle; }
+.tbl tr:hover td { background: rgba(30,77,43,0.03); }
+.tbl tr.is-self td { background: rgba(212,175,55,0.06); }
+.tbl tr.is-self td:first-child { border-left: 3px solid var(--gold); padding-left: 9px; }
+
+.role-pill, .status-pill {
+  display: inline-block; padding: 2px 10px; border-radius: var(--r-pill);
+  font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+}
+.role-client  { background: rgba(74,85,104,0.18); color: var(--slate); }
+.role-staff   { background: rgba(56,178,172,0.18); color: #2C7A7B; }
+.role-admin   { background: rgba(212,175,55,0.22); color: var(--gold-dark); }
+.status-active  { background: rgba(72,187,120,0.18); color: #276749; }
+.status-locked  { background: rgba(245,101,101,0.18); color: #C53030; }
+.status-deleted { background: rgba(160,174,192,0.18); color: var(--slate-light); }
+
+.inline-select {
+  padding: 4px 8px; border: 1px solid var(--hairline-strong); border-radius: 5px;
+  font-size: 12px; background: white; font-family: inherit; cursor: pointer;
+}
+.inline-select:hover { border-color: var(--forest); }
+.inline-select:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.empty-state { background: white; border: 1px dashed var(--hairline-strong); border-radius: var(--r-md); padding: 40px 20px; text-align: center; color: var(--slate); }
+.empty-state .es-icon { font-size: 48px; margin-bottom: 12px; }
+
+.muted { color: var(--slate-light); font-size: 12px; }
+.coming-soon { display: inline-block; padding: 3px 10px; background: rgba(212,175,55,0.18); color: var(--gold-dark); border-radius: var(--r-pill); font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+
+.invite-card {
+  background: white; border: 1px solid var(--hairline); border-radius: var(--r-md);
+  padding: 18px; margin-top: 24px;
+}
+.invite-card h3 { margin: 0 0 6px; font-size: 15px; }
+.invite-card .lede { color: var(--slate); font-size: 13px; margin: 0 0 4px; }
+.invite-card code { background: var(--paper); padding: 1px 6px; border-radius: 4px; font-size: 12px; }
+
+.btn-sm { padding: 5px 12px; font-size: 12px; }
+.flash {
+  position: fixed; bottom: 24px; right: 24px; padding: 12px 18px;
+  background: var(--forest); color: white; border-radius: var(--r-md);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.18); font-size: 14px; font-weight: 600;
+  opacity: 0; transition: opacity 0.2s; pointer-events: none; z-index: 1000;
+}
+.flash.show { opacity: 1; }
+.flash.error { background: var(--danger); }
+</style>
+</head>
+<body>
+
+<div id="gcc-header"></div>
+
+<section style="padding: 28px 0; background: var(--paper); border-bottom: 1px solid var(--hairline);">
+  <div class="container">
+    <h1 style="margin-bottom: 4px;">Users</h1>
+    <p style="color: var(--slate); margin: 0;">Every account in the portal — clients, staff, admins. Promote, lock, or remove with a click.</p>
+  </div>
+</section>
+
+<section style="padding: 28px 0;">
+  <div class="container">
+    <div id="page-loading" style="text-align:center; padding: 40px; color: var(--slate-light);">Loading...</div>
+    <div id="page-content" hidden>
+
+      <!-- KPI cards -->
+      <div class="dash-grid" id="kpi-row">
+        <div class="kpi"><div class="lbl">Total accounts</div><div class="val" id="kpi-total">--</div></div>
+        <div class="kpi"><div class="lbl">Clients</div><div class="val" id="kpi-clients">--</div></div>
+        <div class="kpi"><div class="lbl">Staff</div><div class="val" id="kpi-staff">--</div></div>
+        <div class="kpi"><div class="lbl">Admins</div><div class="val" id="kpi-admins">--</div></div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <input type="search" class="search-box" id="search" placeholder="Search by name, email, or company…" autocomplete="off" />
+        <div class="tabs" id="tabs">
+          <button class="tab active" data-filter="all">All <span class="count" id="cnt-all">0</span></button>
+          <button class="tab" data-filter="client">Clients <span class="count" id="cnt-client">0</span></button>
+          <button class="tab" data-filter="staff">Staff <span class="count" id="cnt-staff">0</span></button>
+          <button class="tab" data-filter="admin">Admins <span class="count" id="cnt-admin">0</span></button>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div id="users-table"><div class="muted">Loading...</div></div>
+
+      <!-- How to onboard new staff -->
+      <div class="invite-card">
+        <h3>Adding new staff or admins</h3>
+        <p class="lede">For security, accounts must be self-created. Have the new teammate register at <a href="/clients/" target="_blank">greencommllc.com/clients/</a> using their work email — they'll start as a <code>client</code>. Then come back here and switch their role to <code>staff</code> or <code>admin</code> from the dropdown.</p>
+        <p class="muted" style="margin: 6px 0 0;">All role changes are logged in the activity feed and take effect on the user's next page load.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="flash" id="flash">Saved</div>
+
+<script src="/assets/js/api.js"></script>
+<script src="/assets/js/header.js"></script>
+<script src="/assets/js/page.js"></script>
+<script>
+gccPage.requireRole(["admin"]).then(async (me) => {
+  document.getElementById('page-loading').hidden = true;
+  document.getElementById('page-content').hidden = false;
+
+  let allUsers = [];
+  let currentFilter = 'all';
+  let currentSearch = '';
+
+  function flash(msg, isError) {
+    const f = document.getElementById('flash');
+    f.textContent = msg;
+    f.classList.toggle('error', !!isError);
+    f.classList.add('show');
+    setTimeout(() => f.classList.remove('show'), 1800);
+  }
+
+  async function loadUsers() {
+    try {
+      const cs = await fetch(gccApi.base + '/api/admin/clients', {credentials:'include'}).then(r => r.json());
+      allUsers = cs;
+      renderKpis();
+      render();
+    } catch(e) {
+      document.getElementById('users-table').innerHTML = '<div class="empty-state">Failed to load users.</div>';
+    }
+  }
+
+  function renderKpis() {
+    const counts = { all: allUsers.length, client: 0, staff: 0, admin: 0 };
+    allUsers.forEach(u => { if (counts[u.role] !== undefined) counts[u.role]++; });
+    document.getElementById('kpi-total').textContent   = counts.all;
+    document.getElementById('kpi-clients').textContent = counts.client;
+    document.getElementById('kpi-staff').textContent   = counts.staff;
+    document.getElementById('kpi-admins').textContent  = counts.admin;
+    document.getElementById('cnt-all').textContent    = counts.all;
+    document.getElementById('cnt-client').textContent = counts.client;
+    document.getElementById('cnt-staff').textContent  = counts.staff;
+    document.getElementById('cnt-admin').textContent  = counts.admin;
+  }
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  function render() {
+    let rows = allUsers.slice();
+    if (currentFilter !== 'all') rows = rows.filter(u => u.role === currentFilter);
+    if (currentSearch) {
+      const q = currentSearch.toLowerCase();
+      rows = rows.filter(u =>
+        (u.email || '').toLowerCase().includes(q) ||
+        (u.name || '').toLowerCase().includes(q) ||
+        (u.company || '').toLowerCase().includes(q)
+      );
+    }
+
+    const target = document.getElementById('users-table');
+    if (!rows.length) {
+      target.innerHTML = '<div class="empty-state"><div class="es-icon">👥</div><div>No users match your filter.</div></div>';
+      return;
+    }
+
+    const html = '<table class="tbl"><thead><tr>' +
+      '<th>Joined</th>' +
+      '<th>User</th>' +
+      '<th>Email</th>' +
+      '<th>Type</th>' +
+      '<th>Role</th>' +
+      '<th>Status</th>' +
+      '<th>Last sign-in</th>' +
+      '<th style="text-align:right;">Activity</th>' +
+      '</tr></thead><tbody>' +
+      rows.map(u => {
+        const isSelf = u.id === me.id;
+        const roleSel = '<select class="inline-select role-sel" data-id="' + u.id + '"' + (isSelf ? ' disabled title="You cannot change your own role"' : '') + '>' +
+          ['client','staff','admin'].map(r => '<option value="' + r + '"' + (r === u.role ? ' selected' : '') + '>' + r + '</option>').join('') +
+          '</select>';
+        const statusSel = '<select class="inline-select status-sel" data-id="' + u.id + '"' + (isSelf ? ' disabled title="You cannot change your own status"' : '') + '>' +
+          ['active','locked','deleted'].map(s => '<option value="' + s + '"' + (s === u.status ? ' selected' : '') + '>' + s + '</option>').join('') +
+          '</select>';
+        const acct = (u.estimateCount > 0 ? '<span title="Estimates">📋 ' + u.estimateCount + '</span>' : '') +
+                     (u.projectCount > 0 ? ' <span title="Projects" style="margin-left:8px;">📁 ' + u.projectCount + '</span>' : '') ||
+                     '<span class="muted">—</span>';
+        return '<tr' + (isSelf ? ' class="is-self"' : '') + '>' +
+          '<td>' + gccPage.date(u.createdAt) + '</td>' +
+          '<td><strong>' + escapeHtml(u.name || u.email.split('@')[0]) + '</strong>' +
+            (isSelf ? ' <span class="muted">(you)</span>' : '') +
+            (u.company ? '<br><span class="muted">' + escapeHtml(u.company) + '</span>' : '') + '</td>' +
+          '<td>' + escapeHtml(u.email) + (u.phone ? '<br><span class="muted">' + escapeHtml(u.phone) + '</span>' : '') + '</td>' +
+          '<td><span class="muted">' + escapeHtml(u.clientType || '—') + '</span></td>' +
+          '<td>' + roleSel + '</td>' +
+          '<td>' + statusSel + '</td>' +
+          '<td>' + (u.lastSignInAt ? gccPage.datetime(u.lastSignInAt) : '<span class="muted">never</span>') + '</td>' +
+          '<td style="text-align:right;">' + acct + '</td>' +
+        '</tr>';
+      }).join('') +
+      '</tbody></table>';
+    target.innerHTML = html;
+
+    target.querySelectorAll('.role-sel').forEach(s => s.addEventListener('change', e => updateUser(s, { Role: e.target.value }, 'role updated to ' + e.target.value)));
+    target.querySelectorAll('.status-sel').forEach(s => s.addEventListener('change', e => {
+      const newStatus = e.target.value;
+      if (newStatus === 'deleted' && !confirm('Mark this user as deleted? They will lose access immediately. Their data is retained.')) {
+        e.target.value = allUsers.find(u => u.id === parseInt(s.dataset.id)).status;
+        return;
+      }
+      updateUser(s, { Status: newStatus }, 'status updated to ' + newStatus);
+    }));
+  }
+
+  async function updateUser(sel, patch, msg) {
+    sel.disabled = true;
+    try {
+      const r = await fetch(gccApi.base + '/api/admin/clients/' + sel.dataset.id, {
+        method:'PUT', credentials:'include',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(patch)
+      });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      // Update local cache so KPI counts and search stay in sync without full reload
+      const u = allUsers.find(x => x.id === parseInt(sel.dataset.id));
+      if (u) Object.assign(u, Object.fromEntries(Object.entries(patch).map(([k,v]) => [k.toLowerCase(), v])));
+      renderKpis();
+      flash(msg);
+    } catch(e) {
+      flash('Update failed: ' + e.message, true);
+      // Re-render to revert optimistic UI
+      render();
+    } finally {
+      sel.disabled = false;
+    }
+  }
+
+  // Wire toolbar
+  document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    currentFilter = t.dataset.filter;
+    render();
+  }));
+  let searchTimer = null;
+  document.getElementById('search').addEventListener('input', e => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => { currentSearch = e.target.value.trim(); render(); }, 150);
+  });
+
+  await loadUsers();
+}).catch(() => { /* requireRole redirects on its own */ });
+</script>
+</body>
+</html>

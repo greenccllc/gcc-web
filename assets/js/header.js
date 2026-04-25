@@ -52,17 +52,22 @@
       { href: '/staff/prospects.html', label: 'Prospects' },
       { href: '/staff/proposals.html', label: 'Proposals' },
       { href: '/staff/clients.html', label: 'Clients' },
-      { href: 'http://proposal.greencommllc.com/', label: 'Generator', external: true },
+      { href: 'https://proposal.greencommllc.com/', label: 'Generator', external: true },
       { href: '/staff/calendar.html',label: 'Calendar' },
       { href: '/staff/files.html',   label: 'Files' }
     ];
     if (isAdmin) {
       items.push(
+        { href: '/admin/users.html',      label: 'Users' },
         { href: '/admin/financials.html', label: 'Financials' },
         { href: '/admin/pipeline.html',   label: 'Pipeline' }
       );
     }
-    items.push({ href: '#', label: 'Sign out', cta: true, action: 'signout' });
+    items.push(
+      { href: '/clients/profile.html',  label: 'Profile' },
+      { href: '/clients/settings.html', label: 'Settings', cta: true }
+    );
+    items.push({ href: '#', label: 'Sign out', action: 'signout' });
     return items;
   }
 

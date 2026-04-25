@@ -66,6 +66,19 @@
 gccPage.requireRole(["admin"]).then(async (me) => {
   document.getElementById('page-loading').hidden = true;
   document.getElementById('page-content').hidden = false;
+
+  // Success banner if we just landed back from the QB OAuth callback
+  const params = new URLSearchParams(location.search);
+  if (params.get('qb') === 'connected') {
+    const company = params.get('company') || 'your QuickBooks company';
+    const banner = document.createElement('div');
+    banner.style.cssText = 'background: rgba(72,187,120,0.18); color: #276749; border: 1px solid rgba(72,187,120,0.4); border-radius: 10px; padding: 14px 18px; margin-bottom: 18px; font-weight: 600;';
+    banner.innerHTML = '✓ Connected to <strong>' + company.replace(/[<>&"']/g, '') + '</strong>. Tokens stored encrypted; refresh is automatic.';
+    document.getElementById('page-content').insertBefore(banner, document.getElementById('page-content').firstChild);
+    history.replaceState({}, '', location.pathname);
+    setTimeout(() => { banner.style.transition = 'opacity 0.5s'; banner.style.opacity = '0'; setTimeout(() => banner.remove(), 500); }, 8000);
+  }
+
   async function refresh() {
     // Status
     try {
