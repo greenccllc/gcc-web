@@ -231,8 +231,8 @@ section { padding: clamp(48px, 6vw, 96px) 0; }
 .hero .eyebrow {
   display: inline-block;
   padding: 6px 14px;
-  background: rgba(212, 175, 55, 0.18);
-  color: var(--gold-dark);
+  background: rgba(30, 77, 43, 0.10);
+  color: var(--forest);
   border-radius: var(--r-pill);
   font-size: 12px; font-weight: 800;
   letter-spacing: 0.10em;
@@ -560,3 +560,46 @@ section { padding: clamp(48px, 6vw, 96px) 0; }
 .mt-0 { margin-top: 0; }
 .mb-0 { margin-bottom: 0; }
 .cta-row { display: flex; gap: 12px; flex-wrap: wrap; }
+
+/* ── Skip-link (a11y) ────────────────────────────────────────── */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  padding: 12px 16px;
+  background: var(--forest);
+  color: white;
+  font-weight: 700;
+  border-radius: 0 0 var(--r-md) 0;
+}
+.skip-link:focus,
+.skip-link:focus-visible {
+  left: 0;
+  outline: 3px solid var(--gold);
+  color: white;
+}
+
+/* ── Inline icon (SVG sprite) ────────────────────────────────── */
+.icon {
+  width: 1em; height: 1em;
+  display: inline-block;
+  vertical-align: -0.125em;
+  fill: none;
+  stroke: currentColor;
+}
+.card-icon .icon { width: 26px; height: 26px; }
+.v-icon .icon, .vis-icon .icon { width: 28px; height: 28px; }
+.contact-info .ci-block h4 .icon { margin-right: 6px; width: 18px; height: 18px; }
+
+/* ── Button focus-visible (a11y) ─────────────────────────────── */
+.btn:focus-visible,
+.site-nav a:focus-visible,
+.site-nav .nav-trigger:focus-visible {
+  outline: 2px solid var(--forest-light);
+  outline-offset: 2px;
+}
+
+/* ── Footer touch-target bump ────────────────────────────────── */
+.footer-col li { padding: 8px 0; }
+.footer-col li a { display: inline-block; padding: 2px 0; }

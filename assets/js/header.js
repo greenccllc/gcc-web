@@ -298,10 +298,25 @@
     }
   }
 
+  // ── Enhance an already-rendered static nav (anon users only) ─
+  // The HTML files now ship with a static anonymous header. For signed-out
+  // visitors we don't need to re-render — we just attach the JS handlers
+  // (mobile menu toggle). For signed-in users we replace the whole header
+  // via mount() so the role-aware nav appears.
+  function enhanceStatic(host) {
+    const t = host.querySelector('.menu-toggle');
+    const n = host.querySelector('.site-nav');
+    if (t && n) t.addEventListener('click', () => {
+      n.classList.toggle('is-open');
+      t.setAttribute('aria-expanded', n.classList.contains('is-open') ? 'true' : 'false');
+    });
+  }
+
   // ── Boot ──────────────────────────────────────────────────
   async function boot() {
     let items = navAnonymous();
     let badge = null;
+    let isAnon = true;
 
     if (window.gccApi) {
       try {
@@ -317,11 +332,19 @@
           badge = 'Client Portal';
         }
         window.__gccMe = me;
+        isAnon = false;
       } catch (err) {
-        // Not signed in — anonymous nav
+        // Not signed in — anonymous nav (the static one already in the DOM is fine)
       }
     }
-    mount(items, badge);
+
+    const host = document.getElementById('gcc-header');
+    const hasStatic = host && host.querySelector('.site-header');
+    if (isAnon && hasStatic) {
+      enhanceStatic(host);
+    } else {
+      mount(items, badge);
+    }
   }
 
   if (document.readyState === 'loading') {

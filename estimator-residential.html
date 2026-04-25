@@ -93,16 +93,50 @@
 }
 .est-mode-toggle a:hover:not(.active) { background: white; color: var(--forest); }
 </style>
+<link rel="canonical" href="https://greencommllc.com/estimator-residential.html" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="GCC LLC" />
+<meta property="og:locale" content="en_US" />
+<meta property="og:title" content="Residential Estimator · GCC LLC" />
+<meta property="og:description" content="Quick budget estimator for whole-home networking, smart home, security, and renovations." />
+<meta property="og:url" content="https://greencommllc.com/estimator-residential.html" />
+<meta property="og:image" content="https://greencommllc.com/assets/og/og-default.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
 </head>
 <body>
 
-<div id="gcc-header"></div>
+<a href="#main" class="skip-link">Skip to content</a>
+<div id="gcc-header">
+  <header class="site-header">
+    <div class="container">
+      <a href="/" class="brand-mark" aria-label="GCC LLC home">
+        <span class="monogram" aria-hidden="true">GC</span>
+        <span class="brand-stack">
+          <span class="brand-name">GCC LLC</span>
+          <span class="brand-tag" id="hdr-tag">Div 27 / 28 Contractor</span>
+        </span>
+      </a>
+      <button class="menu-toggle" aria-label="Toggle menu" aria-expanded="false">&#9776;</button>
+      <nav class="site-nav" aria-label="Primary"><ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/services.html">Services</a></li>
+        <li><a href="/estimator.html" class="active">Estimator</a></li>
+        <li><a href="/about.html">About</a></li>
+        <li><a href="/contact.html">Contact</a></li>
+        <li class="spacer" aria-hidden="true"></li>
+        <li><a href="/clients/#signup" class="cta">Register Account</a></li>
+      </ul></nav>
+    </div>
+  </header>
+</div>
+<main id="main">
 
 <section class="hero" style="padding: 80px 0 24px;">
   <div class="container">
     <div class="est-mode-toggle">
-      <a href="/estimator.html">🏢 Commercial</a>
-      <a href="/estimator-residential.html" class="active">🏡 Residential</a>
+      <a href="/estimator.html"><svg class="icon" aria-hidden="true"><use href="/assets/svg/icons.svg#icon-building"/></svg> Commercial</a>
+      <a href="/estimator-residential.html" class="active"><svg class="icon" aria-hidden="true"><use href="/assets/svg/icons.svg#icon-home"/></svg> Residential</a>
     </div>
     <span class="eyebrow">Home Estimate</span>
     <h1>Smart home, security, networking — and the renovations <span class="highlight">the last guy didn't finish.</span></h1>
@@ -122,12 +156,12 @@
           <h4>📶 Networking &amp; Wi-Fi</h4>
           <div class="cat-grid">
             <div class="cat-row" data-cat="drops">
-              <div class="cat-icon">🔌</div>
+              <div class="cat-icon"><svg class="icon" aria-hidden="true"><use href="/assets/svg/icons.svg#icon-cable"/></svg></div>
               <div class="cat-text"><span class="cat-name">Cat6 drops</span><span class="cat-hint">Hard-wired runs to office, TVs, cameras, APs. ~1 per room is typical.</span></div>
               <div class="num-stepper"><button type="button" data-step="drops" data-delta="-1">−</button><input type="number" id="drops" value="0" min="0" max="50" /><button type="button" data-step="drops" data-delta="+1">+</button></div>
             </div>
             <div class="cat-row" data-cat="aps">
-              <div class="cat-icon">📡</div>
+              <div class="cat-icon"><svg class="icon" aria-hidden="true"><use href="/assets/svg/icons.svg#icon-wifi"/></svg></div>
               <div class="cat-text"><span class="cat-name">Wi-Fi 7 mesh APs</span><span class="cat-hint">Plan ~1 AP per 1,500 sq ft. We mount and cable them.</span></div>
               <div class="num-stepper"><button type="button" data-step="aps" data-delta="-1">−</button><input type="number" id="aps" value="0" min="0" max="20" /><button type="button" data-step="aps" data-delta="+1">+</button></div>
             </div>
@@ -136,7 +170,7 @@
 
         <!-- ─── Security & Doorbell ─── -->
         <div class="est-step">
-          <h4>🛡️ Security &amp; Doorbell</h4>
+          <h4><svg class="icon" aria-hidden="true"><use href="/assets/svg/icons.svg#icon-shield"/></svg>️ Security &amp; Doorbell</h4>
           <div class="cat-grid">
             <div class="cat-row" data-cat="camIn">
               <div class="cat-icon">📷</div>
@@ -228,7 +262,7 @@
 
         <!-- ─── HVAC & Electrical ─── -->
         <div class="est-step">
-          <h4>⚡ HVAC &amp; electrical</h4>
+          <h4><svg class="icon" aria-hidden="true"><use href="/assets/svg/icons.svg#icon-zap"/></svg> HVAC &amp; electrical</h4>
           <div class="cat-grid">
             <div class="cat-row" data-cat="miniSplit">
               <div class="cat-icon">❄️</div>
@@ -241,7 +275,7 @@
               <div class="num-stepper"><button type="button" data-step="ceilingFan" data-delta="-1">−</button><input type="number" id="ceilingFan" value="0" min="0" max="20" /><button type="button" data-step="ceilingFan" data-delta="+1">+</button></div>
             </div>
             <div class="cat-row" data-cat="outlet">
-              <div class="cat-icon">🔌</div>
+              <div class="cat-icon"><svg class="icon" aria-hidden="true"><use href="/assets/svg/icons.svg#icon-cable"/></svg></div>
               <div class="cat-text"><span class="cat-name">New outlets / circuits</span><span class="cat-hint">Outlet, switch, or dedicated circuit. Per location.</span></div>
               <div class="num-stepper"><button type="button" data-step="outlet" data-delta="-1">−</button><input type="number" id="outlet" value="0" min="0" max="50" /><button type="button" data-step="outlet" data-delta="+1">+</button></div>
             </div>
@@ -277,6 +311,7 @@
   </div>
 </section>
 
+</main>
 <footer class="site-footer">
   <div class="container">
     <div class="footer-grid">
@@ -298,7 +333,8 @@
       <div class="footer-col"><h4>Reach Us</h4><ul>
         <li><a href="tel:+16362248192">636-224-8192</a></li>
         <li><a href="mailto:info@greencommllc.com">info@greencommllc.com</a></li>
-        <li>603 Seib Dr<br/>O'Fallon, MO 63366</li>
+        <li><a href="https://maps.google.com/?q=603+Seib+Dr+O%27Fallon+MO+63366" target="_blank" rel="noopener">603 Seib Dr<br/>O'Fallon, MO 63366</a></li>
+        <li style="padding-top:6px; border-top:1px solid rgba(255,255,255,0.10); margin-top:6px;"><a href="/clients/">Client login</a> &middot; <a href="/staff/">Staff login</a></li>
       </ul></div>
     </div>
     <div class="footer-bottom">
