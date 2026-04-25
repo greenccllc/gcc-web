@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Settings · GCC LLC</title>
+<meta name="theme-color" content="#1E4D2B" />
+<meta name="robots" content="noindex" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%231E4D2B'/%3E%3Ctext x='50' y='65' font-family='Helvetica' font-size='42' font-weight='800' fill='white' text-anchor='middle'%3EGC%3C/text%3E%3Ccircle cx='86' cy='14' r='8' fill='%23D4AF37'/%3E%3C/svg%3E" type="image/svg+xml" />
+<link rel="stylesheet" href="/assets/css/site.css" />
+<style>
+.dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 32px; }
+.kpi { background: white; border: 1px solid var(--hairline); border-radius: var(--r-md); padding: 20px; box-shadow: var(--shadow-xs); }
+.kpi .lbl { font-size: 12px; font-weight: 700; color: var(--slate-light); letter-spacing: 0.06em; text-transform: uppercase; }
+.kpi .val { font-size: 28px; font-weight: 800; color: var(--forest); margin-top: 6px; line-height: 1; font-family: var(--font-display); letter-spacing: -0.01em; }
+.kpi .delta { font-size: 12px; color: var(--slate); margin-top: 4px; }
+.tbl { width: 100%; border-collapse: collapse; background: white; border: 1px solid var(--hairline); border-radius: var(--r-md); overflow: hidden; }
+.tbl th { text-align: left; padding: 12px 14px; background: var(--paper); font-size: 12px; font-weight: 700; color: var(--slate); letter-spacing: 0.04em; text-transform: uppercase; border-bottom: 1px solid var(--hairline); }
+.tbl td { padding: 12px 14px; border-top: 1px solid var(--hairline); font-size: 14px; }
+.tbl tr:hover td { background: rgba(30,77,43,0.03); }
+.empty-state { background: white; border: 1px dashed var(--hairline-strong); border-radius: var(--r-md); padding: 40px 20px; text-align: center; color: var(--slate); }
+.empty-state .es-icon { font-size: 48px; margin-bottom: 12px; }
+.coming-soon { display: inline-block; padding: 3px 10px; background: rgba(212,175,55,0.18); color: var(--gold-dark); border-radius: var(--r-pill); font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.field { margin-bottom: 12px; }
+.field label { display: block; font-size: 13px; font-weight: 600; color: var(--slate); margin-bottom: 4px; }
+.field input { width: 100%; padding: 10px 12px; border: 1px solid var(--hairline-strong); border-radius: var(--r-sm); font-size: 15px; font-family: inherit; background: var(--paper); }
+.field input:focus { outline: none; border-color: var(--forest); background: white; box-shadow: 0 0 0 3px rgba(30,77,43,0.15); }
+</style>
+</head>
+<body>
+
+<div id="gcc-header"></div>
+
+<section style="padding: 32px 0; background: var(--paper);">
+  <div class="container">
+    <h1 style="margin-bottom: 4px;">Settings</h1>
+    <p style="color: var(--slate); margin: 0;">API keys, integrations, and personal preferences. Stored on the server, available everywhere you sign in.</p>
+  </div>
+</section>
+
+<section style="padding: 32px 0;">
+  <div class="container">
+    <div id="page-loading" style="text-align:center; padding: 40px; color: var(--slate-light);">Loading...</div>
+    <div id="page-content" hidden>
+<div style="max-width: 720px;">
+  <div style="background: white; border: 1px solid var(--hairline); border-radius: 14px; padding: 28px; box-shadow: 0 1px 2px rgba(16,24,40,0.06); margin-bottom: 16px;">
+    <h3 style="margin-bottom: 8px;">Bundler API keys</h3>
+    <p style="color: var(--slate); font-size: 14px; margin-bottom: 20px;">Used by the Proposal Generator at proposal.greencommllc.com. Saved once, follows you to any device.</p>
+    <div id="bundler-settings"></div>
+    <h4 style="margin-top: 20px; font-size: 14px;">Add or update key</h4>
+    <div style="display:grid; grid-template-columns: 200px 1fr auto; gap:8px; margin-top:8px;">
+      <input type="text" id="key-name" placeholder="e.g. anthropic-api-key" />
+      <input type="text" id="key-value" placeholder="Paste the key value" />
+      <button class="btn btn-primary" id="key-save">Save</button>
+    </div>
+  </div>
+  <div style="background: white; border: 1px solid var(--hairline); border-radius: 14px; padding: 28px; box-shadow: 0 1px 2px rgba(16,24,40,0.06);">
+    <h3 style="margin-bottom: 8px;">Notifications <span class="coming-soon">soon</span></h3>
+    <p style="color: var(--slate); font-size: 14px; margin: 0;">Email digest, project status updates.</p>
+  </div>
+</div>
+    </div>
+  </div>
+</section>
+
+<script src="/assets/js/api.js"></script>
+<script src="/assets/js/header.js"></script>
+<script src="/assets/js/page.js"></script>
+<script>
+gccPage.requireRole(["client","staff","admin"]).then(async (me) => {
+  document.getElementById('page-loading').hidden = true;
+  document.getElementById('page-content').hidden = false;
+  async function refresh() {
+    const list = document.getElementById('bundler-settings');
+    try {
+      const settings = await fetch(gccApi.base + '/api/settings?scope=bundler', {credentials:'include'}).then(r => r.json());
+      if (!settings.length) { list.innerHTML = '<div style="color:var(--slate-light); font-style:italic;">No bundler keys saved yet.</div>'; return; }
+      list.innerHTML = '<table class="tbl"><thead><tr><th>Key</th><th>Last updated</th><th></th></tr></thead><tbody>' +
+        settings.map(s => '<tr><td><code>' + s.key + '</code></td><td>' + gccPage.datetime(s.updatedAt) + '</td><td><button class="btn" data-del="' + s.key + '" style="padding:4px 10px;font-size:12px; background:white; border:1px solid var(--hairline-strong); border-radius:6px; cursor:pointer;">Delete</button></td></tr>').join('') +
+        '</tbody></table>';
+      list.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', async () => {
+        if (!confirm('Delete ' + b.dataset.del + '?')) return;
+        await fetch(gccApi.base + '/api/settings/bundler/' + encodeURIComponent(b.dataset.del), {method:'DELETE', credentials:'include'});
+        refresh();
+      }));
+    } catch(e) { list.innerHTML = '<div style="color:var(--danger);">Failed to load.</div>'; }
+  }
+  await refresh();
+  document.getElementById('key-save').addEventListener('click', async () => {
+    const k = document.getElementById('key-name').value.trim();
+    const v = document.getElementById('key-value').value.trim();
+    if (!k || !v) { alert('Both fields required.'); return; }
+    await fetch(gccApi.base + '/api/settings', {
+      method:'PUT', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({Scope:'bundler', Key:k, ValueJson: JSON.stringify({value:v}), IsSecret:true})
+    });
+    document.getElementById('key-name').value = '';
+    document.getElementById('key-value').value = '';
+    refresh();
+  });
+}).catch(() => { /* redirected */ });
+</script>
+</body>
+</html>
