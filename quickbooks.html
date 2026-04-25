@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>QuickBooks Integration · GCC LLC</title>
 <meta name="description" content="Connect your QuickBooks Online account to GCC LLC's project management platform. Sync invoices, payments, and customer records automatically." />
 <meta name="theme-color" content="#1E4D2B" />
@@ -149,11 +149,12 @@
   </div>
 </section>
 
-<script src="/assets/js/api.js"></script>
-<script src="/assets/js/header.js"></script>
+<script src="/assets/js/api.js" defer></script>
+<script src="/assets/js/header.js" defer></script>
 <script>
 // If the visitor is already signed in, change the CTA + auto-route admins to financials.
-(async function () {
+// Wait for DOMContentLoaded so deferred api.js has loaded first.
+document.addEventListener('DOMContentLoaded', async function () {
   if (!window.gccApi) return;
   try {
     const me = await gccApi.me();
@@ -183,7 +184,7 @@
   } catch (_) {
     // Not signed in &mdash; keep the original "Sign in to connect" CTA
   }
-})();
+});
 </script>
 </body>
 </html>
