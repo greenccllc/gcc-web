@@ -167,5 +167,47 @@
 </footer>
 
 <script src="/assets/js/site.js"></script>
+
+<script src="/assets/js/api.js"></script>
+<script>
+// Wire contact form to API. Falls back to mailto if API unreachable.
+document.addEventListener('DOMContentLoaded', function () {
+  var form = document.querySelector('.contact-form');
+  if (!form) return;
+
+  // Make the action a no-op for default form submit so JS handler runs.
+  form.removeAttribute('action');
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var btn = form.querySelector('button[type="submit"]');
+    var orig = btn ? btn.textContent : '';
+    if (btn) { btn.disabled = true; btn.textContent = 'Sending...'; }
+
+    var data = {
+      Source:  'contact',
+      Name:    form.name.value.trim(),
+      Email:   form.email.value.trim(),
+      Phone:   (form.phone && form.phone.value || '').trim(),
+      Company: (form.company && form.company.value || '').trim(),
+      Vertical: (form.vertical && form.vertical.value || '').trim(),
+      Metro:    (form.metro && form.metro.value || '').trim(),
+      Message:  (form.message && form.message.value || '').trim()
+    };
+
+    try {
+      await gccApi.submitLead(data);
+      form.innerHTML = '<div style="text-align:center; padding: 32px 16px;"><div style="font-size:48px; margin-bottom:12px;">✓</div><h3 style="color: var(--forest); margin-bottom: 8px;">Got it. We will be in touch within one business day.</h3><p style="color: var(--slate); margin: 0;">Or call <a href="tel:+16362248192">636-224-8192</a> if you need a faster response.</p></div>';
+    } catch (err) {
+      console.error('API submit failed', err);
+      // Mailto fallback
+      var subject = 'Quote request from ' + (data.Name || 'website');
+      var body = Object.entries(data).filter(function (kv) { return kv[1]; }).map(function (kv) { return kv[0] + ': ' + kv[1]; }).join('\n');
+      window.location.href = 'mailto:info@greencommllc.com?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+      if (btn) { btn.disabled = false; btn.textContent = orig; }
+    }
+  });
+});
+</script>
 </body>
 </html>

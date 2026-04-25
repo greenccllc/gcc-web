@@ -129,6 +129,10 @@
         <label for="signup-phone">Phone <span style="color: var(--slate-light); font-weight: 400;">(optional)</span></label>
         <input type="tel" id="signup-phone" name="phone" autocomplete="tel" />
       </div>
+      <div class="field">
+        <label for="signup-password">Password <span style="color: var(--slate-light); font-weight: 400;">(min 8 characters)</span></label>
+        <input type="password" id="signup-password" name="password" autocomplete="new-password" minlength="8" required />
+      </div>
       <button type="submit" class="btn btn-primary">Create Account →</button>
 
       <p style="font-size: 12px; color: var(--slate-light); margin-top: 16px;">
@@ -142,8 +146,9 @@
   </div>
 </div>
 
+<script src="/assets/js/api.js"></script>
 <script>
-// Tab switcher
+// ── Tab switcher ─────────────────────────────────────────
 const tabSignIn = document.getElementById('tab-signin');
 const tabSignUp = document.getElementById('tab-signup');
 const panelSignIn = document.getElementById('panel-signin');
@@ -164,46 +169,57 @@ function showPanel(which) {
 }
 tabSignIn.addEventListener('click', () => showPanel('signin'));
 tabSignUp.addEventListener('click', () => showPanel('signup'));
-
-// If URL has #signup, auto-open that panel
 if (location.hash === '#signup') showPanel('signup');
 
-// Sign in: store identity, route to estimator based on saved type
-document.getElementById('form-signin').addEventListener('submit', e => {
+// ── Sign in ─────────────────────────────────────────────
+document.getElementById('form-signin').addEventListener('submit', async e => {
   e.preventDefault();
-  const email = document.getElementById('signin-email').value.trim();
-  if (!email) return;
-  localStorage.setItem('gcc-client-id', email);
-  // Route based on saved type, default commercial
-  const type = localStorage.getItem('gcc-client-type') || 'commercial';
-  window.location.href = type === 'residential' ? '/clients/estimator-residential.html' : '/clients/estimator.html';
+  const btn = e.target.querySelector('button[type="submit"]');
+  btn.disabled = true; btn.textContent = 'Signing in...';
+  try {
+    const res = await gccApi.signin({
+      email: document.getElementById('signin-email').value.trim(),
+      password: document.getElementById('signin-password').value
+    });
+    localStorage.setItem('gcc-client-id', res.client.email);
+    localStorage.setItem('gcc-client-type', res.client.clientType);
+    window.location.href = res.client.clientType === 'residential'
+      ? '/clients/estimator-residential.html'
+      : '/clients/estimator.html';
+  } catch (err) {
+    btn.disabled = false; btn.textContent = 'Sign In →';
+    if (err.status === 401) alert('Email or password is incorrect.');
+    else if (err.status === 423) alert('Account temporarily locked. Try again in 15 min.');
+    else alert('Sign-in failed: ' + (err.message || 'Unknown error'));
+  }
 });
 
-// Sign up: store everything + route to right estimator
-document.getElementById('form-signup').addEventListener('submit', e => {
+// ── Sign up ─────────────────────────────────────────────
+document.getElementById('form-signup').addEventListener('submit', async e => {
   e.preventDefault();
+  const btn = e.target.querySelector('button[type="submit"]');
+  btn.disabled = true; btn.textContent = 'Creating account...';
   const data = {
+    email:      document.getElementById('signup-email').value.trim(),
+    password:   document.getElementById('signup-password').value,
     name:       document.getElementById('signup-name').value.trim(),
     company:    document.getElementById('signup-company').value.trim(),
-    email:      document.getElementById('signup-email').value.trim(),
     phone:      document.getElementById('signup-phone').value.trim(),
-    clientType: document.querySelector('input[name="clientType"]:checked').value,
-    createdAt:  Date.now()
+    clientType: document.querySelector('input[name="clientType"]:checked').value
   };
-  if (!data.name || !data.email) return;
-
-  // Persist locally (pre-SQL).
-  // When SQL backend lands, this same payload posts to /api/clients/signup.
-  localStorage.setItem('gcc-client-id', data.email);
-  localStorage.setItem('gcc-client-type', data.clientType);
-  localStorage.setItem('gcc-client-profile', JSON.stringify(data));
-
-  // Route to the right client estimator
-  window.location.href = data.clientType === 'residential'
-    ? '/clients/estimator-residential.html'
-    : '/clients/estimator.html';
+  try {
+    const res = await gccApi.signup(data);
+    localStorage.setItem('gcc-client-id', data.email);
+    localStorage.setItem('gcc-client-type', data.clientType);
+    window.location.href = data.clientType === 'residential'
+      ? '/clients/estimator-residential.html'
+      : '/clients/estimator.html';
+  } catch (err) {
+    btn.disabled = false; btn.textContent = 'Create Account →';
+    if (err.status === 409) alert('An account with that email already exists. Use sign in.');
+    else alert('Signup failed: ' + (err.message || 'Unknown error'));
+  }
 });
 </script>
-
 </body>
 </html>
