@@ -3,191 +3,93 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Instant Estimate — Low-voltage cabling, cameras, doors · GCC LLC</title>
-<meta name="description" content="Free instant ballpark for your structured cabling, IP surveillance, or access-control project. Answer 30 seconds of questions and get a real range — no sales call required." />
+<title>Instant Estimate — Cabling, cameras, doors, speakers · GCC LLC</title>
+<meta name="description" content="Free instant ballpark for your structured cabling, IP surveillance, access control, paging, fiber, or server-room project. Answer 30 seconds of questions and get a real range — no sales call required." />
 <meta name="theme-color" content="#1E4D2B" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%231E4D2B'/%3E%3Ctext x='50' y='65' font-family='Helvetica' font-size='42' font-weight='800' fill='white' text-anchor='middle'%3EGC%3C/text%3E%3Ccircle cx='86' cy='14' r='8' fill='%23D4AF37'/%3E%3C/svg%3E" type="image/svg+xml" />
 <link rel="stylesheet" href="/assets/css/site.css" />
 <style>
-/* Estimator-specific styles */
-.est-wrap {
-  display: grid;
-  grid-template-columns: 1.3fr 1fr;
-  gap: 40px;
-  align-items: start;
-}
+.est-wrap { display: grid; grid-template-columns: 1.3fr 1fr; gap: 40px; align-items: start; }
 @media (max-width: 960px) { .est-wrap { grid-template-columns: 1fr; } }
-.est-form {
-  background: white;
-  border: 1px solid var(--hairline);
-  border-radius: var(--r-lg);
-  padding: 32px;
-  box-shadow: var(--shadow-sm);
-}
+.est-form { background: white; border: 1px solid var(--hairline); border-radius: var(--r-lg); padding: 32px; box-shadow: var(--shadow-sm); }
 .est-form h3 { margin-bottom: 6px; }
 .est-form .form-sub { color: var(--slate); font-size: 0.95em; margin-bottom: 24px; }
-.est-step {
-  padding: 20px 0;
-  border-bottom: 1px solid var(--hairline);
-}
+.est-step { padding: 20px 0; border-bottom: 1px solid var(--hairline); }
 .est-step:last-of-type { border-bottom: none; }
-.est-step h4 {
-  font-size: 14px; font-weight: 700;
-  color: var(--forest);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  margin-bottom: 12px;
-}
-.choice-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 10px;
-}
-.choice {
-  position: relative;
-  cursor: pointer;
-  padding: 16px 14px;
-  border: 1.5px solid var(--hairline-strong);
-  border-radius: var(--r-md);
-  background: var(--paper);
-  text-align: center;
-  transition: all .15s var(--ease);
-}
-.choice input[type="radio"] {
-  position: absolute; opacity: 0; pointer-events: none;
-}
+.est-step h4 { font-size: 14px; font-weight: 700; color: var(--forest); letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 12px; }
+.choice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+.choice { position: relative; cursor: pointer; padding: 16px 14px; border: 1.5px solid var(--hairline-strong); border-radius: var(--r-md); background: var(--paper); text-align: center; transition: all .15s var(--ease); }
+.choice input[type="radio"] { position: absolute; opacity: 0; pointer-events: none; }
 .choice .c-icon { font-size: 24px; margin-bottom: 4px; display: block; }
 .choice .c-label { font-size: 13px; font-weight: 700; color: var(--slate); }
 .choice:hover { border-color: var(--forest); background: white; }
-.choice.selected, .choice:has(input:checked) {
-  border-color: var(--forest);
-  background: linear-gradient(135deg, rgba(30,77,43,0.08), rgba(30,77,43,0.02));
-  box-shadow: 0 0 0 2px rgba(30,77,43,0.12);
-}
+.choice.selected, .choice:has(input:checked) { border-color: var(--forest); background: linear-gradient(135deg, rgba(30,77,43,0.08), rgba(30,77,43,0.02)); box-shadow: 0 0 0 2px rgba(30,77,43,0.12); }
 .choice.selected .c-label, .choice:has(input:checked) .c-label { color: var(--forest); }
 
-.num-row {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 12px;
-  align-items: center;
-  padding: 10px 0;
+.cat-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+.cat-row {
+  display: grid; grid-template-columns: 56px 1fr auto; gap: 16px; align-items: center;
+  padding: 14px 16px; background: var(--paper);
+  border: 1px solid var(--hairline); border-radius: var(--r-md);
+  transition: border-color .15s var(--ease), box-shadow .15s var(--ease), background-color .15s var(--ease);
 }
-.num-row label { font-size: 15px; color: var(--ink); }
-.num-row .num-hint { font-size: 13px; color: var(--slate-light); display: block; font-weight: 400; margin-top: 2px; }
-.num-stepper {
-  display: inline-flex; align-items: center; gap: 2px;
-  border: 1px solid var(--hairline-strong);
-  border-radius: var(--r-md);
-  overflow: hidden;
-  background: white;
+.cat-row:hover, .cat-row.has-value { border-color: rgba(30,77,43,0.35); background: white; }
+.cat-row.has-value { box-shadow: 0 0 0 2px rgba(30,77,43,0.10); }
+.cat-icon {
+  width: 48px; height: 48px; border-radius: var(--r-md);
+  background: linear-gradient(135deg, rgba(30,77,43,0.12), rgba(30,77,43,0.04));
+  color: var(--forest); display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
 }
-.num-stepper button {
-  width: 36px; height: 36px;
-  background: var(--paper); border: none;
-  font-size: 18px; font-weight: 700; color: var(--forest);
-  cursor: pointer;
-  transition: background-color .12s var(--ease);
-}
-.num-stepper button:hover { background: rgba(30,77,43,0.10); }
-.num-stepper input {
-  width: 60px; height: 36px;
-  border: none; border-left: 1px solid var(--hairline); border-right: 1px solid var(--hairline);
-  text-align: center;
-  font-size: 16px; font-weight: 700;
-  font-family: inherit;
-  background: white;
-}
+.cat-text { line-height: 1.35; }
+.cat-text .cat-name { font-weight: 700; font-size: 15px; color: var(--ink); }
+.cat-text .cat-hint { font-size: 13px; color: var(--slate); margin-top: 2px; display: block; }
 
-.chk-row {
-  display: flex; align-items: flex-start; gap: 10px;
-  padding: 10px 0;
-}
-.chk-row input[type="checkbox"] {
-  margin-top: 4px; width: 18px; height: 18px;
-  accent-color: var(--forest);
-}
+.num-stepper { display: inline-flex; align-items: center; gap: 0; border: 1px solid var(--hairline-strong); border-radius: var(--r-md); overflow: hidden; background: white; }
+.num-stepper button { width: 36px; height: 38px; background: var(--paper); border: none; font-size: 18px; font-weight: 700; color: var(--forest); cursor: pointer; transition: background-color .12s var(--ease); }
+.num-stepper button:hover { background: rgba(30,77,43,0.10); }
+.num-stepper input { width: 60px; height: 38px; border: none; border-left: 1px solid var(--hairline); border-right: 1px solid var(--hairline); text-align: center; font-size: 16px; font-weight: 700; font-family: inherit; background: white; }
+
+.chk-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; }
+.chk-row input[type="checkbox"] { margin-top: 4px; width: 18px; height: 18px; accent-color: var(--forest); }
 .chk-row label { font-size: 15px; color: var(--ink); line-height: 1.4; }
 .chk-row .chk-hint { font-size: 13px; color: var(--slate); display: block; margin-top: 2px; }
 
 /* Result panel */
-.est-result {
-  position: sticky; top: 92px;
-  background: linear-gradient(135deg, var(--forest) 0%, var(--forest-dark) 100%);
-  color: white;
-  border-radius: var(--r-lg);
-  padding: 32px 28px;
-  box-shadow: var(--shadow-lg);
-}
-.est-result h3 {
-  color: white;
-  font-size: 14px; font-weight: 700;
-  letter-spacing: 0.10em;
-  text-transform: uppercase;
-  margin-bottom: 8px;
-  opacity: 0.82;
-}
-.est-range {
-  font-size: clamp(28px, 3vw + 16px, 44px);
-  font-weight: 800;
-  line-height: 1.1;
-  margin-bottom: 6px;
-  font-family: var(--font-display);
-  letter-spacing: -0.02em;
-}
-.est-basis {
-  color: rgba(255,255,255,0.75);
-  font-size: 14px;
-  margin-bottom: 24px;
-}
-.est-breakdown {
-  background: rgba(0,0,0,0.20);
-  border-radius: var(--r-md);
-  padding: 16px 18px;
-  margin-bottom: 20px;
-  font-size: 14px;
-}
-.est-breakdown h4 {
-  font-size: 11px; font-weight: 700;
-  letter-spacing: 0.10em;
-  text-transform: uppercase;
-  color: var(--gold);
-  margin: 0 0 10px;
-}
-.est-breakdown .line {
-  display: flex; justify-content: space-between; padding: 3px 0;
-  color: rgba(255,255,255,0.88);
-}
+.est-result { position: sticky; top: 92px; background: linear-gradient(135deg, var(--forest) 0%, var(--forest-dark) 100%); color: white; border-radius: var(--r-lg); padding: 32px 28px; box-shadow: var(--shadow-lg); }
+.est-result h3 { color: white; font-size: 14px; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase; margin-bottom: 8px; opacity: 0.82; }
+.est-range { font-size: clamp(28px, 3vw + 16px, 44px); font-weight: 800; line-height: 1.1; margin-bottom: 6px; font-family: var(--font-display); letter-spacing: -0.02em; }
+.est-basis { color: rgba(255,255,255,0.75); font-size: 14px; margin-bottom: 24px; }
+.est-breakdown { background: rgba(0,0,0,0.20); border-radius: var(--r-md); padding: 16px 18px; margin-bottom: 20px; font-size: 14px; }
+.est-breakdown h4 { font-size: 11px; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase; color: var(--gold); margin: 0 0 10px; }
+.est-breakdown .line { display: flex; justify-content: space-between; padding: 3px 0; color: rgba(255,255,255,0.88); }
 .est-breakdown .line .lbl { color: rgba(255,255,255,0.75); }
-.est-breakdown .line.total {
-  border-top: 1px solid rgba(255,255,255,0.20);
-  margin-top: 8px; padding-top: 10px;
-  font-weight: 700; color: white;
-}
+.est-breakdown .line.total { border-top: 1px solid rgba(255,255,255,0.20); margin-top: 8px; padding-top: 10px; font-weight: 700; color: white; }
 
-.est-disclaimer {
-  font-size: 12px;
-  color: rgba(255,255,255,0.65);
-  line-height: 1.5;
-  padding-top: 16px;
-  border-top: 1px solid rgba(255,255,255,0.12);
-}
+.est-disclaimer { font-size: 12px; color: rgba(255,255,255,0.65); line-height: 1.5; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.12); }
 .est-disclaimer strong { color: var(--gold); }
 
-.est-result .btn-primary {
-  background: var(--gold); color: var(--ink);
-  width: 100%; justify-content: center;
-  margin-top: 16px;
-}
+.est-result .btn-primary { background: var(--gold); color: var(--ink); width: 100%; justify-content: center; margin-top: 16px; }
 .est-result .btn-primary:hover { background: var(--gold-dark); color: white; }
 
-/* Empty-state (before calc) */
 .est-result.empty { background: linear-gradient(135deg, #F7FAFC 0%, #E2E8F0 100%); color: var(--slate); }
 .est-result.empty h3 { color: var(--slate-light); }
 .est-result.empty .est-range { color: var(--forest); font-size: clamp(18px, 1.5vw + 12px, 24px); font-weight: 700; letter-spacing: 0; }
 .est-result.empty .est-basis { color: var(--slate); }
 .est-result.empty .btn-primary { background: var(--forest); color: white; }
 .est-result.empty .btn-primary:hover { background: var(--forest-dark); color: white; }
+
+.upgrade-banner {
+  margin-top: 16px; padding: 16px 18px;
+  background: rgba(212, 175, 55, 0.10);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: var(--r-md);
+  display: flex; align-items: center; gap: 14px;
+  font-size: 14px;
+}
+.upgrade-banner .ub-icon { font-size: 22px; }
+.upgrade-banner strong { color: var(--gold-dark); }
+.upgrade-banner a { font-weight: 700; }
 </style>
 </head>
 <body>
@@ -209,9 +111,10 @@
 
 <section class="hero" style="padding: 80px 0 40px;">
   <div class="container">
-    <span class="eyebrow">Instant Estimate</span>
-    <h1>30 seconds of questions. <span class="highlight">Real ballpark.</span></h1>
-    <p class="lead" style="max-width: 680px;">No lead form, no "we'll get back to you." Tell us about your project and we'll give you a range based on our actual pricing model. If you like the number, hit the button at the bottom and we'll turn it into a firm quote.</p>
+    <span class="eyebrow">Instant Estimate · Public</span>
+    <h1>30 seconds. <span class="highlight">Real ballpark.</span></h1>
+    <p class="lead" style="max-width: 720px;">Tell us roughly what you need — drops, cameras, doors, speakers, fiber, server room — and we'll show a live range based on GCC's actual 2026 pricing. No lead form, no "we'll get back to you," no upsell.</p>
+    <p style="color: var(--slate); font-size: 0.95em; max-width: 720px; margin-top: 8px;">Need a more precise breakdown (20+ categories: HDMI, IoT, ladder rack, switches, MDF/IDF rooms, etc.)? <a href="/clients/" style="color: var(--forest); font-weight: 600;">Request a client login</a> and we'll send you the full estimator.</p>
   </div>
 </section>
 
@@ -220,9 +123,9 @@
     <div class="est-wrap">
       <form class="est-form" id="estimator-form" autocomplete="off">
         <h3>Project details</h3>
-        <p class="form-sub">All fields optional. The more you tell us, the tighter the range.</p>
+        <p class="form-sub">All fields optional. The more you fill in, the tighter the range.</p>
 
-        <!-- ── Step 1: project type ─────────────────────────────── -->
+        <!-- Step 1: project type -->
         <div class="est-step">
           <h4>1 · Project type</h4>
           <div class="choice-grid" data-input="projectType">
@@ -232,84 +135,89 @@
           </div>
         </div>
 
-        <!-- ── Step 2: structured cabling drops ─────────────────── -->
+        <!-- Step 2: scope categories -->
         <div class="est-step">
-          <h4>2 · Structured cabling (data drops)</h4>
-          <div class="num-row">
-            <label for="drops">Data drops (Cat6/6A)<span class="num-hint">One per workstation, camera, AP, printer, door reader, TV</span></label>
-            <div class="num-stepper">
-              <button type="button" data-step="drops" data-delta="-1" aria-label="Decrease">−</button>
-              <input type="number" id="drops" name="drops" value="0" min="0" max="5000" inputmode="numeric" />
-              <button type="button" data-step="drops" data-delta="+1" aria-label="Increase">+</button>
+          <h4>2 · What do you need?</h4>
+          <div class="cat-grid" id="cat-grid">
+
+            <div class="cat-row" data-cat="drops">
+              <div class="cat-icon">🔌</div>
+              <div class="cat-text"><span class="cat-name">Data drops</span><span class="cat-hint">Cat6/6A — one per workstation, camera, AP, printer, door reader, TV</span></div>
+              <div class="num-stepper">
+                <button type="button" data-step="drops" data-delta="-1" aria-label="Decrease">−</button>
+                <input type="number" id="drops" name="drops" value="0" min="0" max="5000" inputmode="numeric" />
+                <button type="button" data-step="drops" data-delta="+1" aria-label="Increase">+</button>
+              </div>
             </div>
-          </div>
-          <div class="num-row">
-            <label for="fiberRuns">Fiber runs<span class="num-hint">Backbone between IDFs / buildings. Leave 0 if none.</span></label>
-            <div class="num-stepper">
-              <button type="button" data-step="fiberRuns" data-delta="-1" aria-label="Decrease">−</button>
-              <input type="number" id="fiberRuns" name="fiberRuns" value="0" min="0" max="100" inputmode="numeric" />
-              <button type="button" data-step="fiberRuns" data-delta="+1" aria-label="Increase">+</button>
+
+            <div class="cat-row" data-cat="cameras">
+              <div class="cat-icon">📹</div>
+              <div class="cat-text"><span class="cat-name">Cameras</span><span class="cat-hint">IP cameras (Ubiquiti G6 or comparable). Includes mount, PoE cabling, NVR channel.</span></div>
+              <div class="num-stepper">
+                <button type="button" data-step="cameras" data-delta="-1" aria-label="Decrease">−</button>
+                <input type="number" id="cameras" name="cameras" value="0" min="0" max="500" inputmode="numeric" />
+                <button type="button" data-step="cameras" data-delta="+1" aria-label="Increase">+</button>
+              </div>
             </div>
-          </div>
-          <div class="num-row">
-            <label for="telecomRooms">Telecom rooms / IDFs<span class="num-hint">Full build-out: rack, patch panels, ladder, grounding.</span></label>
-            <div class="num-stepper">
-              <button type="button" data-step="telecomRooms" data-delta="-1" aria-label="Decrease">−</button>
-              <input type="number" id="telecomRooms" name="telecomRooms" value="0" min="0" max="20" inputmode="numeric" />
-              <button type="button" data-step="telecomRooms" data-delta="+1" aria-label="Increase">+</button>
+
+            <div class="cat-row" data-cat="doors">
+              <div class="cat-icon">🚪</div>
+              <div class="cat-text"><span class="cat-name">Door access</span><span class="cat-hint">Door hub, card reader, maglock or strike, intercom-ready, first-year licensing.</span></div>
+              <div class="num-stepper">
+                <button type="button" data-step="doors" data-delta="-1" aria-label="Decrease">−</button>
+                <input type="number" id="doors" name="doors" value="0" min="0" max="100" inputmode="numeric" />
+                <button type="button" data-step="doors" data-delta="+1" aria-label="Increase">+</button>
+              </div>
             </div>
+
+            <div class="cat-row" data-cat="speakers">
+              <div class="cat-icon">🔊</div>
+              <div class="cat-text"><span class="cat-name">Speakers</span><span class="cat-hint">70V ceiling speakers for paging or background music. Amp + zone wiring included.</span></div>
+              <div class="num-stepper">
+                <button type="button" data-step="speakers" data-delta="-1" aria-label="Decrease">−</button>
+                <input type="number" id="speakers" name="speakers" value="0" min="0" max="500" inputmode="numeric" />
+                <button type="button" data-step="speakers" data-delta="+1" aria-label="Increase">+</button>
+              </div>
+            </div>
+
+            <div class="cat-row" data-cat="fiberRuns">
+              <div class="cat-icon">🌐</div>
+              <div class="cat-text"><span class="cat-name">Fiber backbones</span><span class="cat-hint">Single-mode or multimode runs between IDFs / buildings. Fusion-spliced, OTDR-tested.</span></div>
+              <div class="num-stepper">
+                <button type="button" data-step="fiberRuns" data-delta="-1" aria-label="Decrease">−</button>
+                <input type="number" id="fiberRuns" name="fiberRuns" value="0" min="0" max="100" inputmode="numeric" />
+                <button type="button" data-step="fiberRuns" data-delta="+1" aria-label="Increase">+</button>
+              </div>
+            </div>
+
+            <div class="cat-row" data-cat="serverRooms">
+              <div class="cat-icon">🗄️</div>
+              <div class="cat-text"><span class="cat-name">Server rooms / IDFs</span><span class="cat-hint">Full build-out: rack, patch panels, ladder rack, grounding to TIA-607.</span></div>
+              <div class="num-stepper">
+                <button type="button" data-step="serverRooms" data-delta="-1" aria-label="Decrease">−</button>
+                <input type="number" id="serverRooms" name="serverRooms" value="0" min="0" max="20" inputmode="numeric" />
+                <button type="button" data-step="serverRooms" data-delta="+1" aria-label="Increase">+</button>
+              </div>
+            </div>
+
           </div>
         </div>
 
-        <!-- ── Step 3: cameras & access ─────────────────────────── -->
+        <!-- Step 3: extras -->
         <div class="est-step">
-          <h4>3 · Security (cameras &amp; doors)</h4>
-          <div class="num-row">
-            <label for="cameras">IP cameras (Ubiquiti G6 or similar)<span class="num-hint">Includes mount, PoE cabling, NVR channel licensing.</span></label>
-            <div class="num-stepper">
-              <button type="button" data-step="cameras" data-delta="-1" aria-label="Decrease">−</button>
-              <input type="number" id="cameras" name="cameras" value="0" min="0" max="500" inputmode="numeric" />
-              <button type="button" data-step="cameras" data-delta="+1" aria-label="Increase">+</button>
-            </div>
-          </div>
-          <div class="num-row">
-            <label for="doors">Access-controlled doors<span class="num-hint">Door hub, card reader, maglock or strike, intercom-ready.</span></label>
-            <div class="num-stepper">
-              <button type="button" data-step="doors" data-delta="-1" aria-label="Decrease">−</button>
-              <input type="number" id="doors" name="doors" value="0" min="0" max="100" inputmode="numeric" />
-              <button type="button" data-step="doors" data-delta="+1" aria-label="Increase">+</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- ── Step 4: Wi-Fi ────────────────────────────────────── -->
-        <div class="est-step">
-          <h4>4 · Wireless (Wi-Fi 7 access points)</h4>
-          <div class="num-row">
-            <label for="aps">Access points<span class="num-hint">Ceiling-mount + cabling. Plan ~1 AP per 2,500 sq ft.</span></label>
-            <div class="num-stepper">
-              <button type="button" data-step="aps" data-delta="-1" aria-label="Decrease">−</button>
-              <input type="number" id="aps" name="aps" value="0" min="0" max="200" inputmode="numeric" />
-              <button type="button" data-step="aps" data-delta="+1" aria-label="Increase">+</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- ── Step 5: extras ─────────────────────────────────── -->
-        <div class="est-step">
-          <h4>5 · Extras</h4>
+          <h4>3 · Project conditions</h4>
           <div class="chk-row"><input type="checkbox" id="pw" name="pw" /><label for="pw">Prevailing-wage project<span class="chk-hint">Government, public schools, federal. Adds certified-payroll line items.</span></label></div>
-          <div class="chk-row"><input type="checkbox" id="testing" name="testing" checked /><label for="testing">Full Fluke DSX-8000 + OTDR certification <span class="chk-hint">Included by default — leave checked unless you have a cert shop handling it.</span></label></div>
+          <div class="chk-row"><input type="checkbox" id="testing" name="testing" checked /><label for="testing">Full Fluke DSX-8000 + OTDR certification<span class="chk-hint">Included by default. Uncheck only if a separate cert shop is handling it.</span></label></div>
           <div class="chk-row"><input type="checkbox" id="asBuilts" name="asBuilts" checked /><label for="asBuilts">As-built drawings + closeout package<span class="chk-hint">Bluebeam-marked plans, per-drop cert reports, rack photos.</span></label></div>
-          <div class="chk-row"><input type="checkbox" id="afterHours" name="afterHours" /><label for="afterHours">Weekend / night work required<span class="chk-hint">+5% for voluntary off-hours, or skip for standard deduct.</span></label></div>
-          <div class="chk-row"><input type="checkbox" id="metro" name="metro" /><label for="metro">Outside KCMO + STL metros<span class="chk-hint">Adds a mobilization line item (depends on distance).</span></label></div>
+          <div class="chk-row"><input type="checkbox" id="afterHours" name="afterHours" /><label for="afterHours">Weekend / night work required<span class="chk-hint">+5% off-hours surcharge.</span></label></div>
+          <div class="chk-row"><input type="checkbox" id="metro" name="metro" /><label for="metro">Outside KCMO + STL metros<span class="chk-hint">Adds a mobilization line (depends on distance).</span></label></div>
         </div>
       </form>
 
       <aside class="est-result empty" id="est-result" aria-live="polite">
         <h3>Your estimate</h3>
-        <div class="est-range" id="est-range">Fill in a few fields →</div>
-        <div class="est-basis" id="est-basis">We'll show the range here as you type. Based on GCC's actual 2026 pricing model.</div>
+        <div class="est-range" id="est-range">Add something to the form →</div>
+        <div class="est-basis" id="est-basis">We'll show the range here as you type. Based on GCC's actual 2026 pricing model + benchmarked against 2026 industry data.</div>
 
         <div class="est-breakdown" id="est-breakdown" style="display: none;">
           <h4>Breakdown (midpoint)</h4>
@@ -318,8 +226,13 @@
 
         <a href="/contact.html" class="btn btn-primary" id="est-cta">Turn this into a firm quote →</a>
 
+        <div class="upgrade-banner">
+          <span class="ub-icon">🔐</span>
+          <span><strong>Need full detail?</strong> The client portal estimator covers <strong>20+ scope categories</strong> (HDMI, IoT, intercoms, elevator phones, UPS, MDF, IDF, switches, patch panels, ladder rack, etc.). <a href="/clients/">Request access →</a></span>
+        </div>
+
         <div class="est-disclaimer">
-          <strong>Quick note:</strong> This is a ballpark range based on typical GCC jobs. Final pricing depends on site conditions, wall type, plenum/riser requirements, and specific equipment. For Fortune-500-grade accuracy, get the full quote — we promise it'll be close to this number.
+          <strong>Quick note:</strong> This is a ballpark range. Final pricing depends on site conditions, wall type, plenum/riser requirements, and specific equipment. For Fortune-500-grade accuracy, <a href="/contact.html" style="color: var(--gold);">get the full quote</a>.
         </div>
       </aside>
     </div>
