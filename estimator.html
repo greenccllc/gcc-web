@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Instant Estimate — Low-voltage cabling, cameras, doors · GCC LLC</title>
+<meta name="description" content="Free instant ballpark for your structured cabling, IP surveillance, or access-control project. Answer 30 seconds of questions and get a real range — no sales call required." />
+<meta name="theme-color" content="#1E4D2B" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%231E4D2B'/%3E%3Ctext x='50' y='65' font-family='Helvetica' font-size='42' font-weight='800' fill='white' text-anchor='middle'%3EGC%3C/text%3E%3Ccircle cx='86' cy='14' r='8' fill='%23D4AF37'/%3E%3C/svg%3E" type="image/svg+xml" />
+<link rel="stylesheet" href="/assets/css/site.css" />
+<style>
+/* Estimator-specific styles */
+.est-wrap {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 40px;
+  align-items: start;
+}
+@media (max-width: 960px) { .est-wrap { grid-template-columns: 1fr; } }
+.est-form {
+  background: white;
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-lg);
+  padding: 32px;
+  box-shadow: var(--shadow-sm);
+}
+.est-form h3 { margin-bottom: 6px; }
+.est-form .form-sub { color: var(--slate); font-size: 0.95em; margin-bottom: 24px; }
+.est-step {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--hairline);
+}
+.est-step:last-of-type { border-bottom: none; }
+.est-step h4 {
+  font-size: 14px; font-weight: 700;
+  color: var(--forest);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.choice-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+.choice {
+  position: relative;
+  cursor: pointer;
+  padding: 16px 14px;
+  border: 1.5px solid var(--hairline-strong);
+  border-radius: var(--r-md);
+  background: var(--paper);
+  text-align: center;
+  transition: all .15s var(--ease);
+}
+.choice input[type="radio"] {
+  position: absolute; opacity: 0; pointer-events: none;
+}
+.choice .c-icon { font-size: 24px; margin-bottom: 4px; display: block; }
+.choice .c-label { font-size: 13px; font-weight: 700; color: var(--slate); }
+.choice:hover { border-color: var(--forest); background: white; }
+.choice.selected, .choice:has(input:checked) {
+  border-color: var(--forest);
+  background: linear-gradient(135deg, rgba(30,77,43,0.08), rgba(30,77,43,0.02));
+  box-shadow: 0 0 0 2px rgba(30,77,43,0.12);
+}
+.choice.selected .c-label, .choice:has(input:checked) .c-label { color: var(--forest); }
+
+.num-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 0;
+}
+.num-row label { font-size: 15px; color: var(--ink); }
+.num-row .num-hint { font-size: 13px; color: var(--slate-light); display: block; font-weight: 400; margin-top: 2px; }
+.num-stepper {
+  display: inline-flex; align-items: center; gap: 2px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  background: white;
+}
+.num-stepper button {
+  width: 36px; height: 36px;
+  background: var(--paper); border: none;
+  font-size: 18px; font-weight: 700; color: var(--forest);
+  cursor: pointer;
+  transition: background-color .12s var(--ease);
+}
+.num-stepper button:hover { background: rgba(30,77,43,0.10); }
+.num-stepper input {
+  width: 60px; height: 36px;
+  border: none; border-left: 1px solid var(--hairline); border-right: 1px solid var(--hairline);
+  text-align: center;
+  font-size: 16px; font-weight: 700;
+  font-family: inherit;
+  background: white;
+}
+
+.chk-row {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 0;
+}
+.chk-row input[type="checkbox"] {
+  margin-top: 4px; width: 18px; height: 18px;
+  accent-color: var(--forest);
+}
+.chk-row label { font-size: 15px; color: var(--ink); line-height: 1.4; }
+.chk-row .chk-hint { font-size: 13px; color: var(--slate); display: block; margin-top: 2px; }
+
+/* Result panel */
+.est-result {
+  position: sticky; top: 92px;
+  background: linear-gradient(135deg, var(--forest) 0%, var(--forest-dark) 100%);
+  color: white;
+  border-radius: var(--r-lg);
+  padding: 32px 28px;
+  box-shadow: var(--shadow-lg);
+}
+.est-result h3 {
+  color: white;
+  font-size: 14px; font-weight: 700;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  opacity: 0.82;
+}
+.est-range {
+  font-size: clamp(28px, 3vw + 16px, 44px);
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 6px;
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+.est-basis {
+  color: rgba(255,255,255,0.75);
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+.est-breakdown {
+  background: rgba(0,0,0,0.20);
+  border-radius: var(--r-md);
+  padding: 16px 18px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+.est-breakdown h4 {
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin: 0 0 10px;
+}
+.est-breakdown .line {
+  display: flex; justify-content: space-between; padding: 3px 0;
+  color: rgba(255,255,255,0.88);
+}
+.est-breakdown .line .lbl { color: rgba(255,255,255,0.75); }
+.est-breakdown .line.total {
+  border-top: 1px solid rgba(255,255,255,0.20);
+  margin-top: 8px; padding-top: 10px;
+  font-weight: 700; color: white;
+}
+
+.est-disclaimer {
+  font-size: 12px;
+  color: rgba(255,255,255,0.65);
+  line-height: 1.5;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,0.12);
+}
+.est-disclaimer strong { color: var(--gold); }
+
+.est-result .btn-primary {
+  background: var(--gold); color: var(--ink);
+  width: 100%; justify-content: center;
+  margin-top: 16px;
+}
+.est-result .btn-primary:hover { background: var(--gold-dark); color: white; }
+
+/* Empty-state (before calc) */
+.est-result.empty { background: linear-gradient(135deg, #F7FAFC 0%, #E2E8F0 100%); color: var(--slate); }
+.est-result.empty h3 { color: var(--slate-light); }
+.est-result.empty .est-range { color: var(--forest); font-size: clamp(18px, 1.5vw + 12px, 24px); font-weight: 700; letter-spacing: 0; }
+.est-result.empty .est-basis { color: var(--slate); }
+.est-result.empty .btn-primary { background: var(--forest); color: white; }
+.est-result.empty .btn-primary:hover { background: var(--forest-dark); color: white; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a href="/" class="brand-mark"><span class="monogram">GC</span><span class="brand-stack"><span class="brand-name">GCC LLC</span><span class="brand-tag">Div 27 / 28 Contractor</span></span></a>
+    <button class="menu-toggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
+    <nav class="site-nav" aria-label="Primary"><ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/services.html">Services</a></li>
+      <li><a href="/estimator.html">Estimator</a></li>
+      <li><a href="/about.html">About</a></li>
+      <li><a href="/contact.html">Contact</a></li>
+      <li><a href="/clients/" class="cta">Client Login</a></li>
+    </ul></nav>
+  </div>
+</header>
+
+<section class="hero" style="padding: 80px 0 40px;">
+  <div class="container">
+    <span class="eyebrow">Instant Estimate</span>
+    <h1>30 seconds of questions. <span class="highlight">Real ballpark.</span></h1>
+    <p class="lead" style="max-width: 680px;">No lead form, no "we'll get back to you." Tell us about your project and we'll give you a range based on our actual pricing model. If you like the number, hit the button at the bottom and we'll turn it into a firm quote.</p>
+  </div>
+</section>
+
+<section style="padding: 32px 0 96px;">
+  <div class="container">
+    <div class="est-wrap">
+      <form class="est-form" id="estimator-form" autocomplete="off">
+        <h3>Project details</h3>
+        <p class="form-sub">All fields optional. The more you tell us, the tighter the range.</p>
+
+        <!-- ── Step 1: project type ─────────────────────────────── -->
+        <div class="est-step">
+          <h4>1 · Project type</h4>
+          <div class="choice-grid" data-input="projectType">
+            <label class="choice"><input type="radio" name="projectType" value="commercial" checked /><span class="c-icon">🏢</span><span class="c-label">Commercial</span></label>
+            <label class="choice"><input type="radio" name="projectType" value="residential" /><span class="c-icon">🏡</span><span class="c-label">Residential</span></label>
+            <label class="choice"><input type="radio" name="projectType" value="mixed" /><span class="c-icon">🏘️</span><span class="c-label">Mixed / Multi-family</span></label>
+          </div>
+        </div>
+
+        <!-- ── Step 2: structured cabling drops ─────────────────── -->
+        <div class="est-step">
+          <h4>2 · Structured cabling (data drops)</h4>
+          <div class="num-row">
+            <label for="drops">Data drops (Cat6/6A)<span class="num-hint">One per workstation, camera, AP, printer, door reader, TV</span></label>
+            <div class="num-stepper">
+              <button type="button" data-step="drops" data-delta="-1" aria-label="Decrease">−</button>
+              <input type="number" id="drops" name="drops" value="0" min="0" max="5000" inputmode="numeric" />
+              <button type="button" data-step="drops" data-delta="+1" aria-label="Increase">+</button>
+            </div>
+          </div>
+          <div class="num-row">
+            <label for="fiberRuns">Fiber runs<span class="num-hint">Backbone between IDFs / buildings. Leave 0 if none.</span></label>
+            <div class="num-stepper">
+              <button type="button" data-step="fiberRuns" data-delta="-1" aria-label="Decrease">−</button>
+              <input type="number" id="fiberRuns" name="fiberRuns" value="0" min="0" max="100" inputmode="numeric" />
+              <button type="button" data-step="fiberRuns" data-delta="+1" aria-label="Increase">+</button>
+            </div>
+          </div>
+          <div class="num-row">
+            <label for="telecomRooms">Telecom rooms / IDFs<span class="num-hint">Full build-out: rack, patch panels, ladder, grounding.</span></label>
+            <div class="num-stepper">
+              <button type="button" data-step="telecomRooms" data-delta="-1" aria-label="Decrease">−</button>
+              <input type="number" id="telecomRooms" name="telecomRooms" value="0" min="0" max="20" inputmode="numeric" />
+              <button type="button" data-step="telecomRooms" data-delta="+1" aria-label="Increase">+</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Step 3: cameras & access ─────────────────────────── -->
+        <div class="est-step">
+          <h4>3 · Security (cameras &amp; doors)</h4>
+          <div class="num-row">
+            <label for="cameras">IP cameras (Ubiquiti G6 or similar)<span class="num-hint">Includes mount, PoE cabling, NVR channel licensing.</span></label>
+            <div class="num-stepper">
+              <button type="button" data-step="cameras" data-delta="-1" aria-label="Decrease">−</button>
+              <input type="number" id="cameras" name="cameras" value="0" min="0" max="500" inputmode="numeric" />
+              <button type="button" data-step="cameras" data-delta="+1" aria-label="Increase">+</button>
+            </div>
+          </div>
+          <div class="num-row">
+            <label for="doors">Access-controlled doors<span class="num-hint">Door hub, card reader, maglock or strike, intercom-ready.</span></label>
+            <div class="num-stepper">
+              <button type="button" data-step="doors" data-delta="-1" aria-label="Decrease">−</button>
+              <input type="number" id="doors" name="doors" value="0" min="0" max="100" inputmode="numeric" />
+              <button type="button" data-step="doors" data-delta="+1" aria-label="Increase">+</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Step 4: Wi-Fi ────────────────────────────────────── -->
+        <div class="est-step">
+          <h4>4 · Wireless (Wi-Fi 7 access points)</h4>
+          <div class="num-row">
+            <label for="aps">Access points<span class="num-hint">Ceiling-mount + cabling. Plan ~1 AP per 2,500 sq ft.</span></label>
+            <div class="num-stepper">
+              <button type="button" data-step="aps" data-delta="-1" aria-label="Decrease">−</button>
+              <input type="number" id="aps" name="aps" value="0" min="0" max="200" inputmode="numeric" />
+              <button type="button" data-step="aps" data-delta="+1" aria-label="Increase">+</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Step 5: extras ─────────────────────────────────── -->
+        <div class="est-step">
+          <h4>5 · Extras</h4>
+          <div class="chk-row"><input type="checkbox" id="pw" name="pw" /><label for="pw">Prevailing-wage project<span class="chk-hint">Government, public schools, federal. Adds certified-payroll line items.</span></label></div>
+          <div class="chk-row"><input type="checkbox" id="testing" name="testing" checked /><label for="testing">Full Fluke DSX-8000 + OTDR certification <span class="chk-hint">Included by default — leave checked unless you have a cert shop handling it.</span></label></div>
+          <div class="chk-row"><input type="checkbox" id="asBuilts" name="asBuilts" checked /><label for="asBuilts">As-built drawings + closeout package<span class="chk-hint">Bluebeam-marked plans, per-drop cert reports, rack photos.</span></label></div>
+          <div class="chk-row"><input type="checkbox" id="afterHours" name="afterHours" /><label for="afterHours">Weekend / night work required<span class="chk-hint">+5% for voluntary off-hours, or skip for standard deduct.</span></label></div>
+          <div class="chk-row"><input type="checkbox" id="metro" name="metro" /><label for="metro">Outside KCMO + STL metros<span class="chk-hint">Adds a mobilization line item (depends on distance).</span></label></div>
+        </div>
+      </form>
+
+      <aside class="est-result empty" id="est-result" aria-live="polite">
+        <h3>Your estimate</h3>
+        <div class="est-range" id="est-range">Fill in a few fields →</div>
+        <div class="est-basis" id="est-basis">We'll show the range here as you type. Based on GCC's actual 2026 pricing model.</div>
+
+        <div class="est-breakdown" id="est-breakdown" style="display: none;">
+          <h4>Breakdown (midpoint)</h4>
+          <div id="est-lines"></div>
+        </div>
+
+        <a href="/contact.html" class="btn btn-primary" id="est-cta">Turn this into a firm quote →</a>
+
+        <div class="est-disclaimer">
+          <strong>Quick note:</strong> This is a ballpark range based on typical GCC jobs. Final pricing depends on site conditions, wall type, plenum/riser requirements, and specific equipment. For Fortune-500-grade accuracy, get the full quote — we promise it'll be close to this number.
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="/" class="brand-mark"><span class="monogram">GC</span><span class="brand-stack"><span class="brand-name">GCC LLC</span><span class="brand-tag">Div 27 / 28 Contractor</span></span></a>
+        <p>Green Communications Contracting LLC — woman-owned, minority-owned, licensed, insured, and bonded.</p>
+      </div>
+      <div class="footer-col"><h4>Services</h4><ul>
+        <li><a href="/services.html#div27">Division 27 (Telecom)</a></li>
+        <li><a href="/services.html#div28">Division 28 (Security)</a></li>
+        <li><a href="/services.html#residential">Residential</a></li>
+        <li><a href="/estimator.html">Instant Estimator</a></li>
+      </ul></div>
+      <div class="footer-col"><h4>Company</h4><ul>
+        <li><a href="/about.html">About</a></li>
+        <li><a href="/projects.html">Projects</a></li>
+        <li><a href="/contact.html">Contact</a></li>
+        <li><a href="/clients/">Client Login</a></li>
+      </ul></div>
+      <div class="footer-col"><h4>Reach Us</h4><ul>
+        <li><a href="tel:+16362248192">636-224-8192</a></li>
+        <li><a href="mailto:info@greencommllc.com">info@greencommllc.com</a></li>
+        <li>603 Seib Dr<br/>O'Fallon, MO 63366</li>
+      </ul></div>
+    </div>
+    <div class="footer-bottom">
+      <div>© 2026 Green Communications Contracting LLC · Licensed &amp; Insured · Missouri LLC</div>
+      <div>Non-Union Div 27/28 · BICSI/TIA-568 · TIA-606-B</div>
+    </div>
+  </div>
+</footer>
+
+<script src="/assets/js/site.js"></script>
+<script src="/assets/js/estimator.js"></script>
+</body>
+</html>
