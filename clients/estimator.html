@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Client Estimator — 20-category breakdown · GCC LLC</title>
+<meta name="description" content="Full client-portal estimator with all 20 GCC bundler scope categories: data, fiber, coax, HDMI, TV, IoT, APs, intercoms, cameras, doors, elevators, UPS, MDF, IDF, switches, patch, ladder rack." />
+<meta name="theme-color" content="#1E4D2B" />
+<meta name="robots" content="noindex" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%231E4D2B'/%3E%3Ctext x='50' y='65' font-family='Helvetica' font-size='42' font-weight='800' fill='white' text-anchor='middle'%3EGC%3C/text%3E%3Ccircle cx='86' cy='14' r='8' fill='%23D4AF37'/%3E%3C/svg%3E" type="image/svg+xml" />
+<link rel="stylesheet" href="/assets/css/site.css" />
+<style>
+.cest-wrap { display: grid; grid-template-columns: 1.5fr 1fr; gap: 32px; align-items: start; }
+@media (max-width: 1100px) { .cest-wrap { grid-template-columns: 1fr; } }
+.cest-form { background: white; border: 1px solid var(--hairline); border-radius: var(--r-lg); padding: 28px; box-shadow: var(--shadow-sm); }
+.cest-section { margin-bottom: 28px; }
+.cest-section h3 { font-size: 13px; font-weight: 800; color: var(--forest); letter-spacing: 0.10em; text-transform: uppercase; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--hairline); }
+.cat-grid20 { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; }
+.cat-pill {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-md);
+  transition: all .12s var(--ease);
+}
+.cat-pill.has-value { border-color: var(--forest); background: white; box-shadow: 0 0 0 2px rgba(30,77,43,0.10); }
+.cat-pill .cp-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: rgba(30,77,43,0.10); color: var(--forest);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0;
+}
+.cat-pill .cp-name {
+  font-size: 12px; font-weight: 700; color: var(--ink);
+  letter-spacing: 0.04em; text-transform: uppercase;
+  flex: 1;
+}
+.cat-pill .cp-num {
+  width: 56px;
+  padding: 5px 8px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 6px;
+  background: white;
+  font-size: 14px; font-weight: 700;
+  text-align: center;
+  font-family: inherit;
+}
+.cat-pill .cp-num:focus { outline: none; border-color: var(--forest); box-shadow: 0 0 0 2px rgba(30,77,43,0.18); }
+
+.cest-conditions { padding: 16px; background: var(--paper); border-radius: var(--r-md); border: 1px solid var(--hairline); }
+.cest-conditions .cond-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
+@media (max-width: 600px) { .cest-conditions .cond-grid { grid-template-columns: 1fr; } }
+.cest-conditions .chk-item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.cest-conditions input[type="checkbox"] { accent-color: var(--forest); width: 16px; height: 16px; }
+
+.cest-result {
+  position: sticky; top: 92px;
+  background: linear-gradient(135deg, var(--forest) 0%, var(--forest-dark) 100%);
+  color: white; border-radius: var(--r-lg);
+  padding: 28px 26px;
+  box-shadow: var(--shadow-lg);
+}
+.cest-result h3 { color: white; font-size: 13px; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase; margin-bottom: 6px; opacity: 0.82; }
+.cest-range { font-size: clamp(26px, 2.5vw + 14px, 38px); font-weight: 800; line-height: 1.1; margin-bottom: 4px; font-family: var(--font-display); letter-spacing: -0.02em; }
+.cest-mid { color: rgba(255,255,255,0.78); font-size: 14px; margin-bottom: 18px; }
+.cest-summary { background: rgba(0,0,0,0.20); border-radius: var(--r-md); padding: 14px 16px; font-size: 13px; max-height: 360px; overflow-y: auto; }
+.cest-summary h4 { font-size: 10px; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase; color: var(--gold); margin: 0 0 8px; }
+.cest-summary .sl { display: flex; justify-content: space-between; padding: 2px 0; color: rgba(255,255,255,0.85); }
+.cest-summary .sl .lbl { color: rgba(255,255,255,0.7); }
+.cest-summary .sl.tot { border-top: 1px solid rgba(255,255,255,0.20); margin-top: 6px; padding-top: 8px; font-weight: 700; color: white; }
+
+.cest-actions { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+.cest-actions .btn { width: 100%; justify-content: center; }
+.cest-actions .btn-primary { background: var(--gold); color: var(--ink); }
+.cest-actions .btn-primary:hover { background: var(--gold-dark); color: white; }
+.cest-actions .btn-ghost { background: rgba(255,255,255,0.10); color: white; border: 1px solid rgba(255,255,255,0.30); }
+.cest-actions .btn-ghost:hover { background: rgba(255,255,255,0.20); border-color: white; }
+
+.cest-disclaimer { font-size: 11px; color: rgba(255,255,255,0.65); margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.12); line-height: 1.5; }
+
+.client-banner {
+  background: linear-gradient(135deg, var(--ink) 0%, #2D3748 100%);
+  color: rgba(255,255,255,0.85);
+  padding: 12px 0;
+  font-size: 13px;
+}
+.client-banner .container { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+.client-banner strong { color: var(--gold); }
+.client-banner a { color: white; text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a href="/" class="brand-mark"><span class="monogram">GC</span><span class="brand-stack"><span class="brand-name">GCC LLC</span><span class="brand-tag">Client Portal</span></span></a>
+    <button class="menu-toggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
+    <nav class="site-nav" aria-label="Primary"><ul>
+      <li><a href="/">Public site</a></li>
+      <li><a href="/clients/" class="active">Client home</a></li>
+      <li><a href="/clients/estimator.html" class="active">Full Estimator</a></li>
+      <li><a href="/contact.html">Support</a></li>
+    </ul></nav>
+  </div>
+</header>
+
+<div class="client-banner">
+  <div class="container">
+    <span><strong>Client Portal</strong> — Full 20-category estimator with internal pricing detail</span>
+    <span style="margin-left:auto;">Logged in as <strong id="client-id">guest</strong> · <a href="#" id="logout">Sign out</a></span>
+  </div>
+</div>
+
+<section style="padding: 32px 0;">
+  <div class="container">
+    <h1 style="margin-bottom: 4px;">Full Project Estimator</h1>
+    <p style="color: var(--slate); margin-bottom: 32px;">All 20 GCC scope categories. Pricing pulled from the live bundler model. Save sessions, export to PDF, hand off to a project manager when ready.</p>
+
+    <div class="cest-wrap">
+      <form class="cest-form" id="cest-form" autocomplete="off">
+
+        <!-- Project type -->
+        <div class="cest-section">
+          <h3>Project Type</h3>
+          <div class="choice-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px;">
+            <label class="choice"><input type="radio" name="projectType" value="commercial" checked /><span class="c-icon">🏢</span><span class="c-label">Commercial</span></label>
+            <label class="choice"><input type="radio" name="projectType" value="residential" /><span class="c-icon">🏡</span><span class="c-label">Residential</span></label>
+            <label class="choice"><input type="radio" name="projectType" value="mixed" /><span class="c-icon">🏘️</span><span class="c-label">Mixed</span></label>
+          </div>
+        </div>
+
+        <!-- Cabling category - matches bundler tokens -->
+        <div class="cest-section">
+          <h3>Cabling Drops</h3>
+          <div class="cat-grid20">
+            <label class="cat-pill" data-cat="data"><span class="cp-icon">🔌</span><span class="cp-name">Data</span><input type="number" id="data" class="cp-num" value="0" min="0" /></label>
+            <label class="cat-pill" data-cat="fiber"><span class="cp-icon">🌐</span><span class="cp-name">Fiber</span><input type="number" id="fiber" class="cp-num" value="0" min="0" /></label>
+            <label class="cat-pill" data-cat="fiber-enc"><span class="cp-icon">📦</span><span class="cp-name">Fiber Enc.</span><input type="number" id="fiberEnc" class="cp-num" value="0" min="0" /></label>
+            <label class="cat-pill" data-cat="fiber-pp"><span class="cp-icon">🔲</span><span class="cp-name">Fiber PP</span><input type="number" id="fiberPp" class="cp-num" value="0" min="0" /></label>
+            <label class="cat-pill" data-cat="coax"><span class="cp-icon">📻</span><span class="cp-name">Coax</span><input type="number" id="coax" class="cp-num" value="0" min="0" /></label>
+            <label class="cat-pill" data-cat="hdmi"><span class="cp-icon">📺</span><span class="cp-name">HDMI</span><input type="number" id="hdmi" class="cp-num" value="0" min="0" /></label>
+          </div>
+        </div>
+
+        <div class="cest-section">
+          <h3>Endpoints</h3>
+          <div class="cat-grid20">
+            <label class="cat-pill" data-cat="tv"><span class="cp-icon">📺</span><span class="cp-name">TV</span><input type="number" id="tv" class="cp-num" value="0" min="0" /></label>
+            <label class="cat-pill" data-cat="iot"><span class="cp-icon">⚙️</span><span class="cp-name">IoT</span><input type="number" id="iot" class="cp-num" value="0" min="0" /></label>
+            <label class="cat-pill" data-cat="aps"><span class="cp-icon">📡</span><span class="cp-name">APs</span><input type="number" id="aps" class="cp-num" value="0" min="0" /></label>
+            <label class="cat-pill" data-cat="intercom"><span class="cp-icon">🔔</span><span class="cp-name">Intercom</span><input type="number" id="intercom" class="cp-num" value="0" min="0" /></label>
+            <label class="cat-pill" data-cat="cam-int"><span class="cp-icon">📷</span><span class="cp-name">Cam Int</span><input type="number" id="camInt" class="cp-num" value="0" min="0" /></label>
+            <label class="cat-pill" data-cat="cam-ext"><span class="cp-icon">📸</span><span class="cp-name">Cam Ext</span><input type="number" id="camExt" class="cp-num" value="0" min="0" /></label>
+            <label class="cat-pill" data-cat="doors"><span class="cp-icon">🚪</span><span class="cp-name">Doors</span><input type="number" id="doors" class="cp-num" value="0" min="0" /></label>
+            <label class="cat-pill" data-cat="elevator"><span class="cp-icon">⬆️</span><span class="cp-name">Elevator</span><input type="number" id="elevator" class="cp-num" value="0" min="0" /></label>
+            <label class="cat-pill" data-cat="ups"><span class="cp-icon">🔋</span><span class="cp-name">UPS</span><input type="number" id="ups" class="cp-num" value="0" min="0" /></label>
+          </div>
+        </div>
+
+        <div class="cest-section">
+          <h3>Infrastructure</h3>
+          <div class="cat-grid20">
+            <label class="cat-pill" data-cat="mdf"><span class="cp-icon">🗄️</span><span class="cp-name">MDF</span><input type="number" id="mdf" class="cp-num" value="0" min="0" /></label>
+            <label class="cat-pill" data-cat="idf"><span class="cp-icon">🗃️</span><span class="cp-name">IDF</span><input type="number" id="idf" class="cp-num" value="0" min="0" /></label>
+            <label class="cat-pill" data-cat="switch"><span class="cp-icon">🔀</span><span class="cp-name">Switch</span><input type="number" id="switchq" class="cp-num" value="0" min="0" /></label>
+            <label class="cat-pill" data-cat="patch"><span class="cp-icon">🔳</span><span class="cp-name">Patch</span><input type="number" id="patch" class="cp-num" value="0" min="0" /></label>
+            <label class="cat-pill" data-cat="ladder"><span class="cp-icon">🪜</span><span class="cp-name">Ladder</span><input type="number" id="ladder" class="cp-num" value="0" min="0" /></label>
+          </div>
+        </div>
+
+        <!-- Conditions -->
+        <div class="cest-section">
+          <h3>Project Conditions</h3>
+          <div class="cest-conditions">
+            <div class="cond-grid">
+              <label class="chk-item"><input type="checkbox" id="pw" name="pw" /><span>Prevailing wage</span></label>
+              <label class="chk-item"><input type="checkbox" id="testing" checked /><span>Fluke + OTDR cert</span></label>
+              <label class="chk-item"><input type="checkbox" id="asBuilts" checked /><span>As-builts + closeout</span></label>
+              <label class="chk-item"><input type="checkbox" id="afterHours" /><span>Weekend / nights</span></label>
+              <label class="chk-item"><input type="checkbox" id="metro" /><span>Outside KCMO/STL</span></label>
+              <label class="chk-item"><input type="checkbox" id="union" /><span>Union site</span></label>
+              <label class="chk-item"><input type="checkbox" id="bond" /><span>Bonding required</span></label>
+              <label class="chk-item"><input type="checkbox" id="liftReq" /><span>Lift / scaffolding</span></label>
+            </div>
+          </div>
+        </div>
+
+      </form>
+
+      <aside class="cest-result" id="cest-result">
+        <h3>Project estimate</h3>
+        <div class="cest-range" id="cest-range">$0</div>
+        <div class="cest-mid" id="cest-mid">Add quantities to begin</div>
+
+        <div class="cest-summary" id="cest-summary">
+          <h4>Line items</h4>
+          <div id="cest-lines"></div>
+        </div>
+
+        <div class="cest-actions">
+          <button type="button" class="btn btn-primary" id="cest-export">Export PDF →</button>
+          <button type="button" class="btn btn-ghost" id="cest-save">Save session</button>
+          <button type="button" class="btn btn-ghost" id="cest-handoff">Hand off to PM</button>
+        </div>
+
+        <div class="cest-disclaimer">
+          <strong>Internal pricing.</strong> Numbers reflect GCC's 2026 commercial pricing model with appropriate confidence intervals. For final firm bid, run through the full bundler at proposal.greencommllc.com.
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-bottom" style="border-top: none; padding-top: 0;">
+      <div>© 2026 Green Communications Contracting LLC · Client Portal</div>
+      <div><a href="/" style="color: rgba(255,255,255,0.6);">← Back to public site</a></div>
+    </div>
+  </div>
+</footer>
+
+<script src="/assets/js/site.js"></script>
+<script src="/assets/js/client-estimator.js"></script>
+</body>
+</html>
