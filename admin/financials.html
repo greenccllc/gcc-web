@@ -12,30 +12,27 @@
 .dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 28px; }
 .kpi { background: white; border: 1px solid var(--hairline); border-radius: var(--r-md); padding: 18px; box-shadow: var(--shadow-xs); }
 .kpi .lbl { font-size: 11px; font-weight: 700; color: var(--slate-light); letter-spacing: 0.06em; text-transform: uppercase; }
-.kpi .val { font-size: 28px; font-weight: 800; color: var(--forest); margin-top: 4px; line-height: 1; font-family: var(--font-display); letter-spacing: -0.01em; }
-.kpi .delta { font-size: 12px; color: var(--slate); margin-top: 4px; }
+.kpi .val { font-size: 24px; font-weight: 800; color: var(--forest); margin-top: 4px; line-height: 1; font-family: var(--font-display); letter-spacing: -0.01em; }
 .tbl { width: 100%; border-collapse: collapse; background: white; border: 1px solid var(--hairline); border-radius: var(--r-md); overflow: hidden; font-size: 14px; }
 .tbl th { text-align: left; padding: 10px 12px; background: var(--paper); font-size: 11px; font-weight: 700; color: var(--slate); letter-spacing: 0.04em; text-transform: uppercase; border-bottom: 1px solid var(--hairline); }
 .tbl td { padding: 10px 12px; border-top: 1px solid var(--hairline); }
 .tbl tr:hover td { background: rgba(30,77,43,0.03); }
-.tbl .actions a, .tbl .actions button { font-size: 12px; padding: 4px 8px; margin-right: 4px; background: white; border: 1px solid var(--hairline-strong); border-radius: 5px; cursor: pointer; color: var(--forest); text-decoration: none; }
-.tbl .actions a:hover, .tbl .actions button:hover { background: var(--paper); border-color: var(--forest); }
 .empty-state { background: white; border: 1px dashed var(--hairline-strong); border-radius: var(--r-md); padding: 40px 20px; text-align: center; color: var(--slate); }
 .empty-state .es-icon { font-size: 48px; margin-bottom: 12px; }
 .coming-soon { display: inline-block; padding: 3px 10px; background: rgba(212,175,55,0.18); color: var(--gold-dark); border-radius: var(--r-pill); font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
 .status-pill { display: inline-block; padding: 2px 10px; border-radius: var(--r-pill); font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
-.status-new { background: rgba(212,175,55,0.18); color: var(--gold-dark); }
-.status-contacted { background: rgba(74,85,104,0.18); color: var(--slate); }
-.status-quoted { background: rgba(56,178,172,0.18); color: #2C7A7B; }
-.status-won { background: rgba(72,187,120,0.18); color: #276749; }
-.status-lost { background: rgba(245,101,101,0.18); color: #C53030; }
-.status-spam { background: rgba(160,174,192,0.18); color: var(--slate-light); }
-.status-active { background: rgba(72,187,120,0.18); color: #276749; }
-.status-locked { background: rgba(245,101,101,0.18); color: #C53030; }
-.filter-bar { display: flex; gap: 10px; margin-bottom: 16px; align-items: center; flex-wrap: wrap; }
-.filter-bar .filter-pill { padding: 6px 14px; border: 1px solid var(--hairline-strong); border-radius: var(--r-pill); font-size: 13px; font-weight: 600; cursor: pointer; background: white; color: var(--slate); }
-.filter-bar .filter-pill.active { background: var(--forest); color: white; border-color: var(--forest-dark); }
-.filter-bar .filter-pill:hover:not(.active) { background: var(--paper); }
+.status-paid { background: rgba(72,187,120,0.18); color: #276749; }
+.status-open { background: rgba(212,175,55,0.18); color: var(--gold-dark); }
+.status-draft { background: rgba(160,174,192,0.18); color: var(--slate-light); }
+.qb-card { background: white; border: 1px solid var(--hairline); border-radius: var(--r-md); padding: 20px; margin-bottom: 16px; }
+.qb-card h3 { margin: 0 0 8px; font-size: 15px; }
+.qb-card .row { display: flex; align-items: center; gap: 14px; }
+.qb-card .icon { font-size: 32px; }
+.qb-card .info { flex: 1; font-size: 14px; color: var(--slate); }
+.qb-card .info strong { color: var(--ink); }
+.conn-pill { display: inline-block; padding: 3px 10px; background: rgba(72,187,120,0.18); color: #276749; border-radius: var(--r-pill); font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+.disc-pill { background: rgba(160,174,192,0.18); color: var(--slate-light); }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
 </style>
 </head>
 <body>
@@ -45,7 +42,7 @@
 <section style="padding: 28px 0; background: var(--paper); border-bottom: 1px solid var(--hairline);">
   <div class="container">
     <h1 style="margin-bottom: 4px;">Financials</h1>
-    <p style="color: var(--slate); margin: 0;">P&L, AR aging, cash flow. Sourced from QuickBooks once connected.</p>
+    <p style="color: var(--slate); margin: 0;">P&L, AR aging, cash flow. Mirrored from QuickBooks.</p>
   </div>
 </section>
 
@@ -53,10 +50,11 @@
   <div class="container">
     <div id="page-loading" style="text-align:center; padding: 40px; color: var(--slate-light);">Loading...</div>
     <div id="page-content" hidden>
-<div id="qb-banner" style="background: white; border: 1px solid var(--hairline); border-radius: var(--r-md); padding: 20px; margin-bottom: 16px;">
-    Loading QB connection status...
-  </div>
-  <div class="empty-state"><div class="es-icon">📊</div><h3 style="color:var(--slate); margin-bottom:6px;">P&L · AR · Cash flow</h3><p style="margin:0;">Connect QuickBooks above to populate this dashboard.</p></div>
+<div id="qb-banner"></div>
+  <div id="qb-connections"></div>
+
+  <h3 style="margin: 24px 0 12px;">Invoices</h3>
+  <div id="invoices-table">Loading...</div>
     </div>
   </div>
 </section>
@@ -68,15 +66,71 @@
 gccPage.requireRole(["admin"]).then(async (me) => {
   document.getElementById('page-loading').hidden = true;
   document.getElementById('page-content').hidden = false;
-  try {
-    const r = await fetch(gccApi.base + '/api/qb/connect', {credentials:'include'}).then(r => r.json());
-    const banner = document.getElementById('qb-banner');
-    if (!r.configured) {
-      banner.innerHTML = '<div style="display:flex; align-items:center; gap:14px;"><div style="font-size:32px;">🔌</div><div style="flex:1;"><strong>QuickBooks not configured.</strong><br><span style="color:var(--slate); font-size:14px;">Set <code>Qb:ClientId</code> + <code>Qb:ClientSecret</code> in <code>appsettings.json</code> and redeploy.</span></div><span class="coming-soon">awaiting credentials</span></div>';
-    } else {
-      banner.innerHTML = '<div style="display:flex; align-items:center; gap:14px;"><div style="font-size:32px;">📚</div><div style="flex:1;"><strong>QuickBooks ready to connect.</strong><br><span style="color:var(--slate); font-size:14px;">Authorize the app in Intuit to sync invoices, P&L, and customer data.</span></div><a href="' + r.authorizeUrl + '" class="btn btn-primary">Connect QuickBooks →</a></div>';
-    }
-  } catch(e) { document.getElementById('qb-banner').innerHTML = '<div style="color:var(--danger);">QB status check failed.</div>'; }
+  async function refresh() {
+    // Status
+    try {
+      const st = await fetch(gccApi.base + '/api/qb/status', {credentials:'include'}).then(r => r.json());
+      const banner = document.getElementById('qb-banner');
+      const connDiv = document.getElementById('qb-connections');
+      if (!st.configured) {
+        banner.innerHTML = '<div class="qb-card"><div class="row"><div class="icon">🔌</div><div class="info"><strong>QuickBooks not configured.</strong><br>Set <code>Qb:ClientId</code> + <code>Qb:ClientSecret</code> in <code>C:\\inetpub\\gcc-api\\appsettings.json</code> and restart the API. See setup docs below.</div><span class="coming-soon">awaiting credentials</span></div></div>';
+        connDiv.innerHTML = '';
+      } else if (!st.connections || st.connections.length === 0) {
+        const conn = await fetch(gccApi.base + '/api/qb/connect', {credentials:'include'}).then(r => r.json());
+        banner.innerHTML = '<div class="qb-card"><div class="row"><div class="icon">📚</div><div class="info"><strong>Ready to connect QuickBooks (' + st.environment + ').</strong><br>Click below to authorize this server to read your QB data.</div><a href="' + conn.authorizeUrl + '" class="btn btn-primary btn-sm">Connect QuickBooks →</a></div></div>';
+        connDiv.innerHTML = '';
+      } else {
+        banner.innerHTML = '';
+        let html = '<h3 style="margin: 0 0 12px;">QB Connections (' + st.environment + ')</h3>';
+        html += '<table class="tbl"><thead><tr><th>Company</th><th>Realm ID</th><th>Status</th><th>Access expires</th><th>Refresh expires</th><th>Last sync</th><th></th></tr></thead><tbody>';
+        html += st.connections.map(c =>
+          '<tr>' +
+            '<td><strong>' + (c.companyName || '--') + '</strong></td>' +
+            '<td style="font-family: monospace; font-size: 12px;">' + c.realmId + '</td>' +
+            '<td><span class="conn-pill' + (c.status !== 'active' ? ' disc-pill' : '') + '">' + c.status + '</span></td>' +
+            '<td>' + gccPage.datetime(c.accessExpiresAt) + '</td>' +
+            '<td>' + gccPage.date(c.refreshExpiresAt) + '</td>' +
+            '<td>' + gccPage.datetime(c.updatedAt) + '</td>' +
+            '<td><button class="btn btn-sm sync-btn" data-realm="' + c.realmId + '">Sync invoices</button> <button class="btn btn-sm disc-btn" data-id="' + c.id + '" style="background: white; border: 1px solid var(--hairline-strong); color: var(--slate);">Disconnect</button></td>' +
+          '</tr>'
+        ).join('');
+        html += '</tbody></table>';
+        html += '<p style="margin-top: 8px; font-size: 12px; color: var(--slate-light);">Tokens stored encrypted via ASP.NET Data Protection. Refresh is automatic.</p>';
+        connDiv.innerHTML = html;
+
+        connDiv.querySelectorAll('.sync-btn').forEach(b => b.addEventListener('click', async () => {
+          b.disabled = true; b.textContent = 'Syncing...';
+          try {
+            const r = await fetch(gccApi.base + '/api/qb/sync/invoices', {method:'POST', credentials:'include'}).then(r => r.json());
+            b.textContent = '✓ Synced ' + (r.imported || 0);
+            setTimeout(() => { b.textContent = 'Sync invoices'; b.disabled = false; }, 2500);
+            loadInvoices();
+          } catch(e) { b.textContent = '✗ Failed'; setTimeout(() => { b.textContent = 'Sync invoices'; b.disabled = false; }, 2500); }
+        }));
+        connDiv.querySelectorAll('.disc-btn').forEach(b => b.addEventListener('click', async () => {
+          if (!confirm('Disconnect this QB company?')) return;
+          await fetch(gccApi.base + '/api/qb/disconnect/' + b.dataset.id, {method:'POST', credentials:'include'});
+          refresh();
+        }));
+      }
+    } catch(e) { console.error(e); }
+  }
+
+  async function loadInvoices() {
+    try {
+      const invs = await fetch(gccApi.base + '/api/admin/invoices', {credentials:'include'}).then(r => r.json());
+      const target = document.getElementById('invoices-table');
+      if (!invs.length) {
+        target.innerHTML = '<div class="empty-state"><div class="es-icon">🧾</div><div>No invoices yet. Connect QuickBooks and click "Sync invoices" to pull them in.</div></div>';
+      } else {
+        const rows = invs.map(i => '<tr><td>' + gccPage.date(i.invoiceDate) + '</td><td><strong>' + i.number + '</strong></td><td>' + (i.clientName || i.clientEmail || '--') + '</td><td>' + gccPage.money(i.total) + '</td><td>' + gccPage.money(i.balance) + '</td><td>' + (i.dueDate ? gccPage.date(i.dueDate) : '--') + '</td><td><span class="status-pill status-' + i.status + '">' + i.status + '</span></td></tr>').join('');
+        target.innerHTML = '<table class="tbl"><thead><tr><th>Date</th><th>#</th><th>Client</th><th>Total</th><th>Balance</th><th>Due</th><th>Status</th></tr></thead><tbody>' + rows + '</tbody></table>';
+      }
+    } catch(e) { document.getElementById('invoices-table').innerHTML = '<div class="empty-state">Failed to load.</div>'; }
+  }
+
+  await refresh();
+  await loadInvoices();
 }).catch(() => { /* redirected */ });
 </script>
 </body>
