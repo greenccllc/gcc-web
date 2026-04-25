@@ -213,6 +213,14 @@
 <script src="/assets/js/site.js"></script>
 <script src="/assets/js/api.js"></script>
 <script src="/assets/js/header.js"></script>
+<script src="/assets/js/page.js"></script>
+<script>
+// Auth gate — redirect anonymous users to sign in before showing the estimator.
+gccPage.requireRole(["client","staff","admin"]).then((me) => {
+  const idEl = document.getElementById('client-id');
+  if (idEl) idEl.textContent = me.email || me.name || 'signed in';
+}).catch(() => { /* requireRole handles the redirect */ });
+</script>
 <script src="/assets/js/estimator-save.js"></script>
 <script src="/assets/js/client-estimator.js"></script>
 </body>
