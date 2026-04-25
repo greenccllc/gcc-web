@@ -186,4 +186,37 @@
   });
 
   render();
+
+  // ─ Save/Load integration ─────────────────────────────────
+  if (window.gccEstimator) {
+    gccEstimator.attach({
+      source: 'client-commercial',
+      clientType: 'commercial',
+      getPayload: function () {
+        var d = getInputs();
+        var r = compute(d);
+        return {
+          form: d,
+          lines: r.lines,
+          min: r.minTotal,
+          mid: r.midTotal,
+          max: r.maxTotal,
+          projectName: null
+        };
+      },
+      applyPayload: function (payload) {
+        if (!payload || !payload.form) return;
+        var d = payload.form;
+        CATS.forEach(function (c) {
+          if (d[c] != null) form.querySelector('#' + c).value = d[c];
+        });
+        ['pw','testing','asBuilts','afterHours','metro','union','bond','liftReq'].forEach(function (k) {
+          if (d[k] != null) form.querySelector('#' + k).checked = !!d[k];
+        });
+        var r = form.querySelector('input[name="projectType"][value="' + (d.projectType || 'commercial') + '"]');
+        if (r) { r.checked = true; r.dispatchEvent(new Event('change', { bubbles: true })); }
+        render();
+      }
+    });
+  }
 })();

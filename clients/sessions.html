@@ -9,36 +9,41 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%231E4D2B'/%3E%3Ctext x='50' y='65' font-family='Helvetica' font-size='42' font-weight='800' fill='white' text-anchor='middle'%3EGC%3C/text%3E%3Ccircle cx='86' cy='14' r='8' fill='%23D4AF37'/%3E%3C/svg%3E" type="image/svg+xml" />
 <link rel="stylesheet" href="/assets/css/site.css" />
 <style>
-.dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 32px; }
-.kpi { background: white; border: 1px solid var(--hairline); border-radius: var(--r-md); padding: 20px; box-shadow: var(--shadow-xs); }
-.kpi .lbl { font-size: 12px; font-weight: 700; color: var(--slate-light); letter-spacing: 0.06em; text-transform: uppercase; }
-.kpi .val { font-size: 28px; font-weight: 800; color: var(--forest); margin-top: 6px; line-height: 1; font-family: var(--font-display); letter-spacing: -0.01em; }
-.kpi .delta { font-size: 12px; color: var(--slate); margin-top: 4px; }
-.tbl { width: 100%; border-collapse: collapse; background: white; border: 1px solid var(--hairline); border-radius: var(--r-md); overflow: hidden; }
-.tbl th { text-align: left; padding: 12px 14px; background: var(--paper); font-size: 12px; font-weight: 700; color: var(--slate); letter-spacing: 0.04em; text-transform: uppercase; border-bottom: 1px solid var(--hairline); }
-.tbl td { padding: 12px 14px; border-top: 1px solid var(--hairline); font-size: 14px; }
+.dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 28px; }
+.kpi { background: white; border: 1px solid var(--hairline); border-radius: var(--r-md); padding: 18px; box-shadow: var(--shadow-xs); }
+.kpi .lbl { font-size: 11px; font-weight: 700; color: var(--slate-light); letter-spacing: 0.06em; text-transform: uppercase; }
+.kpi .val { font-size: 28px; font-weight: 800; color: var(--forest); margin-top: 4px; line-height: 1; font-family: var(--font-display); letter-spacing: -0.01em; }
+.tbl { width: 100%; border-collapse: collapse; background: white; border: 1px solid var(--hairline); border-radius: var(--r-md); overflow: hidden; font-size: 14px; }
+.tbl th { text-align: left; padding: 10px 12px; background: var(--paper); font-size: 11px; font-weight: 700; color: var(--slate); letter-spacing: 0.04em; text-transform: uppercase; border-bottom: 1px solid var(--hairline); }
+.tbl td { padding: 10px 12px; border-top: 1px solid var(--hairline); }
 .tbl tr:hover td { background: rgba(30,77,43,0.03); }
+.tbl .actions a, .tbl .actions button { font-size: 12px; padding: 4px 8px; margin-right: 4px; background: white; border: 1px solid var(--hairline-strong); border-radius: 5px; cursor: pointer; color: var(--forest); text-decoration: none; }
+.tbl .actions a:hover, .tbl .actions button:hover { background: var(--paper); border-color: var(--forest); }
 .empty-state { background: white; border: 1px dashed var(--hairline-strong); border-radius: var(--r-md); padding: 40px 20px; text-align: center; color: var(--slate); }
 .empty-state .es-icon { font-size: 48px; margin-bottom: 12px; }
 .coming-soon { display: inline-block; padding: 3px 10px; background: rgba(212,175,55,0.18); color: var(--gold-dark); border-radius: var(--r-pill); font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
-.field { margin-bottom: 12px; }
-.field label { display: block; font-size: 13px; font-weight: 600; color: var(--slate); margin-bottom: 4px; }
-.field input { width: 100%; padding: 10px 12px; border: 1px solid var(--hairline-strong); border-radius: var(--r-sm); font-size: 15px; font-family: inherit; background: var(--paper); }
-.field input:focus { outline: none; border-color: var(--forest); background: white; box-shadow: 0 0 0 3px rgba(30,77,43,0.15); }
+.status-pill { display: inline-block; padding: 2px 10px; border-radius: var(--r-pill); font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+.status-active { background: rgba(72,187,120,0.18); color: #276749; }
+.status-locked { background: rgba(245,101,101,0.18); color: #C53030; }
+.status-deleted { background: rgba(160,174,192,0.18); color: var(--slate-light); }
+.status-client { background: rgba(74,85,104,0.18); color: var(--slate); }
+.status-staff { background: rgba(56,178,172,0.18); color: #2C7A7B; }
+.status-admin { background: rgba(212,175,55,0.22); color: var(--gold-dark); }
+.inline-select { padding: 4px 8px; border: 1px solid var(--hairline-strong); border-radius: 5px; font-size: 12px; background: white; font-family: inherit; }
 </style>
 </head>
 <body>
 
 <div id="gcc-header"></div>
 
-<section style="padding: 32px 0; background: var(--paper);">
+<section style="padding: 28px 0; background: var(--paper); border-bottom: 1px solid var(--hairline);">
   <div class="container">
     <h1 style="margin-bottom: 4px;">Prior estimator sessions</h1>
-    <p style="color: var(--slate); margin: 0;">Every estimate you have saved. Click to reopen.</p>
+    <p style="color: var(--slate); margin: 0;">Every estimate you have saved. Click "Open" to resume — the estimator will load with your values.</p>
   </div>
 </section>
 
-<section style="padding: 32px 0;">
+<section style="padding: 28px 0;">
   <div class="container">
     <div id="page-loading" style="text-align:center; padding: 40px; color: var(--slate-light);">Loading...</div>
     <div id="page-content" hidden>
@@ -54,14 +59,27 @@
 gccPage.requireRole(["client","staff","admin"]).then(async (me) => {
   document.getElementById('page-loading').hidden = true;
   document.getElementById('page-content').hidden = false;
+  function estimatorUrl(source, clientType) {
+    if (source === 'public-commercial')     return '/estimator.html';
+    if (source === 'public-residential')    return '/estimator-residential.html';
+    if (source === 'client-commercial')     return '/clients/estimator.html';
+    if (source === 'client-residential')    return '/clients/estimator-residential.html';
+    // fallback by clientType
+    return clientType === 'residential' ? '/clients/estimator-residential.html' : '/clients/estimator.html';
+  }
   try {
     const ests = await gccApi.listMyEstimates();
     if (!ests.length) {
-      document.getElementById('sessions-list').innerHTML = '<div class="empty-state"><div class="es-icon">📋</div><div>No saved estimates yet.</div></div>';
+      document.getElementById('sessions-list').innerHTML = '<div class="empty-state"><div class="es-icon">📋</div><div>No saved estimates yet. <a href="' + (me.clientType === 'residential' ? '/clients/estimator-residential.html' : '/clients/estimator.html') + '">Start one →</a></div></div>';
       return;
     }
-    const rows = ests.map(e => '<tr><td>' + gccPage.datetime(e.createdAt) + '</td><td>' + e.source + '</td><td>' + (e.projectName || '--') + '</td><td>' + gccPage.money(e.estimateMin) + ' -- ' + gccPage.money(e.estimateMax) + '</td><td>' + e.lineItemCount + '</td><td>' + e.status + '</td></tr>').join('');
-    document.getElementById('sessions-list').innerHTML = '<table class="tbl"><thead><tr><th>Date</th><th>Type</th><th>Project</th><th>Range</th><th>Lines</th><th>Status</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    const rows = ests.map(e => '<tr><td>' + gccPage.datetime(e.createdAt) + '</td><td>' + e.source + '</td><td>' + (e.projectName || '--') + '</td><td>' + gccPage.money(e.estimateMin) + ' - ' + gccPage.money(e.estimateMax) + '</td><td>' + e.lineItemCount + '</td><td>' + e.status + '</td><td class="actions"><a href="' + estimatorUrl(e.source, e.clientType) + '?load=' + e.id + '">Open →</a><button class="del-btn" data-id="' + e.id + '">Delete</button></td></tr>').join('');
+    document.getElementById('sessions-list').innerHTML = '<table class="tbl"><thead><tr><th>Date</th><th>Type</th><th>Project</th><th>Range</th><th>Lines</th><th>Status</th><th></th></tr></thead><tbody>' + rows + '</tbody></table>';
+    document.querySelectorAll('.del-btn').forEach(b => b.addEventListener('click', async () => {
+      if (!confirm('Delete estimate ' + b.dataset.id + '?')) return;
+      await gccApi.deleteEstimate(b.dataset.id);
+      location.reload();
+    }));
   } catch(e) { document.getElementById('sessions-list').innerHTML = '<div class="empty-state">Failed to load.</div>'; }
 }).catch(() => { /* redirected */ });
 </script>

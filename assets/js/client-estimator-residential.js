@@ -200,4 +200,40 @@
   });
 
   render();
+
+  // ─ Save/Load integration ─────────────────────────────────
+  if (window.gccEstimator) {
+    gccEstimator.attach({
+      source: 'client-residential',
+      clientType: 'residential',
+      getPayload: function () {
+        var d = getInputs();
+        var r = compute(d);
+        return {
+          form: d,
+          lines: r.lines,
+          min: r.minTotal,
+          mid: r.midTotal,
+          max: r.maxTotal,
+          projectName: null
+        };
+      },
+      applyPayload: function (payload) {
+        if (!payload || !payload.form) return;
+        var d = payload.form;
+        ITEM_KEYS.forEach(function (k) {
+          if (d[k] != null) form.querySelector('#' + k).value = d[k];
+        });
+        ['metro','rush','permit','oldHome','finished','hoa'].forEach(function (k) {
+          if (d[k] != null) form.querySelector('#' + k).checked = !!d[k];
+        });
+        ['bath','kitchen','basement'].forEach(function (k) {
+          if (!d[k]) return;
+          var r = form.querySelector('input[name="' + k + '"][value="' + d[k] + '"]');
+          if (r) r.checked = true;
+        });
+        render();
+      }
+    });
+  }
 })();

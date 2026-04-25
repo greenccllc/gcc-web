@@ -192,4 +192,40 @@
   }
 
   render();
+
+  // ─ Save/Load integration ─────────────────────────────────
+  if (window.gccEstimator) {
+    gccEstimator.attach({
+      source: 'public-residential',
+      clientType: 'residential',
+      getPayload: function () {
+        var d = getInputs();
+        var r = compute(d);
+        return {
+          form: d,
+          lines: r.lines,
+          min: r.minTotal,
+          mid: r.midTotal,
+          max: r.maxTotal,
+          projectName: null
+        };
+      },
+      applyPayload: function (payload) {
+        if (!payload || !payload.form) return;
+        var d = payload.form;
+        ['drops','aps','camIn','camOut','doorbell','smartSwitches','smartLocks','tvMount','miniSplit','ceilingFan','outlet','fence','deck'].forEach(function (k) {
+          if (d[k] != null) form.querySelector('#' + k).value = d[k];
+        });
+        ['metro','rush','permit'].forEach(function (k) {
+          if (d[k] != null) form.querySelector('#' + k).checked = !!d[k];
+        });
+        ['bath','kitchen'].forEach(function (k) {
+          if (!d[k]) return;
+          var r = form.querySelector('input[name="' + k + '"][value="' + d[k] + '"]');
+          if (r) r.checked = true;
+        });
+        render();
+      }
+    });
+  }
 })();

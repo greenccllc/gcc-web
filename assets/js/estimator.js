@@ -184,4 +184,37 @@
   }
 
   render();
+
+  // ─ Save/Load integration ─────────────────────────────────
+  if (window.gccEstimator) {
+    gccEstimator.attach({
+      source: 'public-commercial',
+      clientType: 'commercial',
+      getPayload: function () {
+        var d = getInputs();
+        var r = computeTotals(d);
+        return {
+          form: d,
+          lines: r.lines,
+          min: r.minTotal,
+          mid: r.midTotal,
+          max: r.maxTotal,
+          projectName: null
+        };
+      },
+      applyPayload: function (payload) {
+        if (!payload || !payload.form) return;
+        var d = payload.form;
+        ['drops','cameras','doors','speakers','fiberRuns','serverRooms'].forEach(function (k) {
+          if (d[k] != null) form.querySelector('#' + k).value = d[k];
+        });
+        ['pw','testing','asBuilts','afterHours','metro'].forEach(function (k) {
+          if (d[k] != null) form.querySelector('#' + k).checked = !!d[k];
+        });
+        var r = form.querySelector('input[name="projectType"][value="' + (d.projectType || 'commercial') + '"]');
+        if (r) { r.checked = true; r.dispatchEvent(new Event('change', { bubbles: true })); }
+        render();
+      }
+    });
+  }
 })();
