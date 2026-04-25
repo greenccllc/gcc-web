@@ -68,6 +68,11 @@ try {
     if ($exitCode -eq 0) {
         Set-Content -Path $MarkerFile -Value ((Get-Date).ToString())
         Log "Marker written: cert issued"
+
+        # Chain into go-live-https to bind Kestrel on 443
+        Log "Running go-live-https.ps1..."
+        & powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:\Users\nmorr\.unifi\go-live-https.ps1" 2>&1 | ForEach-Object { Log $_ }
+        Log "go-live-https completed"
     }
 } catch {
     Log "win-acme error: $_"
