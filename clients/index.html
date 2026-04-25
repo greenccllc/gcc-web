@@ -11,15 +11,15 @@
 </head>
 <body class="login-page">
 
-<div class="login-card">
+<div class="login-card" style="max-width: 480px;">
   <a href="/" class="brand-mark">
     <span class="monogram">GC</span>
-    <span class="brand-stack"><span class="brand-name">GCC LLC</span><span class="brand-tag">Div 27 / 28 Contractor</span></span>
+    <span class="brand-stack"><span class="brand-name">GCC LLC</span><span class="brand-tag">Client Portal</span></span>
   </a>
   <h1>Client Portal</h1>
-  <p class="lead">Sign in to view your active projects, invoices, and closeout packages.</p>
+  <p class="lead">Your projects, invoices, closeout packages, and the full 20-category estimator.</p>
 
-  <form method="POST" action="/clients/login">
+  <form method="POST" action="/clients/login" id="login-form">
     <div class="field">
       <label for="email">Email</label>
       <input type="email" id="email" name="email" autocomplete="username" required />
@@ -31,11 +31,32 @@
     <button type="submit" class="btn btn-primary">Sign In →</button>
   </form>
 
+  <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--hairline);">
+    <p style="margin: 0 0 12px; font-size: 14px; color: var(--slate); font-weight: 600;">
+      Already a client? Quick links:
+    </p>
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <a href="/clients/estimator.html" class="btn btn-ghost" style="width: 100%; justify-content: center;">📊 Full Project Estimator (20 categories)</a>
+    </div>
+  </div>
+
   <div class="login-foot">
     <p style="margin: 0 0 8px;">Don't have an account yet? Once your project is awarded we'll send credentials to the email on your contract.</p>
-    <p style="margin: 0;"><a href="/contact.html">Contact us</a> · <a href="/">← Back to site</a></p>
+    <p style="margin: 0;"><a href="/contact.html">Request access</a> · <a href="/">← Back to public site</a></p>
   </div>
 </div>
+
+<script>
+// Demo: just store a placeholder client ID and forward.
+// Replace with real auth handler on the IIS side later.
+document.getElementById('login-form').addEventListener('submit', function (e) {
+  e.preventDefault();
+  const email = document.getElementById('email').value.trim();
+  if (!email) return;
+  localStorage.setItem('gcc-client-id', email);
+  window.location.href = '/clients/estimator.html';
+});
+</script>
 
 </body>
 </html>
