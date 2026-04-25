@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Residential Client Estimator — Full breakdown · GCC LLC</title>
+<meta name="theme-color" content="#1E4D2B" />
+<meta name="robots" content="noindex" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%231E4D2B'/%3E%3Ctext x='50' y='65' font-family='Helvetica' font-size='42' font-weight='800' fill='white' text-anchor='middle'%3EGC%3C/text%3E%3Ccircle cx='86' cy='14' r='8' fill='%23D4AF37'/%3E%3C/svg%3E" type="image/svg+xml" />
+<link rel="stylesheet" href="/assets/css/site.css" />
+<style>
+.cest-wrap { display: grid; grid-template-columns: 1.5fr 1fr; gap: 32px; align-items: start; }
+@media (max-width: 1100px) { .cest-wrap { grid-template-columns: 1fr; } }
+.cest-form { background: white; border: 1px solid var(--hairline); border-radius: var(--r-lg); padding: 28px; box-shadow: var(--shadow-sm); }
+.cest-section { margin-bottom: 28px; }
+.cest-section h3 { font-size: 13px; font-weight: 800; color: var(--forest); letter-spacing: 0.10em; text-transform: uppercase; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--hairline); }
+.cat-grid20 { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; }
+.cat-pill { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--paper); border: 1px solid var(--hairline); border-radius: var(--r-md); transition: all .12s var(--ease); }
+.cat-pill.has-value { border-color: var(--forest); background: white; box-shadow: 0 0 0 2px rgba(30,77,43,0.10); }
+.cat-pill .cp-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(30,77,43,0.10); color: var(--forest); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+.cat-pill .cp-name { font-size: 12px; font-weight: 700; color: var(--ink); letter-spacing: 0.04em; text-transform: uppercase; flex: 1; }
+.cat-pill .cp-num { width: 56px; padding: 5px 8px; border: 1px solid var(--hairline-strong); border-radius: 6px; background: white; font-size: 14px; font-weight: 700; text-align: center; font-family: inherit; }
+.cat-pill .cp-num:focus { outline: none; border-color: var(--forest); box-shadow: 0 0 0 2px rgba(30,77,43,0.18); }
+
+.cest-conditions { padding: 16px; background: var(--paper); border-radius: var(--r-md); border: 1px solid var(--hairline); }
+.cest-conditions .cond-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
+@media (max-width: 600px) { .cest-conditions .cond-grid { grid-template-columns: 1fr; } }
+.cest-conditions .chk-item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.cest-conditions input[type="checkbox"] { accent-color: var(--forest); width: 16px; height: 16px; }
+
+.tier-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.tier-pill { padding: 6px 12px; border: 1.5px solid var(--hairline-strong); border-radius: var(--r-pill); cursor: pointer; font-size: 12px; font-weight: 600; background: white; }
+.tier-pill input { display: none; }
+.tier-pill:has(input:checked) { background: var(--forest); color: white; border-color: var(--forest-dark); }
+.tier-row-detail { padding: 14px 16px; background: var(--paper); border: 1px solid var(--hairline); border-radius: var(--r-md); }
+.tier-row-detail .tier-label { font-weight: 700; font-size: 13px; color: var(--ink); margin-bottom: 6px; display: block; letter-spacing: 0.04em; text-transform: uppercase; }
+
+.cest-result { position: sticky; top: 92px; background: linear-gradient(135deg, var(--forest) 0%, var(--forest-dark) 100%); color: white; border-radius: var(--r-lg); padding: 28px 26px; box-shadow: var(--shadow-lg); }
+.cest-result h3 { color: white; font-size: 13px; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase; margin-bottom: 6px; opacity: 0.82; }
+.cest-range { font-size: clamp(26px, 2.5vw + 14px, 38px); font-weight: 800; line-height: 1.1; margin-bottom: 4px; font-family: var(--font-display); letter-spacing: -0.02em; }
+.cest-mid { color: rgba(255,255,255,0.78); font-size: 14px; margin-bottom: 18px; }
+.cest-summary { background: rgba(0,0,0,0.20); border-radius: var(--r-md); padding: 14px 16px; font-size: 13px; max-height: 360px; overflow-y: auto; }
+.cest-summary h4 { font-size: 10px; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase; color: var(--gold); margin: 0 0 8px; }
+.cest-summary .sl { display: flex; justify-content: space-between; padding: 2px 0; color: rgba(255,255,255,0.85); }
+.cest-summary .sl .lbl { color: rgba(255,255,255,0.7); }
+.cest-summary .sl.tot { border-top: 1px solid rgba(255,255,255,0.20); margin-top: 6px; padding-top: 8px; font-weight: 700; color: white; }
+.cest-actions { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+.cest-actions .btn { width: 100%; justify-content: center; }
+.cest-actions .btn-primary { background: var(--gold); color: var(--ink); }
+.cest-actions .btn-primary:hover { background: var(--gold-dark); color: white; }
+.cest-actions .btn-ghost { background: rgba(255,255,255,0.10); color: white; border: 1px solid rgba(255,255,255,0.30); }
+.cest-actions .btn-ghost:hover { background: rgba(255,255,255,0.20); border-color: white; }
+.cest-disclaimer { font-size: 11px; color: rgba(255,255,255,0.65); margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.12); line-height: 1.5; }
+.client-banner { background: linear-gradient(135deg, var(--ink) 0%, #2D3748 100%); color: rgba(255,255,255,0.85); padding: 12px 0; font-size: 13px; }
+.client-banner .container { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+.client-banner strong { color: var(--gold); }
+.client-banner a { color: white; text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a href="/" class="brand-mark"><span class="monogram">GC</span><span class="brand-stack"><span class="brand-name">GCC LLC</span><span class="brand-tag">Client Portal · Residential</span></span></a>
+    <button class="menu-toggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
+    <nav class="site-nav" aria-label="Primary"><ul>
+      <li><a href="/">Public site</a></li>
+      <li><a href="/clients/">Client home</a></li>
+      <li><a href="/clients/estimator-residential.html" class="active">Residential</a></li>
+      <li><a href="/clients/estimator.html">Commercial</a></li>
+      <li><a href="/contact.html">Support</a></li>
+    </ul></nav>
+  </div>
+</header>
+
+<div class="client-banner">
+  <div class="container">
+    <span><strong>Residential Client Portal</strong> — Full estimator with all home services in one place</span>
+    <span style="margin-left:auto;">Logged in as <strong id="client-id">guest</strong> · <a href="#" id="logout">Sign out</a></span>
+  </div>
+</div>
+
+<section style="padding: 32px 0;">
+  <div class="container">
+    <h1 style="margin-bottom: 4px;">Residential Project Estimator</h1>
+    <p style="color: var(--slate); margin-bottom: 32px;">Whole-home wiring, smart home, security, AV, renovations, outdoor, HVAC, electrical — all categories in one place. Save sessions, export, and hand off to your project manager.</p>
+
+    <div class="cest-wrap">
+      <form class="cest-form" id="cest-form" autocomplete="off">
+
+        <!-- Networking & Wi-Fi -->
+        <div class="cest-section">
+          <h3>📶 Networking &amp; Wi-Fi</h3>
+          <div class="cat-grid20">
+            <label class="cat-pill"><span class="cp-icon">🔌</span><span class="cp-name">Cat6 Drops</span><input type="number" id="drops" class="cp-num" value="0" min="0" /></label>
+            <label class="cat-pill"><span class="cp-icon">📡</span><span class="cp-name">Wi-Fi APs</span><input type="number" id="aps" class="cp-num" value="0" min="0" /></label>
+            <label class="cat-pill"><span class="cp-icon">🌐</span><span class="cp-name">Fiber to House</span><input type="number" id="fiber" class="cp-num" value="0" min="0" /></label>
+            <label class="cat-pill"><span class="cp-icon">🔀</span><span class="cp-name">Switch (PoE)</span><input type="number" id="switchq" class="cp-num" value="0" min="0" /></label>
+            <label class="cat-pill"><span class="cp-icon">🔋</span><span class="cp-name">UPS</span><input type="number" id="ups" class="cp-num" value="0" min="0" /></label>
+            <label class="cat-pill"><span class="cp-icon">🗄️</span><span class="cp-name">Wiring Closet</span><input type="number" id="rack" class="cp-num" value="0" min="0" /></label>
+          </div>
+        </div>
+
+        <!-- Security -->
+        <div class="cest-section">
+          <h3>🛡️ Security</h3>
+          <div class="cat-grid20">
+            <label class="cat-pill"><span class="cp-icon">📷</span><span class="cp-name">Camera Int</span><input type="number" id="camIn" class="cp-num" value="0" min="0" /></label>
+            <label class="cat-pill"><span class="cp-icon">📸</span><span class="cp-name">Camera Ext</span><input type="number" id="camOut" class="cp-num" value="0" min="0" /></label>
+            <label class="cat-pill"><span class="cp-icon">🔔</span><span class="cp-name">Doorbell</span><input type="number" id="doorbell" class="cp-num" value="0" min="0" /></label>
+            <label class="cat-pill"><span class="cp-icon">🔐</span><span class="cp-name">Smart Lock</span><input type="number" id="smartLocks" class="cp-num" value="0" min="0" /></label>
+            <label class="cat-pill"><span class="cp-icon">🚨</span><span class="cp-name">Alarm</span><input type="number" id="alarm" class="cp-num" value="0" min="0" /></label>
+            <label class="cat-pill"><span class="cp-icon">🪟</span><span class="cp-name">Sensor</span><input type="number" id="sensor" class="cp-num" value="0" min="0" /></label>
+          </div>
+        </div>
+
+        <!-- Smart Home & AV -->
+        <div class="cest-section">
+          <h3>🤖 Smart Home &amp; AV</h3>
+          <div class="cat-grid20">
+            <label class="cat-pill"><span class="cp-icon">💡</span><span class="cp-name">Switch/Dim</span><input type="number" id="smartSwitches" class="cp-num" value="0" min="0" /></label>
+            <label class="cat-pill"><span class="cp-icon">🪄</span><span class="cp-name">Smart Plug</span><input type="number" id="smartPlug" class="cp-num" value="0" min="0" /></label>
+            <label class="cat-pill"><span class="cp-icon">📺</span><span class="cp-name">TV Mount</span><input type="number" id="tvMount" class="cp-num" value="0" min="0" /></label>
+            <label class="cat-pill"><span class="cp-icon">🔊</span><span class="cp-name">In-wall Speaker</span><input type="number" id="speaker" class="cp-num" value="0" min="0" /></label>
+            <label class="cat-pill"><span class="cp-icon">🎬</span><span class="cp-name">HDMI Drop</span><input type="number" id="hdmi" class="cp-num" value="0" min="0" /></label>
+            <label class="cat-pill"><span class="cp-icon">🌡️</span><span class="cp-name">Smart Thermo</span><input type="number" id="thermo" class="cp-num" value="0" min="0" /></label>
+          </div>
+        </div>
+
+        <!-- HVAC & Electrical -->
+        <div class="cest-section">
+          <h3>⚡ HVAC &amp; Electrical</h3>
+          <div class="cat-grid20">
+            <label class="cat-pill"><span class="cp-icon">❄️</span><span class="cp-name">Mini-Split</span><input type="number" id="miniSplit" class="cp-num" value="0" min="0" /></label>
+            <label class="cat-pill"><span class="cp-icon">🔥</span><span class="cp-name">Furnace</span><input type="number" id="furnace" class="cp-num" value="0" min="0" /></label>
+            <label class="cat-pill"><span class="cp-icon">🪭</span><span class="cp-name">Ceiling Fan</span><input type="number" id="ceilingFan" class="cp-num" value="0" min="0" /></label>
+            <label class="cat-pill"><span class="cp-icon">💡</span><span class="cp-name">Fixture</span><input type="number" id="fixture" class="cp-num" value="0" min="0" /></label>
+            <label class="cat-pill"><span class="cp-icon">🔌</span><span class="cp-name">Outlet</span><input type="number" id="outlet" class="cp-num" value="0" min="0" /></label>
+            <label class="cat-pill"><span class="cp-icon">⚡</span><span class="cp-name">Panel Upgrade</span><input type="number" id="panel" class="cp-num" value="0" min="0" /></label>
+          </div>
+        </div>
+
+        <!-- Renovations -->
+        <div class="cest-section">
+          <h3>🔨 Renovations</h3>
+          <div class="cat-grid20" style="grid-template-columns: 1fr 1fr;">
+            <div class="tier-row-detail">
+              <span class="tier-label">🚿 Bathroom</span>
+              <div class="tier-pills">
+                <label class="tier-pill"><input type="radio" name="bath" value="0" checked />None</label>
+                <label class="tier-pill"><input type="radio" name="bath" value="small" />Small</label>
+                <label class="tier-pill"><input type="radio" name="bath" value="medium" />Med</label>
+                <label class="tier-pill"><input type="radio" name="bath" value="large" />Large</label>
+              </div>
+            </div>
+            <div class="tier-row-detail">
+              <span class="tier-label">🍳 Kitchen</span>
+              <div class="tier-pills">
+                <label class="tier-pill"><input type="radio" name="kitchen" value="0" checked />None</label>
+                <label class="tier-pill"><input type="radio" name="kitchen" value="small" />Cosmetic</label>
+                <label class="tier-pill"><input type="radio" name="kitchen" value="medium" />Update</label>
+                <label class="tier-pill"><input type="radio" name="kitchen" value="large" />Gut</label>
+              </div>
+            </div>
+            <div class="tier-row-detail">
+              <span class="tier-label">🛏️ Basement Finish</span>
+              <div class="tier-pills">
+                <label class="tier-pill"><input type="radio" name="basement" value="0" checked />None</label>
+                <label class="tier-pill"><input type="radio" name="basement" value="small" />Partial</label>
+                <label class="tier-pill"><input type="radio" name="basement" value="medium" />Full</label>
+              </div>
+            </div>
+            <div class="tier-row-detail">
+              <span class="tier-label">🏠 Addition (sq ft)</span>
+              <input type="number" id="addition" class="cp-num" value="0" min="0" max="2000" style="width: 80px;" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Outdoor -->
+        <div class="cest-section">
+          <h3>🌳 Outdoor</h3>
+          <div class="cat-grid20" style="grid-template-columns: 1fr 1fr;">
+            <div class="tier-row-detail">
+              <span class="tier-label">🪵 Fence (LF)</span>
+              <input type="number" id="fence" class="cp-num" value="0" min="0" max="2000" style="width: 80px;" />
+            </div>
+            <div class="tier-row-detail">
+              <span class="tier-label">🪜 Deck (sq ft)</span>
+              <input type="number" id="deck" class="cp-num" value="0" min="0" max="2000" style="width: 80px;" />
+            </div>
+            <div class="tier-row-detail">
+              <span class="tier-label">🌿 Patio (sq ft)</span>
+              <input type="number" id="patio" class="cp-num" value="0" min="0" max="2000" style="width: 80px;" />
+            </div>
+            <div class="tier-row-detail">
+              <span class="tier-label">🚪 Gate</span>
+              <input type="number" id="gate" class="cp-num" value="0" min="0" max="20" style="width: 80px;" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Conditions -->
+        <div class="cest-section">
+          <h3>🏘️ Conditions</h3>
+          <div class="cest-conditions">
+            <div class="cond-grid">
+              <label class="chk-item"><input type="checkbox" id="metro" /><span>Outside KCMO/STL</span></label>
+              <label class="chk-item"><input type="checkbox" id="rush" /><span>Rush (&lt;2 wks)</span></label>
+              <label class="chk-item"><input type="checkbox" id="permit" checked /><span>Pull permits</span></label>
+              <label class="chk-item"><input type="checkbox" id="oldHome" /><span>Pre-1980 home</span></label>
+              <label class="chk-item"><input type="checkbox" id="finished" /><span>Finished basement (no easy access)</span></label>
+              <label class="chk-item"><input type="checkbox" id="hoa" /><span>HOA approval needed</span></label>
+            </div>
+          </div>
+        </div>
+
+      </form>
+
+      <aside class="cest-result" id="cest-result">
+        <h3>Project estimate</h3>
+        <div class="cest-range" id="cest-range">$0</div>
+        <div class="cest-mid" id="cest-mid">Add quantities to begin</div>
+
+        <div class="cest-summary" id="cest-summary">
+          <h4>Line items</h4>
+          <div id="cest-lines"></div>
+        </div>
+
+        <div class="cest-actions">
+          <button type="button" class="btn btn-primary" id="cest-export">Export PDF →</button>
+          <button type="button" class="btn btn-ghost" id="cest-save">Save session</button>
+          <button type="button" class="btn btn-ghost" id="cest-handoff">Hand off to PM</button>
+        </div>
+
+        <div class="cest-disclaimer">
+          <strong>Internal pricing.</strong> Reflects GCC's 2026 residential model. Final firm bid issued after a site walk — older homes, finished basements, and HOA review can shift numbers ±20%.
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-bottom" style="border-top: none; padding-top: 0;">
+      <div>© 2026 Green Communications Contracting LLC · Residential Client Portal</div>
+      <div><a href="/" style="color: rgba(255,255,255,0.6);">← Back to public site</a></div>
+    </div>
+  </div>
+</footer>
+
+<script src="/assets/js/site.js"></script>
+<script src="/assets/js/client-estimator-residential.js"></script>
+</body>
+</html>

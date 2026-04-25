@@ -8,6 +8,56 @@
 <meta name="robots" content="noindex" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%231E4D2B'/%3E%3Ctext x='50' y='65' font-family='Helvetica' font-size='42' font-weight='800' fill='white' text-anchor='middle'%3EGC%3C/text%3E%3Ccircle cx='86' cy='14' r='8' fill='%23D4AF37'/%3E%3C/svg%3E" type="image/svg+xml" />
 <link rel="stylesheet" href="/assets/css/site.css" />
+<style>
+.client-type-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  margin-bottom: 20px;
+}
+@media (max-width: 480px) { .client-type-grid { grid-template-columns: 1fr; } }
+.client-type {
+  position: relative; cursor: pointer;
+  padding: 18px 14px;
+  border: 2px solid var(--hairline-strong);
+  border-radius: var(--r-md);
+  background: var(--paper);
+  text-align: center;
+  transition: all .15s var(--ease);
+}
+.client-type input { position: absolute; opacity: 0; pointer-events: none; }
+.client-type .ct-icon { font-size: 32px; margin-bottom: 6px; display: block; }
+.client-type .ct-label { font-size: 14px; font-weight: 800; color: var(--slate); letter-spacing: 0.04em; text-transform: uppercase; }
+.client-type .ct-hint { font-size: 12px; font-weight: 500; color: var(--slate-light); display: block; margin-top: 2px; text-transform: none; letter-spacing: 0; }
+.client-type:hover { border-color: var(--forest); background: white; }
+.client-type:has(input:checked) {
+  border-color: var(--forest); background: white;
+  box-shadow: 0 0 0 3px rgba(30,77,43,0.15);
+}
+.client-type:has(input:checked) .ct-label { color: var(--forest); }
+
+.tab-switch {
+  display: inline-flex; gap: 0;
+  background: var(--paper);
+  padding: 4px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--hairline);
+  margin-bottom: 24px;
+}
+.tab-switch button {
+  padding: 8px 18px;
+  border-radius: var(--r-pill);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--slate);
+  background: transparent; border: none;
+  cursor: pointer;
+  transition: all .12s var(--ease);
+  font-family: inherit;
+}
+.tab-switch button.active {
+  background: var(--forest); color: white;
+  box-shadow: var(--shadow-xs);
+}
+</style>
 </head>
 <body class="login-page">
 
@@ -16,45 +66,142 @@
     <span class="monogram">GC</span>
     <span class="brand-stack"><span class="brand-name">GCC LLC</span><span class="brand-tag">Client Portal</span></span>
   </a>
-  <h1>Client Portal</h1>
-  <p class="lead">Your projects, invoices, closeout packages, and the full 20-category estimator.</p>
 
-  <form method="POST" action="/clients/login" id="login-form">
-    <div class="field">
-      <label for="email">Email</label>
-      <input type="email" id="email" name="email" autocomplete="username" required />
-    </div>
-    <div class="field">
-      <label for="password">Password</label>
-      <input type="password" id="password" name="password" autocomplete="current-password" required />
-    </div>
-    <button type="submit" class="btn btn-primary">Sign In →</button>
-  </form>
+  <!-- Sign in / Sign up tabs -->
+  <div class="tab-switch" role="tablist" aria-label="Sign in or sign up">
+    <button type="button" class="active" id="tab-signin">Sign in</button>
+    <button type="button" id="tab-signup">New account</button>
+  </div>
 
-  <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--hairline);">
-    <p style="margin: 0 0 12px; font-size: 14px; color: var(--slate); font-weight: 600;">
-      Already a client? Quick links:
-    </p>
-    <div style="display: flex; flex-direction: column; gap: 8px;">
-      <a href="/clients/estimator.html" class="btn btn-ghost" style="width: 100%; justify-content: center;">📊 Full Project Estimator (20 categories)</a>
-    </div>
+  <!-- ─── Sign in ─── -->
+  <div id="panel-signin">
+    <h1>Welcome back</h1>
+    <p class="lead">Pick up where you left off — saved estimates, project files, and the full estimator.</p>
+
+    <form id="form-signin">
+      <div class="field">
+        <label for="signin-email">Email</label>
+        <input type="email" id="signin-email" name="email" autocomplete="username" required />
+      </div>
+      <div class="field">
+        <label for="signin-password">Password</label>
+        <input type="password" id="signin-password" name="password" autocomplete="current-password" required />
+      </div>
+      <button type="submit" class="btn btn-primary">Sign In →</button>
+    </form>
+  </div>
+
+  <!-- ─── Sign up ─── -->
+  <div id="panel-signup" hidden>
+    <h1>Create account</h1>
+    <p class="lead">Tell us what kind of project you're working on so we can show you the right estimator.</p>
+
+    <form id="form-signup">
+      <p style="font-size: 13px; font-weight: 700; color: var(--forest); letter-spacing: 0.06em; text-transform: uppercase; margin: 16px 0 10px;">What kind of work?</p>
+      <div class="client-type-grid">
+        <label class="client-type">
+          <input type="radio" name="clientType" value="residential" checked />
+          <span class="ct-icon">🏡</span>
+          <span class="ct-label">Residential</span>
+          <span class="ct-hint">My home / property</span>
+        </label>
+        <label class="client-type">
+          <input type="radio" name="clientType" value="commercial" />
+          <span class="ct-icon">🏢</span>
+          <span class="ct-label">Commercial</span>
+          <span class="ct-hint">Business / building</span>
+        </label>
+      </div>
+
+      <div class="field">
+        <label for="signup-name">Your name</label>
+        <input type="text" id="signup-name" name="name" autocomplete="name" required />
+      </div>
+      <div class="field">
+        <label for="signup-company">Company / property name <span style="color: var(--slate-light); font-weight: 400;">(optional)</span></label>
+        <input type="text" id="signup-company" name="company" autocomplete="organization" />
+      </div>
+      <div class="field">
+        <label for="signup-email">Email</label>
+        <input type="email" id="signup-email" name="email" autocomplete="email" required />
+      </div>
+      <div class="field">
+        <label for="signup-phone">Phone <span style="color: var(--slate-light); font-weight: 400;">(optional)</span></label>
+        <input type="tel" id="signup-phone" name="phone" autocomplete="tel" />
+      </div>
+      <button type="submit" class="btn btn-primary">Create Account →</button>
+
+      <p style="font-size: 12px; color: var(--slate-light); margin-top: 16px;">
+        We use your info to set up your portal and contact you about your project. We don't sell leads, run remarketing, or send marketing emails you didn't ask for.
+      </p>
+    </form>
   </div>
 
   <div class="login-foot">
-    <p style="margin: 0 0 8px;">Don't have an account yet? Once your project is awarded we'll send credentials to the email on your contract.</p>
-    <p style="margin: 0;"><a href="/contact.html">Request access</a> · <a href="/">← Back to public site</a></p>
+    <p style="margin: 0;"><a href="/">← Back to public site</a> · <a href="/contact.html">Need help?</a></p>
   </div>
 </div>
 
 <script>
-// Demo: just store a placeholder client ID and forward.
-// Replace with real auth handler on the IIS side later.
-document.getElementById('login-form').addEventListener('submit', function (e) {
+// Tab switcher
+const tabSignIn = document.getElementById('tab-signin');
+const tabSignUp = document.getElementById('tab-signup');
+const panelSignIn = document.getElementById('panel-signin');
+const panelSignUp = document.getElementById('panel-signup');
+
+function showPanel(which) {
+  if (which === 'signup') {
+    tabSignIn.classList.remove('active');
+    tabSignUp.classList.add('active');
+    panelSignIn.hidden = true;
+    panelSignUp.hidden = false;
+  } else {
+    tabSignIn.classList.add('active');
+    tabSignUp.classList.remove('active');
+    panelSignIn.hidden = false;
+    panelSignUp.hidden = true;
+  }
+}
+tabSignIn.addEventListener('click', () => showPanel('signin'));
+tabSignUp.addEventListener('click', () => showPanel('signup'));
+
+// If URL has #signup, auto-open that panel
+if (location.hash === '#signup') showPanel('signup');
+
+// Sign in: store identity, route to estimator based on saved type
+document.getElementById('form-signin').addEventListener('submit', e => {
   e.preventDefault();
-  const email = document.getElementById('email').value.trim();
+  const email = document.getElementById('signin-email').value.trim();
   if (!email) return;
   localStorage.setItem('gcc-client-id', email);
-  window.location.href = '/clients/estimator.html';
+  // Route based on saved type, default commercial
+  const type = localStorage.getItem('gcc-client-type') || 'commercial';
+  window.location.href = type === 'residential' ? '/clients/estimator-residential.html' : '/clients/estimator.html';
+});
+
+// Sign up: store everything + route to right estimator
+document.getElementById('form-signup').addEventListener('submit', e => {
+  e.preventDefault();
+  const data = {
+    name:       document.getElementById('signup-name').value.trim(),
+    company:    document.getElementById('signup-company').value.trim(),
+    email:      document.getElementById('signup-email').value.trim(),
+    phone:      document.getElementById('signup-phone').value.trim(),
+    clientType: document.querySelector('input[name="clientType"]:checked').value,
+    createdAt:  Date.now()
+  };
+  if (!data.name || !data.email) return;
+
+  // Persist locally (pre-SQL).
+  // When SQL backend lands, this same payload posts to /api/clients/signup.
+  localStorage.setItem('gcc-client-id', data.email);
+  localStorage.setItem('gcc-client-type', data.clientType);
+  localStorage.setItem('gcc-client-profile', JSON.stringify(data));
+
+  // Route to the right client estimator
+  window.location.href = data.clientType === 'residential'
+    ? '/clients/estimator-residential.html'
+    : '/clients/estimator.html';
 });
 </script>
 

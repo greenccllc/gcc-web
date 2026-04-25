@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Home Estimator — Smart wiring, security, renovations · GCC LLC</title>
+<meta name="description" content="Free residential estimate for whole-home Wi-Fi, smart cameras, doorbell, smart home, TV mounts, bath/kitchen remodels, fencing, and decking. KCMO + STL." />
+<meta name="theme-color" content="#1E4D2B" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%231E4D2B'/%3E%3Ctext x='50' y='65' font-family='Helvetica' font-size='42' font-weight='800' fill='white' text-anchor='middle'%3EGC%3C/text%3E%3Ccircle cx='86' cy='14' r='8' fill='%23D4AF37'/%3E%3C/svg%3E" type="image/svg+xml" />
+<link rel="stylesheet" href="/assets/css/site.css" />
+<style>
+.est-wrap { display: grid; grid-template-columns: 1.3fr 1fr; gap: 40px; align-items: start; }
+@media (max-width: 960px) { .est-wrap { grid-template-columns: 1fr; } }
+.est-form { background: white; border: 1px solid var(--hairline); border-radius: var(--r-lg); padding: 32px; box-shadow: var(--shadow-sm); }
+.est-form h3 { margin-bottom: 6px; }
+.est-form .form-sub { color: var(--slate); font-size: 0.95em; margin-bottom: 24px; }
+.est-step { padding: 20px 0; border-bottom: 1px solid var(--hairline); }
+.est-step:last-of-type { border-bottom: none; }
+.est-step h4 { font-size: 14px; font-weight: 700; color: var(--forest); letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 12px; }
+
+.cat-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+.cat-row { display: grid; grid-template-columns: 56px 1fr auto; gap: 16px; align-items: center; padding: 14px 16px; background: var(--paper); border: 1px solid var(--hairline); border-radius: var(--r-md); transition: all .15s var(--ease); }
+.cat-row:hover, .cat-row.has-value { border-color: rgba(30,77,43,0.35); background: white; }
+.cat-row.has-value { box-shadow: 0 0 0 2px rgba(30,77,43,0.10); }
+.cat-icon { width: 48px; height: 48px; border-radius: var(--r-md); background: linear-gradient(135deg, rgba(30,77,43,0.12), rgba(30,77,43,0.04)); color: var(--forest); display: flex; align-items: center; justify-content: center; font-size: 22px; }
+.cat-text .cat-name { font-weight: 700; font-size: 15px; color: var(--ink); }
+.cat-text .cat-hint { font-size: 13px; color: var(--slate); margin-top: 2px; display: block; }
+
+.num-stepper { display: inline-flex; align-items: center; border: 1px solid var(--hairline-strong); border-radius: var(--r-md); overflow: hidden; background: white; }
+.num-stepper button { width: 36px; height: 38px; background: var(--paper); border: none; font-size: 18px; font-weight: 700; color: var(--forest); cursor: pointer; }
+.num-stepper button:hover { background: rgba(30,77,43,0.10); }
+.num-stepper input { width: 60px; height: 38px; border: none; border-left: 1px solid var(--hairline); border-right: 1px solid var(--hairline); text-align: center; font-size: 16px; font-weight: 700; font-family: inherit; }
+
+.tier-row { display: grid; grid-template-columns: 56px 1fr; gap: 16px; align-items: start; padding: 14px 16px; background: var(--paper); border: 1px solid var(--hairline); border-radius: var(--r-md); }
+.tier-options { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.tier-pill { position: relative; padding: 8px 14px; border: 1.5px solid var(--hairline-strong); border-radius: var(--r-pill); cursor: pointer; font-size: 13px; font-weight: 600; background: white; transition: all .12s var(--ease); }
+.tier-pill input { position: absolute; opacity: 0; pointer-events: none; }
+.tier-pill:hover { border-color: var(--forest); }
+.tier-pill:has(input:checked) { background: var(--forest); color: white; border-color: var(--forest-dark); }
+
+.lf-row { display: grid; grid-template-columns: 56px 1fr auto; gap: 16px; align-items: center; padding: 14px 16px; background: var(--paper); border: 1px solid var(--hairline); border-radius: var(--r-md); transition: all .15s var(--ease); }
+.lf-row.has-value { border-color: rgba(30,77,43,0.35); background: white; box-shadow: 0 0 0 2px rgba(30,77,43,0.10); }
+.lf-input { display: flex; align-items: center; gap: 6px; }
+.lf-input input { width: 80px; height: 38px; border: 1px solid var(--hairline-strong); border-radius: var(--r-sm); text-align: center; font-size: 15px; font-weight: 700; font-family: inherit; padding: 0 8px; }
+.lf-input input:focus { outline: none; border-color: var(--forest); box-shadow: 0 0 0 3px rgba(30,77,43,0.15); }
+.lf-input .lf-unit { font-size: 13px; color: var(--slate); font-weight: 600; }
+
+.chk-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; }
+.chk-row input[type="checkbox"] { margin-top: 4px; width: 18px; height: 18px; accent-color: var(--forest); }
+.chk-row label { font-size: 15px; color: var(--ink); line-height: 1.4; }
+.chk-row .chk-hint { font-size: 13px; color: var(--slate); display: block; margin-top: 2px; }
+
+.est-result { position: sticky; top: 92px; background: linear-gradient(135deg, var(--forest) 0%, var(--forest-dark) 100%); color: white; border-radius: var(--r-lg); padding: 32px 28px; box-shadow: var(--shadow-lg); }
+.est-result h3 { color: white; font-size: 14px; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase; margin-bottom: 8px; opacity: 0.82; }
+.est-range { font-size: clamp(28px, 3vw + 16px, 44px); font-weight: 800; line-height: 1.1; margin-bottom: 6px; font-family: var(--font-display); letter-spacing: -0.02em; }
+.est-basis { color: rgba(255,255,255,0.75); font-size: 14px; margin-bottom: 24px; }
+.est-breakdown { background: rgba(0,0,0,0.20); border-radius: var(--r-md); padding: 16px 18px; margin-bottom: 20px; font-size: 14px; max-height: 320px; overflow-y: auto; }
+.est-breakdown h4 { font-size: 11px; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase; color: var(--gold); margin: 0 0 10px; }
+.est-breakdown .line { display: flex; justify-content: space-between; padding: 3px 0; color: rgba(255,255,255,0.88); }
+.est-breakdown .line .lbl { color: rgba(255,255,255,0.75); }
+.est-breakdown .line.total { border-top: 1px solid rgba(255,255,255,0.20); margin-top: 8px; padding-top: 10px; font-weight: 700; color: white; }
+.est-disclaimer { font-size: 12px; color: rgba(255,255,255,0.65); line-height: 1.5; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.12); }
+.est-disclaimer strong { color: var(--gold); }
+.est-result .btn-primary { background: var(--gold); color: var(--ink); width: 100%; justify-content: center; margin-top: 16px; }
+.est-result .btn-primary:hover { background: var(--gold-dark); color: white; }
+.est-result.empty { background: linear-gradient(135deg, #F7FAFC 0%, #E2E8F0 100%); color: var(--slate); }
+.est-result.empty h3 { color: var(--slate-light); }
+.est-result.empty .est-range { color: var(--forest); font-size: clamp(18px, 1.5vw + 12px, 24px); font-weight: 700; }
+.est-result.empty .est-basis { color: var(--slate); }
+.est-result.empty .btn-primary { background: var(--forest); color: white; }
+.est-result.empty .btn-primary:hover { background: var(--forest-dark); color: white; }
+
+.est-mode-toggle {
+  display: inline-flex; gap: 4px;
+  background: var(--paper);
+  padding: 4px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--hairline);
+  margin-bottom: 24px;
+}
+.est-mode-toggle a {
+  padding: 8px 18px;
+  border-radius: var(--r-pill);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--slate);
+  text-decoration: none;
+  transition: all .12s var(--ease);
+}
+.est-mode-toggle a.active {
+  background: var(--forest); color: white;
+  box-shadow: var(--shadow-xs);
+}
+.est-mode-toggle a:hover:not(.active) { background: white; color: var(--forest); }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a href="/" class="brand-mark"><span class="monogram">GC</span><span class="brand-stack"><span class="brand-name">GCC LLC</span><span class="brand-tag">Div 27 / 28 Contractor</span></span></a>
+    <button class="menu-toggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
+    <nav class="site-nav" aria-label="Primary"><ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/services.html">Services</a></li>
+      <li><a href="/estimator.html">Estimator</a></li>
+      <li><a href="/about.html">About</a></li>
+      <li><a href="/contact.html">Contact</a></li>
+      <li><a href="/clients/" class="cta">Client Login</a></li>
+    </ul></nav>
+  </div>
+</header>
+
+<section class="hero" style="padding: 80px 0 24px;">
+  <div class="container">
+    <div class="est-mode-toggle">
+      <a href="/estimator.html">🏢 Commercial</a>
+      <a href="/estimator-residential.html" class="active">🏡 Residential</a>
+    </div>
+    <span class="eyebrow">Home Estimate</span>
+    <h1>Smart home, security, networking — and the renovations <span class="highlight">the last guy didn't finish.</span></h1>
+    <p class="lead" style="max-width: 720px;">Tell us what your house needs. Whole-home Wi-Fi, doorbell cam, smart switches, TV mount, bath/kitchen reno, new fence, deck — we do all of it. Get a real range in 30 seconds.</p>
+  </div>
+</section>
+
+<section style="padding: 24px 0 96px;">
+  <div class="container">
+    <div class="est-wrap">
+      <form class="est-form" id="res-est-form" autocomplete="off">
+        <h3>What does your home need?</h3>
+        <p class="form-sub">Skip anything that doesn't apply. Estimate updates live.</p>
+
+        <!-- ─── Networking & Wi-Fi ─── -->
+        <div class="est-step">
+          <h4>📶 Networking &amp; Wi-Fi</h4>
+          <div class="cat-grid">
+            <div class="cat-row" data-cat="drops">
+              <div class="cat-icon">🔌</div>
+              <div class="cat-text"><span class="cat-name">Cat6 drops</span><span class="cat-hint">Hard-wired runs to office, TVs, cameras, APs. ~1 per room is typical.</span></div>
+              <div class="num-stepper"><button type="button" data-step="drops" data-delta="-1">−</button><input type="number" id="drops" value="0" min="0" max="50" /><button type="button" data-step="drops" data-delta="+1">+</button></div>
+            </div>
+            <div class="cat-row" data-cat="aps">
+              <div class="cat-icon">📡</div>
+              <div class="cat-text"><span class="cat-name">Wi-Fi 7 mesh APs</span><span class="cat-hint">Plan ~1 AP per 1,500 sq ft. We mount and cable them.</span></div>
+              <div class="num-stepper"><button type="button" data-step="aps" data-delta="-1">−</button><input type="number" id="aps" value="0" min="0" max="20" /><button type="button" data-step="aps" data-delta="+1">+</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── Security & Doorbell ─── -->
+        <div class="est-step">
+          <h4>🛡️ Security &amp; Doorbell</h4>
+          <div class="cat-grid">
+            <div class="cat-row" data-cat="camIn">
+              <div class="cat-icon">📷</div>
+              <div class="cat-text"><span class="cat-name">Interior cameras</span><span class="cat-hint">Living areas, garage, basement. PoE-cabled to NVR.</span></div>
+              <div class="num-stepper"><button type="button" data-step="camIn" data-delta="-1">−</button><input type="number" id="camIn" value="0" min="0" max="50" /><button type="button" data-step="camIn" data-delta="+1">+</button></div>
+            </div>
+            <div class="cat-row" data-cat="camOut">
+              <div class="cat-icon">📸</div>
+              <div class="cat-text"><span class="cat-name">Exterior cameras</span><span class="cat-hint">Weatherized, eaves-mount, IR. Coverage of doors + driveway.</span></div>
+              <div class="num-stepper"><button type="button" data-step="camOut" data-delta="-1">−</button><input type="number" id="camOut" value="0" min="0" max="20" /><button type="button" data-step="camOut" data-delta="+1">+</button></div>
+            </div>
+            <div class="cat-row" data-cat="doorbell">
+              <div class="cat-icon">🔔</div>
+              <div class="cat-text"><span class="cat-name">Smart doorbell</span><span class="cat-hint">UniFi G4 / Doorbird with chime + intercom. Per door.</span></div>
+              <div class="num-stepper"><button type="button" data-step="doorbell" data-delta="-1">−</button><input type="number" id="doorbell" value="0" min="0" max="5" /><button type="button" data-step="doorbell" data-delta="+1">+</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── Smart Home & AV ─── -->
+        <div class="est-step">
+          <h4>🤖 Smart home &amp; AV</h4>
+          <div class="cat-grid">
+            <div class="cat-row" data-cat="smartSwitches">
+              <div class="cat-icon">💡</div>
+              <div class="cat-text"><span class="cat-name">Smart switches / dimmers</span><span class="cat-hint">Replaces existing wall switches. Compatible with Alexa / Google.</span></div>
+              <div class="num-stepper"><button type="button" data-step="smartSwitches" data-delta="-1">−</button><input type="number" id="smartSwitches" value="0" min="0" max="100" /><button type="button" data-step="smartSwitches" data-delta="+1">+</button></div>
+            </div>
+            <div class="cat-row" data-cat="smartLocks">
+              <div class="cat-icon">🔐</div>
+              <div class="cat-text"><span class="cat-name">Smart locks</span><span class="cat-hint">Front, back, garage entry. Phone unlock, auto-lock schedules.</span></div>
+              <div class="num-stepper"><button type="button" data-step="smartLocks" data-delta="-1">−</button><input type="number" id="smartLocks" value="0" min="0" max="10" /><button type="button" data-step="smartLocks" data-delta="+1">+</button></div>
+            </div>
+            <div class="cat-row" data-cat="tvMount">
+              <div class="cat-icon">📺</div>
+              <div class="cat-text"><span class="cat-name">TV mounts</span><span class="cat-hint">Wall mount, in-wall HDMI/power, soundbar wiring.</span></div>
+              <div class="num-stepper"><button type="button" data-step="tvMount" data-delta="-1">−</button><input type="number" id="tvMount" value="0" min="0" max="10" /><button type="button" data-step="tvMount" data-delta="+1">+</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── Renovations ─── -->
+        <div class="est-step">
+          <h4>🔨 Renovations (size tier)</h4>
+          <div class="cat-grid">
+            <div class="tier-row">
+              <div class="cat-icon">🚿</div>
+              <div>
+                <span class="cat-name">Bathroom remodel</span><span class="cat-hint">Demo to finish. Tile, fixtures, plumbing, paint.</span>
+                <div class="tier-options">
+                  <label class="tier-pill"><input type="radio" name="bath" value="0" checked />None</label>
+                  <label class="tier-pill"><input type="radio" name="bath" value="small" />Small (powder)</label>
+                  <label class="tier-pill"><input type="radio" name="bath" value="medium" />Medium (full)</label>
+                  <label class="tier-pill"><input type="radio" name="bath" value="large" />Large (master)</label>
+                </div>
+              </div>
+            </div>
+            <div class="tier-row">
+              <div class="cat-icon">🍳</div>
+              <div>
+                <span class="cat-name">Kitchen remodel</span><span class="cat-hint">Demo to finish. Cabinets, counters, appliances install.</span>
+                <div class="tier-options">
+                  <label class="tier-pill"><input type="radio" name="kitchen" value="0" checked />None</label>
+                  <label class="tier-pill"><input type="radio" name="kitchen" value="small" />Cosmetic</label>
+                  <label class="tier-pill"><input type="radio" name="kitchen" value="medium" />Full update</label>
+                  <label class="tier-pill"><input type="radio" name="kitchen" value="large" />Full gut</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── Outdoor ─── -->
+        <div class="est-step">
+          <h4>🌳 Outdoor work</h4>
+          <div class="cat-grid">
+            <div class="lf-row" data-cat="fence">
+              <div class="cat-icon">🪵</div>
+              <div class="cat-text"><span class="cat-name">Fence (linear feet)</span><span class="cat-hint">Pressure-treated, composite, or shadowbox. Includes posts &amp; gates.</span></div>
+              <div class="lf-input"><input type="number" id="fence" value="0" min="0" max="2000" /><span class="lf-unit">LF</span></div>
+            </div>
+            <div class="lf-row" data-cat="deck">
+              <div class="cat-icon">🪜</div>
+              <div class="cat-text"><span class="cat-name">Deck (square feet)</span><span class="cat-hint">Pressure-treated or composite. Posts, joists, decking, railings.</span></div>
+              <div class="lf-input"><input type="number" id="deck" value="0" min="0" max="2000" /><span class="lf-unit">sq ft</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── HVAC & Electrical ─── -->
+        <div class="est-step">
+          <h4>⚡ HVAC &amp; electrical</h4>
+          <div class="cat-grid">
+            <div class="cat-row" data-cat="miniSplit">
+              <div class="cat-icon">❄️</div>
+              <div class="cat-text"><span class="cat-name">Mini-split zones</span><span class="cat-hint">Per indoor head + linked condenser. Ductless heat + cool.</span></div>
+              <div class="num-stepper"><button type="button" data-step="miniSplit" data-delta="-1">−</button><input type="number" id="miniSplit" value="0" min="0" max="10" /><button type="button" data-step="miniSplit" data-delta="+1">+</button></div>
+            </div>
+            <div class="cat-row" data-cat="ceilingFan">
+              <div class="cat-icon">🪭</div>
+              <div class="cat-text"><span class="cat-name">Ceiling fans / fixtures</span><span class="cat-hint">New or replacement install. Includes box + wiring up to 15 ft.</span></div>
+              <div class="num-stepper"><button type="button" data-step="ceilingFan" data-delta="-1">−</button><input type="number" id="ceilingFan" value="0" min="0" max="20" /><button type="button" data-step="ceilingFan" data-delta="+1">+</button></div>
+            </div>
+            <div class="cat-row" data-cat="outlet">
+              <div class="cat-icon">🔌</div>
+              <div class="cat-text"><span class="cat-name">New outlets / circuits</span><span class="cat-hint">Outlet, switch, or dedicated circuit. Per location.</span></div>
+              <div class="num-stepper"><button type="button" data-step="outlet" data-delta="-1">−</button><input type="number" id="outlet" value="0" min="0" max="50" /><button type="button" data-step="outlet" data-delta="+1">+</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── Conditions ─── -->
+        <div class="est-step">
+          <h4>🏘️ Conditions</h4>
+          <div class="chk-row"><input type="checkbox" id="metro" /><label for="metro">Outside KCMO + STL metros<span class="chk-hint">Adds a small mobilization line.</span></label></div>
+          <div class="chk-row"><input type="checkbox" id="rush" /><label for="rush">Need it done in &lt; 2 weeks<span class="chk-hint">+10% rush surcharge for accelerated scheduling.</span></label></div>
+          <div class="chk-row"><input type="checkbox" id="permit" checked /><label for="permit">Pull required permits (typical for renos &amp; outdoor)<span class="chk-hint">We pull, inspect, and close out. Adds permit fees + admin.</span></label></div>
+        </div>
+      </form>
+
+      <aside class="est-result empty" id="res-est-result" aria-live="polite">
+        <h3>Your home estimate</h3>
+        <div class="est-range" id="res-est-range">Add something to begin →</div>
+        <div class="est-basis" id="res-est-basis">Real numbers, based on GCC's 2026 residential pricing.</div>
+
+        <div class="est-breakdown" id="res-est-breakdown" style="display: none;">
+          <h4>Breakdown (midpoint)</h4>
+          <div id="res-est-lines"></div>
+        </div>
+
+        <a href="/contact.html" class="btn btn-primary" id="res-est-cta">Turn this into a firm quote →</a>
+
+        <div class="est-disclaimer">
+          <strong>Quick note:</strong> Final prices depend on your home's specifics — wall type, attic access, age of wiring/plumbing, finish materials. Renovations especially vary widely. We'll walk it with you and lock the number before any work starts.
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="/" class="brand-mark"><span class="monogram">GC</span><span class="brand-stack"><span class="brand-name">GCC LLC</span><span class="brand-tag">Div 27 / 28 Contractor</span></span></a>
+        <p>Green Communications Contracting LLC — woman-owned, minority-owned, licensed, insured, and bonded.</p>
+      </div>
+      <div class="footer-col"><h4>Estimators</h4><ul>
+        <li><a href="/estimator.html">Commercial Estimator</a></li>
+        <li><a href="/estimator-residential.html">Home Estimator</a></li>
+        <li><a href="/clients/">Client Portal (full)</a></li>
+      </ul></div>
+      <div class="footer-col"><h4>Company</h4><ul>
+        <li><a href="/about.html">About</a></li>
+        <li><a href="/services.html">Services</a></li>
+        <li><a href="/projects.html">Projects</a></li>
+        <li><a href="/contact.html">Contact</a></li>
+      </ul></div>
+      <div class="footer-col"><h4>Reach Us</h4><ul>
+        <li><a href="tel:+16362248192">636-224-8192</a></li>
+        <li><a href="mailto:info@greencommllc.com">info@greencommllc.com</a></li>
+        <li>603 Seib Dr<br/>O'Fallon, MO 63366</li>
+      </ul></div>
+    </div>
+    <div class="footer-bottom">
+      <div>© 2026 Green Communications Contracting LLC · Licensed &amp; Insured · Missouri LLC</div>
+      <div>Non-Union Div 27/28 · BICSI/TIA-568 · TIA-606-B</div>
+    </div>
+  </div>
+</footer>
+
+<script src="/assets/js/site.js"></script>
+<script src="/assets/js/estimator-residential.js"></script>
+</body>
+</html>

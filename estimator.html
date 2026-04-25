@@ -90,6 +90,28 @@
 .upgrade-banner .ub-icon { font-size: 22px; }
 .upgrade-banner strong { color: var(--gold-dark); }
 .upgrade-banner a { font-weight: 700; }
+.est-mode-toggle {
+  display: inline-flex; gap: 4px;
+  background: var(--paper);
+  padding: 4px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--hairline);
+  margin-bottom: 24px;
+}
+.est-mode-toggle a {
+  padding: 8px 18px;
+  border-radius: var(--r-pill);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--slate);
+  text-decoration: none;
+  transition: all .12s var(--ease);
+}
+.est-mode-toggle a.active {
+  background: var(--forest); color: white;
+  box-shadow: var(--shadow-xs);
+}
+.est-mode-toggle a:hover:not(.active) { background: white; color: var(--forest); }
 </style>
 </head>
 <body>
@@ -111,6 +133,11 @@
 
 <section class="hero" style="padding: 80px 0 40px;">
   <div class="container">
+    
+    <div class="est-mode-toggle">
+      <a href="/estimator.html" class="active">🏢 Commercial</a>
+      <a href="/estimator-residential.html">🏡 Residential</a>
+    </div>
     <span class="eyebrow">Instant Estimate · Public</span>
     <h1>30 seconds. <span class="highlight">Real ballpark.</span></h1>
     <p class="lead" style="max-width: 720px;">Tell us roughly what you need — drops, cameras, doors, speakers, fiber, server room — and we'll show a live range based on GCC's actual 2026 pricing. No lead form, no "we'll get back to you," no upsell.</p>
