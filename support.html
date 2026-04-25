@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Support · GCC LLC</title>
+<meta name="description" content="Get support for the GCC LLC customer portal, proposal generator, and QuickBooks Online integration." />
+<meta name="theme-color" content="#1E4D2B" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%231E4D2B'/%3E%3Ctext x='50' y='65' font-family='Helvetica' font-size='42' font-weight='800' fill='white' text-anchor='middle'%3EGC%3C/text%3E%3Ccircle cx='86' cy='14' r='8' fill='%23D4AF37'/%3E%3C/svg%3E" type="image/svg+xml" />
+<link rel="stylesheet" href="/assets/css/site.css" />
+<style>
+.support-hero { padding: 56px 0 32px; background: var(--paper); }
+.support-hero h1 { font-size: 32px; margin-bottom: 8px; }
+.support-hero p { color: var(--slate); font-size: 17px; max-width: 640px; }
+.support-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 32px; }
+@media (max-width: 720px) { .support-grid { grid-template-columns: 1fr; } }
+.support-card {
+  background: white; border: 1px solid var(--hairline);
+  border-radius: var(--r-md); padding: 22px;
+  box-shadow: var(--shadow-xs);
+}
+.support-card h3 { margin: 0 0 6px; font-size: 16px; }
+.support-card .channel {
+  display: flex; align-items: center; gap: 10px;
+  font-weight: 700; color: var(--forest); margin-top: 10px;
+  text-decoration: none; font-size: 15px;
+}
+.support-card .channel:hover { color: var(--forest-dark); }
+.support-card .icon { font-size: 22px; }
+.support-card p { color: var(--slate); font-size: 14px; line-height: 1.55; margin: 0; }
+.support-card .meta { color: var(--slate-light); font-size: 12px; margin-top: 8px; }
+.faq { padding: 48px 0 64px; }
+.faq h2 { font-size: 22px; margin-bottom: 18px; }
+.faq-item {
+  background: white; border: 1px solid var(--hairline);
+  border-radius: var(--r-md); padding: 18px 22px; margin-bottom: 12px;
+}
+.faq-item h4 { margin: 0 0 6px; font-size: 15px; color: var(--forest); }
+.faq-item p { margin: 0; color: var(--slate); font-size: 14px; line-height: 1.6; }
+.faq-item code { background: var(--paper); padding: 1px 6px; border-radius: 4px; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<div id="gcc-header"></div>
+
+<section class="support-hero">
+  <div class="container">
+    <h1>Support</h1>
+    <p>How to reach us, response times, and answers to common questions about the customer portal and the QuickBooks integration.</p>
+
+    <div class="support-grid">
+      <div class="support-card">
+        <h3>Email support</h3>
+        <p>For account questions, billing, integration help, or to report a problem.</p>
+        <a class="channel" href="mailto:support@greencommllc.com"><span class="icon">@</span> support@greencommllc.com</a>
+        <div class="meta">Response within 1 business day · Mon-Fri 8am-6pm CT</div>
+      </div>
+      <div class="support-card">
+        <h3>Privacy &amp; data requests</h3>
+        <p>Privacy questions, data export requests, account deletion.</p>
+        <a class="channel" href="mailto:privacy@greencommllc.com"><span class="icon">@</span> privacy@greencommllc.com</a>
+        <div class="meta">Response within 30 days per CCPA / GDPR</div>
+      </div>
+      <div class="support-card">
+        <h3>Project &amp; sales inquiries</h3>
+        <p>New project quotes, scoping calls, scheduling.</p>
+        <a class="channel" href="/contact.html"><span class="icon">→</span> Contact form</a>
+        <div class="meta">Same-day response during business hours</div>
+      </div>
+      <div class="support-card">
+        <h3>Status &amp; incidents</h3>
+        <p>If portal pages, the proposal generator, or webhook delivery are not working as expected.</p>
+        <a class="channel" href="mailto:support@greencommllc.com?subject=Incident%20Report"><span class="icon">!</span> support@greencommllc.com</a>
+        <div class="meta">Subject line: &ldquo;Incident Report&rdquo; for fastest triage</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="faq">
+  <div class="container" style="max-width: 760px;">
+    <h2>QuickBooks integration FAQ</h2>
+
+    <div class="faq-item">
+      <h4>How do I connect QuickBooks Online?</h4>
+      <p>Sign in to your portal as an administrator, then visit <a href="/quickbooks.html">/quickbooks.html</a> or go to <em>Financials</em> in the admin menu and click <strong>Connect QuickBooks</strong>. You will be redirected to Intuit to authorize, then back to your portal.</p>
+    </div>
+
+    <div class="faq-item">
+      <h4>What data is synced?</h4>
+      <p>Customer records, invoices, payments, and items. We use Intuit's <code>com.intuit.quickbooks.accounting</code> OAuth scope &mdash; read access only, no permission to initiate payments. See our <a href="/privacy.html#qb">Privacy Policy section 4</a> for full details.</p>
+    </div>
+
+    <div class="faq-item">
+      <h4>How do I disconnect?</h4>
+      <p>From the portal: Settings &rarr; Integrations &rarr; Disconnect QuickBooks. From QuickBooks: <em>Apps &rarr; My Apps &rarr; GCC LLC &rarr; Disconnect</em>. Either method revokes the OAuth token and stops webhook delivery.</p>
+    </div>
+
+    <div class="faq-item">
+      <h4>How are tokens stored?</h4>
+      <p>OAuth refresh tokens are encrypted at rest using ASP.NET Data Protection with machine-bound keys. We never see or store your QuickBooks password &mdash; you authenticate directly with Intuit during the OAuth flow.</p>
+    </div>
+
+    <div class="faq-item">
+      <h4>How fast does sync update?</h4>
+      <p>Initial connect pulls the latest 50 invoices. After that, Intuit's webhooks notify us in real time when invoices, payments, or customers change in QuickBooks. We typically reflect changes in your portal within seconds.</p>
+    </div>
+
+    <div class="faq-item">
+      <h4>What if a webhook delivery fails?</h4>
+      <p>Intuit retries failed deliveries automatically with exponential backoff for up to 6 hours. If you need to force a manual sync, an admin can click <strong>Sync invoices</strong> on the Financials page. If problems persist, email support and include the realm ID shown on the Financials page.</p>
+    </div>
+
+    <div class="faq-item">
+      <h4>Why does the privacy policy mention machine-bound encryption keys?</h4>
+      <p>Our application server uses Microsoft's ASP.NET Data Protection API with keys persisted to a protected directory. This means OAuth tokens are tied to the server they were issued on; they cannot be exfiltrated and used elsewhere even if the database is copied.</p>
+    </div>
+  </div>
+</section>
+
+<script src="/assets/js/api.js"></script>
+<script src="/assets/js/header.js"></script>
+</body>
+</html>

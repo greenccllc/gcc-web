@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>QuickBooks Integration · GCC LLC</title>
+<meta name="description" content="Connect your QuickBooks Online account to GCC LLC's project management platform. Sync invoices, payments, and customer records automatically." />
+<meta name="theme-color" content="#1E4D2B" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%231E4D2B'/%3E%3Ctext x='50' y='65' font-family='Helvetica' font-size='42' font-weight='800' fill='white' text-anchor='middle'%3EGC%3C/text%3E%3Ccircle cx='86' cy='14' r='8' fill='%23D4AF37'/%3E%3C/svg%3E" type="image/svg+xml" />
+<link rel="stylesheet" href="/assets/css/site.css" />
+<style>
+.qb-hero { padding: 64px 0 48px; background: linear-gradient(180deg, var(--paper) 0%, white 100%); }
+.qb-hero h1 { font-size: 36px; margin-bottom: 12px; line-height: 1.15; }
+.qb-hero .lede { font-size: 18px; color: var(--slate); max-width: 640px; line-height: 1.55; }
+.qb-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 48px; }
+@media (max-width: 760px) { .qb-grid { grid-template-columns: 1fr; } }
+.qb-card { background: white; border: 1px solid var(--hairline); border-radius: var(--r-md); padding: 24px; box-shadow: var(--shadow-xs); }
+.qb-card h3 { margin: 0 0 8px; font-size: 18px; }
+.qb-card p { color: var(--slate); font-size: 15px; line-height: 1.5; margin: 0 0 12px; }
+.qb-card ul { margin: 0; padding-left: 20px; color: var(--slate); font-size: 14px; line-height: 1.7; }
+.qb-card li { margin-bottom: 4px; }
+.cta-bar {
+  display: inline-flex; align-items: center; gap: 14px;
+  background: var(--forest); color: white;
+  padding: 14px 22px; border-radius: var(--r-md);
+  font-weight: 700; text-decoration: none; font-size: 15px;
+  box-shadow: var(--shadow-sm); transition: background 0.15s var(--ease);
+}
+.cta-bar:hover { background: var(--forest-dark); color: white; }
+.cta-bar .arrow { font-size: 18px; }
+.btn-secondary {
+  display: inline-block; padding: 12px 20px;
+  background: white; color: var(--forest);
+  border: 1px solid var(--hairline-strong); border-radius: var(--r-md);
+  font-weight: 600; text-decoration: none; font-size: 14px;
+  margin-left: 12px;
+}
+.btn-secondary:hover { border-color: var(--forest); }
+.qb-status {
+  margin-top: 32px; padding: 16px 20px;
+  background: var(--paper); border-radius: var(--r-md);
+  border: 1px solid var(--hairline);
+  font-size: 14px; color: var(--slate);
+}
+.qb-status strong { color: var(--ink); }
+.qb-status.signed-in { background: rgba(72,187,120,0.10); border-color: rgba(72,187,120,0.30); }
+.qb-mark {
+  display: inline-block; padding: 6px 12px;
+  background: rgba(0,119,194,0.10); color: #0077C2;
+  border-radius: var(--r-pill); font-size: 12px; font-weight: 700;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.intuit-badge { display: inline-flex; align-items: center; gap: 8px; }
+.scope-list {
+  background: var(--paper); border-radius: var(--r-md);
+  padding: 14px 18px; font-size: 13px; color: var(--slate);
+  margin-top: 16px;
+}
+.scope-list strong { color: var(--ink); }
+</style>
+</head>
+<body>
+
+<div id="gcc-header"></div>
+
+<section class="qb-hero">
+  <div class="container">
+    <span class="qb-mark intuit-badge">Intuit QuickBooks Online integration</span>
+    <h1>Sync your QuickBooks data with GCC LLC</h1>
+    <p class="lede">
+      Connect your QuickBooks Online account to mirror invoices, payments, and customer records into your
+      GCC LLC project portal. Automatic — no manual data entry, no exports, no spreadsheets.
+    </p>
+
+    <div id="qb-cta-area" style="margin-top: 28px;">
+      <a href="/clients/" class="cta-bar">
+        Sign in to connect <span class="arrow">→</span>
+      </a>
+      <a href="/contact.html" class="btn-secondary">Talk to us first</a>
+    </div>
+
+    <div id="qb-status" class="qb-status" hidden></div>
+  </div>
+</section>
+
+<section style="padding: 48px 0;">
+  <div class="container">
+    <div class="qb-grid">
+      <div class="qb-card">
+        <h3>What syncs</h3>
+        <ul>
+          <li>Customer records (name, address, billing email)</li>
+          <li>Invoices (status, line items, balances)</li>
+          <li>Payments and credits</li>
+          <li>Items and service catalog</li>
+          <li>Real-time updates via Intuit webhooks</li>
+        </ul>
+      </div>
+      <div class="qb-card">
+        <h3>How it works</h3>
+        <ol style="margin: 0; padding-left: 20px; color: var(--slate); font-size: 14px; line-height: 1.7;">
+          <li>Sign in to your GCC LLC portal as an administrator</li>
+          <li>Click "Connect QuickBooks" — you'll be redirected to Intuit</li>
+          <li>Authorize GCC LLC to read your QuickBooks data</li>
+          <li>Intuit redirects you back; we store an encrypted refresh token</li>
+          <li>Initial sync pulls the latest 50 invoices; webhooks keep them current</li>
+        </ol>
+        <div class="scope-list">
+          <strong>OAuth scope requested:</strong> <code>com.intuit.quickbooks.accounting</code>
+          (read access to accounting data only — we do not request payments scope)
+        </div>
+      </div>
+      <div class="qb-card">
+        <h3>Security &amp; data handling</h3>
+        <p>
+          OAuth refresh tokens are encrypted at rest using ASP.NET Data Protection with
+          machine-bound keys. We never store your QuickBooks password. You can disconnect
+          at any time from your portal Settings page or from inside QuickBooks under
+          <em>Apps &rarr; My Apps &rarr; Disconnect</em>.
+        </p>
+      </div>
+      <div class="qb-card">
+        <h3>Disconnect</h3>
+        <p>
+          To revoke this integration, sign in to your portal and visit
+          <a href="/admin/financials.html">Financials &rarr; Disconnect</a>, or open
+          QuickBooks Online and remove GCC LLC from the connected apps list.
+          Your historical sync data remains in your portal; only the live connection ends.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="padding: 32px 0 64px;">
+  <div class="container" style="text-align: center;">
+    <p style="color: var(--slate-light); font-size: 13px; max-width: 640px; margin: 0 auto;">
+      QuickBooks and the QuickBooks logo are registered trademarks of Intuit Inc. GCC LLC is an independent
+      service provider and is not endorsed by, affiliated with, or sponsored by Intuit.
+      Questions about this integration? <a href="/support.html">Visit Support</a>.
+    </p>
+    <p style="color: var(--slate-light); font-size: 12px; margin-top: 16px;">
+      <a href="/privacy.html">Privacy Policy</a> &middot;
+      <a href="/terms.html">Terms of Service</a> &middot;
+      <a href="/support.html">Support</a> &middot;
+      <a href="/contact.html">Contact</a>
+    </p>
+  </div>
+</section>
+
+<script src="/assets/js/api.js"></script>
+<script src="/assets/js/header.js"></script>
+<script>
+// If the visitor is already signed in, change the CTA + auto-route admins to financials.
+(async function () {
+  if (!window.gccApi) return;
+  try {
+    const me = await gccApi.me();
+    const status = document.getElementById('qb-status');
+    const cta    = document.getElementById('qb-cta-area');
+    status.hidden = false;
+    status.classList.add('signed-in');
+    if (me.role === 'admin') {
+      status.innerHTML =
+        'Signed in as <strong>' + (me.name || me.email) + '</strong> (admin). ' +
+        'Routing you to the QuickBooks connection page&hellip;';
+      cta.innerHTML =
+        '<a href="/admin/financials.html" class="cta-bar">Go to Financials &amp; Connect QuickBooks <span class="arrow">&rarr;</span></a>';
+      // Auto-redirect after a brief moment so they can read the message
+      setTimeout(() => { window.location.href = '/admin/financials.html'; }, 1800);
+    } else if (me.role === 'staff') {
+      status.innerHTML =
+        'Signed in as <strong>' + (me.name || me.email) + '</strong> (staff). ' +
+        'QuickBooks connections are managed by administrators &mdash; ask your admin to connect this for you.';
+      cta.innerHTML = '<a href="/staff/" class="cta-bar">Go to your dashboard <span class="arrow">&rarr;</span></a>';
+    } else {
+      status.innerHTML =
+        'Signed in as <strong>' + (me.name || me.email) + '</strong>. ' +
+        'QuickBooks connections require an administrator account &mdash; please contact your account manager.';
+      cta.innerHTML = '<a href="/clients/dashboard.html" class="cta-bar">Go to your dashboard <span class="arrow">&rarr;</span></a>';
+    }
+  } catch (_) {
+    // Not signed in &mdash; keep the original "Sign in to connect" CTA
+  }
+})();
+</script>
+</body>
+</html>
