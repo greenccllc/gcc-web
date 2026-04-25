@@ -1,0 +1,15 @@
+﻿# OS
+Thumbs.db
+.DS_Store
+
+# Build/temp
+*.log
+*.bak
+*.tmp
+
+# Editor
+.vscode/
+.idea/
+
+# Deployed copies
+web.config
