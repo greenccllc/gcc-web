@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Instant Estimate — Cabling, cameras, doors, speakers · GCC LLC</title>
 <meta name="description" content="Free instant ballpark for your structured cabling, IP surveillance, access control, paging, fiber, or server-room project. Answer 30 seconds of questions and get a real range — no sales call required." />
 <meta name="theme-color" content="#1E4D2B" />
@@ -322,10 +322,28 @@
   </div>
 </footer>
 
-<script src="/assets/js/site.js"></script>
-<script src="/assets/js/api.js"></script>
-<script src="/assets/js/header.js"></script>
-<script src="/assets/js/estimator-save.js"></script>
-<script src="/assets/js/estimator.js"></script>
+<script src="/assets/js/site.js" defer></script>
+<script src="/assets/js/api.js" defer></script>
+<script src="/assets/js/header.js" defer></script>
+<script src="/assets/js/estimator-save.js" defer></script>
+<script src="/assets/js/estimator.js" defer></script>
+<script>
+// Pre-fill from query string (deep-linked from landing page calculator teaser).
+// Runs after estimator.js (also deferred), so the recompute hook is available.
+document.addEventListener('DOMContentLoaded', function () {
+  var qs = new URLSearchParams(location.search);
+  ['drops', 'cameras', 'doors', 'speakers', 'fiberRuns', 'serverRooms'].forEach(function (k) {
+    var v = qs.get(k);
+    if (v == null) return;
+    var n = Math.max(0, Math.min(5000, parseInt(v, 10) || 0));
+    var input = document.getElementById(k);
+    if (input) {
+      input.value = n;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  });
+});
+</script>
 </body>
 </html>

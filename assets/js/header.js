@@ -241,13 +241,17 @@
       if (tag) tag.textContent = badgeText;
     }
 
-    // Mobile menu toggle
-    const t = host.querySelector('.menu-toggle');
-    const n = host.querySelector('.site-nav');
-    if (t && n) t.addEventListener('click', () => {
-      n.classList.toggle('is-open');
-      t.setAttribute('aria-expanded', n.classList.contains('is-open') ? 'true' : 'false');
-    });
+    // Mobile menu toggle: reuse shared setup so we get scroll-lock + outside-click
+    if (window.gccSite && typeof window.gccSite.setupMobileMenu === 'function') {
+      window.gccSite.setupMobileMenu(host);
+    } else {
+      const t = host.querySelector('.menu-toggle');
+      const n = host.querySelector('.site-nav');
+      if (t && n) t.addEventListener('click', () => {
+        n.classList.toggle('is-open');
+        t.setAttribute('aria-expanded', n.classList.contains('is-open') ? 'true' : 'false');
+      });
+    }
 
     // Dropdown groups: click-to-toggle (works on touch + keyboard)
     host.querySelectorAll('.nav-group').forEach(g => {
@@ -304,6 +308,10 @@
   // (mobile menu toggle). For signed-in users we replace the whole header
   // via mount() so the role-aware nav appears.
   function enhanceStatic(host) {
+    if (window.gccSite && typeof window.gccSite.setupMobileMenu === 'function') {
+      window.gccSite.setupMobileMenu(host);
+      return;
+    }
     const t = host.querySelector('.menu-toggle');
     const n = host.querySelector('.site-nav');
     if (t && n) t.addEventListener('click', () => {

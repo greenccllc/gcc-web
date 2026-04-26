@@ -16,21 +16,21 @@
 @media (max-width: 480px) { .client-type-grid { grid-template-columns: 1fr; } }
 .client-type {
   position: relative; cursor: pointer;
-  padding: 18px 14px;
+  padding: 22px 16px;
   border: 2px solid var(--hairline-strong);
   border-radius: var(--r-md);
   background: var(--paper);
   text-align: center;
-  transition: all .15s var(--ease);
+  transition: all .18s var(--ease);
 }
 .client-type input { position: absolute; opacity: 0; pointer-events: none; }
-.client-type .ct-icon { font-size: 32px; margin-bottom: 6px; display: block; }
+.client-type .ct-icon { font-size: 36px; margin-bottom: 8px; display: block; }
 .client-type .ct-label { font-size: 14px; font-weight: 800; color: var(--slate); letter-spacing: 0.04em; text-transform: uppercase; }
-.client-type .ct-hint { font-size: 12px; font-weight: 500; color: var(--slate-light); display: block; margin-top: 2px; text-transform: none; letter-spacing: 0; }
-.client-type:hover { border-color: var(--forest); background: white; }
+.client-type .ct-hint { font-size: 12px; font-weight: 500; color: var(--slate-light); display: block; margin-top: 4px; text-transform: none; letter-spacing: 0; }
+.client-type:hover { border-color: var(--forest); background: white; transform: translateY(-1px); }
 .client-type:has(input:checked) {
   border-color: var(--forest); background: white;
-  box-shadow: 0 0 0 3px rgba(30,77,43,0.15);
+  box-shadow: var(--shadow-ring);
 }
 .client-type:has(input:checked) .ct-label { color: var(--forest); }
 
@@ -57,6 +57,35 @@
   background: var(--forest); color: white;
   box-shadow: var(--shadow-xs);
 }
+
+/* Wider login card for multi-step */
+body.login-page .login-card { max-width: 560px; padding: 36px 32px; }
+body.login-page .login-card.compact { max-width: 460px; padding: 40px 36px; }
+body.login-page .login-card h1 { font-size: 24px; }
+
+/* Teaser steppers reuse num-stepper from main CSS, scoped lighter here */
+.teaser-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.teaser-row {
+  display: grid; grid-template-columns: 1fr auto; gap: 12px;
+  align-items: center; padding: 14px 16px;
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-md);
+}
+.teaser-row .t-label { font-size: 14px; font-weight: 700; color: var(--ink); text-align: left; }
+.teaser-row .t-hint { display: block; font-size: 12px; font-weight: 500; color: var(--slate); margin-top: 2px; text-align: left; }
+.teaser-row .num-stepper { background: white; }
+.teaser-out {
+  margin-top: 14px;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, var(--forest), var(--forest-dark));
+  color: white; border-radius: var(--r-md);
+  text-align: center;
+}
+.teaser-out .lbl { font-size: 11px; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase; opacity: 0.78; }
+.teaser-out .val { font-size: 22px; font-weight: 800; letter-spacing: -0.01em; margin-top: 2px; }
+.skip-teaser { display: inline-block; margin-top: 10px; font-size: 13px; font-weight: 600; color: var(--slate); }
+.skip-teaser:hover { color: var(--forest); }
 </style>
 </head>
 <body class="login-page">
@@ -91,53 +120,107 @@
     </form>
   </div>
 
-  <!-- ─── Sign up ─── -->
+  <!-- ─── Sign up (multi-step) ─── -->
   <div id="panel-signup" hidden>
-    <h1>Create account</h1>
-    <p class="lead">Tell us what kind of project you're working on so we can show you the right estimator.</p>
+    <h1 id="signup-heading">Create account</h1>
+    <p class="lead" id="signup-sub">Four quick steps. We'll have you in your portal in under a minute.</p>
 
-    <form id="form-signup">
-      <p style="font-size: 13px; font-weight: 700; color: var(--forest); letter-spacing: 0.06em; text-transform: uppercase; margin: 16px 0 10px;">What kind of work?</p>
-      <div class="client-type-grid">
-        <label class="client-type">
-          <input type="radio" name="clientType" value="residential" checked />
-          <span class="ct-icon">🏡</span>
-          <span class="ct-label">Residential</span>
-          <span class="ct-hint">My home / property</span>
-        </label>
-        <label class="client-type">
-          <input type="radio" name="clientType" value="commercial" />
-          <span class="ct-icon">🏢</span>
-          <span class="ct-label">Commercial</span>
-          <span class="ct-hint">Business / building</span>
-        </label>
+    <ol class="stepper" id="signup-stepper" aria-label="Sign-up progress">
+      <li class="is-active" data-step="1"><span class="step-label">Type</span></li>
+      <li data-step="2"><span class="step-label">Details</span></li>
+      <li data-step="3"><span class="step-label">Project</span></li>
+      <li data-step="4"><span class="step-label">Review</span></li>
+    </ol>
+
+    <form id="form-signup" novalidate>
+
+      <!-- Step 1: Account type -->
+      <div class="signup-step is-active" data-step="1">
+        <p style="font-size: 13px; font-weight: 700; color: var(--forest); letter-spacing: 0.06em; text-transform: uppercase; margin: 0 0 12px;">What kind of work?</p>
+        <div class="client-type-grid">
+          <label class="client-type">
+            <input type="radio" name="clientType" value="residential" checked />
+            <span class="ct-icon">🏡</span>
+            <span class="ct-label">Residential</span>
+            <span class="ct-hint">My home or property</span>
+          </label>
+          <label class="client-type">
+            <input type="radio" name="clientType" value="commercial" />
+            <span class="ct-icon">🏢</span>
+            <span class="ct-label">Commercial</span>
+            <span class="ct-hint">Business or building</span>
+          </label>
+        </div>
+        <div class="signup-actions">
+          <span class="spacer"></span>
+          <button type="button" class="btn btn-primary" data-go="2">Next →</button>
+        </div>
       </div>
 
-      <div class="field">
-        <label for="signup-name">Your name</label>
-        <input type="text" id="signup-name" name="name" autocomplete="name" required />
+      <!-- Step 2: Account details -->
+      <div class="signup-step" data-step="2">
+        <div class="field">
+          <label for="signup-name">Your name</label>
+          <input type="text" id="signup-name" name="name" autocomplete="name" required />
+        </div>
+        <div class="field">
+          <label for="signup-company">Company / property name <span style="color: var(--slate-light); font-weight: 400;">(optional)</span></label>
+          <input type="text" id="signup-company" name="company" autocomplete="organization" />
+        </div>
+        <div class="field">
+          <label for="signup-email">Email</label>
+          <input type="email" id="signup-email" name="email" autocomplete="email" required />
+        </div>
+        <div class="field">
+          <label for="signup-phone">Phone <span style="color: var(--slate-light); font-weight: 400;">(optional)</span></label>
+          <input type="tel" id="signup-phone" name="phone" autocomplete="tel" />
+        </div>
+        <div class="field">
+          <label for="signup-password">Password <span style="color: var(--slate-light); font-weight: 400;">(min 8 characters)</span></label>
+          <input type="password" id="signup-password" name="password" autocomplete="new-password" minlength="8" required />
+        </div>
+        <div class="signup-actions">
+          <button type="button" class="btn-back" data-go="1">← Back</button>
+          <span class="spacer"></span>
+          <button type="button" class="btn btn-primary" id="step2-next" data-go="3">Next →</button>
+        </div>
       </div>
-      <div class="field">
-        <label for="signup-company">Company / property name <span style="color: var(--slate-light); font-weight: 400;">(optional)</span></label>
-        <input type="text" id="signup-company" name="company" autocomplete="organization" />
-      </div>
-      <div class="field">
-        <label for="signup-email">Email</label>
-        <input type="email" id="signup-email" name="email" autocomplete="email" required />
-      </div>
-      <div class="field">
-        <label for="signup-phone">Phone <span style="color: var(--slate-light); font-weight: 400;">(optional)</span></label>
-        <input type="tel" id="signup-phone" name="phone" autocomplete="tel" />
-      </div>
-      <div class="field">
-        <label for="signup-password">Password <span style="color: var(--slate-light); font-weight: 400;">(min 8 characters)</span></label>
-        <input type="password" id="signup-password" name="password" autocomplete="new-password" minlength="8" required />
-      </div>
-      <button type="submit" class="btn btn-primary">Create Account →</button>
 
-      <p style="font-size: 12px; color: var(--slate-light); margin-top: 16px;">
-        We use your info to set up your portal and contact you about your project. We don't sell leads, run remarketing, or send marketing emails you didn't ask for.
-      </p>
+      <!-- Step 3: Project teaser (mini estimator) -->
+      <div class="signup-step" data-step="3">
+        <p style="font-size: 13px; font-weight: 700; color: var(--forest); letter-spacing: 0.06em; text-transform: uppercase; margin: 0 0 6px;">Quick scope teaser</p>
+        <p style="color: var(--slate); font-size: 14px; margin: 0 0 16px;">Rough numbers only. We'll save this with your account so you can refine it after sign-up.</p>
+
+        <div class="teaser-grid" id="teaser-grid"></div>
+
+        <div class="teaser-out" aria-live="polite">
+          <div class="lbl">Rough range</div>
+          <div class="val" id="teaser-range">$0 – $0</div>
+        </div>
+
+        <div class="signup-actions">
+          <button type="button" class="btn-back" data-go="2">← Back</button>
+          <span class="spacer"></span>
+          <a href="#" class="skip-teaser" id="skip-teaser">Skip teaser →</a>
+          <button type="button" class="btn btn-primary" data-go="4">Next →</button>
+        </div>
+      </div>
+
+      <!-- Step 4: Review + create -->
+      <div class="signup-step" data-step="4">
+        <div class="signup-summary" id="signup-summary"></div>
+
+        <div class="signup-actions">
+          <button type="button" class="btn-back" data-go="3">← Back</button>
+          <span class="spacer"></span>
+          <button type="submit" class="btn btn-primary">Create Account →</button>
+        </div>
+
+        <p style="font-size: 12px; color: var(--slate-light); margin-top: 16px;">
+          We use your info to set up your portal and contact you about your project. We don't sell leads, run remarketing, or send marketing emails you didn't ask for.
+        </p>
+      </div>
+
     </form>
   </div>
 
@@ -195,10 +278,173 @@ document.getElementById('form-signin').addEventListener('submit', async e => {
   }
 });
 
-// ── Sign up ─────────────────────────────────────────────
-document.getElementById('form-signup').addEventListener('submit', async e => {
+// ── Multi-step sign-up ──────────────────────────────────
+const form     = document.getElementById('form-signup');
+const stepper  = document.getElementById('signup-stepper');
+const steps    = Array.from(form.querySelectorAll('.signup-step'));
+const teaserGrid = document.getElementById('teaser-grid');
+const teaserOut  = document.getElementById('teaser-range');
+const summary    = document.getElementById('signup-summary');
+
+// Per-unit rough pricing for the teaser (low-high)
+const TEASER = {
+  commercial: [
+    { id: 'drops',    label: 'Data drops',    hint: 'Cat6/6A — workstations, APs, cameras', low: 250,  high: 450  },
+    { id: 'cameras',  label: 'IP cameras',    hint: 'Mounted, PoE, NVR channel',            low: 400,  high: 700  },
+    { id: 'doors',    label: 'Door access',   hint: 'Hub, reader, lock, first-year license',low: 1200, high: 2200 }
+  ],
+  residential: [
+    { id: 'aps',         label: 'Wi-Fi APs',     hint: '~1 per 1,500 sq ft',                low: 300, high: 500 },
+    { id: 'cameras',     label: 'Cameras',       hint: 'Indoor or weatherized exterior',     low: 350, high: 650 },
+    { id: 'smartLocks',  label: 'Smart locks',   hint: 'Front, back, garage entry',          low: 200, high: 400 }
+  ]
+};
+
+let teaserState = {};
+
+function renderTeaser() {
+  const type = document.querySelector('input[name="clientType"]:checked').value;
+  const items = TEASER[type] || TEASER.residential;
+  teaserState = {};
+  teaserGrid.innerHTML = items.map(it => {
+    teaserState[it.id] = 0;
+    return `
+      <div class="teaser-row">
+        <div>
+          <span class="t-label">${it.label}</span>
+          <span class="t-hint">${it.hint}</span>
+        </div>
+        <div class="num-stepper">
+          <button type="button" data-tdelta="-1" data-tid="${it.id}" aria-label="Decrease">−</button>
+          <input type="number" min="0" max="999" value="0" data-tid="${it.id}" inputmode="numeric" />
+          <button type="button" data-tdelta="1" data-tid="${it.id}" aria-label="Increase">+</button>
+        </div>
+      </div>`;
+  }).join('');
+  recalcTeaser();
+}
+
+function recalcTeaser() {
+  const type = document.querySelector('input[name="clientType"]:checked').value;
+  const items = TEASER[type] || TEASER.residential;
+  let lo = 0, hi = 0;
+  items.forEach(it => {
+    const n = Math.max(0, Number(teaserState[it.id]) || 0);
+    lo += n * it.low; hi += n * it.high;
+  });
+  teaserOut.textContent = lo === 0 ? 'Add a value to see your range' : `$${lo.toLocaleString()} – $${hi.toLocaleString()}`;
+  return { lo, hi, type };
+}
+
+function fmtMoney(n) { return '$' + Math.round(n).toLocaleString(); }
+
+teaserGrid && teaserGrid.addEventListener('click', e => {
+  const btn = e.target.closest('button[data-tdelta]');
+  if (!btn) return;
+  const id = btn.dataset.tid;
+  const delta = Number(btn.dataset.tdelta);
+  teaserState[id] = Math.max(0, (Number(teaserState[id]) || 0) + delta);
+  const inp = teaserGrid.querySelector(`input[data-tid="${id}"]`);
+  if (inp) inp.value = teaserState[id];
+  recalcTeaser();
+});
+teaserGrid && teaserGrid.addEventListener('input', e => {
+  const inp = e.target.closest('input[data-tid]');
+  if (!inp) return;
+  teaserState[inp.dataset.tid] = Math.max(0, Math.min(999, Number(inp.value) || 0));
+  recalcTeaser();
+});
+
+// Re-render teaser whenever clientType changes
+document.querySelectorAll('input[name="clientType"]').forEach(r => {
+  r.addEventListener('change', renderTeaser);
+});
+renderTeaser();
+
+// Step navigation
+function goStep(n) {
+  steps.forEach(s => s.classList.toggle('is-active', Number(s.dataset.step) === n));
+  Array.from(stepper.children).forEach(li => {
+    const i = Number(li.dataset.step);
+    li.classList.toggle('is-active', i === n);
+    li.classList.toggle('is-done', i < n);
+  });
+  if (n === 4) renderSummary();
+  // Scroll the card into view on small screens
+  document.querySelector('.login-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function validateStep(n) {
+  if (n === 2) {
+    const required = ['signup-name', 'signup-email', 'signup-password'];
+    for (const id of required) {
+      const el = document.getElementById(id);
+      if (!el.value || (id === 'signup-password' && el.value.length < 8) || (id === 'signup-email' && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(el.value))) {
+        el.focus();
+        el.reportValidity();
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+form.addEventListener('click', e => {
+  const btn = e.target.closest('[data-go]');
+  if (!btn) return;
   e.preventDefault();
-  const btn = e.target.querySelector('button[type="submit"]');
+  const target = Number(btn.dataset.go);
+  // Going forward? Validate the current step first.
+  const current = steps.findIndex(s => s.classList.contains('is-active')) + 1;
+  if (target > current && !validateStep(current)) return;
+  goStep(target);
+});
+
+document.getElementById('skip-teaser').addEventListener('click', e => {
+  e.preventDefault();
+  // Zero out the teaser state and advance
+  Object.keys(teaserState).forEach(k => { teaserState[k] = 0; });
+  teaserGrid.querySelectorAll('input[data-tid]').forEach(i => i.value = 0);
+  recalcTeaser();
+  goStep(4);
+});
+
+function renderSummary() {
+  const type = document.querySelector('input[name="clientType"]:checked').value;
+  const name = document.getElementById('signup-name').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  const company = document.getElementById('signup-company').value.trim();
+  const { lo, hi } = recalcTeaser();
+  const rows = [
+    { lbl: 'Account type', val: type === 'commercial' ? 'Commercial' : 'Residential', edit: 1 },
+    { lbl: 'Name',         val: name || '—',                                          edit: 2 },
+    { lbl: 'Email',        val: email || '—',                                         edit: 2 }
+  ];
+  if (company) rows.push({ lbl: 'Company',  val: company, edit: 2 });
+  rows.push({
+    lbl: 'Project teaser',
+    val: lo === 0 ? 'Skipped' : `${fmtMoney(lo)} – ${fmtMoney(hi)}`,
+    edit: 3
+  });
+  summary.innerHTML = rows.map(r => `
+    <div class="row">
+      <span class="lbl">${r.lbl}</span>
+      <span class="val">${r.val}<a href="#" class="edit" data-edit="${r.edit}">Edit</a></span>
+    </div>
+  `).join('');
+}
+summary.addEventListener('click', e => {
+  const a = e.target.closest('a[data-edit]');
+  if (!a) return;
+  e.preventDefault();
+  goStep(Number(a.dataset.edit));
+});
+
+// Final submit
+form.addEventListener('submit', async e => {
+  e.preventDefault();
+  if (!form.reportValidity()) return;
+  const btn = form.querySelector('button[type="submit"]');
   btn.disabled = true; btn.textContent = 'Creating account...';
   const data = {
     email:      document.getElementById('signup-email').value.trim(),
@@ -209,16 +455,36 @@ document.getElementById('form-signup').addEventListener('submit', async e => {
     clientType: document.querySelector('input[name="clientType"]:checked').value
   };
   try {
-    const res = await gccApi.signup(data);
+    await gccApi.signup(data);
     localStorage.setItem('gcc-client-id', data.email);
     localStorage.setItem('gcc-client-type', data.clientType);
+
+    // Best-effort save the teaser estimate so it shows up in the portal.
+    const { lo, hi, type } = recalcTeaser();
+    if (lo > 0) {
+      try {
+        await gccApi.saveEstimate({
+          source: 'signup-teaser',
+          clientType: type,
+          fields: Object.assign({}, teaserState),
+          rangeLow: lo,
+          rangeHigh: hi
+        });
+      } catch (_) { /* non-fatal */ }
+    }
+
     window.location.href = data.clientType === 'residential'
       ? '/clients/estimator-residential.html'
       : '/clients/estimator.html';
   } catch (err) {
     btn.disabled = false; btn.textContent = 'Create Account →';
-    if (err.status === 409) alert('An account with that email already exists. Use sign in.');
-    else alert('Signup failed: ' + (err.message || 'Unknown error'));
+    if (err.status === 409) {
+      alert('An account with that email already exists. Use sign in.');
+      goStep(2);
+      document.getElementById('signup-email').focus();
+    } else {
+      alert('Signup failed: ' + (err.message || 'Unknown error'));
+    }
   }
 });
 </script>

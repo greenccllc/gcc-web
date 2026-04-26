@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>GCC LLC — Low-Voltage Cabling, Security & Smart Spaces · KCMO + STL</title>
 <meta name="description" content="Green Communications Contracting LLC — woman-owned, minority-owned Division 27 & 28 contractor delivering structured cabling, IP surveillance, access control, AV, and smart-home integration across Kansas City and St. Louis." />
 <meta name="theme-color" content="#1E4D2B" />
@@ -86,6 +86,63 @@
         <div class="vis-divs">27 + 28</div>
       </div>
       <span class="vis-tag">WBE · MBE</span>
+    </div>
+  </div>
+</section>
+
+<!-- ====================================================== CALCULATOR TEASER -->
+<section style="padding: 32px 0 0; margin-top: -40px; position: relative; z-index: 1;">
+  <div class="container">
+    <div class="calc-mini" id="hero-calc" aria-label="Quick low-voltage estimate">
+      <div class="calc-field">
+        <label for="hc-drops">Data drops</label>
+        <input type="number" id="hc-drops" min="0" max="999" value="0" inputmode="numeric" />
+      </div>
+      <div class="calc-field">
+        <label for="hc-cameras">Cameras</label>
+        <input type="number" id="hc-cameras" min="0" max="999" value="0" inputmode="numeric" />
+      </div>
+      <div class="calc-field">
+        <label for="hc-doors">Door access</label>
+        <input type="number" id="hc-doors" min="0" max="99" value="0" inputmode="numeric" />
+      </div>
+      <div class="calc-out">
+        <div>
+          <div class="calc-out-lbl">Rough range</div>
+          <div class="calc-out-val" id="hc-out">$0 – $0</div>
+        </div>
+        <a href="/estimator.html" id="hc-deeplink">See full breakdown →</a>
+      </div>
+    </div>
+    <p style="text-align: center; color: var(--slate); font-size: 13px; margin: 14px 0 0;">
+      Numbers update live. Click through to refine the full scope.
+    </p>
+  </div>
+</section>
+
+<!-- ====================================================== HOW IT WORKS -->
+<section style="padding: 64px 0 0;">
+  <div class="container">
+    <div class="section-head">
+      <span class="section-eyebrow">How it works</span>
+      <h2 class="section-title">From quote to as-builts in one contract.</h2>
+    </div>
+    <div class="cards cols-3">
+      <article class="card">
+        <span class="badge">01</span>
+        <h3 style="margin-top: 14px;">Send the plans (or a sketch)</h3>
+        <p>T-sheets, E-sheets, A600s — or just a description. We come back with itemized pricing, usually within 48 hours.</p>
+      </article>
+      <article class="card">
+        <span class="badge">02</span>
+        <h3 style="margin-top: 14px;">Plan, install, label, test</h3>
+        <p>BICSI/TIA cabling, Ubiquiti gear, Fluke DSX-8000 + OTDR certification. One foreman from rough-in to closeout.</p>
+      </article>
+      <article class="card">
+        <span class="badge">03</span>
+        <h3 style="margin-top: 14px;">As-builts + warranty</h3>
+        <p>Bluebeam-marked drawings, per-drop cert PDFs, rack photos. 1-yr workmanship, 5-yr hardware, 25-yr cabling.</p>
+      </article>
     </div>
   </div>
 </section>
@@ -269,9 +326,34 @@
   </div>
 </footer>
 
-<script src="/assets/js/site.js"></script>
-<script src="/assets/js/api.js"></script>
-<script src="/assets/js/header.js"></script>
+<script src="/assets/js/site.js" defer></script>
+<script src="/assets/js/api.js" defer></script>
+<script src="/assets/js/header.js" defer></script>
+<script>
+// ── Hero calculator teaser: live range + deep-link to /estimator.html ──
+(function () {
+  var inputs = {
+    drops:   document.getElementById('hc-drops'),
+    cameras: document.getElementById('hc-cameras'),
+    doors:   document.getElementById('hc-doors')
+  };
+  var out  = document.getElementById('hc-out');
+  var link = document.getElementById('hc-deeplink');
+  if (!out || !link) return;
+  var rate = { drops: [250, 450], cameras: [400, 700], doors: [1200, 2200] };
+  function recompute() {
+    var lo = 0, hi = 0, qs = [];
+    Object.keys(inputs).forEach(function (k) {
+      var n = Math.max(0, Number(inputs[k].value) || 0);
+      lo += n * rate[k][0]; hi += n * rate[k][1];
+      if (n > 0) qs.push(k + '=' + n);
+    });
+    out.textContent = lo === 0 ? '$0 – $0' : '$' + lo.toLocaleString() + ' – $' + hi.toLocaleString();
+    link.href = '/estimator.html' + (qs.length ? '?' + qs.join('&') : '');
+  }
+  Object.values(inputs).forEach(function (el) { el.addEventListener('input', recompute); });
+})();
+</script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
