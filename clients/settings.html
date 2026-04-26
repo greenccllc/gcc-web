@@ -10,29 +10,26 @@
 <link rel="stylesheet" href="/assets/css/site.css" />
 <style>
 .tbl { width: 100%; border-collapse: collapse; background: white; border: 1px solid var(--hairline); border-radius: var(--r-md); overflow: hidden; }
-.tbl th { text-align: left; padding: 12px 14px; background: var(--paper); font-size: 12px; font-weight: 700; color: var(--slate); letter-spacing: 0.04em; text-transform: uppercase; border-bottom: 1px solid var(--hairline); }
-.tbl td { padding: 12px 14px; border-top: 1px solid var(--hairline); font-size: 14px; vertical-align: middle; }
+.tbl th { text-align: left; padding: 10px 12px; background: var(--paper); font-size: 11px; font-weight: 700; color: var(--slate); letter-spacing: 0.04em; text-transform: uppercase; border-bottom: 1px solid var(--hairline); }
+.tbl td { padding: 10px 12px; border-top: 1px solid var(--hairline); font-size: 14px; vertical-align: middle; }
 .tbl tr:hover td { background: rgba(30,77,43,0.03); }
 .coming-soon { display: inline-block; padding: 3px 10px; background: rgba(212,175,55,0.18); color: var(--gold-dark); border-radius: var(--r-pill); font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
 .secret-pill { display: inline-block; padding: 2px 8px; background: rgba(220,38,38,0.10); color: #b91c1c; border-radius: var(--r-pill); font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
 .public-pill { display: inline-block; padding: 2px 8px; background: rgba(30,77,43,0.10); color: var(--forest); border-radius: var(--r-pill); font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+.conn-pill { display: inline-block; padding: 3px 10px; background: rgba(72,187,120,0.18); color: #276749; border-radius: var(--r-pill); font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+.disc-pill { background: rgba(160,174,192,0.18); color: var(--slate-light); }
+.role-pill { display: inline-block; padding: 3px 10px; background: rgba(30,77,43,0.10); color: var(--forest); border-radius: var(--r-pill); font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.role-pill.admin { background: rgba(212,175,55,0.18); color: var(--gold-dark); }
 .card { background: white; border: 1px solid var(--hairline); border-radius: 14px; padding: 24px; box-shadow: 0 1px 2px rgba(16,24,40,0.06); margin-bottom: 16px; }
 .card h3 { margin: 0 0 6px; }
 .card .lede { color: var(--slate); font-size: 14px; margin: 0 0 18px; }
 .field-grid { display: grid; grid-template-columns: 240px 1fr auto; gap: 8px; align-items: stretch; }
 .field-grid select, .field-grid input {
-  padding: 10px 12px;
-  border: 1px solid var(--hairline-strong);
-  border-radius: var(--r-sm);
-  font-size: 14px;
-  font-family: inherit;
-  background: var(--paper);
-  width: 100%;
+  padding: 10px 12px; border: 1px solid var(--hairline-strong); border-radius: var(--r-sm);
+  font-size: 14px; font-family: inherit; background: var(--paper); width: 100%;
 }
 .field-grid select:focus, .field-grid input:focus {
-  outline: none;
-  border-color: var(--forest);
-  background: white;
+  outline: none; border-color: var(--forest); background: white;
   box-shadow: 0 0 0 3px rgba(30,77,43,0.15);
 }
 .field-grid .btn { white-space: nowrap; }
@@ -40,7 +37,36 @@
 .section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px; }
 .section-head h2 { margin: 0; font-size: 18px; }
 .section-head .muted { font-size: 12px; color: var(--slate-light); }
-@media (max-width: 640px) {
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+
+/* Side-nav */
+.settings-grid { display: grid; grid-template-columns: 220px 1fr; gap: 28px; align-items: start; }
+.settings-nav {
+  position: sticky; top: 18px;
+  background: white; border: 1px solid var(--hairline);
+  border-radius: var(--r-md); padding: 10px;
+}
+.settings-nav button {
+  display: block; width: 100%; text-align: left;
+  background: transparent; border: 0; padding: 8px 10px;
+  border-radius: 6px; cursor: pointer;
+  font-family: inherit; font-size: 13px; font-weight: 600;
+  color: var(--slate); margin-bottom: 2px;
+}
+.settings-nav button:hover { background: var(--paper); color: var(--ink); }
+.settings-nav button.active { background: rgba(30,77,43,0.08); color: var(--forest); }
+.settings-nav .nav-section { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--slate-light); padding: 8px 10px 4px; }
+
+.integration-card { display: flex; align-items: flex-start; gap: 14px; flex-wrap: wrap; }
+.integration-card .icon { font-size: 30px; line-height: 1; }
+.integration-card .info { flex: 1; min-width: 240px; font-size: 14px; color: var(--slate); }
+.integration-card .info strong { color: var(--ink); }
+.integration-card .info .small { font-size: 12px; color: var(--slate-light); margin-top: 4px; }
+.integration-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+@media (max-width: 800px) {
+  .settings-grid { grid-template-columns: 1fr; }
+  .settings-nav { position: static; }
   .field-grid { grid-template-columns: 1fr; }
 }
 </style>
@@ -49,50 +75,125 @@
 
 <div id="gcc-header"></div>
 
-<section style="padding: 32px 0; background: var(--paper);">
+<section style="padding: 28px 0; background: var(--paper); border-bottom: 1px solid var(--hairline);">
   <div class="container">
     <h1 style="margin-bottom: 4px;">Settings</h1>
-    <p style="color: var(--slate); margin: 0;">Personal API keys and notification preferences. Stored on the server, available everywhere you sign in.</p>
+    <p style="color: var(--slate); margin: 0;">
+      Account preferences, API keys, and integrations.
+      <span id="role-pill-wrap" hidden>
+        Signed in as <span id="role-pill" class="role-pill"></span>
+      </span>
+    </p>
   </div>
 </section>
 
-<section style="padding: 32px 0;">
+<section style="padding: 28px 0;">
   <div class="container">
     <div id="page-loading" style="text-align:center; padding: 40px; color: var(--slate-light);">Loading...</div>
+
     <div id="page-content" hidden>
-      <div style="max-width: 760px;">
+      <div class="settings-grid">
 
-        <!-- Bundler API keys (per-user — applies to anyone using the proposal generator) -->
-        <div class="section-head">
-          <h2>Bundler API keys</h2>
-          <span class="muted">Used by the Proposal Generator</span>
-        </div>
-        <div class="card">
-          <p class="lede">These integrations are wired into the bundler at <code>proposal.greencommllc.com</code>. Save them once here and they follow you to any device you sign in from.</p>
-          <div id="bundler-settings" style="margin-bottom: 16px;"></div>
+        <!-- Side nav -->
+        <aside class="settings-nav">
+          <div class="nav-section">Account</div>
+          <button data-section="profile">Profile</button>
+          <button data-section="bundler" class="active">Bundler API keys</button>
+          <button data-section="notifications">Notifications</button>
 
-          <h4 style="margin: 0 0 8px; font-size: 14px;">Add or update a key</h4>
-          <div class="field-grid">
-            <select id="key-name">
-              <option value="">— Select integration —</option>
-            </select>
-            <input type="text" id="key-value" placeholder="Paste value..." autocomplete="off" />
-            <button class="btn btn-primary" id="key-save">Save</button>
+          <div class="nav-section" id="nav-admin-section" hidden>Admin</div>
+          <button data-section="integrations" id="nav-integrations" hidden>Integrations</button>
+          <button data-section="infra" id="nav-infra" hidden>Infrastructure</button>
+        </aside>
+
+        <!-- Right column: content panes -->
+        <div>
+
+          <!-- Profile (placeholder, links to existing profile.html) -->
+          <div class="settings-section" data-section="profile" hidden>
+            <div class="section-head"><h2>Profile</h2><span class="muted">Your account details</span></div>
+            <div class="card">
+              <p class="lede">Edit name, email, company info, and avatar on the dedicated profile page.</p>
+              <a href="/clients/profile.html" class="btn btn-primary btn-sm">Open profile editor →</a>
+            </div>
           </div>
-          <div class="key-help" id="key-help"></div>
-        </div>
 
-        <!-- Notifications placeholder -->
-        <div class="card">
-          <h3>Notifications <span class="coming-soon">soon</span></h3>
-          <p class="lede" style="margin: 0;">Email digest, project status updates.</p>
-        </div>
+          <!-- Bundler API keys (per-user — applies to anyone using the proposal generator) -->
+          <div class="settings-section" data-section="bundler">
+            <div class="section-head">
+              <h2>Bundler API keys</h2>
+              <span class="muted">Used by the Proposal Generator</span>
+            </div>
+            <div class="card">
+              <p class="lede">Saved on the server with your profile, available everywhere you sign in. Used by the bundler at <code>proposal.greencommllc.com</code>.</p>
+              <div id="bundler-settings" style="margin-bottom: 16px;"></div>
+              <h4 style="margin: 0 0 8px; font-size: 14px;">Add or update a key</h4>
+              <div class="field-grid">
+                <select id="key-name">
+                  <option value="">— Select integration —</option>
+                </select>
+                <input type="text" id="key-value" placeholder="Paste value..." autocomplete="off" />
+                <button class="btn btn-primary" id="key-save">Save</button>
+              </div>
+              <div class="key-help" id="key-help"></div>
+            </div>
+          </div>
 
-        <!-- Admin pointer (visible only to admins) -->
-        <p id="admin-link" hidden style="font-size: 13px; color: var(--slate-light); margin-top: 16px;">
-          Looking for QuickBooks / DNS / OAuth / other infrastructure credentials? Those moved to
-          <a href="/admin/settings.html"><strong>Admin Settings</strong></a>.
-        </p>
+          <!-- Notifications -->
+          <div class="settings-section" data-section="notifications" hidden>
+            <div class="section-head"><h2>Notifications</h2><span class="muted">Email + project updates</span></div>
+            <div class="card">
+              <h3>Email digest <span class="coming-soon">soon</span></h3>
+              <p class="lede" style="margin: 0;">Daily or weekly summary of project status, new leads, and reviews.</p>
+            </div>
+          </div>
+
+          <!-- Admin: Integrations -->
+          <div class="settings-section" data-section="integrations" hidden>
+            <div class="section-head"><h2>Integrations</h2><span class="muted">Server-level OAuth + webhooks</span></div>
+
+            <!-- QuickBooks -->
+            <div class="card" id="card-qb">
+              <h3>QuickBooks Online</h3>
+              <p class="lede">Sync customers, invoices, and items via Intuit OAuth.</p>
+              <div id="qb-card-body">Loading…</div>
+            </div>
+
+            <!-- Google Business Profile -->
+            <div class="card" id="card-gbp">
+              <h3>Google Business Profile</h3>
+              <p class="lede">Pull reviews from your GBP listing and surface them alongside other lead sources.</p>
+              <div id="gbp-card-body">Loading…</div>
+            </div>
+
+            <!-- Thumbtack -->
+            <div class="card">
+              <h3>Thumbtack</h3>
+              <p class="lede">Receive lead, message, and review webhooks. No auth required by Thumbtack.</p>
+              <div class="integration-card">
+                <div class="icon">🎯</div>
+                <div class="info">
+                  <strong>Webhook endpoint</strong>
+                  <div class="small">Paste this into Thumbtack → Create webhook → Endpoint URL.</div>
+                  <code style="display:block; margin-top:8px; padding:8px 10px; background:var(--paper); border:1px solid var(--hairline); border-radius:6px; font-size:12px; word-break:break-all;">https://api.greencommllc.com/api/webhooks/thumbtack</code>
+                </div>
+                <div class="integration-actions">
+                  <button class="btn btn-sm" id="copy-thumbtack-url" style="background:white; border:1px solid var(--hairline-strong);">Copy URL</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Admin: Infrastructure credentials -->
+          <div class="settings-section" data-section="infra" hidden>
+            <div class="section-head"><h2>Infrastructure credentials</h2><span class="muted">DNS · CDN · OAuth · internal services</span></div>
+            <div class="card">
+              <p class="lede">Persistent record of every credential and identifier wired into this stack. Stored in <code>dbo.Settings</code> (secrets revealed on demand).</p>
+              <div id="infra-list">Loading…</div>
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
   </div>
@@ -102,7 +203,6 @@
 <script src="/assets/js/header.js"></script>
 <script src="/assets/js/page.js"></script>
 <script>
-// ---- Supported bundler integrations (must match SYNC_KEYS in bundle-builder.html) ----
 const BUNDLER_KEYS = [
   { api: 'anthropic-api-key', label: 'Anthropic Claude API key',     secret: true,  hint: 'Starts with sk-ant-... — used to call Claude for proposal generation.', placeholder: 'sk-ant-...' },
   { api: 'gmail-token',       label: 'Gmail OAuth refresh token',    secret: true,  hint: 'Long-lived refresh token from Gmail OAuth flow. Used to send proposals.', placeholder: 'Refresh token' },
@@ -113,16 +213,69 @@ const BUNDLER_KEYS = [
 ];
 const KEY_BY_API = Object.fromEntries(BUNDLER_KEYS.map(k => [k.api, k]));
 
+const INFRA_LABELS = {
+  'unifi-api-key':              ['UniFi Network API key',          'UniFi'],
+  'dyndns-key':                 ['DynDNS update token',            'DynDNS'],
+  'godaddy-key':                ['GoDaddy API key',                'GoDaddy'],
+  'godaddy-secret':             ['GoDaddy API secret',             'GoDaddy'],
+  'cloudflare-api-token':       ['Cloudflare API token',           'Cloudflare'],
+  'cloudflare-account-id':      ['Cloudflare account id',          'Cloudflare'],
+  'cloudflare-zone-id':         ['Cloudflare zone id',             'Cloudflare'],
+  'cloudflare-nameservers':     ['Cloudflare nameservers',         'Cloudflare'],
+  'cloudflared-tunnel-id':      ['Cloudflared tunnel id',          'Cloudflare Tunnel'],
+  'cloudflared-connector-token':['Cloudflared connector token',    'Cloudflare Tunnel'],
+  'qb-client-id':               ['Intuit OAuth client id',                   'QuickBooks'],
+  'qb-client-secret':           ['Intuit OAuth client secret',               'QuickBooks'],
+  'qb-webhook-verifier-prod':   ['Intuit webhook verifier — production',     'QuickBooks'],
+  'qb-webhook-verifier-dev':    ['Intuit webhook verifier — development',    'QuickBooks'],
+  'qb-redirect-uri':            ['QB OAuth redirect URI',                    'QuickBooks'],
+  'gbp-client-id':              ['Google OAuth client id',                   'Google Business Profile'],
+  'gbp-client-secret':          ['Google OAuth client secret',               'Google Business Profile'],
+  'quote-agent-shared-secret':  ['Quote-agent shared HMAC secret', 'Internal']
+};
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
 gccPage.requireRole(["client","staff","admin"]).then(async (me) => {
   document.getElementById('page-loading').hidden = true;
   document.getElementById('page-content').hidden = false;
 
-  // Show admin pointer for admins
+  // Role pill
+  const rolePill = document.getElementById('role-pill');
+  rolePill.textContent = me.role;
+  rolePill.classList.toggle('admin', me.role === 'admin');
+  document.getElementById('role-pill-wrap').hidden = false;
+
+  // Reveal admin sections
   if (me.role === 'admin') {
-    document.getElementById('admin-link').hidden = false;
+    document.getElementById('nav-admin-section').hidden = false;
+    document.getElementById('nav-integrations').hidden = false;
+    document.getElementById('nav-infra').hidden = false;
   }
 
-  // Populate dropdown
+  // Section nav — show one section at a time, sync with URL hash.
+  const navButtons = Array.from(document.querySelectorAll('.settings-nav button'));
+  const sections = Array.from(document.querySelectorAll('.settings-section'));
+
+  function showSection(id) {
+    sections.forEach(s => { s.hidden = s.dataset.section !== id; });
+    navButtons.forEach(b => { b.classList.toggle('active', b.dataset.section === id); });
+    if (location.hash !== '#' + id) history.replaceState(null, '', '#' + id);
+    if (id === 'integrations') refreshIntegrations();
+    if (id === 'infra')        refreshInfra();
+  }
+
+  navButtons.forEach(b => b.addEventListener('click', () => showSection(b.dataset.section)));
+
+  const initial = (location.hash || '#bundler').slice(1);
+  const allowed = me.role === 'admin'
+    ? ['profile','bundler','notifications','integrations','infra']
+    : ['profile','bundler','notifications'];
+  showSection(allowed.includes(initial) ? initial : 'bundler');
+
+  // ─── Bundler API keys ─────────────────────────────────────
   const sel = document.getElementById('key-name');
   BUNDLER_KEYS.forEach(k => {
     const o = document.createElement('option');
@@ -130,24 +283,18 @@ gccPage.requireRole(["client","staff","admin"]).then(async (me) => {
     o.textContent = k.label + (k.secret ? '  (secret)' : '');
     sel.appendChild(o);
   });
-
   const help = document.getElementById('key-help');
   const valInput = document.getElementById('key-value');
   function applySelection() {
     const meta = KEY_BY_API[sel.value];
-    if (!meta) {
-      help.textContent = '';
-      valInput.type = 'text';
-      valInput.placeholder = 'Paste value...';
-      return;
-    }
+    if (!meta) { help.textContent=''; valInput.type='text'; valInput.placeholder='Paste value...'; return; }
     help.innerHTML = (meta.secret ? '<span class="secret-pill">Secret</span> ' : '<span class="public-pill">Public</span> ') + meta.hint;
     valInput.type = meta.secret ? 'password' : 'text';
     valInput.placeholder = meta.placeholder;
   }
   sel.addEventListener('change', applySelection);
 
-  async function refresh() {
+  async function refreshBundler() {
     const list = document.getElementById('bundler-settings');
     try {
       const settings = await fetch(gccApi.base + '/api/settings?scope=bundler', {credentials:'include'}).then(r => r.json());
@@ -172,11 +319,11 @@ gccPage.requireRole(["client","staff","admin"]).then(async (me) => {
       list.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', async () => {
         if (!confirm('Delete ' + b.dataset.del + '?')) return;
         await fetch(gccApi.base + '/api/settings/bundler/' + encodeURIComponent(b.dataset.del), {method:'DELETE', credentials:'include'});
-        refresh();
+        refreshBundler();
       }));
     } catch(e) { list.innerHTML = '<div style="color:var(--danger);">Failed to load.</div>'; }
   }
-  await refresh();
+  await refreshBundler();
 
   document.getElementById('key-save').addEventListener('click', async () => {
     const k = sel.value;
@@ -189,12 +336,195 @@ gccPage.requireRole(["client","staff","admin"]).then(async (me) => {
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({Scope:'bundler', Key:k, ValueJson: JSON.stringify({value:v}), IsSecret: meta ? meta.secret : true})
     });
-    sel.value = '';
-    valInput.value = '';
-    applySelection();
-    refresh();
+    sel.value = ''; valInput.value = ''; applySelection();
+    refreshBundler();
   });
-}).catch(() => { /* redirected */ });
+
+  // ─── Thumbtack URL copy ──────────────────────────────────
+  const ttCopy = document.getElementById('copy-thumbtack-url');
+  if (ttCopy) ttCopy.addEventListener('click', () => {
+    navigator.clipboard.writeText('https://api.greencommllc.com/api/webhooks/thumbtack');
+    ttCopy.textContent = '✓ Copied';
+    setTimeout(() => { ttCopy.textContent = 'Copy URL'; }, 1600);
+  });
+
+  // ─── Integrations (admin only) ───────────────────────────
+  async function refreshIntegrations() {
+    if (me.role !== 'admin') return;
+    refreshQb();
+    refreshGbp();
+  }
+
+  async function refreshQb() {
+    const target = document.getElementById('qb-card-body');
+    target.innerHTML = 'Loading…';
+    try {
+      const st = await fetch(gccApi.base + '/api/qb/status', {credentials:'include'}).then(r => r.json());
+      if (!st.configured) {
+        target.innerHTML =
+          '<div class="integration-card"><div class="icon">🔌</div>' +
+          '<div class="info"><strong>Not configured.</strong>' +
+          '<div class="small">Set <code>Qb:ClientId</code> and <code>Qb:ClientSecret</code> in <code>appsettings.json</code> and restart the API.</div></div>' +
+          '<div class="integration-actions"><span class="coming-soon">awaiting credentials</span></div></div>';
+        return;
+      }
+      if (!st.connections || st.connections.length === 0) {
+        const conn = await fetch(gccApi.base + '/api/qb/connect', {credentials:'include'}).then(r => r.json());
+        target.innerHTML =
+          '<div class="integration-card"><div class="icon">📚</div>' +
+          '<div class="info"><strong>Ready to connect.</strong> Environment: <strong>' + escapeHtml(st.environment) + '</strong>.' +
+          '<div class="small">Click below to authorize this server to read your QuickBooks data.</div></div>' +
+          '<div class="integration-actions"><a href="' + conn.authorizeUrl + '" class="btn btn-primary btn-sm">Connect QuickBooks →</a></div></div>';
+        return;
+      }
+      target.innerHTML =
+        '<div class="integration-card" style="margin-bottom:12px;"><div class="icon">📚</div>' +
+        '<div class="info"><strong>Connected</strong> · environment <strong>' + escapeHtml(st.environment) + '</strong>' +
+        '<div class="small">Tokens encrypted via ASP.NET Data Protection. Refresh is automatic.</div></div>' +
+        '<div class="integration-actions"><a href="/admin/financials.html" class="btn btn-sm" style="background:white;border:1px solid var(--hairline-strong);">Open financials →</a></div></div>' +
+        '<table class="tbl"><thead><tr><th>Company</th><th>Status</th><th>Refresh expires</th><th></th></tr></thead><tbody>' +
+        st.connections.map(c =>
+          '<tr>' +
+            '<td><strong>' + escapeHtml(c.companyName || '--') + '</strong><br><code style="font-size:11px;color:var(--slate-light);">' + escapeHtml(c.realmId) + '</code></td>' +
+            '<td><span class="conn-pill' + (c.status !== 'active' ? ' disc-pill' : '') + '">' + escapeHtml(c.status) + '</span></td>' +
+            '<td>' + gccPage.date(c.refreshExpiresAt) + '</td>' +
+            '<td><button class="btn btn-sm qb-disc-btn" data-id="' + c.id + '" style="background:white;border:1px solid var(--hairline-strong);color:var(--slate);">Disconnect</button></td>' +
+          '</tr>'
+        ).join('') +
+        '</tbody></table>';
+      target.querySelectorAll('.qb-disc-btn').forEach(b => b.addEventListener('click', async () => {
+        if (!confirm('Disconnect this QB company?')) return;
+        await fetch(gccApi.base + '/api/qb/disconnect/' + b.dataset.id, {method:'POST', credentials:'include'});
+        refreshQb();
+      }));
+    } catch(e) { target.innerHTML = '<div style="color:var(--danger);">Failed to load.</div>'; }
+  }
+
+  async function refreshGbp() {
+    const target = document.getElementById('gbp-card-body');
+    target.innerHTML = 'Loading…';
+    try {
+      const st = await fetch(gccApi.base + '/api/gbp/status', {credentials:'include'}).then(r => r.json());
+      if (!st.configured) {
+        target.innerHTML =
+          '<div class="integration-card"><div class="icon">🔌</div>' +
+          '<div class="info"><strong>Not configured.</strong>' +
+          '<div class="small">Set <code>Gbp:ClientId</code> and <code>Gbp:ClientSecret</code> in <code>appsettings.json</code>. Web application OAuth client; redirect URI must be <code>https://api.greencommllc.com/api/gbp/callback</code>.</div></div>' +
+          '<div class="integration-actions"><span class="coming-soon">awaiting credentials</span></div></div>';
+        return;
+      }
+      if (!st.connections || st.connections.length === 0) {
+        const conn = await fetch(gccApi.base + '/api/gbp/connect', {credentials:'include'}).then(r => r.json());
+        target.innerHTML =
+          '<div class="integration-card"><div class="icon">⭐</div>' +
+          '<div class="info"><strong>Ready to connect.</strong>' +
+          '<div class="small">Click below to authorize this server to read your Google Business Profile reviews.</div></div>' +
+          '<div class="integration-actions"><a href="' + conn.authorizeUrl + '" class="btn btn-primary btn-sm">Connect Google Business Profile →</a></div></div>';
+        return;
+      }
+      target.innerHTML =
+        '<div class="integration-card" style="margin-bottom:12px;"><div class="icon">⭐</div>' +
+        '<div class="info"><strong>Connected</strong>' +
+        '<div class="small">Reviews flow into the Leads tab. Disconnect any time.</div></div>' +
+        '<div class="integration-actions"><button class="btn btn-sm" id="gbp-sync-btn" style="background:white;border:1px solid var(--hairline-strong);">Sync reviews now</button></div></div>' +
+        '<table class="tbl"><thead><tr><th>Account</th><th>Status</th><th>Updated</th><th></th></tr></thead><tbody>' +
+        st.connections.map(c =>
+          '<tr>' +
+            '<td><strong>' + escapeHtml(c.email || c.accountName || '--') + '</strong>' + (c.accountName && c.email ? '<br><code style="font-size:11px;color:var(--slate-light);">' + escapeHtml(c.accountName) + '</code>' : '') + '</td>' +
+            '<td><span class="conn-pill' + (c.status !== 'active' ? ' disc-pill' : '') + '">' + escapeHtml(c.status) + '</span></td>' +
+            '<td>' + gccPage.datetime(c.updatedAt) + '</td>' +
+            '<td><button class="btn btn-sm gbp-disc-btn" data-id="' + c.id + '" style="background:white;border:1px solid var(--hairline-strong);color:var(--slate);">Disconnect</button></td>' +
+          '</tr>'
+        ).join('') +
+        '</tbody></table>';
+      const syncBtn = document.getElementById('gbp-sync-btn');
+      if (syncBtn) syncBtn.addEventListener('click', async () => {
+        syncBtn.disabled = true; syncBtn.textContent = 'Syncing…';
+        try {
+          const res = await fetch(gccApi.base + '/api/gbp/reviews/sync', {method:'POST', credentials:'include'}).then(r => r.json());
+          syncBtn.textContent = res.ok ? `✓ Synced ${res.reviews}` : 'Failed';
+        } catch(e) { syncBtn.textContent = 'Failed'; }
+        setTimeout(() => { syncBtn.disabled = false; syncBtn.textContent = 'Sync reviews now'; }, 2400);
+      });
+      target.querySelectorAll('.gbp-disc-btn').forEach(b => b.addEventListener('click', async () => {
+        if (!confirm('Disconnect this Google Business Profile account?')) return;
+        await fetch(gccApi.base + '/api/gbp/disconnect/' + b.dataset.id, {method:'POST', credentials:'include'});
+        refreshGbp();
+      }));
+    } catch(e) { target.innerHTML = '<div style="color:var(--danger);">Failed to load.</div>'; }
+  }
+
+  // ─── Infrastructure (admin only) ──────────────────────────
+  async function refreshInfra() {
+    if (me.role !== 'admin') return;
+    const target = document.getElementById('infra-list');
+    try {
+      const settings = await fetch(gccApi.base + '/api/settings?scope=infra', {credentials:'include'}).then(r => r.json());
+      if (!settings.length) {
+        target.innerHTML = '<div style="color:var(--slate-light); font-style:italic; padding: 8px 2px;">No infrastructure credentials saved yet.</div>';
+        return;
+      }
+      const groups = {};
+      settings.forEach(s => {
+        const meta = INFRA_LABELS[s.key] || [s.key, 'Other'];
+        const cat = meta[1];
+        if (!groups[cat]) groups[cat] = [];
+        groups[cat].push({ key: s.key, label: meta[0], isSecret: s.isSecret, valueJson: s.valueJson, updatedAt: s.updatedAt });
+      });
+      let html = '';
+      Object.keys(groups).sort().forEach(cat => {
+        html += '<div style="margin-bottom: 18px;">' +
+          '<div style="font-size:12px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">' + escapeHtml(cat) + '</div>' +
+          '<table class="tbl"><thead><tr><th>Credential</th><th>Type</th><th>Value</th><th>Updated</th><th></th></tr></thead><tbody>';
+        groups[cat].forEach(s => {
+          const pill = s.isSecret
+            ? '<span class="secret-pill">Secret</span>'
+            : '<span class="public-pill">Public</span>';
+          let valueCell;
+          if (s.isSecret) {
+            valueCell = '<code style="font-size:12px;color:var(--slate-light);">••••••••</code> <button class="reveal-btn btn" data-key="' + escapeHtml(s.key) + '" style="padding:2px 8px;font-size:11px;background:white;border:1px solid var(--hairline-strong);border-radius:4px;cursor:pointer;">Reveal</button>';
+          } else {
+            try {
+              const parsed = JSON.parse(s.valueJson || '{}');
+              valueCell = '<code style="font-size:12px; word-break: break-all;">' + escapeHtml(parsed.value || '') + '</code>';
+            } catch { valueCell = '<code style="font-size:12px;color:var(--slate-light);">(empty)</code>'; }
+          }
+          html += '<tr>' +
+            '<td><strong>' + escapeHtml(s.label) + '</strong><br><code style="font-size:11px;color:var(--slate-light);">' + escapeHtml(s.key) + '</code></td>' +
+            '<td>' + pill + '</td>' +
+            '<td style="max-width: 320px;">' + valueCell + '</td>' +
+            '<td style="white-space:nowrap;">' + gccPage.datetime(s.updatedAt) + '</td>' +
+            '<td><button class="btn infra-del-btn" data-key="' + escapeHtml(s.key) + '" style="padding:4px 10px;font-size:12px; background:white; border:1px solid var(--hairline-strong); border-radius:6px; cursor:pointer;">Delete</button></td>' +
+          '</tr>';
+        });
+        html += '</tbody></table></div>';
+      });
+      target.innerHTML = html;
+
+      target.querySelectorAll('.reveal-btn').forEach(b => b.addEventListener('click', async () => {
+        const key = b.dataset.key;
+        b.disabled = true; b.textContent = '...';
+        try {
+          const r = await fetch(gccApi.base + '/api/settings/infra/' + encodeURIComponent(key) + '/reveal', {credentials:'include'}).then(r => r.json());
+          let val = '(empty)';
+          try { val = JSON.parse(r.valueJson || '{}').value || '(empty)'; } catch {}
+          const cell = b.parentElement;
+          cell.innerHTML = '<code style="font-size:12px; word-break: break-all;">' + escapeHtml(val) + '</code> <button class="btn copy-btn" style="padding:2px 8px;font-size:11px;background:white;border:1px solid var(--hairline-strong);border-radius:4px;cursor:pointer;margin-left:6px;">Copy</button>';
+          cell.querySelector('.copy-btn').addEventListener('click', () => {
+            navigator.clipboard.writeText(val);
+            cell.querySelector('.copy-btn').textContent = '✓';
+            setTimeout(() => { const cb = cell.querySelector('.copy-btn'); if (cb) cb.textContent = 'Copy'; }, 1500);
+          });
+        } catch(e) { b.textContent = 'Failed'; }
+      }));
+      target.querySelectorAll('.infra-del-btn').forEach(b => b.addEventListener('click', async () => {
+        if (!confirm('Delete ' + b.dataset.key + ' from your profile? This cannot be undone.')) return;
+        await fetch(gccApi.base + '/api/settings/infra/' + encodeURIComponent(b.dataset.key), {method:'DELETE', credentials:'include'});
+        refreshInfra();
+      }));
+    } catch(e) { target.innerHTML = '<div style="color:var(--danger);">Failed to load.</div>'; }
+  }
+}).catch(() => { /* requireRole handles redirect */ });
 </script>
 </body>
 </html>
