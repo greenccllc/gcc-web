@@ -42,6 +42,22 @@
     .small { font-size:11px; color:var(--slate); }
     a { color:var(--forest); text-decoration:none; }
     a:hover { text-decoration:underline; }
+
+    /* drop-count sub-row */
+    tr.counts td { background:var(--cream); padding:8px 14px 14px; border-bottom:2px solid var(--line); }
+    .counts-grid { display:grid; grid-template-columns:repeat(10, 1fr); gap:6px; }
+    .count-pill {
+      display:flex; align-items:center; justify-content:space-between; gap:6px;
+      padding:5px 10px; border:1px solid var(--line); border-radius:14px;
+      background:white; font-size:11px; color:var(--slate);
+    }
+    .count-pill .lbl { font-weight:600; letter-spacing:.04em; text-transform:uppercase; font-size:10px; }
+    .count-pill .val { font-weight:700; color:var(--ink); min-width:18px; text-align:right; }
+    .count-pill.empty { opacity:.45; }
+    .count-pill.has   { border-color:var(--forest); background:var(--green-tint); }
+    .progress-bar { display:inline-block; width:70px; height:6px; background:var(--line); border-radius:3px; overflow:hidden; vertical-align:middle; margin-right:5px; }
+    .progress-bar > span { display:block; height:100%; background:var(--forest); }
+    @media (max-width:1100px) { .counts-grid { grid-template-columns:repeat(5, 1fr); } }
     #status-bar { position:fixed; right:14px; bottom:10px; background:var(--ink); color:white; padding:6px 12px; border-radius:14px; font-size:11px; opacity:0; transition:opacity .15s; pointer-events:none; }
     #status-bar.show { opacity:.92; }
     #empty { padding:60px 20px; text-align:center; color:var(--slate); }
@@ -118,12 +134,32 @@ function scrapeBadge(scrape) {
   const detail = scrape.detailScraped;
   const att    = scrape.attachmentsCount || 0;
   const msg    = scrape.messagesCount || 0;
+  const pct    = (scrape.progressPct == null) ? null : Math.round(scrape.progressPct);
   let parts = [];
+  if (pct != null) parts.push(`<span class="progress-bar"><span style="width:${pct}%"></span></span><strong>${pct}%</strong>`);
   parts.push(folder ? '<span class="ok">folder</span>' : '<span class="pad">no folder</span>');
   parts.push(detail ? '<span class="ok">detail</span>' : '<span class="pad">no detail</span>');
   if (att) parts.push(`<span class="small">${att} att.</span>`);
   if (msg) parts.push(`<span class="small">${msg} msg.</span>`);
   return parts.join(' · ');
+}
+
+const COUNT_KEYS = [
+  ['data','DATA'],     ['fiber','FIBER'],   ['fiberEnc','FIBER ENC'], ['fiberPp','FIBER PP'], ['coax','COAX'],
+  ['hdmi','HDMI'],     ['tv','TV'],         ['iot','IOT'],            ['aps','APS'],          ['intercom','INTERCOM'],
+  ['camInt','CAM INT'],['camExt','CAM EXT'],['doors','DOORS'],        ['elevator','ELEVATOR'],['ups','UPS'],
+  ['mdf','MDF'],       ['idf','IDF'],       ['switch','SWITCH'],      ['patch','PATCH'],      ['ladder','LADDER'],
+];
+
+function countsGrid(counts) {
+  if (!counts) counts = {};
+  return `<div class="counts-grid">` +
+    COUNT_KEYS.map(([k, label]) => {
+      const v = counts[k];
+      const has = v != null && v !== 0;
+      return `<div class="count-pill ${has ? 'has' : 'empty'}"><span class="lbl">${label}</span><span class="val">${v == null ? '—' : v}</span></div>`;
+    }).join('') +
+    `</div>`;
 }
 
 function folderCell(r) {
@@ -154,8 +190,11 @@ function render(data) {
   }
   $('summary').innerHTML = chips.join('');
 
-  // Rows
-  const rows = data.items.map(r => `
+  // Rows -- main row + drop-counts sub-row per RFP
+  const rows = data.items.map(r => {
+    const conf = r.extraction?.confidencePct;
+    const cost = r.ai?.costUsd;
+    return `
     <tr>
       <td><a href="${r.href || '#'}" target="_blank">${r.projectName || '(no name)'}</a></td>
       <td>${r.gc || '<span class="pad">—</span>'}</td>
@@ -164,10 +203,12 @@ function render(data) {
       <td>${r.dueAt || '<span class="pad">—</span>'}</td>
       <td>${folderCell(r)}</td>
       <td>${scrapeBadge(r.scrape)}</td>
-      <td><span class="pad">— / —</span></td>
-      <td><span class="pad">—</span></td>
+      <td>${conf == null ? '<span class="pad">—</span>' : `<strong>${Math.round(conf)}%</strong>`}${r.extraction?.filesProcessed ? ` <span class="small">(${r.extraction.filesProcessed} files)</span>` : ''}</td>
+      <td>${cost == null ? '<span class="pad">—</span>' : `$${Number(cost).toFixed(2)}`}</td>
       <td class="small">${fmt(r.lastSeenAt)}</td>
-    </tr>`).join('');
+    </tr>
+    <tr class="counts"><td colspan="10">${countsGrid(r.counts)}</td></tr>`;
+  }).join('');
   $('rows').innerHTML = rows;
   $('empty').hidden = data.items.length > 0;
 }
