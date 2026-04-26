@@ -159,6 +159,8 @@
     ];
     if (isAdmin) {
       items.push({ label: 'Admin', group: [
+          { href: '/admin/console/',        label: 'Console (beta)' },
+          { divider: true },
           { href: '/admin/users.html',      label: 'Users' },
           { href: '/admin/financials.html', label: 'Financials' },
           { href: '/admin/pipeline.html',   label: 'Pipeline' },
