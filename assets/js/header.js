@@ -161,7 +161,9 @@
       items.push({ label: 'Admin', group: [
           { href: '/admin/users.html',      label: 'Users' },
           { href: '/admin/financials.html', label: 'Financials' },
-          { href: '/admin/pipeline.html',   label: 'Pipeline' }
+          { href: '/admin/pipeline.html',   label: 'Pipeline' },
+          { divider: true },
+          { href: '/admin/settings.html',   label: 'Admin Settings' }
       ]});
     }
     items.push({ spacer: true });
