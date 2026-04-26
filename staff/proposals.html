@@ -100,7 +100,49 @@ gccPage.requireRole(["staff","admin"]).then(async (me) => {
         '.comp-status .ct   { opacity: 0.85; font-weight: 600; }' +
         '</style>';
 
-      // Wire up "Run Check" buttons.
+      // Helper: format "5m ago", "2h ago", "yesterday", etc.
+      function ago(ts) {
+        if (!ts) return '';
+        const d = new Date(ts);
+        const ms = Date.now() - d.getTime();
+        if (ms < 60_000) return Math.round(ms/1000) + 's ago';
+        if (ms < 3_600_000) return Math.round(ms/60_000) + 'm ago';
+        if (ms < 86_400_000) return Math.round(ms/3_600_000) + 'h ago';
+        return Math.round(ms/86_400_000) + 'd ago';
+      }
+
+      function setStatusFromReport(sp, rep) {
+        const blocks = rep.count_block ?? rep.counts?.block ?? 0;
+        const warns  = rep.count_warn  ?? rep.counts?.warn  ?? 0;
+        sp.className = 'comp-status ' + rep.status;
+        sp.textContent = rep.status + (rep.status !== 'info' ? ' (' + blocks + 'b/' + warns + 'w)' : ' clean');
+        if (rep.findings) {
+          sp.title = rep.findings.slice(0, 6).map(f => f.severity.toUpperCase() + ': ' + f.message).join('\n');
+        }
+      }
+
+      // 1. On page load: fetch last compliance run for each project, show
+      //    badge if found.
+      const rows = target.querySelectorAll('tbody tr');
+      rows.forEach((row, idx) => {
+        const btn = target.querySelector('button.comp-run[data-idx="' + idx + '"]');
+        if (!btn) return;
+        const project = btn.getAttribute('data-project');
+        if (!project) return;
+        const sp = target.querySelector('.comp-status[data-idx="' + idx + '"]');
+        fetch(gccApi.base + '/api/compliance/recent?projectName=' + encodeURIComponent(project), {credentials:'include'})
+          .then(r => r.ok ? r.json() : null)
+          .then(rec => {
+            if (!rec || !rec.found) return;
+            setStatusFromReport(sp, { status: rec.status, count_block: rec.count_block, count_warn: rec.count_warn });
+            const ageStr = ' · ' + ago(rec.ran_at);
+            sp.textContent += ageStr;
+            btn.textContent = 'Re-run';
+          })
+          .catch(() => { /* ignore — fall back to Run Check */ });
+      });
+
+      // 2. Wire up "Run Check" / "Re-run" buttons.
       target.querySelectorAll('button.comp-run').forEach(btn => {
         btn.addEventListener('click', async () => {
           const project = btn.getAttribute('data-project');
@@ -112,6 +154,7 @@ gccPage.requireRole(["staff","admin"]).then(async (me) => {
             return;
           }
           btn.disabled = true;
+          const oldText = btn.textContent;
           btn.textContent = 'Running...';
           sp.textContent = '';
           sp.className = 'comp-status';
@@ -127,22 +170,20 @@ gccPage.requireRole(["staff","admin"]).then(async (me) => {
               sp.className = 'comp-status warn';
               sp.textContent = 'err ' + r.status;
               sp.title = t.slice(0, 300);
-              btn.textContent = 'Re-run';
+              btn.textContent = oldText;
               btn.disabled = false;
               return;
             }
             const rep = await r.json();
-            const blocks = rep.counts.block, warns = rep.counts.warn;
-            sp.className = 'comp-status ' + rep.status;
-            sp.textContent = rep.status + (rep.status !== 'info' ? ' (' + blocks + 'b/' + warns + 'w)' : ' clean');
-            sp.title = (rep.findings || []).slice(0, 6).map(f => f.severity.toUpperCase() + ': ' + f.message).join('\n');
+            setStatusFromReport(sp, rep);
+            sp.textContent += ' · just now';
             btn.textContent = 'Re-run';
             btn.disabled = false;
           } catch (e) {
             sp.className = 'comp-status warn';
             sp.textContent = 'error';
             sp.title = e.message;
-            btn.textContent = 'Re-run';
+            btn.textContent = oldText;
             btn.disabled = false;
           }
         });

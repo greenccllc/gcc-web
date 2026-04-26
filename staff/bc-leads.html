@@ -193,6 +193,10 @@ const COLS = [
     sort:(a,b) => (a.gc || '').localeCompare(b.gc || ''),
     cell:(r) => r.gc ? `<span>${r.gc}</span>` : '<span class="pad">unknown</span>' },
 
+  { id:'location', label:'Location',
+    sort:(a,b) => (a.location || '').localeCompare(b.location || ''),
+    cell:(r) => r.location ? `<span class="small">${r.location}</span>` : '<span class="pad">—</span>' },
+
   { id:'due', label:'Due',
     sort:(a,b) => (parseDue(a.dueAt) || 0) - (parseDue(b.dueAt) || 0),
     cell:(r) => renderDue(r.dueAt) },
