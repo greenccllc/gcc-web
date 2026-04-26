@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Admin · Compliance · GCC LLC</title>
+<meta name="theme-color" content="#1E4D2B" />
+<meta name="robots" content="noindex" />
+<link rel="icon" href="/assets/favicon.ico" sizes="any" />
+<link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
+<link rel="stylesheet" href="/assets/css/site.css" />
+<style>
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 18px; margin-bottom: 16px; }
+  .form-grid label { display: flex; flex-direction: column; font-size: 12px; font-weight: 700; color: var(--slate); letter-spacing: 0.04em; text-transform: uppercase; }
+  .form-grid input, .form-grid select, .form-grid textarea { font: inherit; padding: 8px 10px; border: 1px solid var(--hairline-strong); border-radius: var(--r-sm); background: white; color: var(--ink); margin-top: 4px; }
+  .form-grid textarea { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 13px; min-height: 220px; }
+  .full { grid-column: 1 / -1; }
+  .actions { display: flex; gap: 10px; align-items: center; margin: 16px 0; }
+  .actions button { padding: 10px 22px; background: var(--forest); color: white; border: none; border-radius: var(--r-sm); cursor: pointer; font-weight: 700; font-size: 14px; letter-spacing: 0.02em; }
+  .actions button:hover { background: var(--forest-dark); }
+  .actions button[disabled] { opacity: 0.5; cursor: not-allowed; }
+  .status-badge { display: inline-block; padding: 6px 14px; border-radius: var(--r-pill); font-weight: 800; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; }
+  .status-info  { background: rgba(56,178,172,0.18); color: #2C7A7B; }
+  .status-warn  { background: rgba(212,175,55,0.20); color: var(--gold-dark); }
+  .status-block { background: rgba(245,101,101,0.20); color: #C53030; }
+  .counts-row { display: flex; gap: 24px; margin: 14px 0; font-size: 14px; }
+  .count { display: flex; flex-direction: column; }
+  .count .n { font-size: 22px; font-weight: 800; font-family: var(--font-display); }
+  .count.block .n { color: #C53030; }
+  .count.warn  .n { color: var(--gold-dark); }
+  .count.info  .n { color: #2C7A7B; }
+  .findings { background: white; border: 1px solid var(--hairline); border-radius: var(--r-md); overflow: hidden; margin-top: 12px; }
+  .find { padding: 10px 14px; border-top: 1px solid var(--hairline); }
+  .find:first-child { border-top: none; }
+  .find.block { border-left: 4px solid #C53030; }
+  .find.warn  { border-left: 4px solid var(--gold-dark); }
+  .find.info  { border-left: 4px solid #2C7A7B; }
+  .find .top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .find .rule { font-family: ui-monospace, monospace; font-size: 12px; color: var(--slate); }
+  .find .msg { color: var(--ink); margin-top: 4px; line-height: 1.4; }
+  .find .ev { font-family: ui-monospace, monospace; font-size: 12px; color: var(--slate); margin-top: 4px; padding: 4px 8px; background: var(--paper); border-radius: var(--r-sm); display: inline-block; }
+  #empty { padding: 40px 20px; text-align: center; color: var(--slate-light); }
+  #status { font-family: ui-monospace, monospace; font-size: 12px; color: var(--slate); }
+</style>
+</head>
+<body>
+
+<div id="gcc-header"></div>
+
+<section style="padding: 28px 0; background: var(--paper); border-bottom: 1px solid var(--hairline);">
+  <div class="container">
+    <h1 style="margin-bottom: 4px;">Compliance</h1>
+    <p style="color: var(--slate); margin: 0;">Pre-submission gate for client-facing docs. Brand, voice, leakage, consistency, and budget rules.</p>
+  </div>
+</section>
+
+<section style="padding: 28px 0;">
+  <div class="container">
+    <div class="form-grid">
+      <label>Doc Type
+        <select id="doc_type">
+          <option value="proposal">proposal</option>
+          <option value="cover_letter">cover_letter</option>
+          <option value="bid_overview">bid_overview</option>
+          <option value="bid_proposal">bid_proposal</option>
+          <option value="sow">sow</option>
+          <option value="client_doc">client_doc</option>
+          <option value="internal">internal</option>
+          <option value="extraction">extraction</option>
+        </select>
+      </label>
+      <label>Job (folder name, optional — used for budget rule)
+        <input id="job" type="text" placeholder="2026-04-23 - Spavia Day Spa - Overland Park, KS - 100%" />
+      </label>
+      <label class="full">Content
+        <textarea id="content" placeholder="Paste the doc contents here…"></textarea>
+      </label>
+      <label>Other jobs (comma-separated — leakage check)
+        <input id="other_jobs" type="text" placeholder="Pleasant Lea Middle School, Springhill Suites" />
+      </label>
+      <label>Other clients (comma-separated — leakage check)
+        <input id="other_clients" type="text" placeholder="Straub Construction, Hausmann" />
+      </label>
+    </div>
+    <div class="actions">
+      <button id="run-btn">Run compliance check</button>
+      <span id="status"></span>
+    </div>
+
+    <div id="result" hidden>
+      <span class="status-badge" id="badge">--</span>
+      <span style="margin-left: 12px; font-size: 12px; color: var(--slate);" id="elapsed"></span>
+      <div class="counts-row">
+        <div class="count block"><span class="lbl" style="font-size:11px;color:var(--slate);">BLOCK</span><span class="n" id="c-block">0</span></div>
+        <div class="count warn"><span class="lbl" style="font-size:11px;color:var(--slate);">WARN</span><span class="n" id="c-warn">0</span></div>
+        <div class="count info"><span class="lbl" style="font-size:11px;color:var(--slate);">INFO</span><span class="n" id="c-info">0</span></div>
+      </div>
+      <div id="findings" class="findings"></div>
+    </div>
+    <div id="empty" hidden>No findings — clean.</div>
+  </div>
+</section>
+
+<div id="gcc-footer"></div>
+
+<script src="/assets/js/api.js"></script>
+<script src="/assets/js/site.js"></script>
+<script>
+(function () {
+  const btn = document.getElementById('run-btn');
+  const status = document.getElementById('status');
+  const result = document.getElementById('result');
+  const empty = document.getElementById('empty');
+  const findingsEl = document.getElementById('findings');
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function csv(s) { return (s||'').split(',').map(x => x.trim()).filter(Boolean); }
+
+  btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    status.textContent = 'Running…';
+    result.hidden = true;
+    empty.hidden = true;
+    findingsEl.innerHTML = '';
+
+    const payload = {
+      docType:        document.getElementById('doc_type').value,
+      job:            document.getElementById('job').value || null,
+      content:        document.getElementById('content').value,
+      otherJobs:      csv(document.getElementById('other_jobs').value),
+      otherClients:   csv(document.getElementById('other_clients').value),
+      sourcesProvided: false,
+    };
+
+    try {
+      const r = await fetch(gccApi.base + '/api/compliance/check', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        body: JSON.stringify(payload),
+      });
+      if (!r.ok) {
+        const t = await r.text();
+        throw new Error('HTTP ' + r.status + ': ' + t.slice(0, 300));
+      }
+      const rep = await r.json();
+      status.textContent = '';
+      result.hidden = false;
+      const badge = document.getElementById('badge');
+      badge.textContent = rep.status;
+      badge.className = 'status-badge status-' + rep.status;
+      document.getElementById('elapsed').textContent = rep.elapsed_ms + ' ms · ' + rep.findings.length + ' findings';
+      document.getElementById('c-block').textContent = rep.counts.block;
+      document.getElementById('c-warn').textContent  = rep.counts.warn;
+      document.getElementById('c-info').textContent  = rep.counts.info;
+
+      if (!rep.findings.length) {
+        empty.hidden = false;
+      } else {
+        // Sort: block first, warn, info; preserve order within
+        const order = { block: 0, warn: 1, info: 2 };
+        const sorted = rep.findings.slice().sort((a, b) => order[a.severity] - order[b.severity]);
+        findingsEl.innerHTML = sorted.map(f => `
+          <div class="find ${f.severity}">
+            <div class="top"><strong>${escapeHtml(f.message)}</strong>
+              <span class="rule">${escapeHtml(f.rule)}${f.line ? ' · L' + f.line : ''}</span>
+            </div>
+            ${f.evidence ? `<div class="ev">${escapeHtml(f.evidence)}</div>` : ''}
+          </div>
+        `).join('');
+      }
+    } catch (e) {
+      status.textContent = 'Error: ' + e.message;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+})();
+</script>
+
+</body>
+</html>

@@ -70,8 +70,83 @@ gccPage.requireRole(["staff","admin"]).then(async (me) => {
     if (!ests.length) {
       target.innerHTML = '<div class="empty-state"><div class="es-icon">📝</div><div>No proposals yet.</div></div>';
     } else {
-      const rows = ests.map(e => '<tr><td>' + gccPage.datetime(e.createdAt) + '</td><td>' + (e.clientEmail || '--') + '</td><td>' + (e.projectName || e.source) + '</td><td>' + e.clientType + '</td><td>' + gccPage.money(e.estimateMin) + ' -- ' + gccPage.money(e.estimateMax) + '</td><td>' + e.lineItemCount + '</td><td><span class="status-pill status-' + e.status + '">' + e.status + '</span></td></tr>').join('');
-      target.innerHTML = '<table class="tbl"><thead><tr><th>Date</th><th>Client</th><th>Project</th><th>Type</th><th>Range</th><th>Lines</th><th>Status</th></tr></thead><tbody>' + rows + '</tbody></table>';
+      function escapeAttr(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+      const rows = ests.map((e, idx) => {
+        const proj = e.projectName || e.source || '';
+        const compCell = '<button class="comp-run" data-idx="' + idx + '" data-project="' + escapeAttr(proj) + '">Run Check</button><span class="comp-status" data-idx="' + idx + '"></span>';
+        return '<tr>' +
+          '<td>' + gccPage.datetime(e.createdAt) + '</td>' +
+          '<td>' + (e.clientEmail || '--') + '</td>' +
+          '<td>' + escapeAttr(proj) + '</td>' +
+          '<td>' + e.clientType + '</td>' +
+          '<td>' + gccPage.money(e.estimateMin) + ' -- ' + gccPage.money(e.estimateMax) + '</td>' +
+          '<td>' + e.lineItemCount + '</td>' +
+          '<td><span class="status-pill status-' + e.status + '">' + e.status + '</span></td>' +
+          '<td class="comp-cell">' + compCell + '</td>' +
+        '</tr>';
+      }).join('');
+      target.innerHTML =
+        '<table class="tbl"><thead><tr>' +
+        '<th>Date</th><th>Client</th><th>Project</th><th>Type</th><th>Range</th><th>Lines</th><th>Status</th><th>Compliance</th>' +
+        '</tr></thead><tbody>' + rows + '</tbody></table>' +
+        '<style>' +
+        '.comp-run { font-size: 12px; padding: 4px 10px; background: white; border: 1px solid var(--hairline-strong); border-radius: 5px; cursor: pointer; color: var(--forest); }' +
+        '.comp-run:hover:not([disabled]) { background: var(--paper); border-color: var(--forest); }' +
+        '.comp-run[disabled] { opacity: 0.55; cursor: progress; }' +
+        '.comp-status { margin-left: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; padding: 2px 8px; border-radius: var(--r-pill); }' +
+        '.comp-status.info  { background: rgba(56,178,172,0.18); color: #2C7A7B; }' +
+        '.comp-status.warn  { background: rgba(212,175,55,0.20); color: var(--gold-dark); }' +
+        '.comp-status.block { background: rgba(245,101,101,0.22); color: #C53030; }' +
+        '.comp-status .ct   { opacity: 0.85; font-weight: 600; }' +
+        '</style>';
+
+      // Wire up "Run Check" buttons.
+      target.querySelectorAll('button.comp-run').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const project = btn.getAttribute('data-project');
+          const idx     = btn.getAttribute('data-idx');
+          const sp      = target.querySelector('.comp-status[data-idx="' + idx + '"]');
+          if (!project) {
+            sp.className = 'comp-status warn';
+            sp.textContent = 'no project';
+            return;
+          }
+          btn.disabled = true;
+          btn.textContent = 'Running...';
+          sp.textContent = '';
+          sp.className = 'comp-status';
+          try {
+            const r = await fetch(gccApi.base + '/api/compliance/check-job', {
+              method: 'POST',
+              credentials: 'include',
+              headers: { 'Content-Type': 'application/json; charset=utf-8' },
+              body: JSON.stringify({ projectName: project }),
+            });
+            if (!r.ok) {
+              const t = await r.text();
+              sp.className = 'comp-status warn';
+              sp.textContent = 'err ' + r.status;
+              sp.title = t.slice(0, 300);
+              btn.textContent = 'Re-run';
+              btn.disabled = false;
+              return;
+            }
+            const rep = await r.json();
+            const blocks = rep.counts.block, warns = rep.counts.warn;
+            sp.className = 'comp-status ' + rep.status;
+            sp.textContent = rep.status + (rep.status !== 'info' ? ' (' + blocks + 'b/' + warns + 'w)' : ' clean');
+            sp.title = (rep.findings || []).slice(0, 6).map(f => f.severity.toUpperCase() + ': ' + f.message).join('\n');
+            btn.textContent = 'Re-run';
+            btn.disabled = false;
+          } catch (e) {
+            sp.className = 'comp-status warn';
+            sp.textContent = 'error';
+            sp.title = e.message;
+            btn.textContent = 'Re-run';
+            btn.disabled = false;
+          }
+        });
+      });
     }
   } catch(e) { document.getElementById('proposals-table').innerHTML = '<div class="empty-state">Failed to load.</div>'; }
 }).catch(() => { /* redirected */ });
