@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Admin · Marketing · GCC LLC</title>
+<meta name="theme-color" content="#1E4D2B" />
+<meta name="robots" content="noindex" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%231E4D2B'/%3E%3Ctext x='50' y='65' font-family='Helvetica' font-size='42' font-weight='800' fill='white' text-anchor='middle'%3EGC%3C/text%3E%3Ccircle cx='86' cy='14' r='8' fill='%23D4AF37'/%3E%3C/svg%3E" type="image/svg+xml" />
+<link rel="stylesheet" href="/assets/css/site.css" />
+<style>
+.mk-wrap { display: grid; grid-template-columns: 280px 1fr; gap: 24px; }
+@media (max-width: 860px) { .mk-wrap { grid-template-columns: 1fr; } }
+
+.mk-side {
+  background: white;
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-md);
+  padding: 14px;
+  align-self: start;
+}
+.mk-side h3 { margin: 0 0 10px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--slate); }
+.doc-link {
+  display: block;
+  padding: 10px 12px;
+  border-radius: var(--r-sm);
+  font-size: 14px; font-weight: 500; color: var(--ink);
+  text-decoration: none; cursor: pointer;
+  margin-bottom: 4px;
+}
+.doc-link:hover { background: var(--paper); color: var(--forest); }
+.doc-link.active { background: rgba(30,77,43,0.10); color: var(--forest); font-weight: 700; }
+.doc-link .meta { display: block; font-size: 11px; color: var(--slate-light); font-weight: 400; margin-top: 2px; }
+
+.mk-content {
+  background: white;
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-md);
+  padding: 32px 40px;
+  min-height: 400px;
+}
+.mk-content.empty { display: flex; align-items: center; justify-content: center; color: var(--slate-light); font-style: italic; min-height: 300px; }
+
+/* Markdown rendering */
+.mk-content h1 { font-size: 28px; margin: 0 0 12px; color: var(--ink); border-bottom: 2px solid var(--hairline); padding-bottom: 8px; }
+.mk-content h2 { font-size: 20px; margin: 28px 0 10px; color: var(--forest); }
+.mk-content h3 { font-size: 16px; margin: 20px 0 8px; color: var(--ink); }
+.mk-content h4 { font-size: 14px; margin: 16px 0 6px; color: var(--slate); text-transform: uppercase; letter-spacing: 0.04em; }
+.mk-content p { line-height: 1.65; margin: 0 0 14px; color: var(--ink); }
+.mk-content ul, .mk-content ol { padding-left: 24px; margin: 0 0 14px; line-height: 1.7; }
+.mk-content li { margin-bottom: 4px; }
+.mk-content code { background: var(--paper); padding: 1px 6px; border-radius: 4px; font-size: 13px; color: var(--forest); }
+.mk-content pre { background: var(--paper); padding: 14px 18px; border-radius: var(--r-sm); overflow-x: auto; margin: 0 0 14px; font-size: 13px; line-height: 1.5; }
+.mk-content pre code { background: transparent; padding: 0; }
+.mk-content blockquote { border-left: 3px solid var(--gold); padding: 4px 16px; margin: 14px 0; color: var(--slate); background: rgba(212,175,55,0.06); }
+.mk-content table { border-collapse: collapse; margin: 0 0 14px; font-size: 14px; }
+.mk-content th, .mk-content td { border: 1px solid var(--hairline); padding: 6px 12px; text-align: left; }
+.mk-content th { background: var(--paper); font-weight: 700; }
+.mk-content a { color: var(--forest); }
+.mk-content hr { border: 0; border-top: 1px solid var(--hairline); margin: 24px 0; }
+.mk-content strong { color: var(--ink); }
+
+.doc-meta {
+  display: flex; gap: 16px; align-items: center;
+  font-size: 12px; color: var(--slate-light);
+  padding-bottom: 14px; margin-bottom: 14px;
+  border-bottom: 1px solid var(--hairline);
+}
+</style>
+</head>
+<body>
+
+<div id="gcc-header"></div>
+
+<section style="padding: 28px 0; background: var(--paper); border-bottom: 1px solid var(--hairline);">
+  <div class="container">
+    <h1 style="margin-bottom: 4px;">Marketing</h1>
+    <p style="color: var(--slate); margin: 0;">Internal positioning notes, listing profile drafts, and platform signup walkthroughs. Admin only — not served publicly.</p>
+  </div>
+</section>
+
+<section style="padding: 28px 0;">
+  <div class="container">
+    <div id="page-loading" style="text-align:center; padding: 40px; color: var(--slate-light);">Loading...</div>
+    <div id="page-content" hidden>
+
+      <div class="mk-wrap">
+        <aside class="mk-side">
+          <h3>Documents</h3>
+          <div id="doc-list">Loading...</div>
+          <p style="font-size: 11px; color: var(--slate-light); margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--hairline);">
+            Stored at <code style="font-size: 10px;">C:\inetpub\gcc-api\admin-docs\</code> on the server. Updates land here when the file is replaced or the deploy script copies new versions from the gcc-site repo.
+          </p>
+        </aside>
+
+        <div class="mk-content empty" id="mk-content">Pick a document on the left to view it.</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<script src="/assets/js/api.js"></script>
+<script src="/assets/js/header.js"></script>
+<script src="/assets/js/page.js"></script>
+<script>
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// Tiny markdown renderer — handles the subset we actually use in our docs:
+// headers, bold, italic, inline code, fenced code, links, lists (ul/ol),
+// blockquotes, hr, tables, paragraphs.
+function renderMarkdown(md) {
+  if (!md) return '';
+  const lines = md.split(/\r?\n/);
+  const out = [];
+  let inCode = false;
+  let codeLang = '';
+  let codeBuf = [];
+  let inList = false; let listType = ''; // 'ul' or 'ol'
+  let inTable = false; let tableRows = [];
+  let paragraphBuf = [];
+
+  function flushParagraph() {
+    if (paragraphBuf.length) {
+      out.push('<p>' + inlineMd(paragraphBuf.join(' ')) + '</p>');
+      paragraphBuf = [];
+    }
+  }
+  function flushList() {
+    if (inList) {
+      out.push('</' + listType + '>');
+      inList = false; listType = '';
+    }
+  }
+  function flushTable() {
+    if (inTable && tableRows.length >= 2) {
+      const headerCells = tableRows[0].split('|').map(c => c.trim()).filter((_, i, a) => i > 0 && i < a.length - 1);
+      const bodyRows = tableRows.slice(2); // skip header + separator
+      let html = '<table><thead><tr>';
+      headerCells.forEach(h => html += '<th>' + inlineMd(h) + '</th>');
+      html += '</tr></thead><tbody>';
+      bodyRows.forEach(r => {
+        const cells = r.split('|').map(c => c.trim()).filter((_, i, a) => i > 0 && i < a.length - 1);
+        html += '<tr>';
+        cells.forEach(c => html += '<td>' + inlineMd(c) + '</td>');
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+      out.push(html);
+    }
+    inTable = false; tableRows = [];
+  }
+
+  function inlineMd(s) {
+    s = escapeHtml(s);
+    // Inline code
+    s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+    // Bold
+    s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    // Italic
+    s = s.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>');
+    // Links [text](url)
+    s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+    return s;
+  }
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    // Fenced code blocks
+    if (/^```/.test(line)) {
+      if (inCode) {
+        out.push('<pre><code class="lang-' + escapeHtml(codeLang) + '">' + escapeHtml(codeBuf.join('\n')) + '</code></pre>');
+        inCode = false; codeBuf = []; codeLang = '';
+      } else {
+        flushParagraph(); flushList(); flushTable();
+        inCode = true;
+        codeLang = line.replace(/^```/, '').trim();
+      }
+      continue;
+    }
+    if (inCode) { codeBuf.push(line); continue; }
+
+    // Tables: detect by line starting with | and presence of separator row next
+    if (/^\|.*\|$/.test(line)) {
+      if (!inTable) {
+        flushParagraph(); flushList();
+        inTable = true; tableRows = [];
+      }
+      tableRows.push(line);
+      continue;
+    } else if (inTable) {
+      flushTable();
+    }
+
+    // Headers
+    let m;
+    if (m = line.match(/^(#{1,6})\s+(.*)$/)) {
+      flushParagraph(); flushList(); flushTable();
+      const lvl = m[1].length;
+      out.push('<h' + lvl + '>' + inlineMd(m[2]) + '</h' + lvl + '>');
+      continue;
+    }
+    // Horizontal rule
+    if (/^---+\s*$/.test(line)) {
+      flushParagraph(); flushList(); flushTable();
+      out.push('<hr/>');
+      continue;
+    }
+    // Blockquote
+    if (m = line.match(/^>\s?(.*)$/)) {
+      flushParagraph(); flushList(); flushTable();
+      out.push('<blockquote>' + inlineMd(m[1]) + '</blockquote>');
+      continue;
+    }
+    // Unordered list
+    if (m = line.match(/^[\s]*[-*]\s+(.*)$/)) {
+      flushParagraph(); flushTable();
+      if (!inList || listType !== 'ul') { flushList(); out.push('<ul>'); inList = true; listType = 'ul'; }
+      out.push('<li>' + inlineMd(m[1]) + '</li>');
+      continue;
+    }
+    // Ordered list
+    if (m = line.match(/^[\s]*\d+\.\s+(.*)$/)) {
+      flushParagraph(); flushTable();
+      if (!inList || listType !== 'ol') { flushList(); out.push('<ol>'); inList = true; listType = 'ol'; }
+      out.push('<li>' + inlineMd(m[1]) + '</li>');
+      continue;
+    }
+    // Blank line — flush paragraph
+    if (/^\s*$/.test(line)) {
+      flushParagraph(); flushList();
+      continue;
+    }
+    // Default — accumulate into paragraph buffer
+    paragraphBuf.push(line);
+  }
+  flushParagraph(); flushList(); flushTable();
+  return out.join('\n');
+}
+
+let docs = [];
+let currentSlug = null;
+
+gccPage.requireRole(["admin"]).then(async (me) => {
+  document.getElementById('page-loading').hidden = true;
+  document.getElementById('page-content').hidden = false;
+
+  try {
+    const r = await fetch(gccApi.base + '/api/admin/docs', {credentials:'include'}).then(r => r.json());
+    docs = (r && r.docs) || [];
+    renderDocList();
+    if (docs.length > 0) {
+      // Auto-open the first doc
+      openDoc(docs[0].slug);
+    } else {
+      document.getElementById('mk-content').textContent =
+        'No documents yet. Drop .md files into ' + (r.path || 'C:\\inetpub\\gcc-api\\admin-docs') + ' on the server.';
+    }
+  } catch(e) {
+    console.error(e);
+    document.getElementById('doc-list').innerHTML = '<div style="color:var(--danger);font-size:13px;">Failed to load docs list.</div>';
+  }
+}).catch(() => { /* requireRole redirects */ });
+
+function renderDocList() {
+  const target = document.getElementById('doc-list');
+  if (!docs.length) {
+    target.innerHTML = '<div style="color:var(--slate-light);font-style:italic;font-size:13px;">No docs yet.</div>';
+    return;
+  }
+  target.innerHTML = docs.map(d => {
+    const niceName = d.slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    const sizeKb = (d.sizeBytes / 1024).toFixed(1);
+    const date = new Date(d.modifiedAt).toLocaleDateString();
+    return '<a class="doc-link" data-slug="' + escapeHtml(d.slug) + '" onclick="openDoc(\'' + escapeHtml(d.slug) + '\'); return false;">' +
+           '<strong>' + escapeHtml(niceName) + '</strong>' +
+           '<span class="meta">' + sizeKb + ' KB · ' + date + '</span>' +
+           '</a>';
+  }).join('');
+}
+
+async function openDoc(slug) {
+  currentSlug = slug;
+  document.querySelectorAll('.doc-link').forEach(a => a.classList.toggle('active', a.dataset.slug === slug));
+  const target = document.getElementById('mk-content');
+  target.classList.remove('empty');
+  target.innerHTML = '<div style="color:var(--slate-light);">Loading…</div>';
+  try {
+    const r = await fetch(gccApi.base + '/api/admin/docs/' + encodeURIComponent(slug), {credentials:'include'}).then(r => r.json());
+    if (r.error) {
+      target.innerHTML = '<div style="color:var(--danger);">' + escapeHtml(r.error) + '</div>';
+      return;
+    }
+    const date = new Date(r.modifiedAt).toLocaleString();
+    const sizeKb = (r.sizeBytes / 1024).toFixed(1);
+    target.innerHTML =
+      '<div class="doc-meta">' +
+        '<span><strong>' + escapeHtml(r.name) + '</strong></span>' +
+        '<span>' + sizeKb + ' KB</span>' +
+        '<span>Last modified ' + date + '</span>' +
+      '</div>' +
+      renderMarkdown(r.content);
+  } catch(e) {
+    console.error(e);
+    target.innerHTML = '<div style="color:var(--danger);">Failed to load that doc.</div>';
+  }
+}
+</script>
+</body>
+</html>
