@@ -326,5 +326,23 @@
 <script src="/assets/js/header.js" defer></script>
 <script src="/assets/js/estimator-save.js" defer></script>
 <script src="/assets/js/estimator.js" defer></script>
+<script>
+// Pre-fill from query string (deep-linked from landing page calculator teaser).
+// Runs after estimator.js (also deferred), so the recompute hook is available.
+document.addEventListener('DOMContentLoaded', function () {
+  var qs = new URLSearchParams(location.search);
+  ['drops', 'cameras', 'doors', 'speakers', 'fiberRuns', 'serverRooms'].forEach(function (k) {
+    var v = qs.get(k);
+    if (v == null) return;
+    var n = Math.max(0, Math.min(5000, parseInt(v, 10) || 0));
+    var input = document.getElementById(k);
+    if (input) {
+      input.value = n;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  });
+});
+</script>
 </body>
 </html>
