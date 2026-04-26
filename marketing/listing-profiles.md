@@ -27,7 +27,7 @@ Licensed low-voltage pros — cameras, networks, smart home, done right the firs
 
 ### Intro paragraph *(395 chars — fits Thumbtack cap)*
 ```
-Woman-owned, BICSI-trained low-voltage contractor serving Kansas City + St. Louis
+BICSI-trained low-voltage contractor serving Kansas City + St. Louis
 since 2022. Clean, code-compliant security camera installs, structured wiring,
 smart home setup, and network drops — without the wall-damage and corner-cutting
 that gets handymen called back. Insured, background-checked, written warranties.

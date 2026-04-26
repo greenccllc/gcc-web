@@ -26,7 +26,7 @@ auto-creates them from address-data sources), claim it. Otherwise, create new.
 | **Phone** | (636) 224-8192 |
 | **Website** | https://www.greencommllc.com |
 | **Open hours** | Mon–Fri 8:00 AM – 6:00 PM (Central) · Sat by appointment · Sun closed |
-| **From the business** | Family-led, women-owned, minority-owned commercial low-voltage contractor licensed in Missouri and Kansas. BICSI / TIA-568 / TIA-606-B trained. Insured for $1M general liability + workers' comp. |
+| **From the business** | Family-led commercial low-voltage contractor licensed in Missouri and Kansas. BICSI / TIA-568 / TIA-606-B trained. Insured for $1M general liability + workers' comp. |
 
 **Important:** Google distinguishes between "physical storefront" and "service-area business" (SAB). Choose **Service-area business** — your address won't show on the public profile, but you'll appear in local results across the entire service area.
 
@@ -48,7 +48,7 @@ but you can fill out everything else.
 Paste verbatim into the "From the business" field:
 
 ```
-Green Communications Contracting LLC is a woman-owned, minority-owned Missouri LLC delivering Division 27 (structured cabling, fiber, networking) and Division 28 (IP surveillance, access control, alarms) low-voltage work across the Kansas City and St. Louis metros.
+Green Communications Contracting LLC is a Missouri LLC delivering Division 27 (structured cabling, fiber, networking) and Division 28 (IP surveillance, access control, alarms) low-voltage work across the Kansas City and St. Louis metros.
 
 We do clean commercial installs for schools, healthcare, senior living, government, and hospitality — plus residential security camera systems, smart home setup, and whole-home networking.
 

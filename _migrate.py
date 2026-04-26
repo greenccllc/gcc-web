@@ -132,7 +132,7 @@ LOCAL_BUSINESS_JSONLD = """\
   "url": "https://greencommllc.com/",
   "logo": "https://greencommllc.com/assets/og/logo.png",
   "image": "https://greencommllc.com/assets/og/og-default.png",
-  "description": "Woman-owned, minority-owned Division 27 & 28 contractor delivering structured cabling, IP surveillance, access control, AV, and smart-home integration across Kansas City and St. Louis.",
+  "description": "Division 27 & 28 contractor delivering structured cabling, IP surveillance, access control, AV, and smart-home integration across Kansas City and St. Louis.",
   "telephone": "+1-636-224-8192",
   "email": "info@greencommllc.com",
   "priceRange": "$$",
@@ -164,11 +164,11 @@ LOCAL_BUSINESS_JSONLD = """\
 PAGE_META = {
     "index.html": (
         "GCC LLC — Low-Voltage Cabling, Security & Smart Spaces · KCMO + STL",
-        "Green Communications Contracting LLC — woman-owned, minority-owned Division 27 & 28 contractor delivering structured cabling, IP surveillance, access control, AV, and smart-home integration across Kansas City and St. Louis.",
+        "Green Communications Contracting LLC — Division 27 & 28 contractor delivering structured cabling, IP surveillance, access control, AV, and smart-home integration across Kansas City and St. Louis.",
     ),
     "about.html": (
         "About — A small, sharp Missouri LLC · GCC LLC",
-        "GCC LLC is a woman-owned, minority-owned Missouri LLC building structured cabling and security systems across Kansas City and St. Louis. Lean team, tight standards, direct line to ownership.",
+        "GCC LLC is a Missouri LLC building structured cabling and security systems across Kansas City and St. Louis. Lean team, tight standards, direct line to ownership.",
     ),
     "services.html": (
         "Services — Structured Cabling, Security, Smart Home · GCC LLC",
