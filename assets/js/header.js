@@ -152,9 +152,11 @@
           { href: '/staff/clients.html',   label: 'Clients' }
       ]},
       { label: 'Tools', group: [
-          { href: 'https://proposal.greencommllc.com/', label: 'Proposal Generator', external: true },
-          { href: '/staff/calendar.html', label: 'Calendar' },
-          { href: '/staff/files.html',    label: 'Files' }
+          { href: '/staff/proposalgen.html',           label: 'Proposal Generator' },
+          { href: 'https://proposal.greencommllc.com/', label: 'Open standalone bundler', external: true },
+          { divider: true },
+          { href: '/staff/calendar.html',              label: 'Calendar' },
+          { href: '/staff/files.html',                 label: 'Files' }
       ]}
     ];
     if (isAdmin) {

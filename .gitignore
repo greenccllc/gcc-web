@@ -11,5 +11,6 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Deployed copies
-web.config
+# web.config is now tracked — it holds the IIS rewrite rules (admin
+# console proxy + api host reverse-proxy + HTTPS redirect via CF-Visitor)
+# that have to deploy with the site or routing breaks.
