@@ -142,8 +142,18 @@
   const checkedType = form.querySelector('input[name="projectType"]:checked');
   if (checkedType) checkedType.closest('.choice').classList.add('selected');
 
-  // Stub buttons (placeholder for now)
-  $('#cest-export')?.addEventListener('click', () => alert('PDF export — coming soon. For now, copy the breakdown panel above.'));
+  // PDF export — opens a print-styled window with the line-item table
+  // and triggers the browser's print dialog. User saves to PDF or prints.
+  $('#cest-export')?.addEventListener('click', () => {
+    if (!window.gccEstimatorPDF) { alert('PDF helper not loaded. Refresh the page and try again.'); return; }
+    const d = getInputs();
+    const r = compute(d);
+    window.gccEstimatorPDF.exportToPDF(r, {
+      title: 'Commercial estimator handoff',
+      subtitle: d.projectType ? ('Project type: ' + d.projectType) : '',
+      inputs: d
+    });
+  });
   $('#cest-save')?.addEventListener('click', () => {
     try {
       const d = getInputs();

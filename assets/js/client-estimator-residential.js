@@ -155,7 +155,16 @@
   form.addEventListener('input', render);
   form.addEventListener('change', render);
 
-  $('#cest-export')?.addEventListener('click', () => alert('PDF export coming soon. For now, copy the breakdown panel.'));
+  $('#cest-export')?.addEventListener('click', () => {
+    if (!window.gccEstimatorPDF) { alert('PDF helper not loaded. Refresh the page and try again.'); return; }
+    const d = getInputs();
+    const r = compute(d);
+    window.gccEstimatorPDF.exportToPDF(r, {
+      title: 'Residential estimator handoff',
+      subtitle: 'Whole-home low-voltage budget',
+      inputs: d
+    });
+  });
   $('#cest-save')?.addEventListener('click', () => {
     try {
       localStorage.setItem('gcc-cest-res-session', JSON.stringify({ ...getInputs(), ts: Date.now() }));

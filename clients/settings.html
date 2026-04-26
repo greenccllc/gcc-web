@@ -121,8 +121,24 @@
           <div class="settings-section" data-section="notifications" hidden>
             <div class="section-head"><h2>Notifications</h2><span class="muted">Email + project updates</span></div>
             <div class="card">
-              <h3>Email digest <span class="coming-soon">soon</span></h3>
-              <p class="lede" style="margin: 0;">Daily or weekly summary of project status, new leads, and reviews.</p>
+              <h3>Email digest</h3>
+              <p class="lede">A summary of new leads, recent estimates, and pipeline changes — delivered to your account email at the cadence you pick.</p>
+              <form id="digest-form" style="margin-top:12px; display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;">
+                <label style="flex:1; min-width:180px;">
+                  <span style="display:block; font-size:12px; font-weight:700; color:var(--slate); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;">Cadence</span>
+                  <select id="digest-frequency" style="width:100%; padding:9px 12px; border:1px solid var(--hairline-strong); border-radius:var(--r-sm); font-size:14px; background:var(--paper); cursor:pointer;">
+                    <option value="off">Off — no digest</option>
+                    <option value="daily">Daily (every weekday morning)</option>
+                    <option value="weekly">Weekly (Monday morning)</option>
+                    <option value="monthly">Monthly (1st of the month)</option>
+                  </select>
+                </label>
+                <button type="submit" class="btn btn-primary btn-sm" id="digest-save">Save</button>
+                <span id="digest-msg" style="font-size:13px; color:var(--slate);"></span>
+              </form>
+              <p class="small" style="margin-top:10px; color:var(--slate-light); font-size:12px;">
+                Sent to your account email. Delivery starts on the next scheduled run after you save.
+              </p>
             </div>
           </div>
 
@@ -611,6 +627,42 @@ gccPage.requireRole(["client","staff","admin"]).then(async (me) => {
       }));
     } catch(e) { target.innerHTML = '<div style="color:var(--danger);">Failed to load.</div>'; }
   }
+
+  // -- Notifications: email digest preference (GET/PUT /api/clients/me/preferences) --
+  async function wireDigest() {
+    const sel  = document.getElementById('digest-frequency');
+    const form = document.getElementById('digest-form');
+    const msg  = document.getElementById('digest-msg');
+    if (!sel || !form) return;
+    try {
+      const p = await fetch(gccApi.base + '/api/clients/me/preferences', {credentials:'include'}).then(r => r.ok ? r.json() : null);
+      if (p && p.emailDigestFrequency) sel.value = p.emailDigestFrequency;
+    } catch (_) { /* leave default */ }
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      msg.textContent = 'Saving...';
+      msg.style.color = 'var(--slate)';
+      try {
+        const r = await fetch(gccApi.base + '/api/clients/me/preferences', {
+          method:'PUT', credentials:'include',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ emailDigestFrequency: sel.value })
+        });
+        if (r.ok) {
+          msg.textContent = '✓ Saved';
+          msg.style.color = '#276749';
+          setTimeout(() => { msg.textContent = ''; }, 2400);
+        } else {
+          msg.textContent = '✗ Save failed';
+          msg.style.color = 'var(--danger)';
+        }
+      } catch(err) {
+        msg.textContent = '✗ ' + err.message;
+        msg.style.color = 'var(--danger)';
+      }
+    });
+  }
+  wireDigest();
 }).catch(() => { /* requireRole handles redirect */ });
 </script>
 </body>

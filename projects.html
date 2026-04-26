@@ -157,13 +157,14 @@
   <div class="container">
     <div class="section-head">
       <span class="section-eyebrow">By the numbers</span>
-      <h2 class="section-title">Spring 2026 snapshot</h2>
+      <h2 class="section-title">Snapshot — <span id="snap-date">Spring 2026</span></h2>
+      <p style="color: var(--slate-light); font-size: 13px; margin: 6px 0 0;" id="snap-asof">Numbers refresh on page load when the live feed is reachable; the static fallback below is updated quarterly.</p>
     </div>
-    <div class="cards cols-4">
-      <div class="card text-center"><div class="stat-num" style="font-size: 36px; font-weight: 800; color: var(--forest);">$490K+</div><p style="color: var(--slate); margin: 4px 0 0;">Active pipeline value</p></div>
-      <div class="card text-center"><div class="stat-num" style="font-size: 36px; font-weight: 800; color: var(--forest);">12</div><p style="color: var(--slate); margin: 4px 0 0;">Bids submitted</p></div>
-      <div class="card text-center"><div class="stat-num" style="font-size: 36px; font-weight: 800; color: var(--forest);">7</div><p style="color: var(--slate); margin: 4px 0 0;">Verticals served</p></div>
-      <div class="card text-center"><div class="stat-num" style="font-size: 36px; font-weight: 800; color: var(--forest);">2</div><p style="color: var(--slate); margin: 4px 0 0;">Metros (KCMO + STL)</p></div>
+    <div class="cards cols-4" id="snap-cards">
+      <div class="card text-center"><div class="stat-num" style="font-size: 36px; font-weight: 800; color: var(--forest);" id="snap-pipeline">$490K+</div><p style="color: var(--slate); margin: 4px 0 0;">Active pipeline value</p></div>
+      <div class="card text-center"><div class="stat-num" style="font-size: 36px; font-weight: 800; color: var(--forest);" id="snap-bids">12</div><p style="color: var(--slate); margin: 4px 0 0;">Bids submitted</p></div>
+      <div class="card text-center"><div class="stat-num" style="font-size: 36px; font-weight: 800; color: var(--forest);" id="snap-verticals">7</div><p style="color: var(--slate); margin: 4px 0 0;">Verticals served</p></div>
+      <div class="card text-center"><div class="stat-num" style="font-size: 36px; font-weight: 800; color: var(--forest);" id="snap-metros">2</div><p style="color: var(--slate); margin: 4px 0 0;">Metros (KCMO + STL)</p></div>
     </div>
   </div>
 </section>
@@ -226,5 +227,36 @@
 <script src="/assets/js/site.js"></script>
 <script src="/assets/js/api.js"></script>
 <script src="/assets/js/header.js"></script>
+<script>
+// Replace the hardcoded snapshot numbers with live ones from
+// /api/public/snapshot when reachable. If anything fails we silently
+// keep the static fallback so the page never looks broken.
+(async function () {
+  try {
+    var r = await fetch((window.gccApi && gccApi.base ? gccApi.base : '') + '/api/public/snapshot', { cache: 'no-store' });
+    if (!r.ok) return;
+    var d = await r.json();
+    if (!d || d.error || !d.asOf) return;
+    // Only override the static fallbacks when the live value is meaningful.
+    // An empty DB returning "TBD" / 0 shouldn't overwrite the marketing copy.
+    var anyOverride = false;
+    if (d.pipelineValue && d.pipelineValue !== 'TBD') {
+      document.getElementById('snap-pipeline').textContent = d.pipelineValue;
+      anyOverride = true;
+    }
+    if (typeof d.bidsSubmitted   === 'number' && d.bidsSubmitted   > 0) { document.getElementById('snap-bids').textContent      = d.bidsSubmitted;   anyOverride = true; }
+    if (typeof d.verticalsServed === 'number' && d.verticalsServed > 0) { document.getElementById('snap-verticals').textContent = d.verticalsServed; anyOverride = true; }
+    if (typeof d.metrosCovered   === 'number' && d.metrosCovered   > 0) { document.getElementById('snap-metros').textContent    = d.metrosCovered;   anyOverride = true; }
+    if (anyOverride) {
+      var asof = new Date(d.asOf);
+      if (!isNaN(asof.getTime())) {
+        var fmt = asof.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+        document.getElementById('snap-asof').textContent = 'Live as of ' + fmt + '.';
+        document.getElementById('snap-date').textContent = fmt;
+      }
+    }
+  } catch (_) { /* keep static fallback */ }
+})();
+</script>
 </body>
 </html>
