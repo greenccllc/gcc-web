@@ -204,7 +204,7 @@ function render(data) {
       <td>${folderCell(r)}</td>
       <td>${scrapeBadge(r.scrape)}</td>
       <td>${conf == null ? '<span class="pad">—</span>' : `<strong>${Math.round(conf)}%</strong>`}${r.extraction?.filesProcessed ? ` <span class="small">(${r.extraction.filesProcessed} files)</span>` : ''}</td>
-      <td>${cost == null ? '<span class="pad">—</span>' : `$${Number(cost).toFixed(2)}`}</td>
+      <td>${cost == null ? '<span class="pad">—</span>' : `$${Number(cost).toFixed(4)}${r.ai?.tokensUsed ? ` <span class="small">(${(r.ai.tokensUsed/1000).toFixed(1)}k tok)</span>` : ''}`}</td>
       <td class="small">${fmt(r.lastSeenAt)}</td>
     </tr>
     <tr class="counts"><td colspan="10">${countsGrid(r.counts)}</td></tr>`;
