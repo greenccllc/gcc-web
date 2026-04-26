@@ -134,10 +134,11 @@
                   </select>
                 </label>
                 <button type="submit" class="btn btn-primary btn-sm" id="digest-save">Save</button>
+                <button type="button" class="btn btn-sm" id="digest-test" style="background:white;border:1px solid var(--hairline-strong);color:var(--forest);">Send test digest now</button>
                 <span id="digest-msg" style="font-size:13px; color:var(--slate);"></span>
               </form>
               <p class="small" style="margin-top:10px; color:var(--slate-light); font-size:12px;">
-                Sent to your account email. Delivery starts on the next scheduled run after you save.
+                Sent to your account email. Delivery starts on the next scheduled run after you save. The "Send test digest now" button bypasses the schedule and emails you immediately so you can verify it lands in your inbox.
               </p>
             </div>
           </div>
@@ -219,7 +220,8 @@ const KNOWN_BUNDLER_KEYS = [
   { api: 'anthropic-api-key', label: 'Anthropic Claude API key',     secret: true,  hint: 'Starts with sk-ant-... — used to call Claude for proposal generation.', placeholder: 'sk-ant-...' },
   { api: 'gmail-token',       label: 'Gmail OAuth refresh token',    secret: true,  hint: 'Long-lived refresh token from Gmail OAuth flow. Used to send proposals.', placeholder: 'Refresh token' },
   { api: 'gmail-client-id',   label: 'Gmail OAuth client ID',        secret: false, hint: 'OAuth 2.0 client ID from Google Cloud Console.',                       placeholder: 'xxxxx.apps.googleusercontent.com' },
-  { api: 'gmail-email',       label: 'Gmail account address',        secret: false, hint: 'The Gmail address proposals will be sent from.',                       placeholder: 'you@gmail.com' },
+  { api: 'gmail-email',       label: 'Gmail account address',        secret: false, hint: 'The Gmail address proposals AND digest emails will be sent from.',     placeholder: 'you@gmail.com' },
+  { api: 'gmail-app-password',label: 'Gmail SMTP app password',      secret: true,  hint: 'Generate at https://myaccount.google.com/apppasswords (2FA must be on). Used by the email-digest scheduler.', placeholder: 'xxxx xxxx xxxx xxxx' },
   { api: 'myaidrive-token',   label: 'myAiDrive bearer token',       secret: true,  hint: 'API token for pulling marketing assets from myAiDrive.',               placeholder: 'Bearer token' },
   { api: 'ui-polish-on',      label: 'B12 UI polish toggle',         secret: false, hint: 'Set to "true" to enable the B12 visual polish layer in the bundler.',  placeholder: 'true' }
 ];
@@ -659,6 +661,32 @@ gccPage.requireRole(["client","staff","admin"]).then(async (me) => {
       } catch(err) {
         msg.textContent = '✗ ' + err.message;
         msg.style.color = 'var(--danger)';
+      }
+    });
+
+    const testBtn = document.getElementById('digest-test');
+    if (testBtn) testBtn.addEventListener('click', async () => {
+      testBtn.disabled = true;
+      msg.textContent = 'Sending test digest...';
+      msg.style.color = 'var(--slate)';
+      try {
+        const r = await fetch(gccApi.base + '/api/clients/me/preferences/test-digest', {
+          method:'POST', credentials:'include'
+        });
+        const j = await r.json().catch(() => ({}));
+        if (j.sent) {
+          msg.textContent = '✓ Sent (' + j.items + ' item' + (j.items === 1 ? '' : 's') + ') — check your inbox';
+          msg.style.color = '#276749';
+        } else {
+          msg.textContent = '⚠ Built (' + j.items + ' items) but not delivered: ' + (j.error || 'SMTP not configured');
+          msg.style.color = 'var(--danger)';
+        }
+      } catch(err) {
+        msg.textContent = '✗ ' + err.message;
+        msg.style.color = 'var(--danger)';
+      } finally {
+        testBtn.disabled = false;
+        setTimeout(() => { msg.textContent = ''; }, 6000);
       }
     });
   }
