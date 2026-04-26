@@ -137,6 +137,27 @@
         </div>
 
         <div class="field">
+          <label for="address">Project site address <span style="font-weight: 400; color: var(--slate-light);">(optional)</span></label>
+          <input type="text" id="address" name="address"
+                 class="addr-autocomplete"
+                 autocomplete="street-address"
+                 placeholder="Start typing — Google will autocomplete"
+                 data-target-city="addr-city"
+                 data-target-state="addr-state"
+                 data-target-zip="addr-zip"
+                 data-target-formatted="addr-formatted"
+                 data-target-lat="addr-lat"
+                 data-target-lng="addr-lng" />
+          <small style="display: block; margin-top: 6px; color: var(--slate-light); font-size: 0.85em;">Helps us check service-area + estimate mobilization. Leave blank if undecided.</small>
+          <input type="hidden" id="addr-city"      name="addr_city"      />
+          <input type="hidden" id="addr-state"     name="addr_state"     />
+          <input type="hidden" id="addr-zip"       name="addr_zip"       />
+          <input type="hidden" id="addr-formatted" name="addr_formatted" />
+          <input type="hidden" id="addr-lat"       name="addr_lat"       />
+          <input type="hidden" id="addr-lng"       name="addr_lng"       />
+        </div>
+
+        <div class="field">
           <label for="message">Project details</label>
           <textarea id="message" name="message" placeholder="Number of drops, building size, deadline, what you've already gotten quoted, links to plans, anything that helps us scope it..."></textarea>
         </div>
@@ -201,6 +222,7 @@
 
 <script src="/assets/js/api.js"></script>
 <script src="/assets/js/header.js"></script>
+<script src="/assets/js/address-autocomplete.js"></script>
 <script>
 // Wire contact form to API. Falls back to mailto if API unreachable.
 document.addEventListener('DOMContentLoaded', function () {

@@ -52,8 +52,18 @@
       <div class="field"><label>Phone</label><input type="tel" name="Phone" /></div>
       <div class="field"><label>Company</label><input type="text" name="Company" /></div>
     </div>
-    <div class="field"><label>Company address</label><input type="text" name="CompanyAddress" /></div>
-    <div class="field"><label>Billing address</label><input type="text" name="BillingAddress" /></div>
+    <div class="field">
+      <label>Company address</label>
+      <input type="text" name="CompanyAddress" class="addr-autocomplete"
+             autocomplete="street-address"
+             placeholder="Start typing — Google will autocomplete" />
+    </div>
+    <div class="field">
+      <label>Billing address</label>
+      <input type="text" name="BillingAddress" class="addr-autocomplete"
+             autocomplete="street-address"
+             placeholder="Start typing — Google will autocomplete" />
+    </div>
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
       <div class="field"><label>EIN</label><input type="text" name="CompanyEin" /></div>
       <div class="field"><label>DUNS</label><input type="text" name="CompanyDuns" /></div>
@@ -69,6 +79,7 @@
 <script src="/assets/js/api.js"></script>
 <script src="/assets/js/header.js"></script>
 <script src="/assets/js/page.js"></script>
+<script src="/assets/js/address-autocomplete.js"></script>
 <script>
 gccPage.requireRole(["client","staff","admin"]).then(async (me) => {
   document.getElementById('page-loading').hidden = true;
