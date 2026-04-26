@@ -98,11 +98,10 @@
         <aside class="settings-nav">
           <div class="nav-section">Account</div>
           <button data-section="profile">Profile</button>
-          <button data-section="bundler" class="active">Bundler API keys</button>
+          <button data-section="integrations" class="active">Integrations</button>
           <button data-section="notifications">Notifications</button>
 
           <div class="nav-section" id="nav-admin-section" hidden>Admin</div>
-          <button data-section="integrations" id="nav-integrations" hidden>Integrations</button>
           <button data-section="infra" id="nav-infra" hidden>Infrastructure</button>
         </aside>
 
@@ -118,27 +117,6 @@
             </div>
           </div>
 
-          <!-- Bundler API keys (per-user — applies to anyone using the proposal generator) -->
-          <div class="settings-section" data-section="bundler">
-            <div class="section-head">
-              <h2>Bundler API keys</h2>
-              <span class="muted">Used by the Proposal Generator</span>
-            </div>
-            <div class="card">
-              <p class="lede">Saved on the server with your profile, available everywhere you sign in. Used by the bundler at <code>proposal.greencommllc.com</code>.</p>
-              <div id="bundler-settings" style="margin-bottom: 16px;"></div>
-              <h4 style="margin: 0 0 8px; font-size: 14px;">Add or update a key</h4>
-              <div class="field-grid">
-                <select id="key-name">
-                  <option value="">— Select integration —</option>
-                </select>
-                <input type="text" id="key-value" placeholder="Paste value..." autocomplete="off" />
-                <button class="btn btn-primary" id="key-save">Save</button>
-              </div>
-              <div class="key-help" id="key-help"></div>
-            </div>
-          </div>
-
           <!-- Notifications -->
           <div class="settings-section" data-section="notifications" hidden>
             <div class="section-head"><h2>Notifications</h2><span class="muted">Email + project updates</span></div>
@@ -148,37 +126,50 @@
             </div>
           </div>
 
-          <!-- Admin: Integrations -->
-          <div class="settings-section" data-section="integrations" hidden>
-            <div class="section-head"><h2>Integrations</h2><span class="muted">Server-level OAuth + webhooks</span></div>
-
-            <!-- QuickBooks -->
-            <div class="card" id="card-qb">
-              <h3>QuickBooks Online</h3>
-              <p class="lede">Sync customers, invoices, and items via Intuit OAuth.</p>
-              <div id="qb-card-body">Loading…</div>
+          <!-- Integrations: per-user bundler keys (everyone) + admin-only OAuth/webhooks -->
+          <div class="settings-section" data-section="integrations">
+            <div class="section-head">
+              <h2>Integrations</h2>
+              <span class="muted">Per-user keys + server OAuth</span>
             </div>
 
-            <!-- Google Business Profile -->
-            <div class="card" id="card-gbp">
-              <h3>Google Business Profile</h3>
-              <p class="lede">Pull reviews from your GBP listing and surface them alongside other lead sources.</p>
-              <div id="gbp-card-body">Loading…</div>
-            </div>
+            <!-- Per-user (Proposal Generator / Bundler) — visible to all roles -->
+            <div class="nav-section" style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:0.06em;margin:4px 0 10px;">Proposal Generator</div>
+            <p class="lede" style="font-size:13px;color:var(--slate);margin:-2px 0 14px;">Per-user keys wired into the bundler at <code>proposal.greencommllc.com</code>. Saved on the server with your profile — available everywhere you sign in.</p>
+            <div id="bundler-cards"><div style="color:var(--slate-light);font-style:italic;padding:8px 2px;">Loading…</div></div>
 
-            <!-- Thumbtack -->
-            <div class="card">
-              <h3>Thumbtack</h3>
-              <p class="lede">Receive lead, message, and review webhooks. No auth required by Thumbtack.</p>
-              <div class="integration-card">
-                <div class="icon">🎯</div>
-                <div class="info">
-                  <strong>Webhook endpoint</strong>
-                  <div class="small">Paste this into Thumbtack → Create webhook → Endpoint URL.</div>
-                  <code style="display:block; margin-top:8px; padding:8px 10px; background:var(--paper); border:1px solid var(--hairline); border-radius:6px; font-size:12px; word-break:break-all;">https://api.greencommllc.com/api/webhooks/thumbtack</code>
-                </div>
-                <div class="integration-actions">
-                  <button class="btn btn-sm" id="copy-thumbtack-url" style="background:white; border:1px solid var(--hairline-strong);">Copy URL</button>
+            <!-- Admin-only integrations (server-level OAuth + webhooks) -->
+            <div id="admin-integrations" hidden>
+              <div class="nav-section" style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:0.06em;margin:24px 0 10px;">Server-level <span style="color:var(--slate-light);font-weight:500;text-transform:none;letter-spacing:0;">· admin only</span></div>
+
+              <!-- QuickBooks -->
+              <div class="card" id="card-qb">
+                <h3>QuickBooks Online</h3>
+                <p class="lede">Sync customers, invoices, and items via Intuit OAuth.</p>
+                <div id="qb-card-body">Loading…</div>
+              </div>
+
+              <!-- Google Business Profile -->
+              <div class="card" id="card-gbp">
+                <h3>Google Business Profile</h3>
+                <p class="lede">Pull reviews from your GBP listing and surface them alongside other lead sources.</p>
+                <div id="gbp-card-body">Loading…</div>
+              </div>
+
+              <!-- Thumbtack -->
+              <div class="card">
+                <h3>Thumbtack</h3>
+                <p class="lede">Receive lead, message, and review webhooks. No auth required by Thumbtack.</p>
+                <div class="integration-card">
+                  <div class="icon">🎯</div>
+                  <div class="info">
+                    <strong>Webhook endpoint</strong>
+                    <div class="small">Paste this into Thumbtack → Create webhook → Endpoint URL.</div>
+                    <code style="display:block; margin-top:8px; padding:8px 10px; background:var(--paper); border:1px solid var(--hairline); border-radius:6px; font-size:12px; word-break:break-all;">https://api.greencommllc.com/api/webhooks/thumbtack</code>
+                  </div>
+                  <div class="integration-actions">
+                    <button class="btn btn-sm" id="copy-thumbtack-url" style="background:white; border:1px solid var(--hairline-strong);">Copy URL</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -248,11 +239,11 @@ gccPage.requireRole(["client","staff","admin"]).then(async (me) => {
   rolePill.classList.toggle('admin', me.role === 'admin');
   document.getElementById('role-pill-wrap').hidden = false;
 
-  // Reveal admin sections
+  // Reveal admin-only nav sections
   if (me.role === 'admin') {
     document.getElementById('nav-admin-section').hidden = false;
-    document.getElementById('nav-integrations').hidden = false;
     document.getElementById('nav-infra').hidden = false;
+    document.getElementById('admin-integrations').hidden = false;
   }
 
   // Section nav — show one section at a time, sync with URL hash.
@@ -269,90 +260,149 @@ gccPage.requireRole(["client","staff","admin"]).then(async (me) => {
 
   navButtons.forEach(b => b.addEventListener('click', () => showSection(b.dataset.section)));
 
-  const initial = (location.hash || '#bundler').slice(1);
+  const initial = (location.hash || '#integrations').slice(1);
   const allowed = me.role === 'admin'
-    ? ['profile','bundler','notifications','integrations','infra']
-    : ['profile','bundler','notifications'];
-  showSection(allowed.includes(initial) ? initial : 'bundler');
+    ? ['profile','integrations','notifications','infra']
+    : ['profile','integrations','notifications'];
+  showSection(allowed.includes(initial) ? initial : 'integrations');
 
-  // ─── Bundler API keys ─────────────────────────────────────
-  const sel = document.getElementById('key-name');
-  BUNDLER_KEYS.forEach(k => {
-    const o = document.createElement('option');
-    o.value = k.api;
-    o.textContent = k.label + (k.secret ? '  (secret)' : '');
-    sel.appendChild(o);
-  });
-  const help = document.getElementById('key-help');
-  const valInput = document.getElementById('key-value');
-  function applySelection() {
-    const meta = KEY_BY_API[sel.value];
-    if (!meta) { help.textContent=''; valInput.type='text'; valInput.placeholder='Paste value...'; return; }
-    help.innerHTML = (meta.secret ? '<span class="secret-pill">Secret</span> ' : '<span class="public-pill">Public</span> ') + meta.hint;
-    valInput.type = meta.secret ? 'password' : 'text';
-    valInput.placeholder = meta.placeholder;
-  }
-  sel.addEventListener('change', applySelection);
+  // ─── Bundler API keys (per-user) — visible to all roles ─────
+  // Each integration renders as its own card with inline configure /
+  // edit / delete. Cards remember server state from /api/settings?scope=bundler.
+  let bundlerSavedMap = {};
 
   async function refreshBundler() {
-    const list = document.getElementById('bundler-settings');
     try {
       const settings = await fetch(gccApi.base + '/api/settings?scope=bundler', {credentials:'include'}).then(r => r.json());
-      if (!settings.length) {
-        list.innerHTML = '<div style="color:var(--slate-light); font-style:italic; padding: 8px 2px;">No bundler keys saved yet. Pick an integration below to add one.</div>';
-        return;
-      }
-      list.innerHTML = '<table class="tbl"><thead><tr><th>Integration</th><th>Type</th><th>Last updated</th><th></th></tr></thead><tbody>' +
-        settings.map(s => {
-          const meta = KEY_BY_API[s.key];
-          const label = meta ? meta.label : s.key;
-          const pill = meta ? (meta.secret ? '<span class="secret-pill">Secret</span>' : '<span class="public-pill">Public</span>')
-                            : '<span class="public-pill" style="background:rgba(160,174,192,0.18);color:var(--slate);">Custom</span>';
-          return '<tr>' +
-            '<td><strong>' + label + '</strong><br><code style="font-size:11px;color:var(--slate-light);">' + s.key + '</code></td>' +
-            '<td>' + pill + '</td>' +
-            '<td>' + gccPage.datetime(s.updatedAt) + '</td>' +
-            '<td><button class="btn" data-del="' + s.key + '" style="padding:4px 10px;font-size:12px; background:white; border:1px solid var(--hairline-strong); border-radius:6px; cursor:pointer;">Delete</button></td>' +
-          '</tr>';
-        }).join('') +
-        '</tbody></table>';
-      list.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', async () => {
-        if (!confirm('Delete ' + b.dataset.del + '?')) return;
-        await fetch(gccApi.base + '/api/settings/bundler/' + encodeURIComponent(b.dataset.del), {method:'DELETE', credentials:'include'});
-        refreshBundler();
-      }));
-    } catch(e) { list.innerHTML = '<div style="color:var(--danger);">Failed to load.</div>'; }
+      bundlerSavedMap = {};
+      (settings || []).forEach(s => { bundlerSavedMap[s.key] = s; });
+    } catch (e) {
+      console.warn('Failed to load bundler keys', e);
+      bundlerSavedMap = {};
+    }
+    renderBundlerCards();
   }
-  await refreshBundler();
 
-  document.getElementById('key-save').addEventListener('click', async () => {
-    const k = sel.value;
-    const v = valInput.value.trim();
-    if (!k) { alert('Pick which integration this key is for.'); return; }
-    if (!v) { alert('Paste the key value.'); return; }
-    const meta = KEY_BY_API[k];
-    await fetch(gccApi.base + '/api/settings', {
-      method:'PUT', credentials:'include',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({Scope:'bundler', Key:k, ValueJson: JSON.stringify({value:v}), IsSecret: meta ? meta.secret : true})
+  function renderBundlerCards() {
+    const host = document.getElementById('bundler-cards');
+    host.innerHTML = '';
+    BUNDLER_KEYS.forEach(meta => {
+      const saved = bundlerSavedMap[meta.api];
+      const isConfigured = !!saved;
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.dataset.api = meta.api;
+      card.innerHTML = bundlerCardHtml(meta, saved, isConfigured, /*editing*/ !isConfigured ? false : false);
+      host.appendChild(card);
     });
-    sel.value = ''; valInput.value = ''; applySelection();
-    refreshBundler();
-  });
+    wireBundlerCards();
+  }
+
+  function bundlerCardHtml(meta, saved, isConfigured, editing) {
+    const pill = meta.secret
+      ? '<span class="secret-pill">Secret</span>'
+      : '<span class="public-pill">Public</span>';
+    const statusLine = isConfigured
+      ? '<span style="color:#276749;font-weight:700;font-size:13px;">✓ Configured</span> <span style="color:var(--slate-light);font-size:12px;">· last updated ' + gccPage.datetime(saved.updatedAt) + '</span>'
+      : '<span style="color:var(--slate-light);font-size:13px;font-style:italic;">Not configured</span>';
+
+    let actionsHtml;
+    if (editing || !isConfigured) {
+      const inputType = meta.secret ? 'password' : 'text';
+      const placeholder = meta.placeholder || (meta.secret ? 'Paste secret…' : 'Enter value…');
+      actionsHtml =
+        '<div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">' +
+          '<input type="' + inputType + '" class="bundler-input" placeholder="' + escapeHtml(placeholder) + '" autocomplete="off" style="flex:1; min-width:240px; padding:9px 12px; border:1px solid var(--hairline-strong); border-radius:var(--r-sm); font-size:14px; font-family:inherit; background:var(--paper);" />' +
+          '<button class="btn btn-primary btn-sm bundler-save-btn">Save</button>' +
+          (isConfigured ? '<button class="btn btn-sm bundler-cancel-btn" style="background:white;border:1px solid var(--hairline-strong);color:var(--slate);">Cancel</button>' : '') +
+        '</div>';
+    } else {
+      actionsHtml =
+        '<div class="integration-actions" style="margin-top:8px;">' +
+          '<button class="btn btn-sm bundler-edit-btn" style="background:white;border:1px solid var(--hairline-strong);">Update</button>' +
+          '<button class="btn btn-sm bundler-del-btn" style="background:white;border:1px solid var(--hairline-strong);color:var(--slate);">Delete</button>' +
+        '</div>';
+    }
+
+    return (
+      '<div class="integration-card">' +
+        '<div class="info" style="flex:1;">' +
+          '<strong>' + escapeHtml(meta.label) + '</strong> ' + pill +
+          '<div class="small" style="margin-top:4px;">' + escapeHtml(meta.hint) + '</div>' +
+          '<div class="small" style="margin-top:6px;">' + statusLine + ' · <code style="font-size:11px;color:var(--slate-light);">' + escapeHtml(meta.api) + '</code></div>' +
+          actionsHtml +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function wireBundlerCards() {
+    document.querySelectorAll('#bundler-cards .card').forEach(card => {
+      const api = card.dataset.api;
+      const meta = KEY_BY_API[api];
+
+      card.querySelectorAll('.bundler-edit-btn').forEach(b => b.addEventListener('click', () => {
+        card.innerHTML = bundlerCardHtml(meta, bundlerSavedMap[api], true, true);
+        wireBundlerCards();
+        const inp = card.querySelector('.bundler-input');
+        if (inp) inp.focus();
+      }));
+
+      card.querySelectorAll('.bundler-cancel-btn').forEach(b => b.addEventListener('click', () => {
+        card.innerHTML = bundlerCardHtml(meta, bundlerSavedMap[api], true, false);
+        wireBundlerCards();
+      }));
+
+      card.querySelectorAll('.bundler-save-btn').forEach(b => b.addEventListener('click', async () => {
+        const inp = card.querySelector('.bundler-input');
+        const v = inp ? inp.value.trim() : '';
+        if (!v) { inp && inp.focus(); return; }
+        b.disabled = true; b.textContent = 'Saving…';
+        try {
+          await fetch(gccApi.base + '/api/settings', {
+            method:'PUT', credentials:'include',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ Scope:'bundler', Key:api, ValueJson: JSON.stringify({value:v}), IsSecret: meta.secret })
+          });
+          await refreshBundler();
+        } catch (e) {
+          b.disabled = false; b.textContent = 'Failed';
+          setTimeout(() => { b.textContent = 'Save'; b.disabled = false; }, 2000);
+        }
+      }));
+
+      card.querySelectorAll('.bundler-del-btn').forEach(b => b.addEventListener('click', async () => {
+        if (!confirm('Delete ' + meta.label + '?')) return;
+        b.disabled = true;
+        try {
+          await fetch(gccApi.base + '/api/settings/bundler/' + encodeURIComponent(api), {method:'DELETE', credentials:'include'});
+          await refreshBundler();
+        } catch (e) { b.disabled = false; }
+      }));
+    });
+  }
 
   // ─── Thumbtack URL copy ──────────────────────────────────
-  const ttCopy = document.getElementById('copy-thumbtack-url');
-  if (ttCopy) ttCopy.addEventListener('click', () => {
-    navigator.clipboard.writeText('https://api.greencommllc.com/api/webhooks/thumbtack');
-    ttCopy.textContent = '✓ Copied';
-    setTimeout(() => { ttCopy.textContent = 'Copy URL'; }, 1600);
-  });
+  function wireThumbtackCopy() {
+    const ttCopy = document.getElementById('copy-thumbtack-url');
+    if (ttCopy && !ttCopy.dataset.wired) {
+      ttCopy.dataset.wired = '1';
+      ttCopy.addEventListener('click', () => {
+        navigator.clipboard.writeText('https://api.greencommllc.com/api/webhooks/thumbtack');
+        ttCopy.textContent = '✓ Copied';
+        setTimeout(() => { ttCopy.textContent = 'Copy URL'; }, 1600);
+      });
+    }
+  }
 
-  // ─── Integrations (admin only) ───────────────────────────
+  // ─── Integrations refresher (called when section becomes visible) ─
   async function refreshIntegrations() {
-    if (me.role !== 'admin') return;
-    refreshQb();
-    refreshGbp();
+    await refreshBundler();
+    wireThumbtackCopy();
+    if (me.role === 'admin') {
+      refreshQb();
+      refreshGbp();
+    }
   }
 
   async function refreshQb() {
