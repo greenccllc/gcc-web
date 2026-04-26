@@ -4,6 +4,30 @@ All notable changes to the GCC LLC public site + portal land here. The release
 workflow (`.github/workflows/release.yml`) reads the matching section by version
 when a new tag is cut.
 
+## v1.1.0 — Settings consolidation + Places autocomplete
+
+Five-commit batch on top of v1.0.0. No breaking changes; portal users keep
+existing logins and saved estimates.
+
+### Settings & integrations
+- Admin and client settings unified into one role-aware page — staff and
+  customers now hit the same surface, with admin-only sections gated server-side
+- Bundler API keys surfaced as individual integration cards, visible to all
+  roles (read-only for non-admins) so the connector inventory is discoverable
+
+### Forms
+- Google Places address autocomplete wired into the contact form and the
+  client profile page — fewer typos in the address fields that feed proposals
+  and invoices
+
+### Content
+- Removed WBE/MBE, woman-owned, and minority-owned claims sitewide so the
+  public site reflects the current certification state
+
+### Plumbing
+- `/admin/console/` build refreshed with a fetch-prefix wrapper so the embedded
+  React app talks to gcc-api through the same base URL the rest of the site uses
+
 ## v1.0.0 — Mobile/perf pass + full design-system rebuild
 
 First tagged release. Two-part overhaul shipped together via PR #1.
