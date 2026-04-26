@@ -1,0 +1,29 @@
+# GCC LLC — robots.txt
+# Allow general crawlers; block scrapers/AI training when requested by Cloudflare's
+# AI Audit policy. Sitemap pointer below tells search engines what's worth indexing.
+
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /clients/
+Disallow: /staff/
+Disallow: /api/
+
+# Common AI-training bots — opt out by default. Override per-bot here if needed.
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+# Search engines should index public marketing only.
+Sitemap: https://greencommllc.com/sitemap.xml
