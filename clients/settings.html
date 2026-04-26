@@ -194,7 +194,12 @@
 <script src="/assets/js/header.js"></script>
 <script src="/assets/js/page.js"></script>
 <script>
-const BUNDLER_KEYS = [
+// Well-known bundler keys with rich metadata (label, hint, placeholder).
+// The card list is data-driven from /api/settings?scope=bundler — anything
+// the API returns gets a card. Entries below are just the nicer
+// presentation for keys we know about; unknown keys still render with a
+// generic label derived from the key name + the SM annotation as the hint.
+const KNOWN_BUNDLER_KEYS = [
   { api: 'anthropic-api-key', label: 'Anthropic Claude API key',     secret: true,  hint: 'Starts with sk-ant-... — used to call Claude for proposal generation.', placeholder: 'sk-ant-...' },
   { api: 'gmail-token',       label: 'Gmail OAuth refresh token',    secret: true,  hint: 'Long-lived refresh token from Gmail OAuth flow. Used to send proposals.', placeholder: 'Refresh token' },
   { api: 'gmail-client-id',   label: 'Gmail OAuth client ID',        secret: false, hint: 'OAuth 2.0 client ID from Google Cloud Console.',                       placeholder: 'xxxxx.apps.googleusercontent.com' },
@@ -202,7 +207,34 @@ const BUNDLER_KEYS = [
   { api: 'myaidrive-token',   label: 'myAiDrive bearer token',       secret: true,  hint: 'API token for pulling marketing assets from myAiDrive.',               placeholder: 'Bearer token' },
   { api: 'ui-polish-on',      label: 'B12 UI polish toggle',         secret: false, hint: 'Set to "true" to enable the B12 visual polish layer in the bundler.',  placeholder: 'true' }
 ];
-const KEY_BY_API = Object.fromEntries(BUNDLER_KEYS.map(k => [k.api, k]));
+const KEY_BY_API = Object.fromEntries(KNOWN_BUNDLER_KEYS.map(k => [k.api, k]));
+
+// Build a render-list: known keys (in declared order) + any unknown keys
+// returned by the API (alphabetically). Each entry has the same shape as
+// KNOWN_BUNDLER_KEYS items so the renderer doesn't need to special-case.
+function humanizeKey(key) {
+  return key.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+function buildBundlerRenderList(savedMap) {
+  const known = KNOWN_BUNDLER_KEYS.slice();
+  const knownApis = new Set(known.map(k => k.api));
+  const extras = Object.keys(savedMap || {})
+    .filter(k => !knownApis.has(k))
+    .sort()
+    .map(k => {
+      const saved = savedMap[k];
+      let note = '';
+      try { note = (JSON.parse(saved.valueJson || '{}').note || '').toString(); } catch {}
+      return {
+        api: k,
+        label: humanizeKey(k),
+        secret: !!saved.isSecret,
+        hint: note || '(custom integration — no description set)',
+        placeholder: saved.isSecret ? 'Paste secret…' : 'Enter value…'
+      };
+    });
+  return known.concat(extras);
+}
 
 const INFRA_LABELS = {
   'unifi-api-key':              ['UniFi Network API key',          'UniFi'],
@@ -286,13 +318,14 @@ gccPage.requireRole(["client","staff","admin"]).then(async (me) => {
   function renderBundlerCards() {
     const host = document.getElementById('bundler-cards');
     host.innerHTML = '';
-    BUNDLER_KEYS.forEach(meta => {
+    const renderList = buildBundlerRenderList(bundlerSavedMap);
+    renderList.forEach(meta => {
       const saved = bundlerSavedMap[meta.api];
       const isConfigured = !!saved;
       const card = document.createElement('div');
       card.className = 'card';
       card.dataset.api = meta.api;
-      card.innerHTML = bundlerCardHtml(meta, saved, isConfigured, /*editing*/ !isConfigured ? false : false);
+      card.innerHTML = bundlerCardHtml(meta, saved, isConfigured, /*editing*/ false);
       host.appendChild(card);
     });
     wireBundlerCards();
@@ -337,9 +370,13 @@ gccPage.requireRole(["client","staff","admin"]).then(async (me) => {
   }
 
   function wireBundlerCards() {
+    // Re-derive the merged meta list so unknown keys (custom secrets in
+    // SM that aren't in KNOWN_BUNDLER_KEYS) still have a meta object.
+    const renderMap = Object.fromEntries(buildBundlerRenderList(bundlerSavedMap).map(m => [m.api, m]));
     document.querySelectorAll('#bundler-cards .card').forEach(card => {
       const api = card.dataset.api;
-      const meta = KEY_BY_API[api];
+      const meta = renderMap[api] || KEY_BY_API[api];
+      if (!meta) return;
 
       card.querySelectorAll('.bundler-edit-btn').forEach(b => b.addEventListener('click', () => {
         card.innerHTML = bundlerCardHtml(meta, bundlerSavedMap[api], true, true);
@@ -414,7 +451,7 @@ gccPage.requireRole(["client","staff","admin"]).then(async (me) => {
         target.innerHTML =
           '<div class="integration-card"><div class="icon">🔌</div>' +
           '<div class="info"><strong>Not configured.</strong>' +
-          '<div class="small">Set <code>Qb:ClientId</code> and <code>Qb:ClientSecret</code> in <code>appsettings.json</code> and restart the API.</div></div>' +
+          '<div class="small">Add <code>qb-client-id</code> and <code>qb-client-secret</code> in the <a href="#infra"><strong>Infrastructure</strong></a> tab below. They\'re stored in Google Cloud Secret Manager and read by the API at request time — no restart.</div></div>' +
           '<div class="integration-actions"><span class="coming-soon">awaiting credentials</span></div></div>';
         return;
       }
@@ -459,7 +496,7 @@ gccPage.requireRole(["client","staff","admin"]).then(async (me) => {
         target.innerHTML =
           '<div class="integration-card"><div class="icon">🔌</div>' +
           '<div class="info"><strong>Not configured.</strong>' +
-          '<div class="small">Set <code>Gbp:ClientId</code> and <code>Gbp:ClientSecret</code> in <code>appsettings.json</code>. Web application OAuth client; redirect URI must be <code>https://api.greencommllc.com/api/gbp/callback</code>.</div></div>' +
+          '<div class="small">Add <code>gbp-client-id</code> and <code>gbp-client-secret</code> in the <a href="#infra"><strong>Infrastructure</strong></a> tab below. Web application OAuth client; redirect URI must be <code>https://api.greencommllc.com/api/gbp/callback</code>.</div></div>' +
           '<div class="integration-actions"><span class="coming-soon">awaiting credentials</span></div></div>';
         return;
       }

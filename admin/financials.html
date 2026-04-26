@@ -86,7 +86,7 @@ gccPage.requireRole(["admin"]).then(async (me) => {
       const banner = document.getElementById('qb-banner');
       const connDiv = document.getElementById('qb-connections');
       if (!st.configured) {
-        banner.innerHTML = '<div class="qb-card"><div class="row"><div class="icon">🔌</div><div class="info"><strong>QuickBooks not configured.</strong><br>Set <code>Qb:ClientId</code> + <code>Qb:ClientSecret</code> in <code>C:\\inetpub\\gcc-api\\appsettings.json</code> and restart the API. See setup docs below.</div><span class="coming-soon">awaiting credentials</span></div></div>';
+        banner.innerHTML = '<div class="qb-card"><div class="row"><div class="icon">🔌</div><div class="info"><strong>QuickBooks not configured.</strong><br>Add <code>qb-client-id</code> and <code>qb-client-secret</code> in <a href="/clients/settings.html#infra"><strong>Settings → Infrastructure</strong></a>. They\'re stored in Google Cloud Secret Manager and read by the API at request time — no restart needed.</div><span class="coming-soon">awaiting credentials</span></div></div>';
         connDiv.innerHTML = '';
       } else if (!st.connections || st.connections.length === 0) {
         const conn = await fetch(gccApi.base + '/api/qb/connect', {credentials:'include'}).then(r => r.json());
