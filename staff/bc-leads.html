@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>BC Leads -- GCC</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="icon" href="/assets/favicon.ico">
+  <style>
+    :root {
+      --forest:#1E4D2B; --gold:#C9A158; --ink:#1c2a23; --slate:#475a51;
+      --cream:#FDFBF4; --green-tint:#F1F8F1; --line:#dde5df; --danger:#B71C1C;
+    }
+    * { box-sizing:border-box; }
+    html, body { margin:0; padding:0; }
+    body { font:13px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, Arial; color:var(--ink); background:var(--cream); }
+    header { display:flex; align-items:center; justify-content:space-between;
+             padding:10px 16px; background:var(--forest); color:white;
+             position:sticky; top:0; z-index:5; }
+    header h1 { margin:0; font-size:15px; font-weight:600; letter-spacing:.02em; }
+    header .meta { font-size:12px; opacity:.85; }
+    header button {
+      background:var(--gold); color:var(--ink); border:0; padding:7px 14px;
+      font-size:12px; font-weight:600; border-radius:4px; cursor:pointer; letter-spacing:.02em;
+    }
+    header button:disabled { opacity:.5; cursor:wait; }
+    .summary { display:flex; gap:10px; padding:10px 16px; background:white; border-bottom:1px solid var(--line); flex-wrap:wrap; }
+    .chip { display:inline-flex; align-items:center; gap:6px; padding:4px 10px; background:var(--green-tint); border:1px solid var(--line); border-radius:14px; font-size:12px; }
+    .chip strong { color:var(--forest); }
+    table { border-collapse:collapse; width:100%; background:white; }
+    thead th { position:sticky; top:46px; background:var(--cream); border-bottom:2px solid var(--forest); padding:8px 10px; font-size:11px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; color:var(--slate); text-align:left; z-index:4; }
+    tbody td { border-bottom:1px solid var(--line); padding:8px 10px; vertical-align:top; }
+    tbody tr:hover { background:var(--green-tint); }
+    .status { display:inline-block; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600; }
+    .status-Undecided { background:#FFF4D8; color:#7A5A00; }
+    .status-Accepted  { background:#D9EAD3; color:var(--forest); }
+    .status-Submitted { background:#CFE2F3; color:#1A5490; }
+    .status-Won       { background:var(--gold); color:var(--ink); }
+    .status-Archived  { background:#EEE; color:#666; }
+    .status-Lost      { background:#F4CCCC; color:var(--danger); }
+    .ok  { color:var(--forest); font-weight:600; }
+    .pad { color:#999; }
+    .small { font-size:11px; color:var(--slate); }
+    a { color:var(--forest); text-decoration:none; }
+    a:hover { text-decoration:underline; }
+    #status-bar { position:fixed; right:14px; bottom:10px; background:var(--ink); color:white; padding:6px 12px; border-radius:14px; font-size:11px; opacity:0; transition:opacity .15s; pointer-events:none; }
+    #status-bar.show { opacity:.92; }
+    #empty { padding:60px 20px; text-align:center; color:var(--slate); }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>BC Leads</h1>
+      <div class="meta" id="meta">loading...</div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <span class="small" id="auto" style="color:rgba(255,255,255,.7)"></span>
+      <button id="rescan">Rescan now</button>
+    </div>
+  </header>
+
+  <div class="summary" id="summary"></div>
+
+  <table id="t">
+    <thead>
+      <tr>
+        <th>Project</th>
+        <th>GC / Client</th>
+        <th>Location</th>
+        <th>Status</th>
+        <th>Due</th>
+        <th>Folder</th>
+        <th>Scrape</th>
+        <th>Extraction</th>
+        <th>AI cost</th>
+        <th>Last seen</th>
+      </tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <div id="empty" hidden>No RFPs scraped yet. Click "Rescan now" to trigger a fresh pull.</div>
+
+  <div id="status-bar"></div>
+
+<script>
+'use strict';
+
+// Auth: ?secret= on the URL (set by the tray launcher) OR localStorage fallback
+// (set once if you open the page directly in your browser).
+const URL_PARAMS = new URLSearchParams(location.search);
+const SECRET = URL_PARAMS.get('secret') || localStorage.getItem('gccAdminSecret') || '';
+if (URL_PARAMS.get('secret')) localStorage.setItem('gccAdminSecret', URL_PARAMS.get('secret'));
+
+// API base: same origin by default; override with ?api=https://api.... for local-host probes.
+const API_BASE = URL_PARAMS.get('api') || ('https://api.' + location.hostname.replace(/^www\./, '').replace(/^staff\./, ''));
+
+const $  = (id) => document.getElementById(id);
+const fmt = (d) => d ? new Date(d).toLocaleString([], { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' }) : '—';
+const toast = (msg, ms = 2200) => { const b = $('status-bar'); b.textContent = msg; b.classList.add('show'); setTimeout(() => b.classList.remove('show'), ms); };
+
+async function api(method, path, body = null) {
+  if (!SECRET) throw new Error('No admin secret. Re-launch from the tray icon, or paste your secret into localStorage.gccAdminSecret.');
+  const opts = { method, headers: { 'X-Gcc-Admin-Secret': SECRET, 'Content-Type': 'application/json' } };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(API_BASE + path, opts);
+  const text = await res.text();
+  if (!res.ok) throw new Error(`${method} ${path} -> ${res.status}: ${text.slice(0, 300)}`);
+  return text ? JSON.parse(text) : {};
+}
+
+function statusBadge(s) {
+  const safe = (s || '').replace(/[^A-Za-z]/g, '') || 'Unknown';
+  return `<span class="status status-${safe}">${s || '—'}</span>`;
+}
+
+function scrapeBadge(scrape) {
+  const folder = scrape.folderCreated;
+  const detail = scrape.detailScraped;
+  const att    = scrape.attachmentsCount || 0;
+  const msg    = scrape.messagesCount || 0;
+  let parts = [];
+  parts.push(folder ? '<span class="ok">folder</span>' : '<span class="pad">no folder</span>');
+  parts.push(detail ? '<span class="ok">detail</span>' : '<span class="pad">no detail</span>');
+  if (att) parts.push(`<span class="small">${att} att.</span>`);
+  if (msg) parts.push(`<span class="small">${msg} msg.</span>`);
+  return parts.join(' · ');
+}
+
+function folderCell(r) {
+  if (!r.driveJobFolderId) return '<span class="pad">—</span>';
+  const url = `https://drive.google.com/drive/folders/${r.driveJobFolderId}`;
+  const intake = r.driveIntakeFolderId ? ` <a href="https://drive.google.com/drive/folders/${r.driveIntakeFolderId}" target="_blank" class="small">Intake</a>` : '';
+  return `<a href="${url}" target="_blank">${r.driveJobFolderName || '(open)'}</a>${intake}`;
+}
+
+async function load() {
+  $('meta').textContent = 'loading...';
+  try {
+    const data = await api('GET', '/api/bc/leads-summary');
+    render(data);
+    $('meta').textContent = `${data.summary.total} RFPs · last list scrape ${fmt(data.summary.lastListScrape)} · last detail scrape ${fmt(data.summary.lastDetailScrape)}`;
+  } catch (e) {
+    $('meta').textContent = 'error loading';
+    toast(e.message, 5000);
+  }
+}
+
+function render(data) {
+  // Summary chips
+  const chips = [];
+  chips.push(`<span class="chip"><strong>${data.summary.total}</strong> total</span>`);
+  for (const [k, v] of Object.entries(data.summary.byStatus || {})) {
+    chips.push(`<span class="chip">${statusBadge(k)} <strong>${v}</strong></span>`);
+  }
+  $('summary').innerHTML = chips.join('');
+
+  // Rows
+  const rows = data.items.map(r => `
+    <tr>
+      <td><a href="${r.href || '#'}" target="_blank">${r.projectName || '(no name)'}</a></td>
+      <td>${r.gc || '<span class="pad">—</span>'}</td>
+      <td>${r.location || '<span class="pad">—</span>'}</td>
+      <td>${statusBadge(r.status)}</td>
+      <td>${r.dueAt || '<span class="pad">—</span>'}</td>
+      <td>${folderCell(r)}</td>
+      <td>${scrapeBadge(r.scrape)}</td>
+      <td><span class="pad">— / —</span></td>
+      <td><span class="pad">—</span></td>
+      <td class="small">${fmt(r.lastSeenAt)}</td>
+    </tr>`).join('');
+  $('rows').innerHTML = rows;
+  $('empty').hidden = data.items.length > 0;
+}
+
+$('rescan').addEventListener('click', async () => {
+  const btn = $('rescan');
+  btn.disabled = true;
+  btn.textContent = 'firing...';
+  try {
+    const r = await api('POST', '/api/bc/rescan-now', {});
+    toast(`Triggered ${r.triggered.length} scheduled tasks. They run in the background -- this page auto-refreshes every 30s.`, 4500);
+  } catch (e) { toast(e.message, 5000); }
+  finally {
+    btn.disabled = false;
+    btn.textContent = 'Rescan now';
+  }
+  setTimeout(load, 4000);
+});
+
+// Auto-refresh every 30s
+let refreshTimer = null;
+function scheduleRefresh() {
+  clearInterval(refreshTimer);
+  refreshTimer = setInterval(load, 30000);
+  $('auto').textContent = 'auto-refresh every 30s';
+}
+
+load();
+scheduleRefresh();
+</script>
+</body>
+</html>
