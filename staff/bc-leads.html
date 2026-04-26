@@ -2,9 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>BC Leads -- GCC</title>
+  <title>GCC Prop Manager</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <link rel="icon" href="/assets/favicon.ico">
+  <link rel="icon" href="/assets/favicon.ico" sizes="any" />
+  <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
+  <meta name="theme-color" content="#1E4D2B" />
   <style>
     :root {
       --forest:#1E4D2B; --gold:#C9A158; --ink:#1c2a23; --slate:#475a51;
@@ -13,24 +15,57 @@
     * { box-sizing:border-box; }
     html, body { margin:0; padding:0; }
     body { font:13px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, Arial; color:var(--ink); background:var(--cream); }
+
     header { display:flex; align-items:center; justify-content:space-between;
              padding:10px 16px; background:var(--forest); color:white;
-             position:sticky; top:0; z-index:5; }
-    header h1 { margin:0; font-size:15px; font-weight:600; letter-spacing:.02em; }
+             position:sticky; top:0; z-index:6; }
+    header h1 { margin:0; font-size:15px; font-weight:600; letter-spacing:.02em; display:flex; align-items:center; gap:8px; }
+    header h1 img { height:22px; width:auto; }
     header .meta { font-size:12px; opacity:.85; }
-    header button {
-      background:var(--gold); color:var(--ink); border:0; padding:7px 14px;
-      font-size:12px; font-weight:600; border-radius:4px; cursor:pointer; letter-spacing:.02em;
+    header button#rescan { background:var(--gold); color:var(--ink); border:0; padding:7px 14px;
+                    font-size:12px; font-weight:600; border-radius:4px; cursor:pointer; letter-spacing:.02em; }
+    header button#rescan:disabled { opacity:.5; cursor:wait; }
+
+    .tabs { display:flex; gap:4px; }
+    .tab { background:transparent; color:rgba(255,255,255,.75); border:0; padding:7px 14px;
+           font-size:12px; font-weight:600; border-radius:4px; cursor:pointer; letter-spacing:.02em; }
+    .tab.active, .tab:hover { background:rgba(255,255,255,.18); color:white; }
+
+    .row-actions { display:flex; gap:4px; flex-wrap:wrap; }
+    .row-actions button {
+      background:white; color:var(--forest); border:1px solid var(--line);
+      padding:3px 9px; font-size:11px; font-weight:600; border-radius:11px; cursor:pointer;
     }
-    header button:disabled { opacity:.5; cursor:wait; }
-    .summary { display:flex; gap:10px; padding:10px 16px; background:white; border-bottom:1px solid var(--line); flex-wrap:wrap; }
-    .chip { display:inline-flex; align-items:center; gap:6px; padding:4px 10px; background:var(--green-tint); border:1px solid var(--line); border-radius:14px; font-size:12px; }
+    .row-actions button:hover { border-color:var(--forest); background:var(--green-tint); }
+    .row-actions button.accepted { background:var(--green-tint); border-color:var(--forest); color:var(--forest); }
+    .row-actions button:disabled { opacity:.5; cursor:wait; }
+
+    .summary { display:flex; gap:10px; padding:10px 16px; background:white;
+               border-bottom:1px solid var(--line); flex-wrap:wrap; position:sticky; top:46px; z-index:5; }
+    .chip { display:inline-flex; align-items:center; gap:6px; padding:4px 10px;
+            background:var(--green-tint); border:1px solid var(--line); border-radius:14px; font-size:12px; }
     .chip strong { color:var(--forest); }
+
     table { border-collapse:collapse; width:100%; background:white; }
-    thead th { position:sticky; top:46px; background:var(--cream); border-bottom:2px solid var(--forest); padding:8px 10px; font-size:11px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; color:var(--slate); text-align:left; z-index:4; }
-    tbody td { border-bottom:1px solid var(--line); padding:8px 10px; vertical-align:top; }
-    tbody tr:hover { background:var(--green-tint); }
-    .status { display:inline-block; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600; }
+    thead th { position:sticky; top:92px; background:var(--cream); border-bottom:2px solid var(--forest);
+               padding:8px 10px; font-size:11px; font-weight:600; letter-spacing:.04em; text-transform:uppercase;
+               color:var(--slate); text-align:left; z-index:4; cursor:pointer; user-select:none; white-space:nowrap; }
+    thead th:hover { background:#f5f1e1; }
+    thead th .sort-ind { display:inline-block; width:10px; opacity:.55; margin-left:3px; }
+    tbody td { border-bottom:1px solid var(--line); padding:7px 10px; vertical-align:middle; }
+    tbody tr.row { cursor:pointer; }
+    tbody tr.row:hover { background:var(--green-tint); }
+    tbody tr.row .toggle { display:inline-block; width:13px; color:var(--slate); transition:transform .15s; }
+    tbody tr.row.open .toggle { transform:rotate(90deg); color:var(--forest); }
+
+    /* Status group header */
+    tr.group-hdr td { background:linear-gradient(180deg, var(--green-tint) 0%, white 100%);
+                       padding:10px 14px; font-weight:600; color:var(--forest);
+                       border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+                       letter-spacing:.04em; font-size:12px; text-transform:uppercase; }
+    tr.group-hdr td .count { font-weight:400; color:var(--slate); margin-left:6px; }
+
+    .status { display:inline-block; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600; white-space:nowrap; }
     .status-Undecided { background:#FFF4D8; color:#7A5A00; }
     .status-Accepted  { background:#D9EAD3; color:var(--forest); }
     .status-Submitted { background:#CFE2F3; color:#1A5490; }
@@ -38,27 +73,34 @@
     .status-Archived  { background:#EEE; color:#666; }
     .status-Lost      { background:#F4CCCC; color:var(--danger); }
     .ok  { color:var(--forest); font-weight:600; }
-    .pad { color:#999; }
+    .pad { color:#aaa; font-style:italic; }
     .small { font-size:11px; color:var(--slate); }
     a { color:var(--forest); text-decoration:none; }
     a:hover { text-decoration:underline; }
+    .folder-link { display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border:1px solid var(--line); border-radius:12px; font-size:11px; background:white; }
+    .folder-link:hover { background:var(--green-tint); border-color:var(--forest); }
 
-    /* drop-count sub-row */
+    /* Drop counts sub-row (default hidden — toggled) */
+    tr.counts { display:none; }
+    tr.counts.open { display:table-row; }
     tr.counts td { background:var(--cream); padding:8px 14px 14px; border-bottom:2px solid var(--line); }
     .counts-grid { display:grid; grid-template-columns:repeat(10, 1fr); gap:6px; }
-    .count-pill {
-      display:flex; align-items:center; justify-content:space-between; gap:6px;
-      padding:5px 10px; border:1px solid var(--line); border-radius:14px;
-      background:white; font-size:11px; color:var(--slate);
-    }
+    .count-pill { display:flex; align-items:center; justify-content:space-between; gap:6px;
+                  padding:5px 10px; border:1px solid var(--line); border-radius:14px;
+                  background:white; font-size:11px; color:var(--slate); }
     .count-pill .lbl { font-weight:600; letter-spacing:.04em; text-transform:uppercase; font-size:10px; }
     .count-pill .val { font-weight:700; color:var(--ink); min-width:18px; text-align:right; }
     .count-pill.empty { opacity:.45; }
     .count-pill.has   { border-color:var(--forest); background:var(--green-tint); }
-    .progress-bar { display:inline-block; width:70px; height:6px; background:var(--line); border-radius:3px; overflow:hidden; vertical-align:middle; margin-right:5px; }
+
+    .progress-bar { display:inline-block; width:70px; height:6px; background:var(--line);
+                    border-radius:3px; overflow:hidden; vertical-align:middle; margin-right:5px; }
     .progress-bar > span { display:block; height:100%; background:var(--forest); }
+
     @media (max-width:1100px) { .counts-grid { grid-template-columns:repeat(5, 1fr); } }
-    #status-bar { position:fixed; right:14px; bottom:10px; background:var(--ink); color:white; padding:6px 12px; border-radius:14px; font-size:11px; opacity:0; transition:opacity .15s; pointer-events:none; }
+    #status-bar { position:fixed; right:14px; bottom:10px; background:var(--ink); color:white;
+                  padding:6px 12px; border-radius:14px; font-size:11px; opacity:0;
+                  transition:opacity .15s; pointer-events:none; }
     #status-bar.show { opacity:.92; }
     #empty { padding:60px 20px; text-align:center; color:var(--slate); }
   </style>
@@ -66,8 +108,12 @@
 <body>
   <header>
     <div>
-      <h1>BC Leads</h1>
+      <h1><img src="/assets/img/gcc-logo-128.png" alt="GCC" />GCC Prop Manager</h1>
       <div class="meta" id="meta">loading...</div>
+    </div>
+    <div class="tabs" id="tabs">
+      <button class="tab active" data-tab="leads">BC Leads</button>
+      <button class="tab" data-tab="processes">Processes</button>
     </div>
     <div style="display:flex;gap:10px;align-items:center">
       <span class="small" id="auto" style="color:rgba(255,255,255,.7)"></span>
@@ -75,43 +121,50 @@
     </div>
   </header>
 
-  <div class="summary" id="summary"></div>
+  <!-- =================== Leads tab =================== -->
+  <section id="tab-leads">
+    <div class="summary" id="summary"></div>
+    <table id="t">
+      <thead><tr id="head"></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <div id="empty" hidden>No RFPs scraped yet. Click "Rescan now" to trigger a fresh pull.</div>
+  </section>
 
-  <table id="t">
-    <thead>
-      <tr>
-        <th>Project</th>
-        <th>GC / Client</th>
-        <th>Location</th>
-        <th>Status</th>
-        <th>Due</th>
-        <th>Folder</th>
-        <th>Scrape</th>
-        <th>Extraction</th>
-        <th>AI cost</th>
-        <th>Last seen</th>
-      </tr>
-    </thead>
-    <tbody id="rows"></tbody>
-  </table>
-  <div id="empty" hidden>No RFPs scraped yet. Click "Rescan now" to trigger a fresh pull.</div>
+  <!-- =================== Processes tab =================== -->
+  <section id="tab-processes" hidden>
+    <div class="summary"><span class="chip"><strong id="proc-count">0</strong> automated processes</span><span class="chip" id="proc-running-chip" style="display:none">⚙️ <strong id="proc-running">0</strong> running now</span></div>
+    <table id="proc-table">
+      <thead>
+        <tr>
+          <th style="cursor:default">Task</th>
+          <th style="cursor:default">State</th>
+          <th style="cursor:default">Last run</th>
+          <th style="cursor:default">Next run</th>
+          <th style="cursor:default">Last result</th>
+          <th style="cursor:default">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="proc-rows"></tbody>
+    </table>
+  </section>
 
   <div id="status-bar"></div>
 
 <script>
 'use strict';
 
-// Auth: ?secret= on the URL (set by the tray launcher) OR localStorage fallback
-// (set once if you open the page directly in your browser).
+// Auth: ?secret= on the URL (set by the tray launcher) OR localStorage fallback.
 const URL_PARAMS = new URLSearchParams(location.search);
 const SECRET = URL_PARAMS.get('secret') || localStorage.getItem('gccAdminSecret') || '';
 if (URL_PARAMS.get('secret')) localStorage.setItem('gccAdminSecret', URL_PARAMS.get('secret'));
 
-// API base: same origin by default; override with ?api=https://api.... for local-host probes.
+// API base: same origin by default; override with ?api=... for local-host probes.
 const API_BASE = URL_PARAMS.get('api') || ('https://api.' + location.hostname.replace(/^www\./, '').replace(/^staff\./, ''));
 
 const $  = (id) => document.getElementById(id);
 const fmt = (d) => d ? new Date(d).toLocaleString([], { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' }) : '—';
+const fmtDate = (d) => d ? new Date(d).toLocaleDateString([], { month:'short', day:'numeric', year:'2-digit' }) : null;
 const toast = (msg, ms = 2200) => { const b = $('status-bar'); b.textContent = msg; b.classList.add('show'); setTimeout(() => b.classList.remove('show'), ms); };
 
 async function api(method, path, body = null) {
@@ -129,20 +182,64 @@ function statusBadge(s) {
   return `<span class="status status-${safe}">${s || '—'}</span>`;
 }
 
-function scrapeBadge(scrape) {
-  const folder = scrape.folderCreated;
-  const detail = scrape.detailScraped;
-  const att    = scrape.attachmentsCount || 0;
-  const msg    = scrape.messagesCount || 0;
-  const pct    = (scrape.progressPct == null) ? null : Math.round(scrape.progressPct);
-  let parts = [];
-  if (pct != null) parts.push(`<span class="progress-bar"><span style="width:${pct}%"></span></span><strong>${pct}%</strong>`);
-  parts.push(folder ? '<span class="ok">folder</span>' : '<span class="pad">no folder</span>');
-  parts.push(detail ? '<span class="ok">detail</span>' : '<span class="pad">no detail</span>');
-  if (att) parts.push(`<span class="small">${att} att.</span>`);
-  if (msg) parts.push(`<span class="small">${msg} msg.</span>`);
-  return parts.join(' · ');
-}
+// ===== columns =====
+// `key` = sort key on the row object;  `accessor(r)` returns the rendered HTML.
+const COLS = [
+  { id:'project', label:'Project',
+    sort:(a,b) => (a.projectName || '').localeCompare(b.projectName || ''),
+    cell:(r) => `<span class="toggle">▶</span> <a href="${r.href || '#'}" target="_blank" onclick="event.stopPropagation()">${r.projectName || '(no name)'}</a>` },
+
+  { id:'gc', label:'GC / Client',
+    sort:(a,b) => (a.gc || '').localeCompare(b.gc || ''),
+    cell:(r) => r.gc ? `<span>${r.gc}</span>` : '<span class="pad">unknown</span>' },
+
+  { id:'due', label:'Due',
+    sort:(a,b) => (parseDue(a.dueAt) || 0) - (parseDue(b.dueAt) || 0),
+    cell:(r) => renderDue(r.dueAt) },
+
+  { id:'folder', label:'Folder',
+    sort:(a,b) => (a.driveJobFolderName || '').localeCompare(b.driveJobFolderName || ''),
+    cell:(r) => r.driveJobFolderId
+      ? `<a class="folder-link" href="https://drive.google.com/drive/folders/${r.driveJobFolderId}" target="_blank" onclick="event.stopPropagation()" title="${r.driveJobFolderName || ''}">📂 Open</a>`
+      : '<span class="pad">no folder</span>' },
+
+  { id:'uploads', label:'Uploads',
+    sort:(a,b) => (a.scrape?.attachmentsCount || 0) - (b.scrape?.attachmentsCount || 0),
+    cell:(r) => uploadsCell(r.scrape) },
+
+  { id:'extraction', label:'Extraction',
+    sort:(a,b) => (a.extraction?.confidencePct || 0) - (b.extraction?.confidencePct || 0),
+    cell:(r) => {
+      const c = r.extraction?.confidencePct;
+      return c == null ? '<span class="pad">—</span>' :
+        `<strong>${Math.round(c)}%</strong>${r.extraction?.filesProcessed ? ` <span class="small">(${r.extraction.filesProcessed} files)</span>` : ''}`;
+    } },
+
+  { id:'cost', label:'AI cost',
+    sort:(a,b) => (a.ai?.costUsd || 0) - (b.ai?.costUsd || 0),
+    cell:(r) => {
+      const c = r.ai?.costUsd;
+      return c == null ? '<span class="pad">—</span>' :
+        `$${Number(c).toFixed(4)}${r.ai?.tokensUsed ? ` <span class="small">(${(r.ai.tokensUsed/1000).toFixed(1)}k tok)</span>` : ''}`;
+    } },
+
+  { id:'added', label:'Added',
+    sort:(a,b) => new Date(a.firstSeenAt || 0) - new Date(b.firstSeenAt || 0),
+    cell:(r) => `<span class="small">${fmt(r.firstSeenAt)}</span>` },
+
+  { id:'lastseen', label:'Last seen',
+    sort:(a,b) => new Date(a.lastSeenAt || 0) - new Date(b.lastSeenAt || 0),
+    cell:(r) => `<span class="small">${fmt(r.lastSeenAt)}</span>` },
+
+  { id:'actions', label:'Actions', sort:(a,b) => 0,
+    cell:(r) => {
+      const accepted = r.extraction?.accepted;
+      return `<div class="row-actions" onclick="event.stopPropagation()">
+        <button data-act="extract-more" data-id="${r.bcBidId}" title="Re-run extraction with deeper parsing pass">Extract more</button>
+        <button data-act="accept" data-id="${r.bcBidId}" class="${accepted ? 'accepted' : ''}" title="${accepted ? 'Already accepted' : 'Mark this extraction as approved'}">${accepted ? '✓ accepted' : 'Accept'}</button>
+      </div>`;
+    } },
+];
 
 const COUNT_KEYS = [
   ['data','DATA'],     ['fiber','FIBER'],   ['fiberEnc','FIBER ENC'], ['fiberPp','FIBER PP'], ['coax','COAX'],
@@ -162,18 +259,53 @@ function countsGrid(counts) {
     `</div>`;
 }
 
-function folderCell(r) {
-  if (!r.driveJobFolderId) return '<span class="pad">—</span>';
-  const url = `https://drive.google.com/drive/folders/${r.driveJobFolderId}`;
-  const intake = r.driveIntakeFolderId ? ` <a href="https://drive.google.com/drive/folders/${r.driveIntakeFolderId}" target="_blank" class="small">Intake</a>` : '';
-  return `<a href="${url}" target="_blank">${r.driveJobFolderName || '(open)'}</a>${intake}`;
+function uploadsCell(scrape) {
+  if (!scrape) return '<span class="pad">—</span>';
+  const att = scrape.attachmentsCount || 0;
+  const msg = scrape.messagesCount || 0;
+  const pct = scrape.progressPct == null ? null : Math.round(scrape.progressPct);
+  let parts = [];
+  if (pct != null) parts.push(`<span class="progress-bar"><span style="width:${pct}%"></span></span><strong>${pct}%</strong>`);
+  if (att) parts.push(`<span class="small">${att} att</span>`);
+  if (msg) parts.push(`<span class="small">${msg} msg</span>`);
+  if (parts.length === 0) parts.push('<span class="pad">none</span>');
+  return parts.join(' · ');
 }
+
+// Parse the BC dueAt string ("Fri, Jul 19 2025 · 5:00 PM CDT" etc.) to ms.
+function parseDue(s) {
+  if (!s) return null;
+  const t = Date.parse(s.replace(/[·•]/g, ' '));
+  return isNaN(t) ? null : t;
+}
+function renderDue(s) {
+  const t = parseDue(s);
+  if (t == null) return s ? `<span class="small">${s}</span>` : '<span class="pad">—</span>';
+  const d = new Date(t);
+  const now = Date.now();
+  const days = Math.floor((t - now) / 86400000);
+  let cls = 'small'; let prefix = '';
+  if      (days < 0)   { cls = 'small'; prefix = `<span style="color:var(--danger);font-weight:600">past</span> · `; }
+  else if (days === 0) { cls = 'small'; prefix = `<span style="color:var(--danger);font-weight:600">today</span> · `; }
+  else if (days <= 7)  { prefix = `<strong>${days}d</strong> · `; }
+  return `${prefix}<span class="${cls}">${fmtDate(d)}</span>`;
+}
+
+// ===== state =====
+const STATE = {
+  data : null,
+  sort : { col: 'added', dir: 'desc' },
+  open : new Set(),   // bcBidIds with expanded count rows
+};
+
+const STATUS_ORDER = ['Undecided', 'Accepted', 'Submitted', 'Won', 'Archived', 'Lost'];
 
 async function load() {
   $('meta').textContent = 'loading...';
   try {
     const data = await api('GET', '/api/bc/leads-summary');
-    render(data);
+    STATE.data = data;
+    render();
     $('meta').textContent = `${data.summary.total} RFPs · last list scrape ${fmt(data.summary.lastListScrape)} · last detail scrape ${fmt(data.summary.lastDetailScrape)}`;
   } catch (e) {
     $('meta').textContent = 'error loading';
@@ -181,37 +313,172 @@ async function load() {
   }
 }
 
-function render(data) {
-  // Summary chips
+function renderHead() {
+  const cells = COLS.map(c => {
+    const ind = STATE.sort.col === c.id ? (STATE.sort.dir === 'asc' ? '▲' : '▼') : '';
+    return `<th data-col="${c.id}">${c.label}<span class="sort-ind">${ind}</span></th>`;
+  }).join('');
+  $('head').innerHTML = cells;
+  $('head').querySelectorAll('th').forEach(th => {
+    th.addEventListener('click', () => {
+      const id = th.dataset.col;
+      if (STATE.sort.col === id) STATE.sort.dir = (STATE.sort.dir === 'asc' ? 'desc' : 'asc');
+      else { STATE.sort.col = id; STATE.sort.dir = (id === 'added' || id === 'lastseen' ? 'desc' : 'asc'); }
+      render();
+    });
+  });
+}
+
+function render() {
+  if (!STATE.data) return;
+  renderHead();
+
+  // Summary chips -- counts + compound AI cost across ALL items
   const chips = [];
-  chips.push(`<span class="chip"><strong>${data.summary.total}</strong> total</span>`);
-  for (const [k, v] of Object.entries(data.summary.byStatus || {})) {
+  chips.push(`<span class="chip"><strong>${STATE.data.summary.total}</strong> total</span>`);
+  for (const [k, v] of Object.entries(STATE.data.summary.byStatus || {})) {
     chips.push(`<span class="chip">${statusBadge(k)} <strong>${v}</strong></span>`);
   }
+  // Compound AI spend across every item (sums regardless of status group sort).
+  let totalCost = 0; let totalTokens = 0; let acceptedCount = 0;
+  for (const r of STATE.data.items) {
+    if (r.ai?.costUsd) totalCost += Number(r.ai.costUsd);
+    if (r.ai?.tokensUsed) totalTokens += Number(r.ai.tokensUsed);
+    if (r.extraction?.accepted) acceptedCount++;
+  }
+  chips.push(`<span class="chip" title="Compound Anthropic spend across every RFP, all statuses">💰 <strong>$${totalCost.toFixed(4)}</strong> AI · ${(totalTokens/1000).toFixed(1)}k tok</span>`);
+  if (acceptedCount > 0) chips.push(`<span class="chip">✓ <strong>${acceptedCount}</strong> accepted</span>`);
   $('summary').innerHTML = chips.join('');
 
-  // Rows -- main row + drop-counts sub-row per RFP
-  const rows = data.items.map(r => {
-    const conf = r.extraction?.confidencePct;
-    const cost = r.ai?.costUsd;
-    return `
-    <tr>
-      <td><a href="${r.href || '#'}" target="_blank">${r.projectName || '(no name)'}</a></td>
-      <td>${r.gc || '<span class="pad">—</span>'}</td>
-      <td>${r.location || '<span class="pad">—</span>'}</td>
-      <td>${statusBadge(r.status)}</td>
-      <td>${r.dueAt || '<span class="pad">—</span>'}</td>
-      <td>${folderCell(r)}</td>
-      <td>${scrapeBadge(r.scrape)}</td>
-      <td>${conf == null ? '<span class="pad">—</span>' : `<strong>${Math.round(conf)}%</strong>`}${r.extraction?.filesProcessed ? ` <span class="small">(${r.extraction.filesProcessed} files)</span>` : ''}</td>
-      <td>${cost == null ? '<span class="pad">—</span>' : `$${Number(cost).toFixed(4)}${r.ai?.tokensUsed ? ` <span class="small">(${(r.ai.tokensUsed/1000).toFixed(1)}k tok)</span>` : ''}`}</td>
-      <td class="small">${fmt(r.lastSeenAt)}</td>
-    </tr>
-    <tr class="counts"><td colspan="10">${countsGrid(r.counts)}</td></tr>`;
-  }).join('');
-  $('rows').innerHTML = rows;
-  $('empty').hidden = data.items.length > 0;
+  // Group by status, sort within each group, render group headers + rows.
+  const sortFn = (COLS.find(c => c.id === STATE.sort.col) || COLS[0]).sort;
+  const dirMul = STATE.sort.dir === 'asc' ? 1 : -1;
+  const groups = {};
+  for (const r of STATE.data.items) {
+    const s = r.status || 'Unknown';
+    (groups[s] = groups[s] || []).push(r);
+  }
+  // Stable, deterministic group order: known statuses first, then any extras alphabetically.
+  const orderedStatuses = [
+    ...STATUS_ORDER.filter(s => groups[s]),
+    ...Object.keys(groups).filter(s => !STATUS_ORDER.includes(s)).sort(),
+  ];
+
+  const html = [];
+  for (const s of orderedStatuses) {
+    const rows = groups[s].slice().sort((a,b) => sortFn(a,b) * dirMul);
+    html.push(`<tr class="group-hdr"><td colspan="${COLS.length}">${statusBadge(s)} <span class="count">${rows.length}</span></td></tr>`);
+    for (const r of rows) {
+      const open = STATE.open.has(r.bcBidId);
+      html.push(`<tr class="row${open ? ' open' : ''}" data-id="${r.bcBidId}">` +
+        COLS.map(c => `<td>${c.cell(r)}</td>`).join('') +
+        `</tr>`);
+      html.push(`<tr class="counts${open ? ' open' : ''}" data-counts-for="${r.bcBidId}"><td colspan="${COLS.length}">${countsGrid(r.counts)}</td></tr>`);
+    }
+  }
+  $('rows').innerHTML = html.join('');
+  $('empty').hidden = STATE.data.items.length > 0;
+
+  $('rows').querySelectorAll('tr.row').forEach(tr => {
+    tr.addEventListener('click', () => {
+      const id = tr.dataset.id;
+      if (STATE.open.has(id)) STATE.open.delete(id);
+      else                    STATE.open.add(id);
+      tr.classList.toggle('open');
+      const sub = $('rows').querySelector(`tr.counts[data-counts-for="${id}"]`);
+      if (sub) sub.classList.toggle('open');
+    });
+  });
+  // Action buttons (Extract more / Accept).
+  $('rows').querySelectorAll('.row-actions button').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const act = btn.dataset.act, id = btn.dataset.id;
+      btn.disabled = true; const orig = btn.textContent; btn.textContent = '…';
+      try {
+        if (act === 'extract-more') {
+          await api('POST', '/api/bc/extraction/extract-more', { bcBidId: id });
+          toast(`Deeper extraction queued for ${id.slice(0,8)}…`);
+        } else if (act === 'accept') {
+          await api('POST', '/api/bc/extraction/accept', { bcBidId: id });
+          btn.textContent = '✓ accepted'; btn.classList.add('accepted');
+          toast(`Extraction accepted for ${id.slice(0,8)}…`);
+          setTimeout(load, 1500);
+          return;
+        }
+      } catch (e) { toast(e.message, 4500); }
+      finally    { btn.disabled = false; if (btn.textContent === '…') btn.textContent = orig; }
+    });
+  });
 }
+
+// ===== Processes tab =====
+async function loadProcesses() {
+  try {
+    const data = await api('GET', '/api/admin/scheduled-tasks');
+    const tasks = data.tasks || [];
+    $('proc-count').textContent = tasks.length;
+    const running = tasks.filter(t => (t.state || '').toLowerCase() === 'running').length;
+    if (running > 0) { $('proc-running').textContent = running; $('proc-running-chip').style.display = ''; }
+    else             { $('proc-running-chip').style.display = 'none'; }
+    const stateBadge = (s) => {
+      const v = (s || '').toLowerCase();
+      if (v === 'ready')    return '<span class="status status-Accepted">Ready</span>';
+      if (v === 'running')  return '<span class="status status-Won">Running</span>';
+      if (v === 'disabled') return '<span class="status status-Archived">Paused</span>';
+      return `<span class="status status-Unknown">${s || '?'}</span>`;
+    };
+    const html = tasks.map(t => {
+      const isPaused  = (t.state || '').toLowerCase() === 'disabled';
+      const isRunning = (t.state || '').toLowerCase() === 'running';
+      return `<tr>
+        <td><strong>${t.name}</strong>${t.description ? `<div class="small">${t.description}</div>` : ''}</td>
+        <td>${stateBadge(t.state)}</td>
+        <td class="small">${t.lastRunAt ? fmt(t.lastRunAt) : '<span class="pad">—</span>'}</td>
+        <td class="small">${t.nextRunAt ? fmt(t.nextRunAt) : '<span class="pad">—</span>'}</td>
+        <td class="small">${t.lastResultText || `<code>${t.lastResultCode ?? ''}</code>`}</td>
+        <td>
+          <div class="row-actions">
+            <button data-task="${t.name}" data-act="run"     ${isRunning ? 'disabled' : ''}>${isRunning ? 'running' : 'Start'}</button>
+            <button data-task="${t.name}" data-act="${isPaused ? 'enable' : 'disable'}">${isPaused ? 'Resume' : 'Pause'}</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+    $('proc-rows').innerHTML = html || `<tr><td colspan="6" style="text-align:center;color:var(--slate);padding:30px">No scheduled tasks discovered.</td></tr>`;
+    // Wire buttons.
+    $('proc-rows').querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const name = btn.dataset.task, act = btn.dataset.act;
+        btn.disabled = true; const orig = btn.textContent; btn.textContent = '…';
+        try {
+          if (act === 'run') {
+            await api('POST', '/api/admin/scheduled-tasks/run', { name });
+            toast(`Started ${name}`);
+          } else {
+            await api('POST', '/api/admin/scheduled-tasks/toggle', { name, enable: act === 'enable' });
+            toast(`${act === 'enable' ? 'Resumed' : 'Paused'} ${name}`);
+          }
+        } catch (e) { toast(e.message, 4500); }
+        finally    { btn.disabled = false; btn.textContent = orig; loadProcesses(); }
+      });
+    });
+  } catch (e) {
+    $('proc-rows').innerHTML = `<tr><td colspan="6" style="padding:20px;color:var(--danger)">${e.message}</td></tr>`;
+  }
+}
+
+// ===== Tab switching =====
+$('tabs').addEventListener('click', (e) => {
+  const btn = e.target.closest('.tab');
+  if (!btn) return;
+  $('tabs').querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  const which = btn.dataset.tab;
+  $('tab-leads').hidden     = (which !== 'leads');
+  $('tab-processes').hidden = (which !== 'processes');
+  $('rescan').style.display = (which === 'leads') ? '' : 'none';
+  if (which === 'processes') loadProcesses();
+});
 
 $('rescan').addEventListener('click', async () => {
   const btn = $('rescan');
@@ -219,7 +486,7 @@ $('rescan').addEventListener('click', async () => {
   btn.textContent = 'firing...';
   try {
     const r = await api('POST', '/api/bc/rescan-now', {});
-    toast(`Triggered ${r.triggered.length} scheduled tasks. They run in the background -- this page auto-refreshes every 30s.`, 4500);
+    toast(`Triggered ${r.triggered.length} scheduled tasks. Auto-refreshes every 30s.`, 4500);
   } catch (e) { toast(e.message, 5000); }
   finally {
     btn.disabled = false;
@@ -228,7 +495,6 @@ $('rescan').addEventListener('click', async () => {
   setTimeout(load, 4000);
 });
 
-// Auto-refresh every 30s
 let refreshTimer = null;
 function scheduleRefresh() {
   clearInterval(refreshTimer);
