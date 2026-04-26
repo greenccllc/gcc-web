@@ -102,6 +102,7 @@
           <button data-section="notifications">Notifications</button>
 
           <div class="nav-section" id="nav-admin-section" hidden>Admin</div>
+          <button data-section="tools" id="nav-tools" hidden>Tools</button>
           <button data-section="infra" id="nav-infra" hidden>Infrastructure</button>
         </aside>
 
@@ -188,6 +189,20 @@
                     <button class="btn btn-sm" id="copy-thumbtack-url" style="background:white; border:1px solid var(--hairline-strong);">Copy URL</button>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Admin: Tools -->
+          <div class="settings-section" data-section="tools" hidden>
+            <div class="section-head"><h2>Tools</h2><span class="muted">Admin apps + dashboards</span></div>
+            <div class="card" style="display:flex; gap:16px; align-items:flex-start;">
+              <img src="/assets/img/gcc-logo-128.png" alt="" style="width:64px; height:64px; flex-shrink:0; border-radius:8px;" />
+              <div style="flex:1;">
+                <h3 style="margin:0 0 4px;">GCC Prop Manager</h3>
+                <p class="lede" style="margin:0 0 8px;">BuildingConnected leads, AI-cost rollup, drop-count grid per RFP, and a Processes tab for pausing/resuming the GCC scheduled tasks (BC scrape, AI Drive sync, bid extractor, etc.).</p>
+                <p class="small" style="color:var(--slate-light); margin:0 0 12px;">Also available as a tray icon — install <code>gcc-app/scripts/install.ps1</code> from the <a href="https://github.com/greenccllc/gcc-app" target="_blank">greenccllc/gcc-app</a> repo.</p>
+                <a href="/staff/bc-leads.html" class="btn btn-primary btn-sm" target="_blank">Open Prop Manager &rarr;</a>
               </div>
             </div>
           </div>
@@ -292,6 +307,7 @@ gccPage.requireRole(["client","staff","admin"]).then(async (me) => {
   // Reveal admin-only nav sections
   if (me.role === 'admin') {
     document.getElementById('nav-admin-section').hidden = false;
+    document.getElementById('nav-tools').hidden = false;
     document.getElementById('nav-infra').hidden = false;
     document.getElementById('admin-integrations').hidden = false;
   }
@@ -312,7 +328,7 @@ gccPage.requireRole(["client","staff","admin"]).then(async (me) => {
 
   const initial = (location.hash || '#integrations').slice(1);
   const allowed = me.role === 'admin'
-    ? ['profile','integrations','notifications','infra']
+    ? ['profile','integrations','notifications','tools','infra']
     : ['profile','integrations','notifications'];
   showSection(allowed.includes(initial) ? initial : 'integrations');
 
