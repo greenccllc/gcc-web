@@ -89,7 +89,7 @@
           <h3>Documents</h3>
           <div id="doc-list">Loading...</div>
           <p style="font-size: 11px; color: var(--slate-light); margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--hairline);">
-            Stored at <code style="font-size: 10px;">C:\inetpub\gcc-api\admin-docs\</code> on the server. Updates land here when the file is replaced or the deploy script copies new versions from the gcc-site repo.
+            Stored at <code style="font-size: 10px;">C:\GCC_LLC\IIS\gcc-api\admin-docs\</code> on the server. Updates land here when the file is replaced or the deploy script copies new versions from the gcc-site repo.
           </p>
         </aside>
 
@@ -257,7 +257,7 @@ gccPage.requireRole(["admin"]).then(async (me) => {
       openDoc(docs[0].slug);
     } else {
       document.getElementById('mk-content').textContent =
-        'No documents yet. Drop .md files into ' + (r.path || 'C:\\inetpub\\gcc-api\\admin-docs') + ' on the server.';
+        'No documents yet. Drop .md files into ' + (r.path || 'C:\\GCC_LLC\\IIS\\gcc-api\\admin-docs') + ' on the server.';
     }
   } catch(e) {
     console.error(e);
