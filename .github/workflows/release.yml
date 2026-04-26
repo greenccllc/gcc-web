@@ -1,0 +1,105 @@
+name: Release
+
+# Triggers a GitHub Release when the VERSION file changes on main, OR via manual dispatch.
+# The release notes are pulled from the matching section of CHANGELOG.md.
+#
+# Why a workflow? The MCP/automation environment can push commits but cannot create
+# releases or tags directly, so we delegate that to GitHub Actions: bump VERSION,
+# add the matching CHANGELOG section, push to main, and a tagged release appears.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'VERSION'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g. 1.0.0). Defaults to the contents of the VERSION file.'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve version
+        id: ver
+        run: |
+          set -euo pipefail
+          if [ -n "${{ inputs.version }}" ]; then
+            VERSION="${{ inputs.version }}"
+          else
+            if [ ! -f VERSION ]; then
+              echo "::error::No VERSION file and no version input provided." && exit 1
+            fi
+            VERSION=$(tr -d '[:space:]' < VERSION)
+          fi
+          if [ -z "$VERSION" ]; then
+            echo "::error::Version string is empty." && exit 1
+          fi
+          TAG="v$VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG"         >> "$GITHUB_OUTPUT"
+          echo "Resolved version: $VERSION (tag $TAG)"
+
+      - name: Skip if tag already exists
+        id: existing
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG="${{ steps.ver.outputs.tag }}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists; nothing to do."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Extract release notes from CHANGELOG.md
+        if: steps.existing.outputs.skip != 'true'
+        id: notes
+        run: |
+          set -euo pipefail
+          VER="${{ steps.ver.outputs.version }}"
+          TAG="${{ steps.ver.outputs.tag }}"
+          if [ -f CHANGELOG.md ]; then
+            # Match either "## v1.2.3" or "## [1.2.3]" or "## 1.2.3" — we look for the version
+            # substring on a line starting with "## " and capture until the next "## " heading.
+            awk -v ver="$VER" '
+              BEGIN { found = 0 }
+              /^## / {
+                if (found) exit
+                if (index($0, ver) > 0) { found = 1; next }
+              }
+              found { print }
+            ' CHANGELOG.md > release_notes.md
+          fi
+          if [ ! -s release_notes.md ]; then
+            echo "Release $TAG" > release_notes.md
+            echo "" >> release_notes.md
+            echo "(No CHANGELOG.md entry found for $VER.)" >> release_notes.md
+          fi
+          echo "Release notes preview:"
+          sed 's/^/  /' release_notes.md
+
+      - name: Create release (and tag)
+        if: steps.existing.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG="${{ steps.ver.outputs.tag }}"
+          gh release create "$TAG" \
+            --target "${{ github.sha }}" \
+            --title "$TAG" \
+            --notes-file release_notes.md
+          echo "Created release $TAG at ${{ github.sha }}"
