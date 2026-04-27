@@ -55,8 +55,12 @@
     .chip strong { color:var(--forest); }
 
     table { border-collapse:collapse; width:100%; background:white; }
+    /* Sticky stays on -- the duplicate `thead th` rule lower in the file
+       used to set position:relative for the resize-handle anchor, which
+       silently clobbered this sticky and parked the header mid-table.
+       Fold the resize-handle layout into this rule so there's only one. */
     thead th { position:sticky; top:138px; background:var(--cream); border-bottom:2px solid var(--forest);
-               padding:8px 10px; font-size:11px; font-weight:600; letter-spacing:.04em; text-transform:uppercase;
+               padding:8px 14px 8px 10px; font-size:11px; font-weight:600; letter-spacing:.04em; text-transform:uppercase;
                color:var(--slate); text-align:left; z-index:4; cursor:pointer; user-select:none; white-space:nowrap; }
     thead th:hover { background:#f5f1e1; }
     thead th .sort-ind { display:inline-block; width:10px; opacity:.55; margin-left:3px; }
@@ -238,7 +242,6 @@
       background:transparent; user-select:none;
     }
     thead th .col-resizer:hover, thead th .col-resizer.dragging { background:var(--gold); }
-    thead th { padding-right:14px; position:relative; }
 
     /* Expanded sub-panel: GC card, counts grid, Date Added footer. */
     .row-meta-card { display:flex; gap:18px; flex-wrap:wrap; padding:6px 0 10px;
