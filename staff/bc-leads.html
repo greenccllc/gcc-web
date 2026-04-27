@@ -246,9 +246,10 @@ function statusBadge(s) {
 
 // ===== columns =====
 // `key` = sort key on the row object;  `accessor(r)` returns the rendered HTML.
-// projectLabel = job-folder name (which encodes "{date} - {project} - {location}"),
-// falling back to BC's bare ProjectName until ensure-folders has run.
-function projectLabel(r) { return r.driveJobFolderName || r.projectName || '(no name)'; }
+// projectLabel = the bare site name from BC (no date prefix, no city suffix).
+// `driveJobFolderName` encodes "{date} - {project} - {city}" and gets shown
+// in the Folder column tooltip; the Project column wants the site name only.
+function projectLabel(r) { return r.projectName || r.driveJobFolderName || '(no name)'; }
 
 // safeHtml: escape user-controlled strings before injecting into innerHTML.
 function safeHtml(s) {
