@@ -266,10 +266,20 @@ function statusBadge(s) {
 
 // ===== columns =====
 // `key` = sort key on the row object;  `accessor(r)` returns the rendered HTML.
-// projectLabel = the bare site name from BC (no date prefix, no city suffix).
-// `driveJobFolderName` encodes "{date} - {project} - {city}" and gets shown
-// in the Folder column tooltip; the Project column wants the site name only.
-function projectLabel(r) { return r.projectName || r.driveJobFolderName || '(no name)'; }
+// projectLabel = the bare site name from BC (no date prefix, no city suffix,
+// no trade-scope suffix). `driveJobFolderName` encodes "{date} - {project} - {city}"
+// and gets shown in the Folder column tooltip; the Project column wants the
+// site name only with the trade-scope trailer ("Electrical",
+// "Data & Telecommunications", "Visual Display Boards", etc.) stripped --
+// scope already appears as chips on Undecided rows.
+const SCOPE_TRAILER = /\s+(?:Data\s*(?:&|and)\s*Telecommunications|Voice\s*&\s*Data|Visual\s*Display\s*Boards?|Visual\s*Displays?|Low[\s-]?Voltage|Audio[\s\/-]?Visual|Telecommunications?|Communications?|Structured\s*Cabling|Cabling|Networking|Network|Electrical|Security|Fire\s*Alarm|Access\s*Control|Intercom|Paging|Sound\s*System|Datacom|Data|Telecom|AV)\s*$/i;
+function trimScope(name) {
+  if (!name) return '';
+  let s = name.replace(SCOPE_TRAILER, '').trim();
+  s = s.replace(/[\s\-–—,/\\]+$/, '').trim();   // dangling punctuation left by the cut
+  return s || name;                              // never collapse to empty
+}
+function projectLabel(r) { return trimScope(r.projectName) || r.driveJobFolderName || '(no name)'; }
 
 // safeHtml: escape user-controlled strings before injecting into innerHTML.
 function safeHtml(s) {
@@ -298,12 +308,6 @@ const COLS = [
     sort:(a,b) => (parseDue(a.dueAt) || 0) - (parseDue(b.dueAt) || 0),
     cell:(r) => renderDue(r.dueAt) },
 
-  { id:'folder', label:'Folder',
-    sort:(a,b) => (a.driveJobFolderName || '').localeCompare(b.driveJobFolderName || ''),
-    cell:(r) => r.driveJobFolderId
-      ? `<a class="folder-link" data-act="open-folder" data-folder-id="${r.driveJobFolderId}" title="${safeHtml(r.driveJobFolderName || '')}">📂 Open</a>`
-      : '<span class="pad">no folder</span>' },
-
   { id:'uploads', label:'Uploads',
     sort:(a,b) => (a.scrape?.attachmentsCount || 0) - (b.scrape?.attachmentsCount || 0),
     cell:(r) => uploadsCell(r.scrape) },
@@ -325,6 +329,12 @@ const COLS = [
       return c == null ? '<span class="pad">—</span>' :
         `$${Number(c).toFixed(4)}${r.ai?.tokensUsed ? ` <span class="small">(${(r.ai.tokensUsed/1000).toFixed(1)}k tok)</span>` : ''}`;
     } },
+
+  { id:'folder', label:'Folder',
+    sort:(a,b) => (a.driveJobFolderName || '').localeCompare(b.driveJobFolderName || ''),
+    cell:(r) => r.driveJobFolderId
+      ? `<a class="folder-link" data-act="open-folder" data-folder-id="${r.driveJobFolderId}" title="${safeHtml(r.driveJobFolderName || '')}">📂 Open</a>`
+      : '<span class="pad">no folder</span>' },
 
   { id:'added', label:'Added',
     sort:(a,b) => new Date(a.firstSeenAt || 0) - new Date(b.firstSeenAt || 0),
