@@ -79,7 +79,7 @@
        used to set position:relative for the resize-handle anchor, which
        silently clobbered this sticky and parked the header mid-table.
        Fold the resize-handle layout into this rule so there's only one. */
-    thead th { position:sticky; top:138px; background:var(--cream); border-bottom:2px solid var(--forest);
+    thead th { position:sticky; top:180px; background:var(--cream); border-bottom:2px solid var(--forest);
                padding:8px 14px 8px 10px; font-size:11px; font-weight:600; letter-spacing:.04em; text-transform:uppercase;
                color:var(--slate); text-align:left; z-index:4; cursor:pointer; user-select:none; white-space:nowrap; }
     thead th:hover { background:#f5f1e1; }
@@ -152,23 +152,46 @@
     /* Drop counts sub-row (default hidden — toggled) */
     tr.counts { display:none; }
     tr.counts.open { display:table-row; }
-    tr.counts td { background:var(--cream); padding:8px 14px 14px; border-bottom:2px solid var(--line); }
-    .counts-grid { display:grid; grid-template-columns:repeat(10, 1fr); gap:6px; }
-    .count-pill { display:flex; align-items:center; justify-content:space-between; gap:6px;
-                  padding:5px 10px; border:1px solid var(--line); border-radius:14px;
-                  background:white; font-size:11px; color:var(--slate); }
-    .count-pill .lbl { font-weight:600; letter-spacing:.04em; text-transform:uppercase; font-size:10px; }
+    tr.counts td { background:var(--cream); padding:10px 14px 14px; border-bottom:2px solid var(--line); }
+    /* 4-column expand pane: summary | drops 4x5 | actions | meta */
+    .expand-pane { display:grid; grid-template-columns:1.3fr 1.4fr .9fr 1fr; gap:14px; align-items:start; }
+    .expand-col  { background:white; border:1px solid var(--line); border-radius:10px; padding:10px 12px;
+                   box-shadow:0 1px 2px rgba(28,42,35,.04); min-width:0; }
+    .expand-col h4 { margin:0 0 6px; font-size:10px; font-weight:700; text-transform:uppercase;
+                     letter-spacing:.06em; color:var(--forest); }
+    .expand-col .field { display:flex; flex-direction:column; gap:1px; margin-bottom:6px; }
+    .expand-col .field .lbl { color:var(--slate); font-size:10px; text-transform:uppercase; letter-spacing:.04em; }
+    .expand-col .field .val { color:var(--ink); font-weight:500; font-size:12px; }
+    .expand-col .descr { font-size:11.5px; color:var(--ink); line-height:1.45; max-height:140px; overflow:auto;
+                         border-top:1px dashed var(--line); padding-top:6px; margin-top:4px; }
+    .expand-col .descr em { color:var(--slate); }
+    .expand-col.actions-col { display:flex; flex-direction:column; gap:6px; }
+    .expand-col.actions-col .stacked-actions { display:flex; flex-direction:column; gap:6px; }
+    .expand-col.actions-col .stacked-actions button {
+      background:white; color:var(--forest); border:1px solid var(--line);
+      padding:6px 10px; font-size:12px; font-weight:500; border-radius:7px; cursor:pointer;
+      text-align:left; transition:all .12s ease;
+    }
+    .expand-col.actions-col .stacked-actions button:hover { border-color:var(--forest); background:var(--green-tint); }
+    .expand-col.actions-col .stacked-actions button.primary { background:var(--forest); color:white; border-color:var(--forest); }
+    .expand-col.actions-col .stacked-actions button.primary:hover { background:#0d3d11; }
+    .expand-col.actions-col .stacked-actions button.danger  { color:var(--danger); border-color:#F4CCCC; }
+    .expand-col.actions-col .stacked-actions button.danger:hover { background:#FFEBEE; }
+    .expand-col.actions-col .stacked-actions button.warn { background:#FFEBEE; color:var(--danger); border-color:#F4CCCC; font-weight:700; }
+    .expand-col.actions-col .stacked-actions select { padding:5px 6px; font-size:12px; border:1px solid var(--line); border-radius:7px; }
+    /* Drops 4 wide x 5 tall fixed grid */
+    .counts-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:5px; }
+    .count-pill { display:flex; align-items:center; justify-content:space-between; gap:4px;
+                  padding:4px 8px; border:1px solid var(--line); border-radius:9px;
+                  background:white; font-size:10.5px; color:var(--slate); }
+    .count-pill .lbl { font-weight:600; letter-spacing:.04em; text-transform:uppercase; font-size:9.5px; }
     .count-pill .val { font-weight:700; color:var(--ink); min-width:18px; text-align:right; }
-    .count-pill.empty { opacity:.45; }
+    .count-pill.empty { opacity:.55; }
     .count-pill.has   { border-color:var(--forest); background:var(--green-tint); }
     /* Italic value = the agent estimated this count from drawing symbols /
-       riser diagrams instead of finding an explicit "N" in the text.
-       Driven by row's extraction_confidence < 0.7. */
+       riser diagrams instead of finding an explicit "N" in the text. */
     .count-pill.estimated .val { font-style:italic; font-weight:600; }
     .count-pill.estimated .val::after { content:' ?'; opacity:.55; font-size:9px; vertical-align:super; }
-    /* By default only the "has" pills are shown; the "Show all" toggle reveals
-       the rest in case manual edits are needed for non-scope-related categories. */
-    .counts-grid:not(.show-empty) .count-pill.empty { display:none; }
     .counts-toolbar { display:flex; justify-content:space-between; align-items:center;
                       margin-bottom:6px; gap:8px; }
     .counts-toolbar .show-all { background:transparent; border:0; color:var(--slate);
@@ -176,6 +199,8 @@
                                 border-radius:8px; }
     .counts-toolbar .show-all:hover { background:var(--green-tint); color:var(--forest); }
     .counts-toolbar .show-all.active { background:var(--forest); color:white; }
+    @media (max-width:1100px) { .expand-pane { grid-template-columns:1fr 1fr; } }
+    @media (max-width:700px)  { .expand-pane { grid-template-columns:1fr; } }
     .due-overdue { color:var(--danger); font-weight:600; }
     /* Per-row action buttons live in the expanded sub-row, above the
        drop-counts grid -- clicking the chevron in the Project column
@@ -189,25 +214,53 @@
                     border-radius:3px; overflow:hidden; vertical-align:middle; margin-right:5px; }
     .progress-bar > span { display:block; height:100%; background:var(--forest); }
 
-    @media (max-width:1100px) { .counts-grid { grid-template-columns:repeat(5, 1fr); } }
+    /* (responsive overrides for .counts-grid removed -- 4-col is now fixed regardless of width) */
     #status-bar { position:fixed; right:14px; bottom:10px; background:var(--ink); color:white;
                   padding:6px 12px; border-radius:14px; font-size:11px; opacity:0;
                   transition:opacity .15s; pointer-events:none; }
     #status-bar.show { opacity:.92; }
     #empty { padding:60px 20px; text-align:center; color:var(--slate); }
 
-    /* Status filter pills sit BELOW the summary band and ABOVE the table head. */
+    /* Status filter pills sit BELOW the summary band and ABOVE the table head.
+       Pills are MULTI-SELECT: clicking adds to / removes from the active set.
+       The "All" pill clears the set (= default view, which hides Archived). */
     .status-pills { display:flex; gap:6px; padding:6px 16px 8px; background:white;
                     border-bottom:1px solid var(--line); position:sticky; top:92px; z-index:5; flex-wrap:wrap;
                     min-height:38px; align-items:center; }
     .status-pill { background:white; border:1px solid var(--line); border-radius:9px;
                    padding:6px 14px; font-size:12px; font-weight:600; cursor:pointer; color:var(--slate);
-                   transition:all .12s ease; }
+                   transition:all .12s ease; user-select:none; }
     .status-pill:hover  { border-color:var(--forest); color:var(--forest);
                           box-shadow:0 2px 6px rgba(30,77,43,.10); transform:translateY(-1px); }
     .status-pill.active { background:var(--forest); color:white; border-color:var(--forest);
                           box-shadow:0 2px 6px rgba(30,77,43,.20); }
+    .status-pill.active::before { content:'✓'; margin-right:5px; opacity:.85; font-size:10px; }
     .status-pill .count { margin-left:6px; font-weight:400; opacity:.75; font-size:11px; }
+    .status-pill.archive { color:#888; }
+    .status-pill.archive.active { background:#666; border-color:#666; color:white; }
+
+    /* Intake filters band -- narrows the BC list by GC, trade, and state. Sits
+       between the summary chip band and the status pills. */
+    .intake-filters { display:flex; gap:8px; padding:6px 16px 8px; background:#FAFCF9;
+                      border-bottom:1px solid var(--line); position:sticky; top:138px; z-index:5;
+                      flex-wrap:wrap; min-height:42px; align-items:center; }
+    .intake-filters .if-label { font-size:10.5px; font-weight:700; text-transform:uppercase;
+                                 letter-spacing:.06em; color:var(--slate); margin-right:4px; }
+    .intake-filters .if-group { display:inline-flex; align-items:center; gap:6px; }
+    .intake-filters select {
+      padding:5px 8px; font-size:12px; border:1px solid var(--line); border-radius:7px;
+      background:white; color:var(--ink); cursor:pointer; min-width:120px;
+      transition:all .12s ease;
+    }
+    .intake-filters select:hover { border-color:var(--forest); }
+    .intake-filters select:focus { outline:none; border-color:var(--forest); box-shadow:0 0 0 2px rgba(30,77,43,.18); }
+    .intake-filters .if-clear {
+      background:transparent; border:1px solid var(--line); color:var(--slate);
+      padding:5px 10px; font-size:11px; font-weight:600; border-radius:7px; cursor:pointer;
+      transition:all .12s ease;
+    }
+    .intake-filters .if-clear:hover { background:white; border-color:var(--forest); color:var(--forest); }
+    .intake-filters .if-active-mark { color:var(--forest); font-weight:700; margin-left:3px; font-size:11px; }
 
     /* Project-name hover tooltip with confidence + next-best-step. */
     .proj-link { position:relative; cursor:pointer; }
@@ -326,6 +379,19 @@
   <section id="tab-leads">
     <div class="summary" id="summary"></div>
     <div class="status-pills" id="status-pills"></div>
+    <div class="intake-filters" id="intake-filters">
+      <span class="if-label">Intake</span>
+      <span class="if-group"><label class="if-label" style="text-transform:none;font-weight:500" for="if-gc">GC</label>
+        <select id="if-gc"><option value="">All</option></select></span>
+      <span class="if-group"><label class="if-label" style="text-transform:none;font-weight:500" for="if-trade">Trade</label>
+        <select id="if-trade"><option value="">All</option></select></span>
+      <span class="if-group"><label class="if-label" style="text-transform:none;font-weight:500" for="if-state">State</label>
+        <select id="if-state"><option value="">All</option></select></span>
+      <span class="if-group"><label class="if-label" style="text-transform:none;font-weight:500" for="if-source">Source</label>
+        <select id="if-source"><option value="">All</option><option value="scrape">BC scrape</option><option value="email">Email-driven</option><option value="manual">Manual</option></select></span>
+      <button class="if-clear" id="if-clear" type="button" title="Reset every Intake filter">Clear filters</button>
+      <span id="if-count" class="small" style="margin-left:auto"></span>
+    </div>
     <table id="t">
       <thead><tr id="head"></tr></thead>
       <tbody id="rows"></tbody>
@@ -602,6 +668,91 @@ function projTip(r) {
   </span>`;
 }
 
+// ===== Expanded-row column builders =====
+// Col 1: project summary -- key fields + description excerpt.
+function expandSummaryCol(r) {
+  const desc = r.description && r.description.trim()
+    ? safeHtml(r.description).slice(0, 1200)
+    : '<em>No description from BC yet. Use Actions ▾ → Rescan project details to refresh.</em>';
+  const trades = Array.isArray(r.trades) && r.trades.length
+    ? r.trades.map(t => `<span class="scope-chip"><span class="ico">${tradeIcon(t)}</span>${safeHtml(t)}</span>`).join('')
+    : '<span class="scope-chip unknown">scope unknown</span>';
+  return `<div class="expand-col">
+    <h4>Project summary</h4>
+    <div class="field"><span class="lbl">GC / Client</span><span class="val">${safeHtml(r.gc || 'unknown')}</span></div>
+    <div class="field"><span class="lbl">Location</span><span class="val">${safeHtml(r.location || '—')}</span></div>
+    <div class="field"><span class="lbl">Due</span><span class="val">${safeHtml(r.dueAt || '—')}</span></div>
+    <div class="field"><span class="lbl">Status</span><span class="val">${statusBadge(r.status)}</span></div>
+    <div class="field"><span class="lbl">Scope</span><span class="val" style="display:flex;flex-wrap:wrap;gap:4px">${trades}</span></div>
+    <div class="descr">${desc}</div>
+  </div>`;
+}
+// Col 3: actions, vertically stacked. Replaces the old action-menu dropdown
+// in the expanded view (the menu is dense and clumsy when there's room).
+function expandActionsCol(r) {
+  const id       = r.bcBidId;
+  const accepted = r.extraction?.accepted;
+  const paused   = r.extractionPaused;
+  const status   = r.status || 'Unknown';
+  const flagged  = !!r.addendaSeen;
+  const items = [];
+  if (status === 'Undecided') {
+    items.push(`<button class="primary" data-act="project-details" data-id="${id}">📋 Project Details</button>`);
+  }
+  if (status === 'Accepted') {
+    items.push(`<button class="primary" data-act="extract-more"  data-id="${id}">🔬 Extract more</button>`);
+    items.push(`<button class="${accepted ? 'primary' : ''}" data-act="accept" data-id="${id}">${accepted ? '✓ Accepted' : '✓ Accept extraction'}</button>`);
+    items.push(`<button data-act="pause-toggle" data-id="${id}" data-paused="${paused ? '1' : '0'}">${paused ? '▶ Resume' : '⏸ Pause'}</button>`);
+  }
+  if (status === 'Submitted') {
+    items.push(`<button class="primary" data-act="view-prop" data-id="${id}">📤 View latest proposal</button>`);
+    items.push(`<button class="${flagged ? 'warn' : ''}" data-act="scan-addenda" data-id="${id}">${flagged ? '⚠ Scan addenda (NEW)' : '🔍 Scan addenda'}</button>`);
+  }
+  if (status === 'Won' || status === 'Lost' || status === 'Archived') {
+    items.push(`<button data-act="view-prop" data-id="${id}">📤 View latest proposal</button>`);
+  }
+  items.push(`<select data-act="move-status" data-id="${id}">
+    <option value="">— Move to status —</option>
+    ${STATUS_OPTIONS.map(s => `<option value="${s}" ${s === status ? 'disabled' : ''}>${s}${s === status ? ' (current)' : ''}</option>`).join('')}
+  </select>`);
+  items.push(`<button data-act="rescan-details" data-id="${id}">🔄 Rescan details</button>`);
+  items.push(`<button class="danger" data-act="delete" data-id="${id}">🗑 Delete RFP</button>`);
+  return `<div class="expand-col actions-col">
+    <h4>Actions</h4>
+    <div class="stacked-actions">${items.join('')}</div>
+  </div>`;
+}
+// Col 4: extraction + scrape meta. Surfaces what was previously buried in
+// the row footer + extraction tooltip.
+function expandMetaCol(r) {
+  const c    = r.extraction?.confidencePct;
+  const pp   = r.extraction?.pagesProcessed || 0;
+  const pt   = r.extraction?.pagesTotal     || 0;
+  const proc = r.extraction?.filesProcessed || 0;
+  const tot  = r.filesTotal                 || proc;
+  const cost = r.ai?.costUsd;
+  const tok  = r.ai?.tokensUsed;
+  const att  = r.scrape?.attachmentsCount || 0;
+  const msg  = r.scrape?.messagesCount    || 0;
+  const addBadge = r.addendaSeen
+    ? '<span class="status status-Lost" title="A new addendum was detected during the last BC scrape.">⚠ Addendum</span>' : '';
+  const pausedBadge = r.extractionPaused
+    ? '<span class="status status-Archived" title="Extraction is paused for this RFP.">⏸ Paused</span>' : '';
+  const acceptedBadge = r.extraction?.accepted
+    ? '<span class="status status-Accepted">✓ Accepted</span>' : '';
+  return `<div class="expand-col">
+    <h4>Extraction & scrape</h4>
+    <div class="field"><span class="lbl">Confidence</span><span class="val">${c == null ? '—' : Math.round(c) + '%'}</span></div>
+    <div class="field"><span class="lbl">Pages</span><span class="val">${pt > 0 ? `${pp} of ${pt}` : `${proc} of ${tot} files`}</span></div>
+    <div class="field"><span class="lbl">AI cost</span><span class="val">${cost == null ? '—' : '$' + Number(cost).toFixed(4)}${tok ? ` <span class="small">(${(tok/1000).toFixed(1)}k tok)</span>` : ''}</span></div>
+    <div class="field"><span class="lbl">Attachments</span><span class="val">${att} att · ${msg} msg</span></div>
+    <div class="field"><span class="lbl">First seen</span><span class="val">${fmt(r.firstSeenAt)}</span></div>
+    <div class="field"><span class="lbl">Last list scrape</span><span class="val">${fmt(r.lastSeenAt)}</span></div>
+    <div class="field"><span class="lbl">Last file</span><span class="val">${fmt(r.lastFileAt || r.lastSeenAt)}</span></div>
+    <div class="field" style="display:flex;flex-direction:row;gap:6px;flex-wrap:wrap;margin-top:6px">${[acceptedBadge, addBadge, pausedBadge].filter(Boolean).join('')}</div>
+  </div>`;
+}
+
 // ===== Action dropdown menu =====
 // Single "Actions ▾" button on every row; clicking expands a list of every
 // action that's relevant to that row's current state. Includes Move-to-status
@@ -666,20 +817,16 @@ const COUNT_KEYS = [
 function countsGrid(counts, confidencePct) {
   if (!counts) counts = {};
   const estimated = confidencePct == null || confidencePct < 70;
-  let hasN = 0, emptyN = 0;
+  let hasN = 0;
   const pills = COUNT_KEYS.map(([k, label]) => {
     const v = counts[k];
     const has = v != null && v !== 0;
-    if (has) hasN++; else emptyN++;
+    if (has) hasN++;
     const cls = (has ? 'has' : 'empty') + (has && estimated ? ' estimated' : '');
     return `<div class="count-pill ${cls}"><span class="lbl">${label}</span><span class="val">${v == null ? '—' : v}</span></div>`;
   }).join('');
-  // Always default to hiding non-scope pills. A fresh / unextracted row simply
-  // shows "0 in scope · N hidden" with the toggle next to it -- the operator
-  // can click "Show all" if they need to manually edit a count.
   const toolbar = `<div class="counts-toolbar">
-    <span class="small">${hasN} in scope${emptyN ? ` · ${emptyN} hidden` : ''}</span>
-    ${emptyN ? `<button type="button" class="show-all" data-act="toggle-show-empty">Show all (${emptyN})</button>` : ''}
+    <span class="small">${hasN} in scope · ${COUNT_KEYS.length - hasN} empty</span>
   </div>`;
   return `${toolbar}<div class="counts-grid">${pills}</div>`;
 }
@@ -718,23 +865,46 @@ function renderDue(s) {
 }
 
 // ===== state =====
-// Status tabs replace the old in-table group headers; the active tab is
-// persisted across reloads. Column widths are persisted too so the user's
-// drag-resizes survive a refresh.
-const STATUS_TAB_KEY = 'gccLeadsActiveStatusTab';
+// Status pills are MULTI-SELECT. The active set is persisted as a JSON array;
+// the empty set is the default view (= "All except Archived"). Intake filters
+// (GC / trade / state / source) compose AND with the status filter.
+const STATUS_TAB_KEY = 'gccLeadsActiveStatuses';
+const INTAKE_KEY     = 'gccLeadsIntakeFilters';
 const COL_WIDTHS_KEY = 'gccLeadsColWidths';
+function loadStatusSet() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(STATUS_TAB_KEY) || '[]');
+    if (Array.isArray(raw)) return new Set(raw);
+  } catch {}
+  return new Set();
+}
+function loadIntake() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(INTAKE_KEY) || '{}');
+    return { gc:raw.gc||'', trade:raw.trade||'', state:raw.state||'', source:raw.source||'' };
+  } catch { return { gc:'', trade:'', state:'', source:'' }; }
+}
 const STATE = {
   data : null,
   sort : { col: 'lastfile', dir: 'desc' },
   open : new Set(),                                                 // bcBidIds with expanded count rows
-  activeStatus: localStorage.getItem(STATUS_TAB_KEY) || 'All',
+  activeStatuses: loadStatusSet(),                                  // Set<string>; empty = all-except-archived
+  intake: loadIntake(),                                             // {gc, trade, state, source}
   autoAccepted: new Set(),                                          // bcBidIds we already POSTed accept for this session
   colWidths: JSON.parse(localStorage.getItem(COL_WIDTHS_KEY) || '{}'),
 };
-function saveActiveStatus() { localStorage.setItem(STATUS_TAB_KEY, STATE.activeStatus); }
-function saveColWidths()    { localStorage.setItem(COL_WIDTHS_KEY, JSON.stringify(STATE.colWidths)); }
+function saveActiveStatuses() { localStorage.setItem(STATUS_TAB_KEY, JSON.stringify(Array.from(STATE.activeStatuses))); }
+function saveIntake()         { localStorage.setItem(INTAKE_KEY, JSON.stringify(STATE.intake)); }
+function saveColWidths()      { localStorage.setItem(COL_WIDTHS_KEY, JSON.stringify(STATE.colWidths)); }
 
 const STATUS_ORDER = ['Undecided', 'Accepted', 'Submitted', 'Won', 'Archived', 'Lost'];
+
+// Pull a 2-letter US state out of a free-form location string.
+function locState(loc) {
+  if (!loc) return '';
+  const m = loc.match(/,\s*([A-Z]{2})(?:\s+\d{4,5})?\s*(?:,\s*United States)?\s*$/);
+  return m ? m[1] : '';
+}
 
 async function load() {
   $('meta').textContent = 'loading...';
@@ -811,7 +981,9 @@ function render() {
   if (acceptedCount > 0) chips.push(`<span class="chip">✓ <strong>${acceptedCount}</strong> accepted</span>`);
   $('summary').innerHTML = chips.join('');
 
-  // Status filter pills (replace the old in-table group headers). Counts include the "All" virtual tab.
+  // Status filter pills -- MULTI-SELECT. The "All" pill clears the active set
+  // (= the default view, which hides Archived). Clicking any other pill
+  // toggles it in/out of the active set; you can have many active at once.
   const counts = { All: STATE.data.items.length };
   for (const r of STATE.data.items) {
     const s = r.status || 'Unknown';
@@ -820,24 +992,56 @@ function render() {
   const tabsOrder = ['All', ...STATUS_ORDER.filter(s => counts[s]),
                      ...Object.keys(counts).filter(s => s !== 'All' && !STATUS_ORDER.includes(s)).sort()];
   $('status-pills').innerHTML = tabsOrder.map(s => {
-    const active = s === STATE.activeStatus ? ' active' : '';
-    return `<button class="status-pill${active}" data-status-tab="${safeHtml(s)}">${safeHtml(s)}<span class="count">${counts[s] || 0}</span></button>`;
+    const isAll    = s === 'All';
+    const isArchive= s === 'Archived';
+    const active   = (isAll && STATE.activeStatuses.size === 0) ||
+                     (!isAll && STATE.activeStatuses.has(s));
+    const cls = `status-pill${active ? ' active' : ''}${isArchive ? ' archive' : ''}`;
+    return `<button class="${cls}" data-status-tab="${safeHtml(s)}">${safeHtml(s)}<span class="count">${counts[s] || 0}</span></button>`;
   }).join('');
   $('status-pills').querySelectorAll('button').forEach(btn => {
     btn.addEventListener('click', () => {
-      STATE.activeStatus = btn.dataset.statusTab;
-      saveActiveStatus();
+      const s = btn.dataset.statusTab;
+      if (s === 'All') {
+        STATE.activeStatuses.clear();           // back to default (all-except-archived)
+      } else if (STATE.activeStatuses.has(s)) {
+        STATE.activeStatuses.delete(s);
+      } else {
+        STATE.activeStatuses.add(s);
+      }
+      saveActiveStatuses();
       render();
     });
   });
 
-  // Filter + sort (single flat list, no group headers).
+  // Intake filters: populate dropdowns from the current dataset (GC, trade, state).
+  populateIntakeFilters(STATE.data.items);
+
+  // Filter + sort (single flat list).
   const sortFn = (COLS.find(c => c.id === STATE.sort.col) || COLS[0]).sort;
   const dirMul = STATE.sort.dir === 'asc' ? 1 : -1;
-  const filtered = STATE.activeStatus === 'All'
-    ? STATE.data.items.slice()
-    : STATE.data.items.filter(r => (r.status || 'Unknown') === STATE.activeStatus);
+  const activeStatuses = STATE.activeStatuses;
+  const intake         = STATE.intake;
+  const filtered = STATE.data.items.filter(r => {
+    const status = r.status || 'Unknown';
+    // Status filter: empty active set = "all except Archived" (default);
+    // non-empty set = strict whitelist.
+    if (activeStatuses.size === 0) {
+      if (status === 'Archived') return false;
+    } else {
+      if (!activeStatuses.has(status)) return false;
+    }
+    if (intake.gc    && (r.gc || '') !== intake.gc)                                       return false;
+    if (intake.trade && !(Array.isArray(r.trades) && r.trades.includes(intake.trade)))    return false;
+    if (intake.state && locState(r.location) !== intake.state)                            return false;
+    if (intake.source) {
+      const src = (r.intakeSource || r.source || 'scrape').toLowerCase();
+      if (src !== intake.source) return false;
+    }
+    return true;
+  });
   filtered.sort((a,b) => sortFn(a,b) * dirMul);
+  $('if-count').textContent = `${filtered.length} of ${STATE.data.items.length} shown`;
 
   const html = [];
   for (const r of filtered) {
@@ -845,18 +1049,21 @@ function render() {
     html.push(`<tr class="row${open ? ' open' : ''}" data-id="${r.bcBidId}">` +
       COLS.map(c => `<td>${c.cell(r)}</td>`).join('') + `</tr>`);
 
-    // Expanded sub-panel: action menu, GC meta card (scope chips moved
-    // up next to the project name on the main row), counts grid, footer.
-    const gcCell = r.gc ? safeHtml(r.gc) : '<span class="pad">unknown</span>';
-    const meta = `<div class="row-meta-card">
-      <div class="field"><span class="lbl">GC / Client</span><span class="val">${gcCell}</span></div>
-    </div>`;
-    const footer = `<div class="row-footer">First seen ${fmt(r.firstSeenAt)} · last list scrape ${fmt(r.lastSeenAt)}</div>`;
+    // Expanded sub-panel as a 4-column grid:
+    //   col 1: project summary (description + key fields)
+    //   col 2: drops grid 4-wide x 5-tall
+    //   col 3: actions stacked vertically
+    //   col 4: extraction meta + scrape stats + footer
     html.push(`<tr class="counts${open ? ' open' : ''}" data-counts-for="${r.bcBidId}" data-stop><td colspan="${COLS.length}" data-stop>
-      <div class="row-actions-bar">${actionsCell(r)}</div>
-      ${meta}
-      ${countsGrid(r.counts, r.extraction?.confidencePct)}
-      ${footer}
+      <div class="expand-pane">
+        ${expandSummaryCol(r)}
+        <div class="expand-col">
+          <h4>Drops · 4 × 5</h4>
+          ${countsGrid(r.counts, r.extraction?.confidencePct)}
+        </div>
+        ${expandActionsCol(r)}
+        ${expandMetaCol(r)}
+      </div>
     </td></tr>`);
   }
   $('rows').innerHTML = html.join('');
@@ -900,19 +1107,7 @@ function render() {
       if (href) window.open(href, '_blank', 'noopener,noreferrer');
     });
   });
-  // Counts grid: toggle "Show all" / "Hide non-scope".
-  $('rows').querySelectorAll('button[data-act="toggle-show-empty"]').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const grid = btn.closest('.counts-toolbar')?.nextElementSibling;
-      if (!grid) return;
-      const willShow = !grid.classList.contains('show-empty');
-      grid.classList.toggle('show-empty', willShow);
-      btn.classList.toggle('active', willShow);
-      const empties = grid.querySelectorAll('.count-pill.empty').length;
-      btn.textContent = willShow ? 'Hide non-scope' : `Show all (${empties})`;
-    });
-  });
+  // (Counts grid no longer has a "Show all" toggle -- 4x5 always shown.)
   // Open / close the Actions dropdown.
   $('rows').querySelectorAll('button.menu-trigger').forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -1024,6 +1219,47 @@ function render() {
       .then(() => toast(`Auto-accepted ${r.bcBidId.slice(0,8)}… at ${Math.round(c)}% confidence`))
       .catch(e => toast(`Auto-accept failed: ${e.message}`, 4500));
   }
+}
+
+// ===== Intake filters (GC / Trade / State / Source) =====
+// Populates the dropdowns from the visible dataset and wires the change
+// handlers. Selection is persisted across reloads.
+function populateIntakeFilters(items) {
+  const gcs = new Set(); const trades = new Set(); const states = new Set();
+  for (const r of items) {
+    if (r.gc)        gcs.add(r.gc);
+    if (Array.isArray(r.trades)) for (const t of r.trades) if (t) trades.add(t);
+    const st = locState(r.location);
+    if (st) states.add(st);
+  }
+  fillIntakeSelect('if-gc',    Array.from(gcs).sort(),    STATE.intake.gc);
+  fillIntakeSelect('if-trade', Array.from(trades).sort(), STATE.intake.trade);
+  fillIntakeSelect('if-state', Array.from(states).sort(), STATE.intake.state);
+  // 'source' has fixed options in the markup; just set the value.
+  const src = $('if-source'); if (src && src.value !== STATE.intake.source) src.value = STATE.intake.source || '';
+}
+function fillIntakeSelect(id, values, current) {
+  const sel = $(id); if (!sel) return;
+  // Wipe + rebuild while preserving the leading "All" option.
+  sel.innerHTML = `<option value="">All</option>` +
+    values.map(v => `<option value="${safeHtml(v)}"${v === current ? ' selected' : ''}>${safeHtml(v)}</option>`).join('');
+  if (current && !values.includes(current)) sel.value = '';                // stale selection
+}
+function wireIntakeFilters() {
+  const wire = (id, key) => {
+    const el = $(id); if (!el) return;
+    el.addEventListener('change', () => {
+      STATE.intake[key] = el.value || '';
+      saveIntake();
+      render();
+    });
+  };
+  wire('if-gc', 'gc'); wire('if-trade', 'trade'); wire('if-state', 'state'); wire('if-source', 'source');
+  $('if-clear')?.addEventListener('click', () => {
+    STATE.intake = { gc:'', trade:'', state:'', source:'' };
+    saveIntake();
+    render();
+  });
 }
 
 // ===== Project Details modal (Undecided action) =====
@@ -1204,6 +1440,7 @@ function scheduleRefresh() {
   $('auto').textContent = 'auto-refresh every 30s';
 }
 
+wireIntakeFilters();
 load();
 scheduleRefresh();
 </script>
