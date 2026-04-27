@@ -22,27 +22,35 @@
     header h1 { margin:0; font-size:15px; font-weight:600; letter-spacing:.02em; display:flex; align-items:center; gap:8px; }
     header h1 img { height:22px; width:auto; }
     header .meta { font-size:12px; opacity:.85; }
-    header button#rescan { background:var(--gold); color:var(--ink); border:0; padding:7px 14px;
-                    font-size:12px; font-weight:600; border-radius:4px; cursor:pointer; letter-spacing:.02em; }
-    header button#rescan:disabled { opacity:.5; cursor:wait; }
-    header button#refresh { background:rgba(255,255,255,.15); color:white; border:0; padding:7px 12px;
-                            font-size:12px; font-weight:600; border-radius:4px; cursor:pointer; letter-spacing:.02em; }
-    header button#refresh:hover { background:rgba(255,255,255,.28); }
-    header button#refresh:disabled { opacity:.5; cursor:wait; }
+    header button#rescan { background:var(--gold); color:var(--ink); border:0; padding:8px 16px;
+                    font-size:12px; font-weight:600; border-radius:8px; cursor:pointer; letter-spacing:.02em;
+                    transition:all .12s ease; box-shadow:0 2px 4px rgba(28,42,35,.18); }
+    header button#rescan:hover    { background:#dab164; transform:translateY(-1px); box-shadow:0 4px 8px rgba(28,42,35,.24); }
+    header button#rescan:active   { transform:translateY(0); }
+    header button#rescan:disabled { opacity:.5; cursor:wait; transform:none; }
+    header button#refresh { background:rgba(255,255,255,.15); color:white; border:0; padding:8px 14px;
+                            font-size:12px; font-weight:600; border-radius:8px; cursor:pointer; letter-spacing:.02em;
+                            transition:all .12s ease; }
+    header button#refresh:hover    { background:rgba(255,255,255,.28); transform:translateY(-1px); }
+    header button#refresh:active   { transform:translateY(0); }
+    header button#refresh:disabled { opacity:.5; cursor:wait; transform:none; }
 
     .tabs { display:flex; gap:4px; }
-    .tab { background:transparent; color:rgba(255,255,255,.75); border:0; padding:7px 14px;
-           font-size:12px; font-weight:600; border-radius:4px; cursor:pointer; letter-spacing:.02em; }
+    .tab { background:transparent; color:rgba(255,255,255,.75); border:0; padding:8px 16px;
+           font-size:12px; font-weight:600; border-radius:8px; cursor:pointer; letter-spacing:.02em;
+           transition:all .12s ease; }
     .tab.active, .tab:hover { background:rgba(255,255,255,.18); color:white; }
 
-    .row-actions { display:flex; gap:4px; flex-wrap:wrap; }
+    .row-actions { display:flex; gap:6px; flex-wrap:wrap; }
     .row-actions button {
       background:white; color:var(--forest); border:1px solid var(--line);
-      padding:3px 9px; font-size:11px; font-weight:600; border-radius:11px; cursor:pointer;
+      padding:6px 12px; font-size:12px; font-weight:500; border-radius:8px; cursor:pointer;
+      transition:all .12s ease; box-shadow:0 1px 2px rgba(28,42,35,.04);
     }
-    .row-actions button:hover { border-color:var(--forest); background:var(--green-tint); }
+    .row-actions button:hover { border-color:var(--forest); background:var(--green-tint); transform:translateY(-1px); box-shadow:0 3px 6px rgba(30,77,43,.12); }
+    .row-actions button:active { transform:translateY(0); box-shadow:0 1px 2px rgba(28,42,35,.04); }
     .row-actions button.accepted { background:var(--green-tint); border-color:var(--forest); color:var(--forest); }
-    .row-actions button:disabled { opacity:.5; cursor:wait; }
+    .row-actions button:disabled { opacity:.5; cursor:wait; transform:none; }
 
     /* Sticky stack under the header: summary chips at 46, status pills below it,
        table head pinned under both. Heights are explicit so the offsets stay in
@@ -50,9 +58,21 @@
     .summary { display:flex; gap:10px; padding:10px 16px; background:white;
                border-bottom:1px solid var(--line); flex-wrap:wrap; position:sticky; top:46px; z-index:5;
                min-height:36px; align-items:center; }
-    .chip { display:inline-flex; align-items:center; gap:6px; padding:4px 10px;
-            background:var(--green-tint); border:1px solid var(--line); border-radius:14px; font-size:12px; }
+    .chip { display:inline-flex; align-items:center; gap:6px; padding:5px 12px;
+            background:var(--green-tint); border:1px solid var(--line); border-radius:8px; font-size:12px;
+            box-shadow:0 1px 2px rgba(28,42,35,.04); }
     .chip strong { color:var(--forest); }
+    /* Project name subscript: file/message stats sit under the project name. */
+    .proj-subscript { font-size:10.5px; color:var(--slate); margin-left:6px; vertical-align:baseline; }
+    .proj-subscript .dot { opacity:.4; margin:0 4px; }
+    /* Site footer */
+    footer.site-footer {
+      padding:14px 16px; margin-top:24px; background:var(--forest); color:rgba(255,255,255,.78);
+      font-size:11px; display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap;
+    }
+    footer.site-footer .footer-meta { font-size:10.5px; opacity:.7; }
+    footer.site-footer a { color:rgba(255,255,255,.92); text-decoration:none; border-bottom:1px dotted rgba(255,255,255,.4); }
+    footer.site-footer a:hover { color:var(--gold); border-bottom-color:var(--gold); }
 
     table { border-collapse:collapse; width:100%; background:white; }
     /* Sticky stays on -- the duplicate `thead th` rule lower in the file
@@ -180,11 +200,14 @@
     .status-pills { display:flex; gap:6px; padding:6px 16px 8px; background:white;
                     border-bottom:1px solid var(--line); position:sticky; top:92px; z-index:5; flex-wrap:wrap;
                     min-height:38px; align-items:center; }
-    .status-pill { background:white; border:1px solid var(--line); border-radius:14px;
-                   padding:4px 12px; font-size:12px; font-weight:600; cursor:pointer; color:var(--slate); }
-    .status-pill:hover { border-color:var(--forest); color:var(--forest); }
-    .status-pill.active { background:var(--forest); color:white; border-color:var(--forest); }
-    .status-pill .count { margin-left:5px; font-weight:400; opacity:.75; font-size:11px; }
+    .status-pill { background:white; border:1px solid var(--line); border-radius:9px;
+                   padding:6px 14px; font-size:12px; font-weight:600; cursor:pointer; color:var(--slate);
+                   transition:all .12s ease; }
+    .status-pill:hover  { border-color:var(--forest); color:var(--forest);
+                          box-shadow:0 2px 6px rgba(30,77,43,.10); transform:translateY(-1px); }
+    .status-pill.active { background:var(--forest); color:white; border-color:var(--forest);
+                          box-shadow:0 2px 6px rgba(30,77,43,.20); }
+    .status-pill .count { margin-left:6px; font-weight:400; opacity:.75; font-size:11px; }
 
     /* Project-name hover tooltip with confidence + next-best-step. */
     .proj-link { position:relative; cursor:pointer; }
@@ -204,15 +227,17 @@
     /* Action dropdown (kebab) in the expanded sub-row. */
     .action-menu { position:relative; display:inline-block; }
     .action-menu > button.menu-trigger {
-      background:var(--forest); color:white; border:0; padding:5px 12px; border-radius:4px;
-      font-size:11px; font-weight:600; cursor:pointer; letter-spacing:.04em;
+      background:var(--forest); color:white; border:0; padding:7px 14px; border-radius:8px;
+      font-size:12px; font-weight:600; cursor:pointer; letter-spacing:.04em;
+      transition:all .12s ease; box-shadow:0 2px 4px rgba(30,77,43,.20);
     }
-    .action-menu > button.menu-trigger:hover { background:#0d3d11; }
+    .action-menu > button.menu-trigger:hover  { background:#0d3d11; transform:translateY(-1px); box-shadow:0 4px 8px rgba(30,77,43,.28); }
+    .action-menu > button.menu-trigger:active { transform:translateY(0); }
     .action-menu > button.menu-trigger::after { content:' ▾'; font-size:9px; }
     .action-menu .menu-list {
-      position:absolute; left:0; top:110%; min-width:230px; background:white;
-      border:1px solid var(--line); border-radius:6px; box-shadow:0 6px 20px rgba(0,0,0,.18);
-      z-index:25; padding:4px; display:none;
+      position:absolute; left:0; top:110%; min-width:240px; background:white;
+      border:1px solid var(--line); border-radius:10px; box-shadow:0 10px 28px rgba(28,42,35,.18);
+      z-index:25; padding:6px; display:none;
     }
     .action-menu.open .menu-list { display:block; }
     .action-menu .menu-list button {
@@ -250,6 +275,34 @@
     .row-meta-card .field .lbl { color:var(--slate); font-size:10px; text-transform:uppercase; letter-spacing:.04em; }
     .row-meta-card .field .val { color:var(--ink); font-weight:500; }
     .row-footer { color:var(--slate); font-size:10.5px; text-align:right; padding-top:6px; }
+
+    /* Processes tab -- Health Board grid */
+    .hb-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; padding:14px 16px; }
+    .hb-card { background:white; border:1px solid var(--line); border-radius:10px; padding:12px 14px;
+               box-shadow:0 1px 3px rgba(28,42,35,.05); }
+    .hb-card-wide { grid-column:1 / -1; }
+    .hb-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em;
+                color:var(--forest); margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; }
+    .hb-body  { color:var(--ink); white-space:pre-wrap; line-height:1.55; }
+    .hb-body .ok      { color:var(--forest); font-weight:600; }
+    .hb-body .bad     { color:var(--danger); font-weight:600; }
+    .hb-body .row     { display:flex; justify-content:space-between; gap:8px; padding:2px 0; }
+    .hb-body .row .k  { color:var(--slate); }
+    .hb-body .row .v  { font-weight:600; color:var(--ink); font-feature-settings:"tnum" 1; }
+    .hb-error { background:var(--cream); border:1px solid var(--line); border-radius:6px;
+                padding:6px 8px; margin:4px 0; font-size:10.5px; font-family:ui-monospace,Consolas,Menlo,monospace;
+                color:var(--ink); max-height:120px; overflow:auto; }
+    .hb-error .at { color:var(--slate); margin-right:6px; }
+    .hb-copy {
+      background:rgba(255,255,255,.0); border:1px solid var(--line); padding:3px 9px;
+      border-radius:6px; font-size:10.5px; font-weight:500; cursor:pointer; color:var(--slate);
+      transition:all .12s ease;
+    }
+    .hb-copy:hover { background:var(--green-tint); border-color:var(--forest); color:var(--forest); }
+
+    .proc-section-title { padding:14px 16px 4px; margin:0; color:var(--forest);
+                          font-size:13px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; }
+    @media (max-width:900px) { .hb-grid { grid-template-columns:1fr; } }
   </style>
 </head>
 <body>
@@ -283,6 +336,31 @@
   <!-- =================== Processes tab =================== -->
   <section id="tab-processes" hidden>
     <div class="summary"><span class="chip"><strong id="proc-count">0</strong> automated processes</span><span class="chip" id="proc-running-chip" style="display:none">⚙️ <strong id="proc-running">0</strong> running now</span></div>
+
+    <!-- Health Board: api status, DNS resolve, recent errors, pipeline counts -->
+    <div class="hb-grid" id="hb-grid">
+      <div class="hb-card" id="hb-api">
+        <div class="hb-title">API</div>
+        <div class="hb-body small">loading…</div>
+      </div>
+      <div class="hb-card" id="hb-dns">
+        <div class="hb-title">Public DNS</div>
+        <div class="hb-body small">loading…</div>
+      </div>
+      <div class="hb-card" id="hb-stats">
+        <div class="hb-title">Pipeline</div>
+        <div class="hb-body small">loading…</div>
+      </div>
+      <div class="hb-card hb-card-wide" id="hb-errors">
+        <div class="hb-title">
+          Latest API errors
+          <button class="hb-copy" data-act="hb-copy-errors" title="Copy all errors to clipboard">📋 Copy</button>
+        </div>
+        <div class="hb-body small">loading…</div>
+      </div>
+    </div>
+
+    <h3 class="proc-section-title">Scheduled tasks</h3>
     <table id="proc-table">
       <thead>
         <tr>
@@ -299,6 +377,15 @@
   </section>
 
   <div id="status-bar"></div>
+
+  <footer class="site-footer">
+    <div>
+      <strong>Green Communications Contracting LLC</strong> · Division 27 / 28 low-voltage · Missouri
+    </div>
+    <div class="footer-meta">
+      GCC Manager · <a href="https://greencommllc.com" data-act="open-bc" data-href="https://greencommllc.com">greencommllc.com</a>
+    </div>
+  </footer>
 
   <!-- Project Details modal: surfaced by the Undecided row "Project Details" button. -->
   <div id="modal" hidden></div>
@@ -425,9 +512,8 @@ function safeHtml(s) {
 }
 
 const COLS = [
-  // Project: folder icon → project name → scope chips (icon + trade)
-  // → confidence-tooltip on hover. Scope chips are now right next to the
-  // name so the operator sees the trades without expanding the row.
+  // Project: folder icon → project name → file/msg subscript → scope chips
+  // → confidence-tooltip on hover.
   { id:'project', label:'Project',
     sort:(a,b) => projectLabel(a).localeCompare(projectLabel(b)),
     cell:(r) => {
@@ -438,7 +524,13 @@ const COLS = [
       const scopeChips = Array.isArray(r.trades) && r.trades.length
         ? `<span class="proj-scope">${r.trades.map(t => `<span class="scope-chip"><span class="ico">${tradeIcon(t)}</span>${safeHtml(t)}</span>`).join('')}</span>`
         : '';
-      return `<span class="toggle">▶</span> ${fIcon}<span class="proj-link"><a href="${r.href || '#'}" data-act="open-bc" data-href="${r.href || ''}">${safeHtml(projectLabel(r))}</a>${tip}</span>${scopeChips}`;
+      // File / message summary as a subscript right after the project name.
+      const att = r.scrape?.attachmentsCount || 0;
+      const msg = r.scrape?.messagesCount    || 0;
+      const subscript = (att || msg)
+        ? `<sub class="proj-subscript">${att ? att + ' att' : ''}${att && msg ? '<span class="dot">·</span>' : ''}${msg ? msg + ' msg' : ''}</sub>`
+        : '';
+      return `<span class="toggle">▶</span> ${fIcon}<span class="proj-link"><a href="${r.href || '#'}" data-act="open-bc" data-href="${r.href || ''}">${safeHtml(projectLabel(r))}</a>${tip}</span>${subscript}${scopeChips}`;
     } },
 
   { id:'location', label:'Location',
@@ -482,9 +574,8 @@ const COLS = [
         `$${Number(c).toFixed(4)}${r.ai?.tokensUsed ? ` <span class="small">(${(r.ai.tokensUsed/1000).toFixed(1)}k tok)</span>` : ''}`;
     } },
 
-  { id:'uploads', label:'Files',
-    sort:(a,b) => (a.scrape?.attachmentsCount || 0) - (b.scrape?.attachmentsCount || 0),
-    cell:(r) => uploadsCell(r.scrape) },
+  // (Files column removed -- the att/msg summary now sits as a subscript
+  // right after the project name in the Project column.)
 
   // Last file access -- newest BcRfpAttachments.UploadedAt, with BcRfps.LastSeenAt
   // as fallback for rows that haven't had any files uploaded yet.
@@ -1022,7 +1113,64 @@ $('tabs').addEventListener('click', (e) => {
   $('tab-leads').hidden     = (which !== 'leads');
   $('tab-processes').hidden = (which !== 'processes');
   $('rescan').style.display = (which === 'leads') ? '' : 'none';
-  if (which === 'processes') loadProcesses();
+  if (which === 'processes') { loadProcesses(); loadHealthBoard(); }
+});
+
+// ===== Health Board (Processes tab) =====
+let _hbErrorsRaw = '';
+async function loadHealthBoard() {
+  try {
+    const hb = await api('GET', '/api/admin/health-board');
+    // API card
+    const startedAt = new Date(hb.api.startedAt);
+    $('hb-api').querySelector('.hb-body').innerHTML =
+      `<div class="row"><span class="k">Status</span><span class="v ok">healthy</span></div>
+       <div class="row"><span class="k">Started</span><span class="v">${fmt(startedAt)}</span></div>
+       <div class="row"><span class="k">Uptime</span><span class="v">${hb.api.uptime}</span></div>
+       <div class="row"><span class="k">Host</span><span class="v">${safeHtml(hb.api.machine)}</span></div>`;
+
+    // DNS card
+    const dnsHtml = (hb.dns || []).map(d => {
+      const cls = d.ok ? 'ok' : 'bad';
+      const val = d.ok ? d.addresses.join(', ') : (d.error || 'no resolve');
+      return `<div class="row"><span class="k">${safeHtml(d.host)}</span><span class="v ${cls}">${safeHtml(val)}</span></div>`;
+    }).join('');
+    $('hb-dns').querySelector('.hb-body').innerHTML = dnsHtml || '<span class="pad">no hosts</span>';
+
+    // Pipeline stats card
+    const s = hb.stats || {};
+    const fmtN = (n) => n == null ? '—' : Number(n).toLocaleString();
+    $('hb-stats').querySelector('.hb-body').innerHTML =
+      `<div class="row"><span class="k">BC RFPs</span><span class="v">${fmtN(s.bcRfps)}</span></div>
+       <div class="row"><span class="k">BC attachments</span><span class="v">${fmtN(s.bcAttachments)}</span></div>
+       <div class="row"><span class="k">BC details</span><span class="v">${fmtN(s.bcDetails)}</span></div>
+       <div class="row"><span class="k">BQ extractions</span><span class="v">${fmtN(s.bqExtractions)}</span></div>
+       <div class="row"><span class="k">LV symbols</span><span class="v">${fmtN(s.bqSymbols)}</span></div>
+       <div class="row"><span class="k">Bid notes</span><span class="v">${fmtN(s.bqNotes)}</span></div>
+       <div class="row"><span class="k">Resp. matrix</span><span class="v">${fmtN(s.bqRespMatrix)}</span></div>
+       <div class="row"><span class="k">Acronyms</span><span class="v">${fmtN(s.bqAcronyms)}</span></div>`;
+
+    // Errors card
+    const errs = hb.errors || [];
+    _hbErrorsRaw = errs.map(e => `[${e.at}] ${e.source}\n${e.message}`).join('\n\n----\n\n');
+    $('hb-errors').querySelector('.hb-body').innerHTML = errs.length
+      ? errs.map(e => `<div class="hb-error"><span class="at">${fmt(e.at)}</span><strong>${safeHtml(e.source)}</strong>\n${safeHtml(e.message)}</div>`).join('')
+      : '<span class="ok">no recent errors 🎉</span>';
+  } catch (e) {
+    $('hb-api').querySelector('.hb-body').innerHTML = `<span class="bad">${safeHtml(e.message)}</span>`;
+    $('hb-dns').querySelector('.hb-body').innerHTML = '<span class="pad">—</span>';
+    $('hb-stats').querySelector('.hb-body').innerHTML = '<span class="pad">—</span>';
+    $('hb-errors').querySelector('.hb-body').innerHTML = '<span class="pad">—</span>';
+  }
+}
+// Wire the copy-errors button (delegated since it's nested inside the dynamic body).
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-act="hb-copy-errors"]');
+  if (!b) return;
+  navigator.clipboard.writeText(_hbErrorsRaw || 'no errors').then(
+    () => { b.textContent = '✓ Copied'; setTimeout(() => b.textContent = '📋 Copy', 1500); },
+    () => toast('Clipboard write failed', 3500)
+  );
 });
 
 // Refresh: just refetch leads-summary (no BC scrape, no Pub/Sub fanout).
