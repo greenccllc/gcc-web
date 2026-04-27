@@ -660,13 +660,11 @@ function render() {
   if (!STATE.data) return;
   renderHead();
 
-  // Summary chips -- counts + compound AI cost across ALL items
+  // Summary chips -- TOTAL + cost only; per-status counts live on the
+  // status-pills band below so they aren't duplicated here.
   const chips = [];
   chips.push(`<span class="chip"><strong>${STATE.data.summary.total}</strong> total</span>`);
-  for (const [k, v] of Object.entries(STATE.data.summary.byStatus || {})) {
-    chips.push(`<span class="chip">${statusBadge(k)} <strong>${v}</strong></span>`);
-  }
-  // Compound AI spend across every item (sums regardless of status group sort).
+  // Compound AI spend across every item (sums regardless of which status filter is active).
   let totalCost = 0; let totalTokens = 0; let acceptedCount = 0;
   for (const r of STATE.data.items) {
     if (r.ai?.costUsd) totalCost += Number(r.ai.costUsd);
