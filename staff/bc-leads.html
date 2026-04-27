@@ -115,6 +115,8 @@
     a:hover { text-decoration:underline; }
     .folder-link { display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border:1px solid var(--line); border-radius:12px; font-size:11px; background:white; }
     .folder-link:hover { background:var(--green-tint); border-color:var(--forest); }
+    .loc-link { color:var(--slate); text-decoration:none; cursor:pointer; border-bottom:1px dotted var(--line); }
+    .loc-link:hover { color:var(--forest); border-bottom-color:var(--forest); text-decoration:none; }
 
     /* Drop counts sub-row (default hidden — toggled) */
     tr.counts { display:none; }
@@ -216,6 +218,24 @@ function tradeIcon(label) {
   return '🔧';
 }
 
+// Reduce a free-form address to "City, ST" for the Location column. The full
+// string still lives on the link's title attribute for hover, and is what
+// gets sent to Google Maps. BC sometimes hands us the bare "City, ST", and
+// sometimes a full street address with ZIP and country tacked on.
+function compactLocation(loc) {
+  if (!loc) return '';
+  const s = loc.trim().replace(/,\s*United States.*$/i, '').replace(/\s+/g, ' ');
+  // Already compact -- "City, ST" or "City, State"
+  if (/^[^,]+,\s*([A-Z]{2}|[A-Za-z]{3,})\s*$/.test(s)) return s;
+  // Pattern: "...something..., City, ST 12345" -- pull the last "City, ST"
+  const m = s.match(/,\s*([^,]+?),\s*([A-Z]{2})(?:\s+\d{4,5}(?:-\d{4})?)?\s*$/);
+  if (m) return `${m[1].trim()}, ${m[2]}`;
+  // Pattern: "City, ST 12345" with no street prefix
+  const m2 = s.match(/^([^,]+?),\s*([A-Z]{2})(?:\s+\d{4,5})?\s*$/);
+  if (m2) return `${m2[1].trim()}, ${m2[2]}`;
+  return s;
+}
+
 // Auth: ?secret= on the URL (set by the tray launcher) OR localStorage fallback.
 const URL_PARAMS = new URLSearchParams(location.search);
 const SECRET = URL_PARAMS.get('secret') || localStorage.getItem('gccAdminSecret') || '';
@@ -267,7 +287,12 @@ const COLS = [
 
   { id:'location', label:'Location',
     sort:(a,b) => (a.location || '').localeCompare(b.location || ''),
-    cell:(r) => r.location ? `<span class="small">${safeHtml(r.location)}</span>` : '<span class="pad">—</span>' },
+    cell:(r) => {
+      if (!r.location) return '<span class="pad">—</span>';
+      const compact = compactLocation(r.location);
+      const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.location)}`;
+      return `<a class="loc-link small" data-act="open-maps" data-href="${url}" title="${safeHtml(r.location)}">${safeHtml(compact)}</a>`;
+    } },
 
   { id:'due', label:'Due',
     sort:(a,b) => (parseDue(a.dueAt) || 0) - (parseDue(b.dueAt) || 0),
@@ -537,6 +562,13 @@ function render() {
     });
   });
   $('rows').querySelectorAll('a[data-act="open-bc"]').forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault(); e.stopPropagation();
+      const href = a.dataset.href;
+      if (href) window.open(href, '_blank', 'noopener,noreferrer');
+    });
+  });
+  $('rows').querySelectorAll('a[data-act="open-maps"]').forEach(a => {
     a.addEventListener('click', (e) => {
       e.preventDefault(); e.stopPropagation();
       const href = a.dataset.href;
