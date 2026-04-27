@@ -426,14 +426,14 @@ function countsGrid(counts) {
     if (has) hasN++; else emptyN++;
     return `<div class="count-pill ${has ? 'has' : 'empty'}"><span class="lbl">${label}</span><span class="val">${v == null ? '—' : v}</span></div>`;
   }).join('');
-  // If everything is empty, render the grid in show-all mode by default so
-  // a fresh row doesn't look broken; otherwise hide the empties behind a toggle.
-  const startShown = hasN === 0;
+  // Always default to hiding non-scope pills. A fresh / unextracted row simply
+  // shows "0 in scope · N hidden" with the toggle next to it -- the operator
+  // can click "Show all" if they need to manually edit a count.
   const toolbar = `<div class="counts-toolbar">
     <span class="small">${hasN} in scope${emptyN ? ` · ${emptyN} hidden` : ''}</span>
-    ${emptyN ? `<button type="button" class="show-all${startShown ? ' active' : ''}" data-act="toggle-show-empty">${startShown ? 'Hide non-scope' : 'Show all (' + emptyN + ')'}</button>` : ''}
+    ${emptyN ? `<button type="button" class="show-all" data-act="toggle-show-empty">Show all (${emptyN})</button>` : ''}
   </div>`;
-  return `${toolbar}<div class="counts-grid${startShown ? ' show-empty' : ''}">${pills}</div>`;
+  return `${toolbar}<div class="counts-grid">${pills}</div>`;
 }
 
 function uploadsCell(scrape) {
