@@ -440,7 +440,11 @@ function uploadsCell(scrape) {
   if (!scrape) return '<span class="pad">—</span>';
   const att = scrape.attachmentsCount || 0;
   const msg = scrape.messagesCount || 0;
-  const pct = scrape.progressPct == null ? null : Math.round(scrape.progressPct);
+  // Backend computes AVG(filled / applicable) across files. The agent is sometimes
+  // optimistic and ends up filling more fields than it deemed "applicable" --
+  // the raw percent exceeds 100. Cap the displayed value so we don't show "180%".
+  const raw = scrape.progressPct == null ? null : Math.round(scrape.progressPct);
+  const pct = raw == null ? null : Math.min(100, Math.max(0, raw));
   let parts = [];
   if (pct != null) parts.push(`<span class="progress-bar"><span style="width:${pct}%"></span></span><strong>${pct}%</strong>`);
   if (att) parts.push(`<span class="small">${att} att</span>`);
