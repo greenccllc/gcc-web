@@ -164,6 +164,52 @@ BEGIN
 END
 GO
 
+-- ── 7. ProposalDrafts (autonomous proposal generator + tray approval gate) ──
+-- gcc-proposal-worker subscribes to Pub/Sub topic gcc-proposal, generates
+-- a DRAFT proposal docx in the job's Internal/ folder, and INSERTs a row
+-- here with Status='pending'. GCC Manager (gcc-tray) polls for pending
+-- rows and presents them to Nathan for accept/reject. ONLY when accepted
+-- does the docx get promoted from Internal/ to Client/Proposal/v#/.
+IF OBJECT_ID('dbo.ProposalDrafts','U') IS NULL
+BEGIN
+    CREATE TABLE dbo.ProposalDrafts (
+        Id                  BIGINT IDENTITY(1,1) PRIMARY KEY,
+        CreatedAt           DATETIME2(3)    NOT NULL DEFAULT SYSUTCDATETIME(),
+        UpdatedAt           DATETIME2(3)    NOT NULL DEFAULT SYSUTCDATETIME(),
+        -- Identity of the source extraction this draft was generated from.
+        ExtractionId        VARCHAR(80)     NOT NULL,           -- gcc_bids.bid_extractions.extraction_id
+        SourceFileId        VARCHAR(80)     NULL,               -- the originating Intake/ Drive file id (RFP)
+        ProjectName         NVARCHAR(400)   NOT NULL,
+        JobFolderId         VARCHAR(80)     NOT NULL,           -- the 5-Jobs/{phase}/{job}/ folder id
+        JobFolderName       NVARCHAR(400)   NULL,
+        PhaseFolder         NVARCHAR(80)    NULL,               -- '2. In Progress' / '3. Proposal Sent' / etc.
+        -- Where the draft docx lives BEFORE acceptance (always Internal/).
+        DraftDocxFileId     VARCHAR(80)     NULL,               -- Drive file id of the draft
+        DraftDocxName       NVARCHAR(400)   NULL,               -- e.g. '03 Bid Proposal Vauto-1714175400.docx'
+        DraftSizeBytes      BIGINT          NULL,
+        -- Where it lands AFTER acceptance.
+        ClientFileId        VARCHAR(80)     NULL,               -- copy in Client/Proposal/v#/ once accepted
+        ClientFolderName    NVARCHAR(80)    NULL,               -- e.g. 'v3'
+        -- Approval gate.
+        Status              VARCHAR(20)     NOT NULL DEFAULT 'pending',
+        DecidedAt           DATETIME2(3)    NULL,
+        DecidedById         BIGINT          NULL,               -- dbo.Clients.Id of accepting/rejecting staff
+        DecisionReason      NVARCHAR(400)   NULL,               -- typed reason on reject; optional on accept
+        -- Worker bookkeeping.
+        WorkerHost          NVARCHAR(120)   NULL,               -- which worker host generated this draft
+        WorkerVersion       VARCHAR(40)     NULL,               -- gcc-proposal-worker semver
+        TemplateSourceFile  NVARCHAR(400)   NULL,               -- which Past Versions/V*.docx was filled in
+        ErrorMessage        NVARCHAR(2000)  NULL,               -- if Status='failed'
+        CONSTRAINT CK_ProposalDrafts_Status
+            CHECK (Status IN ('pending','accepted','rejected','failed','superseded'))
+    );
+    CREATE INDEX IX_ProposalDrafts_Status      ON dbo.ProposalDrafts (Status, CreatedAt DESC);
+    CREATE INDEX IX_ProposalDrafts_JobFolderId ON dbo.ProposalDrafts (JobFolderId);
+    CREATE INDEX IX_ProposalDrafts_Extraction  ON dbo.ProposalDrafts (ExtractionId);
+    PRINT 'Created table dbo.ProposalDrafts';
+END
+GO
+
 PRINT '--- Schema v2 complete ---';
 SELECT name FROM sys.tables WHERE schema_id = SCHEMA_ID('dbo') ORDER BY name;
 GO
