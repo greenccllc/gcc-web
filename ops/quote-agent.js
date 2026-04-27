@@ -19,7 +19,7 @@ const argPort = (process.argv.find(a => a.startsWith('--port=')) || '').split('=
 const PORT    = parseInt(argPort || process.env.QA_PORT || '7101', 10);
 const SECRET = process.env.QA_SECRET || 'ZT6zb1m1eFVglfeP0PRkpjxmN40ap4FZB6KJUMGzRqM';
 const LOG    = process.env.QA_LOG    || 'C:\\Users\\nmorr\\AppData\\Local\\Temp\\quote-agent.log';
-const INBOX  = process.env.QA_INBOX  || 'C:\\inetpub\\gcc-files\\_quote-agent-inbox';
+const INBOX  = process.env.QA_INBOX  || 'C:\\GCC_LLC\\IIS\\gcc-files\\_quote-agent-inbox';
 
 fs.mkdirSync(INBOX, { recursive: true });
 

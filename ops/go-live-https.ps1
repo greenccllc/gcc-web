@@ -48,7 +48,7 @@ try {
 }
 
 # 3. Update appsettings.json to add Kestrel HTTPS endpoint
-$cfgPath = "C:\inetpub\gcc-api\appsettings.json"
+$cfgPath = "C:\GCC_LLC\IIS\gcc-api\appsettings.json"
 $cfg = Get-Content $cfgPath -Raw | ConvertFrom-Json
 
 # Add Kestrel config
