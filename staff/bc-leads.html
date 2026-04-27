@@ -130,6 +130,17 @@
     .count-pill .val { font-weight:700; color:var(--ink); min-width:18px; text-align:right; }
     .count-pill.empty { opacity:.45; }
     .count-pill.has   { border-color:var(--forest); background:var(--green-tint); }
+    /* By default only the "has" pills are shown; the "Show all" toggle reveals
+       the rest in case manual edits are needed for non-scope-related categories. */
+    .counts-grid:not(.show-empty) .count-pill.empty { display:none; }
+    .counts-toolbar { display:flex; justify-content:space-between; align-items:center;
+                      margin-bottom:6px; gap:8px; }
+    .counts-toolbar .show-all { background:transparent; border:0; color:var(--slate);
+                                font-size:11px; cursor:pointer; padding:2px 6px;
+                                border-radius:8px; }
+    .counts-toolbar .show-all:hover { background:var(--green-tint); color:var(--forest); }
+    .counts-toolbar .show-all.active { background:var(--forest); color:white; }
+    .due-overdue { color:var(--danger); font-weight:600; }
 
     .progress-bar { display:inline-block; width:70px; height:6px; background:var(--line);
                     border-radius:3px; overflow:hidden; vertical-align:middle; margin-right:5px; }
@@ -400,13 +411,21 @@ const COUNT_KEYS = [
 
 function countsGrid(counts) {
   if (!counts) counts = {};
-  return `<div class="counts-grid">` +
-    COUNT_KEYS.map(([k, label]) => {
-      const v = counts[k];
-      const has = v != null && v !== 0;
-      return `<div class="count-pill ${has ? 'has' : 'empty'}"><span class="lbl">${label}</span><span class="val">${v == null ? '—' : v}</span></div>`;
-    }).join('') +
-    `</div>`;
+  let hasN = 0, emptyN = 0;
+  const pills = COUNT_KEYS.map(([k, label]) => {
+    const v = counts[k];
+    const has = v != null && v !== 0;
+    if (has) hasN++; else emptyN++;
+    return `<div class="count-pill ${has ? 'has' : 'empty'}"><span class="lbl">${label}</span><span class="val">${v == null ? '—' : v}</span></div>`;
+  }).join('');
+  // If everything is empty, render the grid in show-all mode by default so
+  // a fresh row doesn't look broken; otherwise hide the empties behind a toggle.
+  const startShown = hasN === 0;
+  const toolbar = `<div class="counts-toolbar">
+    <span class="small">${hasN} in scope${emptyN ? ` · ${emptyN} hidden` : ''}</span>
+    ${emptyN ? `<button type="button" class="show-all${startShown ? ' active' : ''}" data-act="toggle-show-empty">${startShown ? 'Hide non-scope' : 'Show all (' + emptyN + ')'}</button>` : ''}
+  </div>`;
+  return `${toolbar}<div class="counts-grid${startShown ? ' show-empty' : ''}">${pills}</div>`;
 }
 
 function uploadsCell(scrape) {
@@ -428,17 +447,14 @@ function parseDue(s) {
   const t = Date.parse(s.replace(/[·•]/g, ' '));
   return isNaN(t) ? null : t;
 }
+const DUE_FMT = new Intl.DateTimeFormat([], { month:'short', day:'numeric', year:'numeric' });
 function renderDue(s) {
   const t = parseDue(s);
-  if (t == null) return s ? `<span class="small">${s}</span>` : '<span class="pad">—</span>';
+  if (t == null) return s ? `<span class="small">${safeHtml(s)}</span>` : '<span class="pad">—</span>';
   const d = new Date(t);
-  const now = Date.now();
-  const days = Math.floor((t - now) / 86400000);
-  let cls = 'small'; let prefix = '';
-  if      (days < 0)   { cls = 'small'; prefix = `<span style="color:var(--danger);font-weight:600">past</span> · `; }
-  else if (days === 0) { cls = 'small'; prefix = `<span style="color:var(--danger);font-weight:600">today</span> · `; }
-  else if (days <= 7)  { prefix = `<strong>${days}d</strong> · `; }
-  return `${prefix}<span class="${cls}">${fmtDate(d)}</span>`;
+  const overdue = t < Date.now();
+  const cls = overdue ? 'due-overdue' : 'small';
+  return `<span class="${cls}">${DUE_FMT.format(d)}</span>`;
 }
 
 // ===== state =====
@@ -532,7 +548,7 @@ function render() {
       html.push(`<tr class="row${open ? ' open' : ''}" data-id="${r.bcBidId}">` +
         COLS.map(c => `<td>${c.cell(r)}</td>`).join('') +
         `</tr>`);
-      html.push(`<tr class="counts${open ? ' open' : ''}" data-counts-for="${r.bcBidId}"><td colspan="${COLS.length}">${countsGrid(r.counts)}</td></tr>`);
+      html.push(`<tr class="counts${open ? ' open' : ''}" data-counts-for="${r.bcBidId}"><td colspan="${COLS.length}" data-stop>${countsGrid(r.counts)}</td></tr>`);
     }
   }
   $('rows').innerHTML = html.join('');
@@ -583,6 +599,19 @@ function render() {
       e.preventDefault(); e.stopPropagation();
       const href = a.dataset.href;
       if (href) window.open(href, '_blank', 'noopener,noreferrer');
+    });
+  });
+  // Counts grid: toggle "Show all" / "Hide non-scope".
+  $('rows').querySelectorAll('button[data-act="toggle-show-empty"]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const grid = btn.closest('.counts-toolbar')?.nextElementSibling;
+      if (!grid) return;
+      const willShow = !grid.classList.contains('show-empty');
+      grid.classList.toggle('show-empty', willShow);
+      btn.classList.toggle('active', willShow);
+      const empties = grid.querySelectorAll('.count-pill.empty').length;
+      btn.textContent = willShow ? 'Hide non-scope' : `Show all (${empties})`;
     });
   });
   // Action buttons -- branched by data-act.
