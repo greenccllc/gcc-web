@@ -129,6 +129,58 @@
     load(initial);
 
     sel.addEventListener('change', function () { load(sel.value); });
+
+    // ── Compliance bridge ────────────────────────────────────────────
+    // The bundler iframe runs at proposal.greencommllc.com — cross-origin,
+    // so it can't reuse our staff session cookie. When the bundler is
+    // about to ship a proposal (Send via Gmail / Print PDF) it posts a
+    // {type:'compliance-check-request', ...} message; we forward to
+    // /api/compliance/check with our admin session and post the report
+    // back. This is the gate's only auth path — the bundler has no other
+    // way to reach gcc-api.
+    window.addEventListener('message', async function (ev) {
+      var d = ev && ev.data;
+      if (!d || d.type !== 'compliance-check-request') return;
+      var reqId   = d.reqId || '';
+      var bundler = ev.source;
+      var origin  = ev.origin || '';
+      // Only respond to the bundler we just loaded.
+      try {
+        var bundlerOrigin = new URL(BUNDLER_BASE).origin;
+        if (origin !== bundlerOrigin) return;
+      } catch (_) { return; }
+      try {
+        var resp = await fetch('/api/compliance/check', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            content:         d.content || '',
+            docType:         d.docType || 'proposal',
+            job:             d.job || '',
+            otherJobs:       d.otherJobs       || [],
+            otherClients:    d.otherClients    || [],
+            sourcesProvided: !!(d.sources && d.sources.length),
+            sources:         d.sources         || [],
+          }),
+        });
+        var report = null, err = null;
+        if (resp.ok) report = await resp.json();
+        else err = 'HTTP ' + resp.status + ': ' + (await resp.text()).slice(0, 300);
+        bundler.postMessage({
+          type:   'compliance-check-response',
+          reqId:  reqId,
+          report: report,
+          error:  err,
+        }, bundlerOrigin);
+      } catch (e) {
+        bundler.postMessage({
+          type:   'compliance-check-response',
+          reqId:  reqId,
+          error:  'bridge fetch failed: ' + (e && e.message ? e.message : String(e)),
+        }, origin);
+      }
+    });
   }).catch(function () { /* gccPage redirected to login */ });
 </script>
 </body>
