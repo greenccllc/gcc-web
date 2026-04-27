@@ -44,14 +44,18 @@
     .row-actions button.accepted { background:var(--green-tint); border-color:var(--forest); color:var(--forest); }
     .row-actions button:disabled { opacity:.5; cursor:wait; }
 
+    /* Sticky stack under the header: summary chips at 46, status pills below it,
+       table head pinned under both. Heights are explicit so the offsets stay in
+       sync as the bands change. */
     .summary { display:flex; gap:10px; padding:10px 16px; background:white;
-               border-bottom:1px solid var(--line); flex-wrap:wrap; position:sticky; top:46px; z-index:5; }
+               border-bottom:1px solid var(--line); flex-wrap:wrap; position:sticky; top:46px; z-index:5;
+               min-height:36px; align-items:center; }
     .chip { display:inline-flex; align-items:center; gap:6px; padding:4px 10px;
             background:var(--green-tint); border:1px solid var(--line); border-radius:14px; font-size:12px; }
     .chip strong { color:var(--forest); }
 
     table { border-collapse:collapse; width:100%; background:white; }
-    thead th { position:sticky; top:92px; background:var(--cream); border-bottom:2px solid var(--forest);
+    thead th { position:sticky; top:138px; background:var(--cream); border-bottom:2px solid var(--forest);
                padding:8px 10px; font-size:11px; font-weight:600; letter-spacing:.04em; text-transform:uppercase;
                color:var(--slate); text-align:left; z-index:4; cursor:pointer; user-select:none; white-space:nowrap; }
     thead th:hover { background:#f5f1e1; }
@@ -90,9 +94,6 @@
     .row-actions button.paused {
       background:#FFF8E1; color:#7A5A00; border-color:#F0DEA0;
     }
-    .extraction-auto { display:inline-block; margin-left:6px; padding:1px 6px;
-                       background:var(--gold); color:var(--ink); border-radius:8px;
-                       font-size:10px; font-weight:600; letter-spacing:.04em; }
     /* Project Details modal */
     .modal-bg { position:fixed; inset:0; background:rgba(28,42,35,.55); z-index:50;
                 display:flex; align-items:center; justify-content:center; }
@@ -171,9 +172,10 @@
     #status-bar.show { opacity:.92; }
     #empty { padding:60px 20px; text-align:center; color:var(--slate); }
 
-    /* Status filter pills sit above the table and replace the old in-table group headers. */
+    /* Status filter pills sit BELOW the summary band and ABOVE the table head. */
     .status-pills { display:flex; gap:6px; padding:6px 16px 8px; background:white;
-                    border-bottom:1px solid var(--line); position:sticky; top:46px; z-index:5; flex-wrap:wrap; }
+                    border-bottom:1px solid var(--line); position:sticky; top:92px; z-index:5; flex-wrap:wrap;
+                    min-height:38px; align-items:center; }
     .status-pill { background:white; border:1px solid var(--line); border-radius:14px;
                    padding:4px 12px; font-size:12px; font-weight:600; cursor:pointer; color:var(--slate); }
     .status-pill:hover { border-color:var(--forest); color:var(--forest); }
@@ -229,7 +231,6 @@
     .proj-folder-icon.missing { opacity:.4; cursor:not-allowed; }
 
     /* Resizable column headers -- a 4px right edge handle on every <th>. */
-    thead th { position:sticky; top:92px; }
     thead th .col-resizer {
       position:absolute; right:0; top:0; width:4px; height:100%; cursor:col-resize;
       background:transparent; user-select:none;
@@ -425,8 +426,7 @@ const COLS = [
       const total = r.filesTotal || proc;
       if (c == null && proc === 0) return '<span class="pad">—</span>';
       const pct  = c == null ? '—' : `${Math.round(c)}%`;
-      const auto = (c != null && c >= 90) ? '<span class="extraction-auto" title="Auto-accepted at ≥90% confidence">AUTO</span>' : '';
-      return `<strong>${pct}</strong> <span class="small">(${proc} of ${total} files)</span>${auto}`;
+      return `<strong>${pct}</strong> <span class="small">(${proc} of ${total} files)</span>`;
     } },
 
   { id:'cost', label:'AI cost',
