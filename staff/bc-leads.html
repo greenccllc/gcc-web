@@ -132,6 +132,11 @@
     .count-pill .val { font-weight:700; color:var(--ink); min-width:18px; text-align:right; }
     .count-pill.empty { opacity:.45; }
     .count-pill.has   { border-color:var(--forest); background:var(--green-tint); }
+    /* Italic value = the agent estimated this count from drawing symbols /
+       riser diagrams instead of finding an explicit "N" in the text.
+       Driven by row's extraction_confidence < 0.7. */
+    .count-pill.estimated .val { font-style:italic; font-weight:600; }
+    .count-pill.estimated .val::after { content:' ?'; opacity:.55; font-size:9px; vertical-align:super; }
     /* By default only the "has" pills are shown; the "Show all" toggle reveals
        the rest in case manual edits are needed for non-scope-related categories. */
     .counts-grid:not(.show-empty) .count-pill.empty { display:none; }
@@ -422,14 +427,20 @@ const COUNT_KEYS = [
   ['mdf','MDF'],       ['idf','IDF'],       ['switch','SWITCH'],      ['patch','PATCH'],      ['ladder','LADDER'],
 ];
 
-function countsGrid(counts) {
+// confidencePct < 70 (or null) means the agent had to estimate the counts
+// from drawing symbols / riser diagrams instead of reading explicit numbers
+// in the spec. Render those values in italics with a faint "?" superscript
+// so the operator knows to spot-check before bidding.
+function countsGrid(counts, confidencePct) {
   if (!counts) counts = {};
+  const estimated = confidencePct == null || confidencePct < 70;
   let hasN = 0, emptyN = 0;
   const pills = COUNT_KEYS.map(([k, label]) => {
     const v = counts[k];
     const has = v != null && v !== 0;
     if (has) hasN++; else emptyN++;
-    return `<div class="count-pill ${has ? 'has' : 'empty'}"><span class="lbl">${label}</span><span class="val">${v == null ? '—' : v}</span></div>`;
+    const cls = (has ? 'has' : 'empty') + (has && estimated ? ' estimated' : '');
+    return `<div class="count-pill ${cls}"><span class="lbl">${label}</span><span class="val">${v == null ? '—' : v}</span></div>`;
   }).join('');
   // Always default to hiding non-scope pills. A fresh / unextracted row simply
   // shows "0 in scope · N hidden" with the toggle next to it -- the operator
@@ -565,7 +576,7 @@ function render() {
       html.push(`<tr class="row${open ? ' open' : ''}" data-id="${r.bcBidId}">` +
         COLS.map(c => `<td>${c.cell(r)}</td>`).join('') +
         `</tr>`);
-      html.push(`<tr class="counts${open ? ' open' : ''}" data-counts-for="${r.bcBidId}"><td colspan="${COLS.length}" data-stop><div class="row-actions-bar">${actionsCell(r)}</div>${countsGrid(r.counts)}</td></tr>`);
+      html.push(`<tr class="counts${open ? ' open' : ''}" data-counts-for="${r.bcBidId}"><td colspan="${COLS.length}" data-stop><div class="row-actions-bar">${actionsCell(r)}</div>${countsGrid(r.counts, r.extraction?.confidencePct)}</td></tr>`);
     }
   }
   $('rows').innerHTML = html.join('');
