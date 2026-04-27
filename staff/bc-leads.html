@@ -229,6 +229,8 @@
     .proj-folder-icon { color:var(--slate); margin-right:6px; font-size:13px; vertical-align:-1px; cursor:pointer; }
     .proj-folder-icon:hover { color:var(--forest); }
     .proj-folder-icon.missing { opacity:.4; cursor:not-allowed; }
+    /* Scope chips inline next to the project name. */
+    .proj-scope { display:inline-flex; gap:4px; margin-left:8px; flex-wrap:wrap; vertical-align:middle; }
 
     /* Resizable column headers -- a 4px right edge handle on every <th>. */
     thead th .col-resizer {
@@ -373,17 +375,44 @@ function statusBadge(s) {
 // ===== columns =====
 // `key` = sort key on the row object;  `accessor(r)` returns the rendered HTML.
 // projectLabel = the bare site name from BC (no date prefix, no city suffix,
-// no trade-scope suffix). `driveJobFolderName` encodes "{date} - {project} - {city}"
-// and gets shown in the Folder column tooltip; the Project column wants the
-// site name only with the trade-scope trailer ("Electrical",
-// "Data & Telecommunications", "Visual Display Boards", etc.) stripped --
-// scope already appears as chips on Undecided rows.
-const SCOPE_TRAILER = /\s+(?:Data\s*(?:&|and)\s*Telecommunications|Voice\s*&\s*Data|Visual\s*Display\s*Boards?|Visual\s*Displays?|Low[\s-]?Voltage|Audio[\s\/-]?Visual|Telecommunications?|Communications?|Structured\s*Cabling|Cabling|Networking|Network|Electrical|Security|Fire\s*Alarm|Access\s*Control|Intercom|Paging|Sound\s*System|Datacom|Data|Telecom|AV)\s*$/i;
+// no trade-scope suffix). BC project names habitually pile multiple "fluff"
+// trailers onto the actual site name:
+//
+//   "Taste Buds Kitchen - Parkville, MO Signage"
+//   "Five Four Restaurant & Drafthouse - Liberty Interior Signage"
+//   "Barnes & Noble // Creve Coeur, MO Data & Telecommunications"
+//
+// Strip them iteratively (date leader, then scope, then city+state, then
+// bare-city, then any leftover punctuation). The loop keeps going until the
+// string stabilizes so multi-suffix tails like "- Liberty Interior Signage"
+// fully unwind.
+const SCOPE_TRAILER = /\s+(?:Data\s*(?:&|and)\s*Telecommunications|Voice\s*&\s*Data|Building\s*Signage|Interior\s*Signage|Exterior\s*Signage|Visual\s*Display\s*Boards?|Visual\s*Displays?|Low[\s-]?Voltage|Audio[\s\/-]?Visual|Telecommunications?|Communications?|Structured\s*Cabling|Cabling|Networking|Network|Electrical|Security|Fire\s*Alarm|Access\s*Control|Intercom|Paging|Sound\s*System|Datacom|Data|Telecom|Signage|AV)\s*$/i;
+const DATE_LEADER    = /^\d{4}-\d{2}-\d{2}\s*[-–—]\s*/;
+// "- City, ST" or "// City, ST" or ", City, ST" -- any of those at the tail.
+const CITY_STATE_TAIL = /\s*(?:[-–—\/]+|,)\s*[^-,\/]{2,}?,\s*[A-Z]{2}\.?\s*$/;
+// "- Word" or "// Word" or "- Multi Word" at the tail. Conservative: only
+// strips when the remaining base is at least 2 words long, so "KC Lounge Bar"
+// doesn't become "KC".
+function tryStripBareCity(s) {
+  const m = s.match(/^(.*?)\s+(?:[-–—\/]+)\s+([A-Z][^-\/]{1,40}?)\s*$/);
+  if (!m) return s;
+  const base = m[1].trim();
+  if (base.split(/\s+/).length < 2) return s;     // don't dissolve short bases
+  return base;
+}
 function trimScope(name) {
   if (!name) return '';
-  let s = name.replace(SCOPE_TRAILER, '').trim();
-  s = s.replace(/[\s\-–—,/\\]+$/, '').trim();   // dangling punctuation left by the cut
-  return s || name;                              // never collapse to empty
+  let s = name.trim();
+  let prev = null;
+  while (s !== prev) {
+    prev = s;
+    s = s.replace(DATE_LEADER, '');
+    s = s.replace(SCOPE_TRAILER, '').trim();
+    s = s.replace(CITY_STATE_TAIL, '').trim();
+    s = tryStripBareCity(s);
+    s = s.replace(/[\s\-–—,\/\\]+$/, '').trim();
+  }
+  return s || name;                                // never collapse to empty
 }
 function projectLabel(r) { return trimScope(r.projectName) || r.driveJobFolderName || '(no name)'; }
 
@@ -393,7 +422,9 @@ function safeHtml(s) {
 }
 
 const COLS = [
-  // Project: folder icon → project name → confidence-tooltip on hover.
+  // Project: folder icon → project name → scope chips (icon + trade)
+  // → confidence-tooltip on hover. Scope chips are now right next to the
+  // name so the operator sees the trades without expanding the row.
   { id:'project', label:'Project',
     sort:(a,b) => projectLabel(a).localeCompare(projectLabel(b)),
     cell:(r) => {
@@ -401,7 +432,10 @@ const COLS = [
         ? `<span class="proj-folder-icon" data-act="open-folder" data-folder-id="${r.driveJobFolderId}" title="${safeHtml(r.driveJobFolderName || '')}">📂</span>`
         : '<span class="proj-folder-icon missing" title="No Drive folder linked">📂</span>';
       const tip = projTip(r);
-      return `<span class="toggle">▶</span> ${fIcon}<span class="proj-link"><a href="${r.href || '#'}" data-act="open-bc" data-href="${r.href || ''}">${safeHtml(projectLabel(r))}</a>${tip}</span>`;
+      const scopeChips = Array.isArray(r.trades) && r.trades.length
+        ? `<span class="proj-scope">${r.trades.map(t => `<span class="scope-chip"><span class="ico">${tradeIcon(t)}</span>${safeHtml(t)}</span>`).join('')}</span>`
+        : '';
+      return `<span class="toggle">▶</span> ${fIcon}<span class="proj-link"><a href="${r.href || '#'}" data-act="open-bc" data-href="${r.href || ''}">${safeHtml(projectLabel(r))}</a>${tip}</span>${scopeChips}`;
     } },
 
   { id:'location', label:'Location',
@@ -417,16 +451,24 @@ const COLS = [
     sort:(a,b) => (parseDue(a.dueAt) || 0) - (parseDue(b.dueAt) || 0),
     cell:(r) => renderDue(r.dueAt) },
 
-  // Extraction: "20% (4 of 20 files)" or just "—" if not run yet.
+  // Extraction: "73% (X of Y pages)" -- pages aggregate across all uploaded
+  // files for this bid (sheets / images / PDF pages all count as "pages" --
+  // it's the unit of agent work). Falls back to "(X of Y files)" only when
+  // page counts haven't been tracked yet (legacy rows pre-pages_processed).
   { id:'extraction', label:'Extraction',
     sort:(a,b) => (a.extraction?.confidencePct || 0) - (b.extraction?.confidencePct || 0),
     cell:(r) => {
-      const c    = r.extraction?.confidencePct;
-      const proc = r.extraction?.filesProcessed || 0;
-      const total = r.filesTotal || proc;
-      if (c == null && proc === 0) return '<span class="pad">—</span>';
-      const pct  = c == null ? '—' : `${Math.round(c)}%`;
-      return `<strong>${pct}</strong> <span class="small">(${proc} of ${total} files)</span>`;
+      const c     = r.extraction?.confidencePct;
+      const pp    = r.extraction?.pagesProcessed || 0;
+      const pt    = r.extraction?.pagesTotal     || 0;
+      const proc  = r.extraction?.filesProcessed || 0;
+      const total = r.filesTotal                 || proc;
+      if (c == null && proc === 0 && pt === 0) return '<span class="pad">—</span>';
+      const pct   = c == null ? '—' : `${Math.round(c)}%`;
+      const detail = pt > 0
+        ? `${pp} of ${pt} pages`
+        : `${proc} of ${total} files`;
+      return `<strong>${pct}</strong> <span class="small">(${detail})</span>`;
     } },
 
   { id:'cost', label:'AI cost',
@@ -709,14 +751,11 @@ function render() {
     html.push(`<tr class="row${open ? ' open' : ''}" data-id="${r.bcBidId}">` +
       COLS.map(c => `<td>${c.cell(r)}</td>`).join('') + `</tr>`);
 
-    // Expanded sub-panel: action menu, GC + scope meta card, counts grid, footer with date-added.
+    // Expanded sub-panel: action menu, GC meta card (scope chips moved
+    // up next to the project name on the main row), counts grid, footer.
     const gcCell = r.gc ? safeHtml(r.gc) : '<span class="pad">unknown</span>';
-    const scopeChips = Array.isArray(r.trades) && r.trades.length
-      ? r.trades.map(t => `<span class="scope-chip"><span class="ico">${tradeIcon(t)}</span>${safeHtml(t)}</span>`).join('')
-      : '<span class="scope-chip unknown">scope: unknown</span>';
     const meta = `<div class="row-meta-card">
       <div class="field"><span class="lbl">GC / Client</span><span class="val">${gcCell}</span></div>
-      <div class="field"><span class="lbl">Scope</span><span class="val">${scopeChips}</span></div>
     </div>`;
     const footer = `<div class="row-footer">First seen ${fmt(r.firstSeenAt)} · last list scrape ${fmt(r.lastSeenAt)}</div>`;
     html.push(`<tr class="counts${open ? ' open' : ''}" data-counts-for="${r.bcBidId}" data-stop><td colspan="${COLS.length}" data-stop>
