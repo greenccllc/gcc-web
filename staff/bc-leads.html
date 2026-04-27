@@ -25,6 +25,10 @@
     header button#rescan { background:var(--gold); color:var(--ink); border:0; padding:7px 14px;
                     font-size:12px; font-weight:600; border-radius:4px; cursor:pointer; letter-spacing:.02em; }
     header button#rescan:disabled { opacity:.5; cursor:wait; }
+    header button#refresh { background:rgba(255,255,255,.15); color:white; border:0; padding:7px 12px;
+                            font-size:12px; font-weight:600; border-radius:4px; cursor:pointer; letter-spacing:.02em; }
+    header button#refresh:hover { background:rgba(255,255,255,.28); }
+    header button#refresh:disabled { opacity:.5; cursor:wait; }
 
     .tabs { display:flex; gap:4px; }
     .tab { background:transparent; color:rgba(255,255,255,.75); border:0; padding:7px 14px;
@@ -166,6 +170,80 @@
                   transition:opacity .15s; pointer-events:none; }
     #status-bar.show { opacity:.92; }
     #empty { padding:60px 20px; text-align:center; color:var(--slate); }
+
+    /* Status filter pills sit above the table and replace the old in-table group headers. */
+    .status-pills { display:flex; gap:6px; padding:6px 16px 8px; background:white;
+                    border-bottom:1px solid var(--line); position:sticky; top:46px; z-index:5; flex-wrap:wrap; }
+    .status-pill { background:white; border:1px solid var(--line); border-radius:14px;
+                   padding:4px 12px; font-size:12px; font-weight:600; cursor:pointer; color:var(--slate); }
+    .status-pill:hover { border-color:var(--forest); color:var(--forest); }
+    .status-pill.active { background:var(--forest); color:white; border-color:var(--forest); }
+    .status-pill .count { margin-left:5px; font-weight:400; opacity:.75; font-size:11px; }
+
+    /* Project-name hover tooltip with confidence + next-best-step. */
+    .proj-link { position:relative; cursor:pointer; }
+    .proj-tip { position:absolute; left:0; top:130%; min-width:280px; max-width:380px;
+                background:var(--ink); color:white; padding:10px 12px; border-radius:6px;
+                box-shadow:0 6px 20px rgba(0,0,0,.35); z-index:30; font-size:12px;
+                display:none; line-height:1.45; white-space:normal; }
+    .proj-link:hover .proj-tip { display:block; }
+    .proj-tip .tip-conf { display:flex; align-items:center; gap:6px; font-size:13px; font-weight:600; margin-bottom:4px; }
+    .proj-tip .tip-conf .bar { width:80px; height:6px; background:rgba(255,255,255,.18); border-radius:3px; overflow:hidden; }
+    .proj-tip .tip-conf .bar > span { display:block; height:100%; background:var(--gold); }
+    .proj-tip .tip-reason { color:#cbd6cf; font-style:italic; margin:6px 0 8px; }
+    .proj-tip .tip-step-btn { background:var(--gold); color:var(--ink); border:0; padding:5px 10px;
+                              border-radius:4px; font-size:11px; font-weight:600; cursor:pointer; }
+    .proj-tip .tip-step-btn:hover { background:#dab164; }
+
+    /* Action dropdown (kebab) in the expanded sub-row. */
+    .action-menu { position:relative; display:inline-block; }
+    .action-menu > button.menu-trigger {
+      background:var(--forest); color:white; border:0; padding:5px 12px; border-radius:4px;
+      font-size:11px; font-weight:600; cursor:pointer; letter-spacing:.04em;
+    }
+    .action-menu > button.menu-trigger:hover { background:#0d3d11; }
+    .action-menu > button.menu-trigger::after { content:' ▾'; font-size:9px; }
+    .action-menu .menu-list {
+      position:absolute; left:0; top:110%; min-width:230px; background:white;
+      border:1px solid var(--line); border-radius:6px; box-shadow:0 6px 20px rgba(0,0,0,.18);
+      z-index:25; padding:4px; display:none;
+    }
+    .action-menu.open .menu-list { display:block; }
+    .action-menu .menu-list button {
+      width:100%; text-align:left; background:transparent; border:0; padding:7px 12px;
+      cursor:pointer; font-size:12px; color:var(--ink); border-radius:4px; display:flex;
+      align-items:center; gap:8px;
+    }
+    .action-menu .menu-list button:hover { background:var(--green-tint); color:var(--forest); }
+    .action-menu .menu-list button.danger { color:var(--danger); }
+    .action-menu .menu-list button.danger:hover { background:#FFEBEE; }
+    .action-menu .menu-list .submenu-label { padding:4px 12px 2px; color:var(--slate);
+                                              font-size:10px; text-transform:uppercase; letter-spacing:.04em; }
+    .action-menu .menu-list .divider { height:1px; background:var(--line); margin:4px 0; }
+    .action-menu .menu-list select { width:100%; margin:2px 0; padding:5px; font-size:12px;
+                                      border:1px solid var(--line); border-radius:4px; }
+
+    /* Folder icon prefix on Project name. */
+    .proj-folder-icon { color:var(--slate); margin-right:6px; font-size:13px; vertical-align:-1px; cursor:pointer; }
+    .proj-folder-icon:hover { color:var(--forest); }
+    .proj-folder-icon.missing { opacity:.4; cursor:not-allowed; }
+
+    /* Resizable column headers -- a 4px right edge handle on every <th>. */
+    thead th { position:sticky; top:92px; }
+    thead th .col-resizer {
+      position:absolute; right:0; top:0; width:4px; height:100%; cursor:col-resize;
+      background:transparent; user-select:none;
+    }
+    thead th .col-resizer:hover, thead th .col-resizer.dragging { background:var(--gold); }
+    thead th { padding-right:14px; position:relative; }
+
+    /* Expanded sub-panel: GC card, counts grid, Date Added footer. */
+    .row-meta-card { display:flex; gap:18px; flex-wrap:wrap; padding:6px 0 10px;
+                     border-bottom:1px dashed var(--line); margin-bottom:8px; font-size:12px; }
+    .row-meta-card .field { display:flex; flex-direction:column; gap:1px; }
+    .row-meta-card .field .lbl { color:var(--slate); font-size:10px; text-transform:uppercase; letter-spacing:.04em; }
+    .row-meta-card .field .val { color:var(--ink); font-weight:500; }
+    .row-footer { color:var(--slate); font-size:10.5px; text-align:right; padding-top:6px; }
   </style>
 </head>
 <body>
@@ -180,13 +258,15 @@
     </div>
     <div style="display:flex;gap:10px;align-items:center">
       <span class="small" id="auto" style="color:rgba(255,255,255,.7)"></span>
-      <button id="rescan">Rescan now</button>
+      <button id="refresh" title="Refetch the leads-summary feed (no BC scrape)">↻ Refresh</button>
+      <button id="rescan" title="Force-fire BC scrape tasks now">Rescan now</button>
     </div>
   </header>
 
   <!-- =================== Leads tab =================== -->
   <section id="tab-leads">
     <div class="summary" id="summary"></div>
+    <div class="status-pills" id="status-pills"></div>
     <table id="t">
       <thead><tr id="head"></tr></thead>
       <tbody id="rows"></tbody>
@@ -312,13 +392,16 @@ function safeHtml(s) {
 }
 
 const COLS = [
+  // Project: folder icon → project name → confidence-tooltip on hover.
   { id:'project', label:'Project',
     sort:(a,b) => projectLabel(a).localeCompare(projectLabel(b)),
-    cell:(r) => `<span class="toggle">▶</span> <a href="${r.href || '#'}" data-act="open-bc" data-href="${r.href || ''}">${safeHtml(projectLabel(r))}</a>` },
-
-  { id:'gc', label:'GC / Client',
-    sort:(a,b) => (a.gc || '').localeCompare(b.gc || ''),
-    cell:(r) => r.gc ? `<span>${safeHtml(r.gc)}</span>` : '<span class="pad">unknown</span>' },
+    cell:(r) => {
+      const fIcon = r.driveJobFolderId
+        ? `<span class="proj-folder-icon" data-act="open-folder" data-folder-id="${r.driveJobFolderId}" title="${safeHtml(r.driveJobFolderName || '')}">📂</span>`
+        : '<span class="proj-folder-icon missing" title="No Drive folder linked">📂</span>';
+      const tip = projTip(r);
+      return `<span class="toggle">▶</span> ${fIcon}<span class="proj-link"><a href="${r.href || '#'}" data-act="open-bc" data-href="${r.href || ''}">${safeHtml(projectLabel(r))}</a>${tip}</span>`;
+    } },
 
   { id:'location', label:'Location',
     sort:(a,b) => (a.location || '').localeCompare(b.location || ''),
@@ -333,14 +416,17 @@ const COLS = [
     sort:(a,b) => (parseDue(a.dueAt) || 0) - (parseDue(b.dueAt) || 0),
     cell:(r) => renderDue(r.dueAt) },
 
+  // Extraction: "20% (4 of 20 files)" or just "—" if not run yet.
   { id:'extraction', label:'Extraction',
     sort:(a,b) => (a.extraction?.confidencePct || 0) - (b.extraction?.confidencePct || 0),
     cell:(r) => {
-      const c = r.extraction?.confidencePct;
-      if (c == null) return '<span class="pad">—</span>';
-      const auto = c >= 90 ? '<span class="extraction-auto" title="Auto-accepted at ≥90% confidence">AUTO</span>' : '';
-      const files = r.extraction?.filesProcessed ? ` <span class="small">(${r.extraction.filesProcessed} files)</span>` : '';
-      return `<strong>${Math.round(c)}%</strong>${files}${auto}`;
+      const c    = r.extraction?.confidencePct;
+      const proc = r.extraction?.filesProcessed || 0;
+      const total = r.filesTotal || proc;
+      if (c == null && proc === 0) return '<span class="pad">—</span>';
+      const pct  = c == null ? '—' : `${Math.round(c)}%`;
+      const auto = (c != null && c >= 90) ? '<span class="extraction-auto" title="Auto-accepted at ≥90% confidence">AUTO</span>' : '';
+      return `<strong>${pct}</strong> <span class="small">(${proc} of ${total} files)</span>${auto}`;
     } },
 
   { id:'cost', label:'AI cost',
@@ -351,72 +437,82 @@ const COLS = [
         `$${Number(c).toFixed(4)}${r.ai?.tokensUsed ? ` <span class="small">(${(r.ai.tokensUsed/1000).toFixed(1)}k tok)</span>` : ''}`;
     } },
 
-  // Combined Files column: the Drive folder shortcut on the left, the per-RFP
-  // upload progress / counts on the right. Sort by attachment count descending
-  // makes the busy deals float; the folder is purely a shortcut so we don't
-  // need a folder-name-based ordering.
-  { id:'files', label:'Files',
+  { id:'uploads', label:'Files',
     sort:(a,b) => (a.scrape?.attachmentsCount || 0) - (b.scrape?.attachmentsCount || 0),
-    cell:(r) => {
-      const folder = r.driveJobFolderId
-        ? `<a class="folder-link" data-act="open-folder" data-folder-id="${r.driveJobFolderId}" title="${safeHtml(r.driveJobFolderName || '')}">📂</a>`
-        : '<span class="pad" title="ensure-folders has not run for this RFP yet">📂</span>';
-      return `<div class="files-cell">${folder}<span class="files-stats">${uploadsCell(r.scrape)}</span></div>`;
-    } },
+    cell:(r) => uploadsCell(r.scrape) },
 
-  // Last file access = newest BcRfpAttachments.UploadedAt for this RFP, with
-  // BcRfps.LastSeenAt (= last BC list-scrape that saw this RFP) as a fallback
-  // for rows where we haven't uploaded any files yet.
+  // Last file access -- newest BcRfpAttachments.UploadedAt, with BcRfps.LastSeenAt
+  // as fallback for rows that haven't had any files uploaded yet.
   { id:'lastfile', label:'Last file access',
     sort:(a,b) => new Date(a.lastFileAt || a.lastSeenAt || 0) - new Date(b.lastFileAt || b.lastSeenAt || 0),
     cell:(r) => `<span class="small">${fmt(r.lastFileAt || r.lastSeenAt)}</span>` },
-
-  { id:'added', label:'Date added',
-    sort:(a,b) => new Date(a.firstSeenAt || 0) - new Date(b.firstSeenAt || 0),
-    cell:(r) => `<span class="small">${fmt(r.firstSeenAt)}</span>` },
 ];
 
-// ===== status-aware action cell =====
-// Per the workflow:
-//   Undecided  -> "Project Details" + scope chips (icons + trade names from BC)
-//   Accepted   -> "Extract more" + "Accept" + "Pause" / "Resume" toggle
-//   Submitted  -> "View Prop" (latest sent proposal folder) + "Scan Addenda"
-//                 ("Scan Addenda" pulses red when an addendum has appeared since
-//                  acceptance; click re-extracts and moves the job back to Accepted
-//                  with an "Addendum-" name prefix.)
-//   Won/Lost/Archived -> View Prop only (read-only).
+// Confidence tooltip on the project name. Shows the confidence bar + the
+// "next best step" suggestion the backend computed for this row, with a
+// button that POSTs the appropriate endpoint.
+function projTip(r) {
+  const c    = r.extraction?.confidencePct;
+  const step = r.nextBestStep;
+  const bar  = c == null ? '' : `<div class="bar"><span style="width:${Math.min(100, Math.max(0, Math.round(c)))}%"></span></div>`;
+  const conf = c == null ? 'No extraction yet' : `${Math.round(c)}% confidence`;
+  const stepBlock = step
+    ? `<div class="tip-reason">${safeHtml(step.reason || '')}</div>
+       <button class="tip-step-btn" data-act="next-step" data-id="${r.bcBidId}" data-step-act="${safeHtml(step.action)}">${safeHtml(step.label)}</button>`
+    : `<div class="tip-reason">No specific recommendation -- this row looks good.</div>`;
+  return `<span class="proj-tip" data-stop>
+    <div class="tip-conf">${bar}<span>${conf}</span></div>
+    ${stepBlock}
+  </span>`;
+}
+
+// ===== Action dropdown menu =====
+// Single "Actions ▾" button on every row; clicking expands a list of every
+// action that's relevant to that row's current state. Includes Move-to-status
+// (selectable), Rescan-details, and Delete in addition to the per-status
+// actions (Extract more / Accept / Pause / View Prop / Scan Addenda /
+// Project Details).
+const STATUS_OPTIONS = ['Undecided', 'Accepted', 'Submitted', 'Won', 'Archived', 'Lost'];
+
 function actionsCell(r) {
-  const id = r.bcBidId;
+  const id       = r.bcBidId;
   const accepted = r.extraction?.accepted;
   const paused   = r.extractionPaused;
   const status   = r.status || 'Unknown';
+  const flagged  = !!r.addendaSeen;
 
+  const items = [];
+  // Per-status primary actions
   if (status === 'Undecided') {
-    const trades = Array.isArray(r.trades) && r.trades.length
-      ? r.trades.map(t => `<span class="scope-chip"><span class="ico">${tradeIcon(t)}</span>${safeHtml(t)}</span>`).join('')
-      : '<span class="scope-chip unknown">scope: unknown</span>';
-    return `<div class="row-actions" data-stop>
-      <button data-act="project-details" data-id="${id}" title="Show project summary pulled from BC">📋 Project Details</button>
-      <span class="scope-chips">${trades}</span>
-    </div>`;
+    items.push(`<button data-act="project-details" data-id="${id}">📋 Project Details</button>`);
   }
   if (status === 'Accepted') {
-    return `<div class="row-actions" data-stop>
-      <button data-act="extract-more" data-id="${id}" title="Re-run extraction with deeper parsing pass">Extract more</button>
-      <button data-act="accept" data-id="${id}" class="${accepted ? 'accepted' : ''}" title="${accepted ? 'Already accepted' : 'Mark this extraction as approved'}">${accepted ? '✓ accepted' : 'Accept'}</button>
-      <button data-act="pause-toggle" data-id="${id}" data-paused="${paused ? '1' : '0'}" class="${paused ? 'paused' : ''}" title="${paused ? 'Resume extraction for this RFP' : 'Pause: bid-extractor will skip this RFP'}">${paused ? '▶ Resume' : '⏸ Pause'}</button>
-    </div>`;
+    items.push(`<button data-act="extract-more" data-id="${id}">🔬 Extract more (deeper pass)</button>`);
+    items.push(`<button data-act="accept" data-id="${id}" class="${accepted ? 'accepted' : ''}">${accepted ? '✓ Accepted' : '✓ Accept extraction'}</button>`);
+    items.push(`<button data-act="pause-toggle" data-id="${id}" data-paused="${paused ? '1' : '0'}">${paused ? '▶ Resume extraction' : '⏸ Pause extraction'}</button>`);
   }
   if (status === 'Submitted') {
-    const flagged = !!r.addendaSeen;
-    return `<div class="row-actions" data-stop>
-      <button data-act="view-prop" data-id="${id}" title="Open the folder of the latest sent proposal">📤 View Prop</button>
-      <button data-act="scan-addenda" data-id="${id}" class="${flagged ? 'danger' : ''}" title="${flagged ? 'NEW addendum detected — click to re-extract and move back to Accepted' : 'Scan BC for new addenda'}">${flagged ? '⚠ Scan Addenda' : 'Scan Addenda'}</button>
-    </div>`;
+    items.push(`<button data-act="view-prop" data-id="${id}">📤 View latest proposal</button>`);
+    items.push(`<button data-act="scan-addenda" data-id="${id}" class="${flagged ? 'danger' : ''}">${flagged ? '⚠ Scan addenda (new addendum detected)' : '🔍 Scan addenda'}</button>`);
   }
-  // Won/Lost/Archived: read-only — only "View Prop" if a proposal exists.
-  return `<div class="row-actions" data-stop>
-    <button data-act="view-prop" data-id="${id}" title="Open the folder of the latest sent proposal">📤 View Prop</button>
+  if (status !== 'Undecided' && status !== 'Accepted' && status !== 'Submitted') {
+    items.push(`<button data-act="view-prop" data-id="${id}">📤 View latest proposal</button>`);
+  }
+
+  // Workflow + maintenance (always available)
+  items.push(`<div class="divider"></div>`);
+  items.push(`<div class="submenu-label">Move to status</div>`);
+  items.push(`<select data-act="move-status" data-id="${id}">
+    <option value="">— pick a status —</option>
+    ${STATUS_OPTIONS.map(s => `<option value="${s}" ${s === status ? 'disabled' : ''}>${s}${s === status ? ' (current)' : ''}</option>`).join('')}
+  </select>`);
+  items.push(`<div class="divider"></div>`);
+  items.push(`<button data-act="rescan-details" data-id="${id}">🔄 Rescan project details</button>`);
+  items.push(`<button data-act="delete" data-id="${id}" class="danger">🗑 Delete RFP from GCC Manager</button>`);
+
+  return `<div class="action-menu" data-stop>
+    <button class="menu-trigger" data-act="toggle-menu">Actions</button>
+    <div class="menu-list">${items.join('')}</div>
   </div>`;
 }
 
@@ -486,17 +582,21 @@ function renderDue(s) {
 }
 
 // ===== state =====
-// Persist only collapsed-status across reloads — open count rows and auto-accept
-// state are session-scoped. localStorage key namespaced for this app.
-const COLLAPSED_KEY = 'gccLeadsCollapsedStatuses';
+// Status tabs replace the old in-table group headers; the active tab is
+// persisted across reloads. Column widths are persisted too so the user's
+// drag-resizes survive a refresh.
+const STATUS_TAB_KEY = 'gccLeadsActiveStatusTab';
+const COL_WIDTHS_KEY = 'gccLeadsColWidths';
 const STATE = {
   data : null,
-  sort : { col: 'added', dir: 'desc' },
+  sort : { col: 'lastfile', dir: 'desc' },
   open : new Set(),                                                 // bcBidIds with expanded count rows
-  collapsed   : new Set(JSON.parse(localStorage.getItem(COLLAPSED_KEY) || '[]')),
+  activeStatus: localStorage.getItem(STATUS_TAB_KEY) || 'All',
   autoAccepted: new Set(),                                          // bcBidIds we already POSTed accept for this session
+  colWidths: JSON.parse(localStorage.getItem(COL_WIDTHS_KEY) || '{}'),
 };
-function saveCollapsed() { localStorage.setItem(COLLAPSED_KEY, JSON.stringify([...STATE.collapsed])); }
+function saveActiveStatus() { localStorage.setItem(STATUS_TAB_KEY, STATE.activeStatus); }
+function saveColWidths()    { localStorage.setItem(COL_WIDTHS_KEY, JSON.stringify(STATE.colWidths)); }
 
 const STATUS_ORDER = ['Undecided', 'Accepted', 'Submitted', 'Won', 'Archived', 'Lost'];
 
@@ -516,15 +616,42 @@ async function load() {
 function renderHead() {
   const cells = COLS.map(c => {
     const ind = STATE.sort.col === c.id ? (STATE.sort.dir === 'asc' ? '▲' : '▼') : '';
-    return `<th data-col="${c.id}">${c.label}<span class="sort-ind">${ind}</span></th>`;
+    const w   = STATE.colWidths[c.id] ? ` style="width:${STATE.colWidths[c.id]}px"` : '';
+    return `<th data-col="${c.id}"${w}>${c.label}<span class="sort-ind">${ind}</span><span class="col-resizer" data-col="${c.id}"></span></th>`;
   }).join('');
   $('head').innerHTML = cells;
   $('head').querySelectorAll('th').forEach(th => {
-    th.addEventListener('click', () => {
+    th.addEventListener('click', (e) => {
+      // Ignore clicks that came from the resizer handle.
+      if (e.target.classList && e.target.classList.contains('col-resizer')) return;
       const id = th.dataset.col;
       if (STATE.sort.col === id) STATE.sort.dir = (STATE.sort.dir === 'asc' ? 'desc' : 'asc');
-      else { STATE.sort.col = id; STATE.sort.dir = (id === 'added' || id === 'lastfile' ? 'desc' : 'asc'); }
+      else { STATE.sort.col = id; STATE.sort.dir = (id === 'lastfile' ? 'desc' : 'asc'); }
       render();
+    });
+  });
+  // Drag-resize: mousedown on .col-resizer captures pointer move; commit on mouseup.
+  $('head').querySelectorAll('.col-resizer').forEach(handle => {
+    handle.addEventListener('mousedown', (downEvt) => {
+      downEvt.preventDefault(); downEvt.stopPropagation();
+      const th = handle.closest('th');
+      const id = handle.dataset.col;
+      const startX = downEvt.clientX;
+      const startW = th.offsetWidth;
+      handle.classList.add('dragging');
+      const onMove = (ev) => {
+        const next = Math.max(60, startW + (ev.clientX - startX));
+        th.style.width = next + 'px';
+        STATE.colWidths[id] = next;
+      };
+      const onUp = () => {
+        handle.classList.remove('dragging');
+        saveColWidths();
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup',   onUp);
+      };
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup',   onUp);
     });
   });
 }
@@ -550,48 +677,60 @@ function render() {
   if (acceptedCount > 0) chips.push(`<span class="chip">✓ <strong>${acceptedCount}</strong> accepted</span>`);
   $('summary').innerHTML = chips.join('');
 
-  // Group by status, sort within each group, render group headers + rows.
-  const sortFn = (COLS.find(c => c.id === STATE.sort.col) || COLS[0]).sort;
-  const dirMul = STATE.sort.dir === 'asc' ? 1 : -1;
-  const groups = {};
+  // Status filter pills (replace the old in-table group headers). Counts include the "All" virtual tab.
+  const counts = { All: STATE.data.items.length };
   for (const r of STATE.data.items) {
     const s = r.status || 'Unknown';
-    (groups[s] = groups[s] || []).push(r);
+    counts[s] = (counts[s] || 0) + 1;
   }
-  // Stable, deterministic group order: known statuses first, then any extras alphabetically.
-  const orderedStatuses = [
-    ...STATUS_ORDER.filter(s => groups[s]),
-    ...Object.keys(groups).filter(s => !STATUS_ORDER.includes(s)).sort(),
-  ];
-
-  const html = [];
-  for (const s of orderedStatuses) {
-    const rows = groups[s].slice().sort((a,b) => sortFn(a,b) * dirMul);
-    const isCollapsed = STATE.collapsed.has(s);
-    html.push(`<tr class="group-hdr${isCollapsed ? ' collapsed' : ''}" data-status="${s}">
-      <td colspan="${COLS.length}"><span class="gtoggle">▼</span> ${statusBadge(s)} <span class="count">${rows.length}</span></td></tr>`);
-    if (isCollapsed) continue;     // skip body rows; the group header stays visible
-    for (const r of rows) {
-      const open = STATE.open.has(r.bcBidId);
-      html.push(`<tr class="row${open ? ' open' : ''}" data-id="${r.bcBidId}">` +
-        COLS.map(c => `<td>${c.cell(r)}</td>`).join('') +
-        `</tr>`);
-      html.push(`<tr class="counts${open ? ' open' : ''}" data-counts-for="${r.bcBidId}"><td colspan="${COLS.length}" data-stop><div class="row-actions-bar">${actionsCell(r)}</div>${countsGrid(r.counts, r.extraction?.confidencePct)}</td></tr>`);
-    }
-  }
-  $('rows').innerHTML = html.join('');
-  $('empty').hidden = STATE.data.items.length > 0;
-
-  // Group-header click: collapse / expand the entire status section.
-  $('rows').querySelectorAll('tr.group-hdr').forEach(tr => {
-    tr.addEventListener('click', () => {
-      const s = tr.dataset.status;
-      if (STATE.collapsed.has(s)) STATE.collapsed.delete(s);
-      else                        STATE.collapsed.add(s);
-      saveCollapsed();
+  const tabsOrder = ['All', ...STATUS_ORDER.filter(s => counts[s]),
+                     ...Object.keys(counts).filter(s => s !== 'All' && !STATUS_ORDER.includes(s)).sort()];
+  $('status-pills').innerHTML = tabsOrder.map(s => {
+    const active = s === STATE.activeStatus ? ' active' : '';
+    return `<button class="status-pill${active}" data-status-tab="${safeHtml(s)}">${safeHtml(s)}<span class="count">${counts[s] || 0}</span></button>`;
+  }).join('');
+  $('status-pills').querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      STATE.activeStatus = btn.dataset.statusTab;
+      saveActiveStatus();
       render();
     });
   });
+
+  // Filter + sort (single flat list, no group headers).
+  const sortFn = (COLS.find(c => c.id === STATE.sort.col) || COLS[0]).sort;
+  const dirMul = STATE.sort.dir === 'asc' ? 1 : -1;
+  const filtered = STATE.activeStatus === 'All'
+    ? STATE.data.items.slice()
+    : STATE.data.items.filter(r => (r.status || 'Unknown') === STATE.activeStatus);
+  filtered.sort((a,b) => sortFn(a,b) * dirMul);
+
+  const html = [];
+  for (const r of filtered) {
+    const open = STATE.open.has(r.bcBidId);
+    html.push(`<tr class="row${open ? ' open' : ''}" data-id="${r.bcBidId}">` +
+      COLS.map(c => `<td>${c.cell(r)}</td>`).join('') + `</tr>`);
+
+    // Expanded sub-panel: action menu, GC + scope meta card, counts grid, footer with date-added.
+    const gcCell = r.gc ? safeHtml(r.gc) : '<span class="pad">unknown</span>';
+    const scopeChips = Array.isArray(r.trades) && r.trades.length
+      ? r.trades.map(t => `<span class="scope-chip"><span class="ico">${tradeIcon(t)}</span>${safeHtml(t)}</span>`).join('')
+      : '<span class="scope-chip unknown">scope: unknown</span>';
+    const meta = `<div class="row-meta-card">
+      <div class="field"><span class="lbl">GC / Client</span><span class="val">${gcCell}</span></div>
+      <div class="field"><span class="lbl">Scope</span><span class="val">${scopeChips}</span></div>
+    </div>`;
+    const footer = `<div class="row-footer">First seen ${fmt(r.firstSeenAt)} · last list scrape ${fmt(r.lastSeenAt)}</div>`;
+    html.push(`<tr class="counts${open ? ' open' : ''}" data-counts-for="${r.bcBidId}" data-stop><td colspan="${COLS.length}" data-stop>
+      <div class="row-actions-bar">${actionsCell(r)}</div>
+      ${meta}
+      ${countsGrid(r.counts, r.extraction?.confidencePct)}
+      ${footer}
+    </td></tr>`);
+  }
+  $('rows').innerHTML = html.join('');
+  $('empty').hidden = filtered.length > 0;
+
   $('rows').querySelectorAll('tr.row').forEach(tr => {
     tr.addEventListener('click', (e) => {
       // Don't toggle the row when the click came from inside the actions cell
@@ -607,11 +746,12 @@ function render() {
   });
   // Folder + BC project-name links use window.open: Chrome --app windows
   // silently swallow target="_blank" navigations from <a> tags, so we
-  // intercept the click and call window.open() ourselves.
-  $('rows').querySelectorAll('a[data-act="open-folder"]').forEach(a => {
-    a.addEventListener('click', (e) => {
+  // intercept the click and call window.open() ourselves. Folder icon is
+  // now a <span> (not an <a>) so it can sit inline with the project name.
+  $('rows').querySelectorAll('[data-act="open-folder"]').forEach(el => {
+    el.addEventListener('click', (e) => {
       e.preventDefault(); e.stopPropagation();
-      const fid = a.dataset.folderId;
+      const fid = el.dataset.folderId;
       if (fid) window.open(`https://drive.google.com/drive/folders/${fid}`, '_blank', 'noopener,noreferrer');
     });
   });
@@ -642,8 +782,43 @@ function render() {
       btn.textContent = willShow ? 'Hide non-scope' : `Show all (${empties})`;
     });
   });
-  // Action buttons -- branched by data-act.
-  $('rows').querySelectorAll('.row-actions button').forEach(btn => {
+  // Open / close the Actions dropdown.
+  $('rows').querySelectorAll('button.menu-trigger').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const wrap = btn.closest('.action-menu');
+      const wasOpen = wrap.classList.contains('open');
+      // Close every other menu first
+      document.querySelectorAll('.action-menu.open').forEach(m => m.classList.remove('open'));
+      if (!wasOpen) wrap.classList.add('open');
+    });
+  });
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.action-menu')) {
+      document.querySelectorAll('.action-menu.open').forEach(m => m.classList.remove('open'));
+    }
+  });
+
+  // Move-to-status select (lives inside the action menu)
+  $('rows').querySelectorAll('select[data-act="move-status"]').forEach(sel => {
+    sel.addEventListener('change', async (e) => {
+      e.stopPropagation();
+      const id = sel.dataset.id;
+      const v  = sel.value;
+      if (!v) return;
+      sel.disabled = true;
+      try {
+        await api('POST', '/api/bc/extraction/move-status', { bcBidId: id, newStatus: v });
+        toast(`Moved ${id.slice(0,8)}… to ${v}`);
+        setTimeout(load, 800);
+      } catch (err) { toast(err.message, 4500); }
+      finally { sel.disabled = false; }
+    });
+  });
+
+  // Action buttons (everything inside the dropdown menu + next-step button on the project tooltip)
+  $('rows').querySelectorAll('button[data-act]').forEach(btn => {
+    if (btn.classList.contains('menu-trigger')) return;
     btn.addEventListener('click', async (e) => {
       e.stopPropagation();
       const act = btn.dataset.act, id = btn.dataset.id;
@@ -652,9 +827,9 @@ function render() {
         if (act === 'extract-more') {
           await api('POST', '/api/bc/extraction/extract-more', { bcBidId: id });
           toast(`Deeper extraction queued for ${id.slice(0,8)}…`);
+          setTimeout(load, 1200);
         } else if (act === 'accept') {
           await api('POST', '/api/bc/extraction/accept', { bcBidId: id });
-          btn.innerHTML = '✓ accepted'; btn.classList.add('accepted');
           toast(`Extraction accepted for ${id.slice(0,8)}…`);
           setTimeout(load, 1500); return;
         } else if (act === 'pause-toggle') {
@@ -678,6 +853,24 @@ function render() {
             toast('Addendum queued: re-extracting and moving to Accepted.', 4000);
             setTimeout(load, 1500); return;
           }
+        } else if (act === 'rescan-details') {
+          await api('POST', '/api/bc/extraction/rescan-details', { bcBidId: id });
+          toast(`Rescan project details queued for ${id.slice(0,8)}…`);
+        } else if (act === 'delete') {
+          if (confirm('Delete this RFP from GCC Manager? This wipes dbo.BcRfps + Details + Attachments. Drive folder is left alone. Cannot be undone.')) {
+            await api('POST', '/api/bc/extraction/delete', { bcBidId: id });
+            toast(`RFP ${id.slice(0,8)}… deleted`);
+            setTimeout(load, 800); return;
+          }
+        } else if (act === 'next-step') {
+          // Forwards to the actual underlying action.
+          const real = btn.dataset.stepAct;
+          const r = (STATE.data.items || []).find(x => x.bcBidId === id);
+          if (real === 'extract-more')        { await api('POST', '/api/bc/extraction/extract-more', { bcBidId: id });  toast('Deeper extraction queued.'); setTimeout(load, 1200); }
+          else if (real === 'rescan-details') { await api('POST', '/api/bc/extraction/rescan-details', { bcBidId: id }); toast('Rescan queued.'); }
+          else if (real === 'accept')         { await api('POST', '/api/bc/extraction/accept', { bcBidId: id });          toast('Extraction accepted.'); setTimeout(load, 1500); }
+          else if (real === 'pause-toggle')   { await api('POST', '/api/bc/extraction/pause', { bcBidId: id, paused: false }); toast('Resumed.'); setTimeout(load, 800); }
+          else { toast(`Unknown next-step action: ${real}`, 4000); }
         }
       } catch (err) { toast(err.message, 4500); }
       finally      { btn.disabled = false; if (btn.textContent === '…') btn.innerHTML = orig; }
@@ -788,6 +981,15 @@ $('tabs').addEventListener('click', (e) => {
   $('tab-processes').hidden = (which !== 'processes');
   $('rescan').style.display = (which === 'leads') ? '' : 'none';
   if (which === 'processes') loadProcesses();
+});
+
+// Refresh: just refetch leads-summary (no BC scrape, no Pub/Sub fanout).
+$('refresh').addEventListener('click', async () => {
+  const btn = $('refresh');
+  btn.disabled = true; const orig = btn.textContent; btn.textContent = '↻ refreshing…';
+  try { await load(); toast('Refreshed.'); }
+  catch (e) { toast(e.message, 5000); }
+  finally   { btn.disabled = false; btn.textContent = orig; }
 });
 
 $('rescan').addEventListener('click', async () => {
