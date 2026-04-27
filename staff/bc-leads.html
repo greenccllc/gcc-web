@@ -877,10 +877,12 @@ function render() {
     });
   });
 
-  // Auto-accept anything at >=90% confidence that hasn't been accepted yet.
-  // Fires once per bcBidId per session; the next /leads-summary refresh will
-  // see accepted=true and skip on subsequent renders.
-  for (const r of STATE.data.items) {
+  // Auto-accept disabled per operator preference: every accept must be a
+  // deliberate human action (Actions ▾ -> Accept) since the new
+  // confidence-cap policy means "≥90% confidence" no longer guarantees a
+  // fully-reconciled extraction. Leaving the AUTO badge logic in the
+  // Extraction column so that a manual eyeball can still spot eligible rows.
+  if (false) for (const r of STATE.data.items) {
     const c = r.extraction?.confidencePct;
     if (c == null || c < 90) continue;
     if (r.extraction?.accepted) continue;
