@@ -319,10 +319,6 @@ const COLS = [
     sort:(a,b) => (parseDue(a.dueAt) || 0) - (parseDue(b.dueAt) || 0),
     cell:(r) => renderDue(r.dueAt) },
 
-  { id:'uploads', label:'Uploads',
-    sort:(a,b) => (a.scrape?.attachmentsCount || 0) - (b.scrape?.attachmentsCount || 0),
-    cell:(r) => uploadsCell(r.scrape) },
-
   { id:'extraction', label:'Extraction',
     sort:(a,b) => (a.extraction?.confidencePct || 0) - (b.extraction?.confidencePct || 0),
     cell:(r) => {
@@ -341,21 +337,28 @@ const COLS = [
         `$${Number(c).toFixed(4)}${r.ai?.tokensUsed ? ` <span class="small">(${(r.ai.tokensUsed/1000).toFixed(1)}k tok)</span>` : ''}`;
     } },
 
+  { id:'actions', label:'Actions', sort:(a,b) => 0, cell:(r) => actionsCell(r) },
+
+  { id:'uploads', label:'Uploads',
+    sort:(a,b) => (a.scrape?.attachmentsCount || 0) - (b.scrape?.attachmentsCount || 0),
+    cell:(r) => uploadsCell(r.scrape) },
+
   { id:'folder', label:'Folder',
     sort:(a,b) => (a.driveJobFolderName || '').localeCompare(b.driveJobFolderName || ''),
     cell:(r) => r.driveJobFolderId
       ? `<a class="folder-link" data-act="open-folder" data-folder-id="${r.driveJobFolderId}" title="${safeHtml(r.driveJobFolderName || '')}">📂 Open</a>`
       : '<span class="pad">no folder</span>' },
 
-  { id:'added', label:'Added',
+  // Last file access = newest BcRfpAttachments.UploadedAt for this RFP, with
+  // BcRfps.LastSeenAt (= last BC list-scrape that saw this RFP) as a fallback
+  // for rows where we haven't uploaded any files yet.
+  { id:'lastfile', label:'Last file access',
+    sort:(a,b) => new Date(a.lastFileAt || a.lastSeenAt || 0) - new Date(b.lastFileAt || b.lastSeenAt || 0),
+    cell:(r) => `<span class="small">${fmt(r.lastFileAt || r.lastSeenAt)}</span>` },
+
+  { id:'added', label:'Date added',
     sort:(a,b) => new Date(a.firstSeenAt || 0) - new Date(b.firstSeenAt || 0),
     cell:(r) => `<span class="small">${fmt(r.firstSeenAt)}</span>` },
-
-  { id:'lastseen', label:'Last seen',
-    sort:(a,b) => new Date(a.lastSeenAt || 0) - new Date(b.lastSeenAt || 0),
-    cell:(r) => `<span class="small">${fmt(r.lastSeenAt)}</span>` },
-
-  { id:'actions', label:'Actions', sort:(a,b) => 0, cell:(r) => actionsCell(r) },
 ];
 
 // ===== status-aware action cell =====
@@ -495,7 +498,7 @@ function renderHead() {
     th.addEventListener('click', () => {
       const id = th.dataset.col;
       if (STATE.sort.col === id) STATE.sort.dir = (STATE.sort.dir === 'asc' ? 'desc' : 'asc');
-      else { STATE.sort.col = id; STATE.sort.dir = (id === 'added' || id === 'lastseen' ? 'desc' : 'asc'); }
+      else { STATE.sort.col = id; STATE.sort.dir = (id === 'added' || id === 'lastfile' ? 'desc' : 'asc'); }
       render();
     });
   });
