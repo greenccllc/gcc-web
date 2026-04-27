@@ -115,6 +115,8 @@
     a:hover { text-decoration:underline; }
     .folder-link { display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border:1px solid var(--line); border-radius:12px; font-size:11px; background:white; }
     .folder-link:hover { background:var(--green-tint); border-color:var(--forest); }
+    .files-cell { display:inline-flex; align-items:center; gap:8px; }
+    .files-cell .files-stats { color:var(--slate); }
     .loc-link { color:var(--slate); text-decoration:none; cursor:pointer; border-bottom:1px dotted var(--line); }
     .loc-link:hover { color:var(--forest); border-bottom-color:var(--forest); text-decoration:none; }
 
@@ -298,6 +300,8 @@ function safeHtml(s) {
 }
 
 const COLS = [
+  { id:'actions', label:'Actions', sort:(a,b) => 0, cell:(r) => actionsCell(r) },
+
   { id:'project', label:'Project',
     sort:(a,b) => projectLabel(a).localeCompare(projectLabel(b)),
     cell:(r) => `<span class="toggle">▶</span> <a href="${r.href || '#'}" data-act="open-bc" data-href="${r.href || ''}">${safeHtml(projectLabel(r))}</a>` },
@@ -337,17 +341,18 @@ const COLS = [
         `$${Number(c).toFixed(4)}${r.ai?.tokensUsed ? ` <span class="small">(${(r.ai.tokensUsed/1000).toFixed(1)}k tok)</span>` : ''}`;
     } },
 
-  { id:'actions', label:'Actions', sort:(a,b) => 0, cell:(r) => actionsCell(r) },
-
-  { id:'uploads', label:'Uploads',
+  // Combined Files column: the Drive folder shortcut on the left, the per-RFP
+  // upload progress / counts on the right. Sort by attachment count descending
+  // makes the busy deals float; the folder is purely a shortcut so we don't
+  // need a folder-name-based ordering.
+  { id:'files', label:'Files',
     sort:(a,b) => (a.scrape?.attachmentsCount || 0) - (b.scrape?.attachmentsCount || 0),
-    cell:(r) => uploadsCell(r.scrape) },
-
-  { id:'folder', label:'Folder',
-    sort:(a,b) => (a.driveJobFolderName || '').localeCompare(b.driveJobFolderName || ''),
-    cell:(r) => r.driveJobFolderId
-      ? `<a class="folder-link" data-act="open-folder" data-folder-id="${r.driveJobFolderId}" title="${safeHtml(r.driveJobFolderName || '')}">📂 Open</a>`
-      : '<span class="pad">no folder</span>' },
+    cell:(r) => {
+      const folder = r.driveJobFolderId
+        ? `<a class="folder-link" data-act="open-folder" data-folder-id="${r.driveJobFolderId}" title="${safeHtml(r.driveJobFolderName || '')}">📂</a>`
+        : '<span class="pad" title="ensure-folders has not run for this RFP yet">📂</span>';
+      return `<div class="files-cell">${folder}<span class="files-stats">${uploadsCell(r.scrape)}</span></div>`;
+    } },
 
   // Last file access = newest BcRfpAttachments.UploadedAt for this RFP, with
   // BcRfps.LastSeenAt (= last BC list-scrape that saw this RFP) as a fallback
