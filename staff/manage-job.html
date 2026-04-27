@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Manage Job · GCC Manager</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="icon" href="/assets/favicon.ico" sizes="any" />
+  <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
+  <meta name="theme-color" content="#1E4D2B" />
+  <style>
+    :root {
+      --forest:#1E4D2B; --gold:#C9A158; --ink:#1c2a23; --slate:#475a51;
+      --cream:#FDFBF4; --green-tint:#F1F8F1; --line:#dde5df; --danger:#B71C1C;
+    }
+    * { box-sizing:border-box; }
+    html, body { margin:0; padding:0; background:var(--cream); }
+    body { font:13px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, Arial; color:var(--ink); }
+
+    header { display:flex; align-items:center; justify-content:space-between;
+             padding:10px 16px; background:var(--forest); color:white;
+             position:sticky; top:0; z-index:6; }
+    header h1 { margin:0; font-size:15px; font-weight:600; letter-spacing:.02em; display:flex; align-items:center; gap:8px; }
+    header h1 img { height:22px; }
+    header .crumb { font-size:12px; opacity:.85; }
+    header a.back { background:rgba(255,255,255,.15); color:white; border:0; padding:6px 12px;
+                    font-size:12px; font-weight:600; border-radius:7px; cursor:pointer; text-decoration:none;
+                    transition:all .12s ease; }
+    header a.back:hover { background:rgba(255,255,255,.28); }
+
+    .mj-summary { display:flex; flex-wrap:wrap; gap:10px; padding:10px 16px; background:white;
+                  border-bottom:1px solid var(--line); }
+    .mj-chip { display:inline-flex; align-items:center; gap:6px; padding:5px 12px;
+               background:var(--green-tint); border:1px solid var(--line); border-radius:8px; font-size:12px;
+               box-shadow:0 1px 2px rgba(28,42,35,.04); }
+    .mj-chip strong { color:var(--forest); }
+
+    .mj-grid { display:grid; grid-template-columns:1.2fr 1fr; gap:14px; padding:14px 16px; align-items:start; }
+    @media (max-width:1100px) { .mj-grid { grid-template-columns:1fr; } }
+    .mj-card { background:white; border:1px solid var(--line); border-radius:10px; padding:14px 16px;
+               box-shadow:0 1px 3px rgba(28,42,35,.05); }
+    .mj-card h2 { margin:0 0 6px; font-size:13px; font-weight:700; text-transform:uppercase;
+                  letter-spacing:.06em; color:var(--forest); }
+    .mj-card .sub { color:var(--slate); font-size:11.5px; margin-bottom:10px; }
+
+    .mj-doc-grid { display:grid; grid-template-columns:repeat(2, 1fr); gap:10px; margin-top:8px; }
+    @media (max-width:700px) { .mj-doc-grid { grid-template-columns:1fr; } }
+    .mj-doc {
+      display:flex; flex-direction:column; gap:5px; padding:12px;
+      border:1px solid var(--line); border-radius:9px; background:#FAFCF9;
+      transition:all .12s ease;
+    }
+    .mj-doc:hover { border-color:var(--forest); transform:translateY(-1px); box-shadow:0 3px 8px rgba(30,77,43,.08); }
+    .mj-doc .ico  { font-size:20px; }
+    .mj-doc .name { font-size:13px; font-weight:600; color:var(--ink); }
+    .mj-doc .desc { font-size:11px; color:var(--slate); }
+    .mj-doc button {
+      margin-top:6px; background:white; color:var(--forest); border:1px solid var(--forest);
+      padding:6px 10px; font-size:12px; font-weight:600; border-radius:7px; cursor:pointer;
+      transition:all .12s ease;
+    }
+    .mj-doc button:hover { background:var(--forest); color:white; }
+    .mj-doc button:disabled { opacity:.6; cursor:wait; }
+    .mj-doc.done { border-color:var(--forest); background:var(--green-tint); }
+    .mj-doc.done .name::after { content:' ✓'; color:var(--forest); }
+
+    .mj-cal-actions { display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
+    .mj-cal-actions button {
+      background:var(--forest); color:white; border:0; padding:7px 14px; border-radius:7px;
+      font-size:12px; font-weight:600; cursor:pointer; transition:all .12s ease;
+    }
+    .mj-cal-actions button:hover  { background:#0d3d11; }
+    .mj-cal-actions button:disabled { opacity:.6; cursor:wait; }
+    .mj-cal-actions button.secondary { background:white; color:var(--forest); border:1px solid var(--forest); }
+    .mj-cal-actions button.secondary:hover { background:var(--green-tint); }
+    .mj-cal-frame { width:100%; height:520px; border:1px solid var(--line); border-radius:9px; }
+
+    .mj-meta { display:grid; grid-template-columns:1fr 1fr; gap:8px 12px; margin-top:6px; }
+    .mj-meta .field { display:flex; flex-direction:column; gap:1px; }
+    .mj-meta .field .lbl { color:var(--slate); font-size:10px; text-transform:uppercase; letter-spacing:.04em; }
+    .mj-meta .field .val { color:var(--ink); font-weight:500; font-size:12px; }
+
+    #status-bar { position:fixed; right:14px; bottom:10px; background:var(--ink); color:white;
+                  padding:6px 12px; border-radius:14px; font-size:11px; opacity:0;
+                  transition:opacity .15s; pointer-events:none; }
+    #status-bar.show { opacity:.92; }
+
+    footer.site-footer {
+      padding:14px 16px; margin-top:24px; background:var(--forest); color:rgba(255,255,255,.78);
+      font-size:11px; display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap;
+    }
+    footer.site-footer a { color:rgba(255,255,255,.92); border-bottom:1px dotted rgba(255,255,255,.4); text-decoration:none; }
+    footer.site-footer a:hover { color:var(--gold); border-bottom-color:var(--gold); }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1><img src="/assets/img/gcc-logo-128.png" alt="GCC" />Manage Job</h1>
+      <div class="crumb" id="crumb">loading…</div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <a class="back" href="/staff/bc-leads.html">← GCC Manager</a>
+    </div>
+  </header>
+
+  <div class="mj-summary" id="mj-summary"></div>
+
+  <div class="mj-grid">
+    <!-- Left: doc generators + project meta -->
+    <div>
+      <div class="mj-card">
+        <h2>Project meta</h2>
+        <div class="sub">Pulled from the BC RFP record + saved outcome.</div>
+        <div class="mj-meta" id="mj-meta"></div>
+      </div>
+
+      <div class="mj-card" style="margin-top:14px">
+        <h2>Documents to generate</h2>
+        <div class="sub">Each generator drops a templated Google Doc into the project's Drive folder under <code>05-Documents/</code>. Re-running creates a new versioned copy (no overwrites).</div>
+        <div class="mj-doc-grid" id="mj-docs">
+          <div class="mj-doc" data-kind="submittals">
+            <div class="ico">📑</div>
+            <div class="name">Additional submittals</div>
+            <div class="desc">Per-spec-section submittal package: product data, sign-offs, RFI cover.</div>
+            <button data-kind="submittals">Generate</button>
+          </div>
+          <div class="mj-doc" data-kind="as-builts">
+            <div class="ico">📐</div>
+            <div class="name">As-built drawings</div>
+            <div class="desc">Markup template per drawing sheet, with red/blue line guidance and revision block.</div>
+            <button data-kind="as-builts">Generate</button>
+          </div>
+          <div class="mj-doc" data-kind="payroll">
+            <div class="ico">💰</div>
+            <div class="name">Payroll report</div>
+            <div class="desc">Certified-payroll WH-347 template, weekly. Pre-filled with project &amp; classification.</div>
+            <button data-kind="payroll">Generate</button>
+          </div>
+          <div class="mj-doc" data-kind="closeout">
+            <div class="ico">📦</div>
+            <div class="name">Closeout package</div>
+            <div class="desc">O&amp;M, warranty, attic stock, spare-parts, training acknowledgement, lien waivers.</div>
+            <button data-kind="closeout">Generate</button>
+          </div>
+          <div class="mj-doc" data-kind="rfi">
+            <div class="ico">❓</div>
+            <div class="name">RFI log</div>
+            <div class="desc">RFI tracker spreadsheet with status / answer / impact columns.</div>
+            <button data-kind="rfi">Generate</button>
+          </div>
+          <div class="mj-doc" data-kind="schedule">
+            <div class="ico">🗓️</div>
+            <div class="name">Schedule of values</div>
+            <div class="desc">SOV spreadsheet broken out by spec section, with monthly billing columns.</div>
+            <button data-kind="schedule">Generate</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: calendar -->
+    <div>
+      <div class="mj-card">
+        <h2>GCC Staff Calendar</h2>
+        <div class="sub">Project events live on the GCC primary calendar. The Outcome's project start / end dates seed the kickoff &amp; closeout events.</div>
+        <div class="mj-cal-actions">
+          <button id="mj-cal-add" disabled>📅 Add project to calendar</button>
+          <button id="mj-cal-open" class="secondary">↗ Open Google Calendar</button>
+        </div>
+        <iframe id="mj-cal-frame" class="mj-cal-frame"
+                src="about:blank"
+                title="GCC Staff Calendar"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <div id="status-bar"></div>
+
+  <footer class="site-footer">
+    <div><strong>Green Communications Contracting LLC</strong> · Division 27 / 28 low-voltage · Missouri</div>
+    <div><a href="https://greencommllc.com">greencommllc.com</a></div>
+  </footer>
+
+<script>
+'use strict';
+const URL_PARAMS = new URLSearchParams(location.search);
+const SECRET    = URL_PARAMS.get('secret') || localStorage.getItem('gccAdminSecret') || '';
+if (URL_PARAMS.get('secret')) localStorage.setItem('gccAdminSecret', URL_PARAMS.get('secret'));
+const API_BASE  = URL_PARAMS.get('api') || ('https://api.' + location.hostname.replace(/^www\./, '').replace(/^staff\./, ''));
+const BC_BID_ID = URL_PARAMS.get('bcBidId') || '';
+
+const $   = (id) => document.getElementById(id);
+const fmt = (d) => d ? new Date(d).toLocaleString([], { month:'short', day:'numeric', year:'numeric' }) : '—';
+const toast = (m, ms=2200) => { const b = $('status-bar'); b.textContent=m; b.classList.add('show'); setTimeout(() => b.classList.remove('show'), ms); };
+const safeHtml = (s) => String(s||'').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+
+async function api(method, path, body) {
+  if (!SECRET) throw new Error('No admin secret. Re-launch from the tray icon.');
+  const opts = { method, headers: { 'X-Gcc-Admin-Secret': SECRET, 'Content-Type':'application/json' } };
+  if (body) opts.body = JSON.stringify(body);
+  const res  = await fetch(API_BASE + path, opts);
+  const text = await res.text();
+  if (!res.ok) throw new Error(`${method} ${path} -> ${res.status}: ${text.slice(0, 300)}`);
+  return text ? JSON.parse(text) : {};
+}
+
+let JOB = null;
+
+async function load() {
+  if (!BC_BID_ID) { $('crumb').textContent = 'Missing ?bcBidId'; return; }
+  $('crumb').textContent = 'loading…';
+  try {
+    const list = await api('GET', '/api/outcomes/list');
+    const it = (list.items || []).find(x => x.bcBidId === BC_BID_ID);
+    if (!it) { $('crumb').textContent = `No outcome record for ${BC_BID_ID.slice(0,8)}…`; return; }
+    JOB = it;
+    renderJob(it);
+  } catch (e) { toast(e.message, 5000); $('crumb').textContent = 'error: ' + e.message; }
+}
+
+function renderJob(it) {
+  const name = it.projectName || it.driveFolderName || '(no name)';
+  $('crumb').textContent = name;
+  document.title = `Manage Job · ${name}`;
+  const status = it.outcomeStatus || (it.status === 'Won' ? 'won' : it.status === 'Lost' ? 'lost' : 'unknown');
+  $('mj-summary').innerHTML = [
+    `<span class="mj-chip"><strong>${safeHtml(name)}</strong></span>`,
+    `<span class="mj-chip">${safeHtml(it.gc || 'unknown GC')}</span>`,
+    it.location ? `<span class="mj-chip">📍 ${safeHtml(it.location)}</span>` : '',
+    it.bidAmountUsd ? `<span class="mj-chip">💵 $${Number(it.bidAmountUsd).toLocaleString()}</span>` : '',
+    `<span class="mj-chip">Outcome: <strong>${safeHtml(status)}</strong></span>`,
+    it.calendarEventId ? `<span class="mj-chip">📅 On calendar</span>` : '',
+  ].filter(Boolean).join('');
+  $('mj-meta').innerHTML = [
+    ['BC ID',         it.bcBidId.slice(0,8) + '…'],
+    ['GC / Client',   it.gc || '—'],
+    ['Location',      it.location || '—'],
+    ['Due',           it.dueAt || '—'],
+    ['Project start', fmt(it.projectStartAt)],
+    ['Project end',   fmt(it.projectEndAt)],
+    ['Bid total',     it.bidAmountUsd ? '$' + Number(it.bidAmountUsd).toLocaleString() : '—'],
+    ['Status',        it.status],
+  ].map(([k,v]) => `<div class="field"><span class="lbl">${k}</span><span class="val">${safeHtml(v)}</span></div>`).join('');
+
+  // Calendar add button: enabled only if outcome is "won" and not already added.
+  const addBtn = $('mj-cal-add');
+  addBtn.disabled = !(status === 'won' && !it.calendarEventId);
+  if (it.calendarEventId) addBtn.textContent = '✓ On calendar';
+
+  // Mount the embedded calendar iframe pointed at the GCC primary calendar.
+  // Uses Google's public embed URL; the staff is signed in via Workspace SSO.
+  const calSrc = 'https://calendar.google.com/calendar/embed?src=primary&ctz=America%2FChicago&mode=AGENDA';
+  $('mj-cal-frame').src = calSrc;
+}
+
+// ===== Doc generators =====
+$('mj-docs').addEventListener('click', async (e) => {
+  const btn = e.target.closest('button[data-kind]'); if (!btn) return;
+  const kind = btn.dataset.kind;
+  if (!JOB) { toast('Job not loaded yet.', 3000); return; }
+  btn.disabled = true; const orig = btn.textContent; btn.textContent = '…';
+  try {
+    const r = await api('POST', '/api/outcomes/generate-doc', { bcBidId: JOB.bcBidId, kind });
+    if (r.url) {
+      window.open(r.url, '_blank', 'noopener,noreferrer');
+      btn.closest('.mj-doc').classList.add('done');
+      toast(`Generated: ${kind} — opening Drive…`, 3500);
+    } else {
+      toast(r.message || 'Generated.', 3500);
+    }
+  } catch (err) { toast(err.message, 5000); }
+  finally     { btn.disabled = false; btn.textContent = orig; }
+});
+
+// ===== Calendar add =====
+$('mj-cal-add').addEventListener('click', async () => {
+  if (!JOB) return;
+  const btn = $('mj-cal-add');
+  btn.disabled = true; const orig = btn.textContent; btn.textContent = '…';
+  try {
+    const r = await api('POST', '/api/outcomes/calendar-add', { bcBidId: JOB.bcBidId });
+    if (r.eventUrl) window.open(r.eventUrl, '_blank', 'noopener,noreferrer');
+    JOB.calendarEventId = r.eventId || JOB.calendarEventId || 'added';
+    btn.textContent = '✓ On calendar';
+    toast('Added kickoff + closeout events.', 3500);
+  } catch (e) {
+    toast(e.message, 5000);
+    btn.disabled = false; btn.textContent = orig;
+  }
+});
+$('mj-cal-open').addEventListener('click', () => {
+  window.open('https://calendar.google.com/calendar/r', '_blank', 'noopener,noreferrer');
+});
+
+load();
+</script>
+</body>
+</html>

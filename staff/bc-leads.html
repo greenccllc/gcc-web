@@ -329,6 +329,112 @@
     .row-meta-card .field .val { color:var(--ink); font-weight:500; }
     .row-footer { color:var(--slate); font-size:10.5px; text-align:right; padding-top:6px; }
 
+    /* Outcomes tab -- 4-col layout: list | fin summary | fin brief | detail */
+    .outcomes-pane { display:grid; grid-template-columns:1.1fr 1fr 1fr 1.4fr; gap:12px; padding:14px 16px; align-items:start; }
+    .oc-col { background:white; border:1px solid var(--line); border-radius:10px; padding:12px 14px;
+              box-shadow:0 1px 3px rgba(28,42,35,.05); min-width:0; }
+    .oc-col h4 { margin:0 0 8px; font-size:11px; font-weight:700; text-transform:uppercase;
+                 letter-spacing:.06em; color:var(--forest); }
+    .oc-list-controls { display:flex; gap:6px; margin-bottom:8px; }
+    .oc-list-controls select, .oc-list-controls input {
+      padding:5px 8px; font-size:12px; border:1px solid var(--line); border-radius:7px;
+      background:white; color:var(--ink); flex:1; min-width:0;
+    }
+    .oc-list-controls select:focus, .oc-list-controls input:focus { outline:none; border-color:var(--forest); box-shadow:0 0 0 2px rgba(30,77,43,.18); }
+    .oc-cards { display:flex; flex-direction:column; gap:6px; max-height:65vh; overflow:auto; padding-right:2px; }
+    .oc-card  {
+      display:grid; grid-template-columns:auto 1fr auto; gap:8px; align-items:center;
+      padding:8px 10px; border:1px solid var(--line); border-radius:8px;
+      background:white; cursor:pointer; transition:all .12s ease;
+    }
+    .oc-card:hover { border-color:var(--forest); background:var(--green-tint); transform:translateY(-1px); }
+    .oc-card.selected { border-color:var(--forest); background:var(--green-tint); box-shadow:0 0 0 2px rgba(30,77,43,.18); }
+    .oc-card .oc-glyph {
+      width:32px; height:32px; border-radius:7px; display:flex; align-items:center; justify-content:center;
+      font-size:14px; font-weight:700; color:white; background:var(--forest); letter-spacing:.04em;
+    }
+    .oc-card.won  .oc-glyph { background:var(--gold); color:var(--ink); }
+    .oc-card.lost .oc-glyph { background:var(--danger); }
+    .oc-card.holding .oc-glyph { background:#7A5A00; }
+    .oc-card.unknown .oc-glyph { background:#888; }
+    .oc-card .oc-meta { min-width:0; }
+    .oc-card .oc-meta .name { font-size:12px; font-weight:600; color:var(--ink);
+                              white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .oc-card .oc-meta .sub  { font-size:10.5px; color:var(--slate);
+                              white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .oc-card .oc-amt { font-size:11px; color:var(--ink); font-weight:600; text-align:right; white-space:nowrap; }
+    .oc-card .oc-amt .small { display:block; font-weight:400; color:var(--slate); }
+    .oc-fin-body, .oc-brief-body, .oc-detail-body { font-size:12px; color:var(--ink); }
+    .oc-fin-row, .oc-brief-row { display:flex; justify-content:space-between; gap:8px; padding:4px 0;
+                                  border-bottom:1px dashed var(--line); }
+    .oc-fin-row:last-child, .oc-brief-row:last-child { border-bottom:0; }
+    .oc-fin-row .k, .oc-brief-row .k { color:var(--slate); }
+    .oc-fin-row .v, .oc-brief-row .v { font-weight:700; font-feature-settings:"tnum" 1; color:var(--ink); }
+    .oc-fin-row.headline .v { color:var(--forest); font-size:14px; }
+    .oc-fin-bar { display:flex; height:8px; border-radius:4px; overflow:hidden; background:var(--line); margin:8px 0 4px; }
+    .oc-fin-bar > span { display:block; height:100%; }
+    .oc-fin-bar .won  { background:var(--forest); }
+    .oc-fin-bar .lost { background:var(--danger); }
+    .oc-fin-bar .open { background:var(--gold); }
+    .oc-fin-legend { display:flex; gap:10px; font-size:10.5px; color:var(--slate); }
+    .oc-fin-legend .dot { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:4px; vertical-align:-1px; }
+    .oc-empty { color:var(--slate); font-style:italic; padding:24px 0; text-align:center; }
+    /* Outcome status slider (won/holding/unknown/lost). */
+    .oc-status-slider { display:grid; grid-template-columns:repeat(4, 1fr); gap:6px; margin:8px 0 12px; }
+    .oc-status-slider button {
+      padding:7px 8px; border:1px solid var(--line); border-radius:7px; background:white;
+      font-size:11.5px; font-weight:600; color:var(--slate); cursor:pointer; transition:all .12s ease;
+    }
+    .oc-status-slider button:hover { border-color:var(--forest); color:var(--forest); }
+    .oc-status-slider button.active.won     { background:var(--gold); color:var(--ink); border-color:var(--gold); }
+    .oc-status-slider button.active.holding { background:#FFF4D8; color:#7A5A00; border-color:#F0DEA0; }
+    .oc-status-slider button.active.unknown { background:#EEE; color:#444; border-color:#bbb; }
+    .oc-status-slider button.active.lost    { background:#F4CCCC; color:var(--danger); border-color:#E89999; }
+    .oc-detail-section { padding-top:6px; margin-top:8px; border-top:1px dashed var(--line); }
+    .oc-detail-section h5 { margin:0 0 6px; font-size:10.5px; font-weight:700; text-transform:uppercase;
+                            letter-spacing:.05em; color:var(--slate); }
+    .oc-detail-fields { display:grid; grid-template-columns:1fr 1fr; gap:6px 10px; }
+    .oc-detail-fields label { font-size:10.5px; color:var(--slate); display:flex; flex-direction:column; gap:2px; }
+    .oc-detail-fields input, .oc-detail-fields select, .oc-detail-fields textarea {
+      padding:5px 7px; font-size:12px; border:1px solid var(--line); border-radius:6px;
+      background:white; color:var(--ink); font-family:inherit;
+    }
+    .oc-detail-fields input:focus, .oc-detail-fields select:focus, .oc-detail-fields textarea:focus {
+      outline:none; border-color:var(--forest); box-shadow:0 0 0 2px rgba(30,77,43,.18);
+    }
+    .oc-detail-fields textarea { min-height:50px; resize:vertical; grid-column:1 / -1; }
+    .oc-actions-row { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+    .oc-actions-row button {
+      padding:7px 14px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer;
+      border:1px solid var(--forest); background:white; color:var(--forest); transition:all .12s ease;
+    }
+    .oc-actions-row button:hover { background:var(--green-tint); }
+    .oc-actions-row button.primary { background:var(--forest); color:white; }
+    .oc-actions-row button.primary:hover { background:#0d3d11; }
+    /* Won-only: alts / deducts checkbox-with-amount rows + labor plan strip. */
+    .oc-line-list { display:flex; flex-direction:column; gap:5px; }
+    .oc-line { display:grid; grid-template-columns:auto 1fr auto auto; gap:6px; align-items:center;
+               padding:5px 8px; border:1px solid var(--line); border-radius:6px; background:#FAFCF9; }
+    .oc-line input[type=text] { border:0; background:transparent; padding:2px; font-size:12px; min-width:0; }
+    .oc-line input[type=number] { width:90px; padding:3px 5px; font-size:12px; border:1px solid var(--line); border-radius:5px; text-align:right; }
+    .oc-line .rm { background:transparent; border:0; color:var(--slate); cursor:pointer; padding:2px 4px; }
+    .oc-line .rm:hover { color:var(--danger); }
+    .oc-line.selected { background:var(--green-tint); border-color:var(--forest); }
+    .oc-add-line { background:transparent; border:1px dashed var(--line); padding:5px 8px;
+                   font-size:11px; color:var(--slate); border-radius:6px; cursor:pointer; }
+    .oc-add-line:hover { background:var(--green-tint); color:var(--forest); border-color:var(--forest); }
+    .oc-line-totals { display:flex; justify-content:space-between; padding:6px 0; font-size:11.5px; color:var(--slate); }
+    .oc-line-totals strong { color:var(--ink); font-feature-settings:"tnum" 1; }
+    /* Labor plan: a 4-week strip showing techs and drops/wk. */
+    .oc-labor { display:grid; grid-template-columns:repeat(var(--wks, 4), 1fr); gap:5px; }
+    .oc-labor-cell { background:#F1F8F1; border:1px solid var(--line); border-radius:6px; padding:6px;
+                     display:flex; flex-direction:column; gap:3px; align-items:center; min-width:60px; }
+    .oc-labor-cell .wk { font-size:9.5px; color:var(--slate); text-transform:uppercase; letter-spacing:.04em; }
+    .oc-labor-cell .techs { font-size:18px; font-weight:700; color:var(--forest); }
+    .oc-labor-cell input[type=range] { width:100%; }
+    @media (max-width:1300px) { .outcomes-pane { grid-template-columns:1fr 1fr; } .oc-detail { grid-column:1 / -1; } }
+    @media (max-width:800px)  { .outcomes-pane { grid-template-columns:1fr; } .oc-detail { grid-column:auto; } }
+
     /* Processes tab -- Health Board grid */
     .hb-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; padding:14px 16px; }
     .hb-card { background:white; border:1px solid var(--line); border-radius:10px; padding:12px 14px;
@@ -366,6 +472,7 @@
     </div>
     <div class="tabs" id="tabs">
       <button class="tab active" data-tab="leads">BC Leads</button>
+      <button class="tab" data-tab="outcomes">Outcomes</button>
       <button class="tab" data-tab="processes">Processes</button>
     </div>
     <div style="display:flex;gap:10px;align-items:center">
@@ -397,6 +504,46 @@
       <tbody id="rows"></tbody>
     </table>
     <div id="empty" hidden>No RFPs scraped yet. Click "Rescan now" to trigger a fresh pull.</div>
+  </section>
+
+  <!-- =================== Outcomes tab =================== -->
+  <section id="tab-outcomes" hidden>
+    <div class="summary" id="oc-summary"></div>
+    <div class="outcomes-pane">
+      <!-- Col 1: selectable proposal cards -->
+      <div class="oc-col oc-list">
+        <h4>Proposals</h4>
+        <div class="oc-list-controls">
+          <select id="oc-filter">
+            <option value="">All</option>
+            <option value="Submitted">Submitted</option>
+            <option value="Won">Won</option>
+            <option value="Lost">Lost</option>
+            <option value="holding">Holding</option>
+            <option value="unknown">Unknown outcome</option>
+          </select>
+          <input id="oc-search" type="search" placeholder="Search project / GC..." />
+        </div>
+        <div class="oc-cards" id="oc-cards"></div>
+      </div>
+      <!-- Col 2: financial summary aggregates -->
+      <div class="oc-col oc-financial">
+        <h4>Financial summary</h4>
+        <div class="oc-fin-body" id="oc-fin-body"><span class="pad">loading…</span></div>
+      </div>
+      <!-- Col 3: financial quantitative brief -->
+      <div class="oc-col oc-brief">
+        <h4>Financial brief</h4>
+        <div class="oc-brief-body" id="oc-brief-body"><span class="pad">loading…</span></div>
+      </div>
+      <!-- Col 4: selected outcome detail -->
+      <div class="oc-col oc-detail" id="oc-detail">
+        <h4>Outcome detail</h4>
+        <div class="oc-detail-body" id="oc-detail-body">
+          <div class="oc-empty">Select a proposal on the left to record an outcome.</div>
+        </div>
+      </div>
+    </div>
   </section>
 
   <!-- =================== Processes tab =================== -->
@@ -1347,9 +1494,401 @@ $('tabs').addEventListener('click', (e) => {
   btn.classList.add('active');
   const which = btn.dataset.tab;
   $('tab-leads').hidden     = (which !== 'leads');
+  $('tab-outcomes').hidden  = (which !== 'outcomes');
   $('tab-processes').hidden = (which !== 'processes');
   $('rescan').style.display = (which === 'leads') ? '' : 'none';
   if (which === 'processes') { loadProcesses(); loadHealthBoard(); }
+  if (which === 'outcomes')  { loadOutcomes(); }
+});
+
+// ===== Outcomes tab =====
+// State for the active proposal selection. The detail panel mirrors STATE.oc.selected.
+const OC_STATE = { data:null, selected:null, filter:'', search:'' };
+const fmtUsd = (n) => (n == null) ? '—' : '$' + Number(n).toLocaleString(undefined, { minimumFractionDigits:2, maximumFractionDigits:2 });
+const fmtUsdK = (n) => {
+  if (n == null) return '—';
+  const v = Number(n);
+  if (v >= 1_000_000) return '$' + (v/1_000_000).toFixed(2) + 'M';
+  if (v >= 10_000)    return '$' + (v/1_000).toFixed(0)    + 'k';
+  if (v >= 1_000)     return '$' + (v/1_000).toFixed(1)    + 'k';
+  return '$' + v.toFixed(0);
+};
+function ocGlyph(it) {
+  // 2-letter monogram from the project name.
+  const n = (it.projectName || '').replace(/[^A-Za-z0-9 ]/g,' ').trim().split(/\s+/).slice(0,2);
+  const m = (n[0]?.[0] || 'G') + (n[1]?.[0] || n[0]?.[1] || 'C');
+  return m.toUpperCase();
+}
+function ocStateClass(it) {
+  if (it.status === 'Won' || it.outcomeStatus === 'won')          return 'won';
+  if (it.status === 'Lost' || it.outcomeStatus === 'lost')        return 'lost';
+  if (it.outcomeStatus === 'holding')                             return 'holding';
+  return 'unknown';
+}
+async function loadOutcomes() {
+  $('oc-fin-body').innerHTML  = '<span class="pad">loading…</span>';
+  $('oc-brief-body').innerHTML = '<span class="pad">loading…</span>';
+  try {
+    const data = await api('GET', '/api/outcomes/list');
+    OC_STATE.data = data;
+    renderOutcomes();
+  } catch (e) {
+    $('oc-fin-body').innerHTML  = `<span class="pad">${safeHtml(e.message)}</span>`;
+    $('oc-brief-body').innerHTML = '<span class="pad">—</span>';
+    $('oc-cards').innerHTML = '';
+  }
+}
+function renderOutcomes() {
+  if (!OC_STATE.data) return;
+  const { summary, items } = OC_STATE.data;
+
+  // Summary chips at the top of the tab.
+  $('oc-summary').innerHTML = [
+    `<span class="chip"><strong>${summary.total}</strong> proposals</span>`,
+    `<span class="chip">📤 <strong>${summary.submitted}</strong> submitted</span>`,
+    `<span class="chip">🏆 <strong>${summary.won}</strong> won</span>`,
+    `<span class="chip">⏳ <strong>${summary.holding}</strong> holding</span>`,
+    summary.lost ? `<span class="chip">❌ <strong>${summary.lost}</strong> lost</span>` : '',
+    summary.winRatePct != null ? `<span class="chip" title="Of decided (won + lost) bids">${summary.winRatePct}% win rate</span>` : '',
+    `<span class="chip">💰 <strong>${fmtUsd(summary.totalAiCostUsd)}</strong> AI</span>`,
+  ].filter(Boolean).join('');
+
+  // Filter + search the items list.
+  const filt = OC_STATE.filter;
+  const q    = (OC_STATE.search || '').trim().toLowerCase();
+  const list = items.filter(it => {
+    if (filt === 'Submitted' || filt === 'Won' || filt === 'Lost') {
+      if (it.status !== filt) return false;
+    } else if (filt === 'holding' || filt === 'unknown') {
+      if (it.outcomeStatus !== filt) return false;
+    }
+    if (q) {
+      const hay = `${it.projectName||''} ${it.gc||''} ${it.location||''}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  // Card list (col 1).
+  $('oc-cards').innerHTML = list.length === 0
+    ? '<div class="oc-empty">No proposals match.</div>'
+    : list.map(it => {
+        const cls = ocStateClass(it);
+        const sel = OC_STATE.selected === it.bcBidId ? ' selected' : '';
+        return `<div class="oc-card ${cls}${sel}" data-id="${safeHtml(it.bcBidId)}">
+          <div class="oc-glyph">${ocGlyph(it)}</div>
+          <div class="oc-meta">
+            <div class="name">${safeHtml(projectLabel({projectName:it.projectName, driveJobFolderName:it.driveFolderName}))}</div>
+            <div class="sub">${safeHtml(it.gc || 'unknown GC')} · ${safeHtml(compactLocation(it.location || '') || '—')}</div>
+          </div>
+          <div class="oc-amt">${it.bidAmountUsd != null ? fmtUsdK(it.bidAmountUsd) : statusBadge(it.status)}<span class="small">${cls === 'unknown' ? (it.status||'') : cls}</span></div>
+        </div>`;
+      }).join('');
+  $('oc-cards').querySelectorAll('.oc-card').forEach(card => {
+    card.addEventListener('click', () => {
+      OC_STATE.selected = card.dataset.id;
+      renderOutcomes();
+    });
+  });
+
+  // Col 2: financial summary (aggregates + bar).
+  const totalDecided = (summary.totalWonUsd || 0) + (summary.totalLostUsd || 0);
+  const winPct  = totalDecided > 0 ? Math.round(100 * summary.totalWonUsd / totalDecided) : 0;
+  const lostPct = totalDecided > 0 ? 100 - winPct : 0;
+  $('oc-fin-body').innerHTML = `
+    <div class="oc-fin-row headline"><span class="k">Total submitted</span><span class="v">${fmtUsd(summary.totalSubmittedUsd)}</span></div>
+    <div class="oc-fin-row"><span class="k">Won (revenue captured)</span><span class="v">${fmtUsd(summary.totalWonUsd)}</span></div>
+    <div class="oc-fin-row"><span class="k">Lost (revenue forfeited)</span><span class="v">${fmtUsd(summary.totalLostUsd)}</span></div>
+    <div class="oc-fin-bar">
+      <span class="won"  style="width:${winPct}%"></span>
+      <span class="lost" style="width:${lostPct}%"></span>
+    </div>
+    <div class="oc-fin-legend">
+      <span><span class="dot" style="background:var(--forest)"></span>Won ${winPct}%</span>
+      <span><span class="dot" style="background:var(--danger)"></span>Lost ${lostPct}%</span>
+    </div>
+    <div class="oc-fin-row" style="margin-top:8px"><span class="k">AI cost (all extractions)</span><span class="v">${fmtUsd(summary.totalAiCostUsd)}</span></div>
+    <div class="oc-fin-row"><span class="k">Win rate</span><span class="v">${summary.winRatePct == null ? '—' : summary.winRatePct + '%'}</span></div>
+  `;
+
+  // Col 3: financial brief -- top 5 by amount + per-status breakdown.
+  const top5 = items.filter(i => i.bidAmountUsd != null).sort((a,b) => b.bidAmountUsd - a.bidAmountUsd).slice(0, 5);
+  const top5Html = top5.length === 0
+    ? '<div class="oc-empty">No bid amounts entered yet. Open an Outcome on the right to enter the bid amount.</div>'
+    : top5.map(i => `<div class="oc-brief-row"><span class="k">${safeHtml(projectLabel({projectName:i.projectName,driveJobFolderName:i.driveFolderName}))}</span><span class="v">${fmtUsdK(i.bidAmountUsd)}</span></div>`).join('');
+  const avgWon  = summary.won  ? summary.totalWonUsd  / summary.won  : null;
+  const avgLost = summary.lost ? summary.totalLostUsd / summary.lost : null;
+  $('oc-brief-body').innerHTML = `
+    <h5 style="margin:0 0 5px;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--slate)">Top 5 by amount</h5>
+    ${top5Html}
+    <h5 style="margin:10px 0 5px;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--slate)">Averages</h5>
+    <div class="oc-brief-row"><span class="k">Avg won bid</span><span class="v">${fmtUsd(avgWon)}</span></div>
+    <div class="oc-brief-row"><span class="k">Avg lost bid</span><span class="v">${fmtUsd(avgLost)}</span></div>
+    <div class="oc-brief-row"><span class="k">Pipeline value (open)</span><span class="v">${fmtUsd(summary.totalSubmittedUsd)}</span></div>
+  `;
+
+  // Col 4: outcome detail.
+  renderOutcomeDetail();
+}
+
+// ===== Outcome detail panel (col 4) =====
+function selectedOutcome() {
+  if (!OC_STATE.selected || !OC_STATE.data) return null;
+  return OC_STATE.data.items.find(i => i.bcBidId === OC_STATE.selected) || null;
+}
+function safeJsonParse(s, fallback) {
+  if (!s) return fallback;
+  try { return JSON.parse(s); } catch { return fallback; }
+}
+function renderOutcomeDetail() {
+  const it = selectedOutcome();
+  const body = $('oc-detail-body');
+  if (!it) {
+    body.innerHTML = '<div class="oc-empty">Select a proposal on the left to record an outcome.</div>';
+    return;
+  }
+  const os = it.outcomeStatus || (it.status === 'Won' ? 'won' : it.status === 'Lost' ? 'lost' : 'unknown');
+  const alts    = safeJsonParse(it.altsJson,        []);
+  const deducts = safeJsonParse(it.deductsJson,     []);
+  const terms   = safeJsonParse(it.paymentTermsJson, { netDays:30, retainagePct:10, schedule:'progress', notes:'' });
+  const labor   = safeJsonParse(it.laborPlanJson,   { weeks:[{techs:2},{techs:3},{techs:3},{techs:2}] });
+  const isWon   = os === 'won';
+  body.innerHTML = `
+    <div class="field"><span class="lbl">Project</span><span class="val">${safeHtml(projectLabel({projectName:it.projectName,driveJobFolderName:it.driveFolderName}))}</span></div>
+    <div class="field"><span class="lbl">GC / Client</span><span class="val">${safeHtml(it.gc || 'unknown')}</span></div>
+    <div class="field"><span class="lbl">Location</span><span class="val">${safeHtml(it.location || '—')}</span></div>
+    <div class="field"><span class="lbl">Bid status</span><span class="val">${statusBadge(it.status)} ${it.confidencePct != null ? `<span class="small">${Math.round(it.confidencePct)}% extraction</span>` : ''}</span></div>
+
+    <div class="oc-status-slider" id="oc-slider">
+      ${['won','holding','unknown','lost'].map(s => `<button class="${s}${s===os?' active':''}" data-os="${s}">${s[0].toUpperCase()+s.slice(1)}</button>`).join('')}
+    </div>
+
+    <div class="oc-detail-section">
+      <h5>Bid amount</h5>
+      <div class="oc-detail-fields">
+        <label>Total bid (USD)<input type="number" id="oc-bid-amount" step="100" value="${it.bidAmountUsd != null ? Number(it.bidAmountUsd) : ''}" /></label>
+        <label>BC link
+          <input type="text" value="${safeHtml(it.href || '')}" readonly />
+        </label>
+      </div>
+    </div>
+
+    ${isWon ? renderWonExtras(alts, deducts, terms, labor, it) : `
+      <div class="oc-detail-section">
+        <div class="oc-empty">Pick <strong>Won</strong> above to enter alts / deducts, payment terms, dates, and labor plan.</div>
+      </div>
+    `}
+
+    <div class="oc-detail-section">
+      <h5>Notes</h5>
+      <div class="oc-detail-fields"><textarea id="oc-notes" placeholder="Any context worth keeping (decision rationale, GC feedback, etc.)">${safeHtml(it.notes || '')}</textarea></div>
+    </div>
+
+    <div class="oc-actions-row">
+      <button class="primary" data-act="oc-save">💾 Save outcome</button>
+      ${isWon ? `<button data-act="oc-save-manage">🗂 Save &amp; Manage Job</button>
+                 <button data-act="oc-calendar"   ${it.calendarEventId ? 'disabled' : ''}>${it.calendarEventId ? '✓ On calendar' : '📅 Add to GCC calendar'}</button>` : ''}
+      <button data-act="oc-open-folder" ${!it.driveFolderId ? 'disabled' : ''}>📂 Drive folder</button>
+    </div>
+  `;
+  // Wire the slider.
+  body.querySelectorAll('#oc-slider button').forEach(b => {
+    b.addEventListener('click', () => {
+      it.outcomeStatus = b.dataset.os;
+      renderOutcomeDetail();
+    });
+  });
+  // Wire the action buttons.
+  body.querySelector('[data-act="oc-save"]')?.addEventListener('click',         () => saveOutcome(false, false));
+  body.querySelector('[data-act="oc-save-manage"]')?.addEventListener('click',  () => saveOutcome(false, true));
+  body.querySelector('[data-act="oc-calendar"]')?.addEventListener('click',     () => addToCalendar(it));
+  body.querySelector('[data-act="oc-open-folder"]')?.addEventListener('click',  () => {
+    if (it.driveFolderId) window.open(`https://drive.google.com/drive/folders/${it.driveFolderId}`, '_blank', 'noopener,noreferrer');
+  });
+  // Wire the "add line" buttons inside the won extras (they exist only when status === 'won').
+  body.querySelectorAll('button[data-act="add-line"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.target;
+      const arr = target === 'alts' ? alts : deducts;
+      arr.push({ name:'', amount:0, selected:false });
+      it[target === 'alts' ? 'altsJson' : 'deductsJson'] = JSON.stringify(arr);
+      renderOutcomeDetail();
+    });
+  });
+  // Live total updates as user toggles checkboxes / changes amounts.
+  body.querySelectorAll('.oc-line').forEach(line => {
+    const target  = line.dataset.target;
+    const idx     = parseInt(line.dataset.idx, 10);
+    const arr     = target === 'alts' ? alts : deducts;
+    line.querySelector('input[type=checkbox]')?.addEventListener('change', e => { arr[idx].selected = e.target.checked; line.classList.toggle('selected', e.target.checked); recomputeTotals(alts, deducts, it); });
+    line.querySelector('input[type=text]')?.addEventListener('input',     e => { arr[idx].name     = e.target.value; });
+    line.querySelector('input[type=number]')?.addEventListener('input',   e => { arr[idx].amount   = parseFloat(e.target.value) || 0; recomputeTotals(alts, deducts, it); });
+    line.querySelector('button.rm')?.addEventListener('click', () => {
+      arr.splice(idx, 1);
+      it[target === 'alts' ? 'altsJson' : 'deductsJson'] = JSON.stringify(arr);
+      renderOutcomeDetail();
+    });
+  });
+}
+function renderWonExtras(alts, deducts, terms, labor, it) {
+  const altsLines = alts.length === 0
+    ? '<div class="small" style="color:var(--slate);padding:4px 0">No alts entered. Click "+ Add alt" below.</div>'
+    : alts.map((a, i) => `<div class="oc-line ${a.selected ? 'selected' : ''}" data-target="alts" data-idx="${i}">
+        <input type="checkbox" ${a.selected ? 'checked' : ''} title="Client selected this alt" />
+        <input type="text" value="${safeHtml(a.name)}" placeholder="Alt description" />
+        <input type="number" step="50" value="${a.amount || 0}" />
+        <button class="rm" title="Remove">✕</button>
+      </div>`).join('');
+  const dedLines = deducts.length === 0
+    ? '<div class="small" style="color:var(--slate);padding:4px 0">No deducts entered. Click "+ Add deduct" below.</div>'
+    : deducts.map((d, i) => `<div class="oc-line ${d.selected ? 'selected' : ''}" data-target="deducts" data-idx="${i}">
+        <input type="checkbox" ${d.selected ? 'checked' : ''} title="Client selected this deduct" />
+        <input type="text" value="${safeHtml(d.name)}" placeholder="Deduct description" />
+        <input type="number" step="50" value="${d.amount || 0}" />
+        <button class="rm" title="Remove">✕</button>
+      </div>`).join('');
+  const altSel = alts.filter(a => a.selected).reduce((s, a) => s + (Number(a.amount) || 0), 0);
+  const dedSel = deducts.filter(d => d.selected).reduce((s, d) => s + (Number(d.amount) || 0), 0);
+  const wks = labor.weeks || [{techs:2}];
+  const laborCells = wks.map((w, i) => `<div class="oc-labor-cell">
+    <span class="wk">Wk ${i+1}</span><span class="techs" data-techs="${i}">${w.techs ?? 2}</span>
+    <input type="range" min="0" max="8" value="${w.techs ?? 2}" data-wk="${i}" />
+  </div>`).join('');
+  const fmtDate = (d) => d ? String(d).slice(0, 10) : '';
+  return `
+    <div class="oc-detail-section">
+      <h5>Alts (client-selectable)</h5>
+      <div class="oc-line-list">${altsLines}</div>
+      <button class="oc-add-line" data-act="add-line" data-target="alts">+ Add alt</button>
+      <div class="oc-line-totals"><span>Selected alts</span><strong id="oc-alts-total">${fmtUsd(altSel)}</strong></div>
+    </div>
+    <div class="oc-detail-section">
+      <h5>Deducts</h5>
+      <div class="oc-line-list">${dedLines}</div>
+      <button class="oc-add-line" data-act="add-line" data-target="deducts">+ Add deduct</button>
+      <div class="oc-line-totals"><span>Selected deducts</span><strong id="oc-ded-total">${fmtUsd(dedSel)}</strong></div>
+      <div class="oc-line-totals"><span>Adjusted total</span><strong id="oc-grand-total">${fmtUsd((Number(it.bidAmountUsd)||0) + altSel - dedSel)}</strong></div>
+    </div>
+    <div class="oc-detail-section">
+      <h5>Payment terms</h5>
+      <div class="oc-detail-fields">
+        <label>Net days<input type="number" id="oc-net-days" value="${terms.netDays ?? 30}" /></label>
+        <label>Retainage %<input type="number" step="0.5" id="oc-retain" value="${terms.retainagePct ?? 10}" /></label>
+        <label style="grid-column:1 / -1">Schedule
+          <select id="oc-schedule">
+            ${['progress','milestone','net30','net45','net60','custom'].map(s => `<option value="${s}" ${s===(terms.schedule||'progress')?'selected':''}>${s}</option>`).join('')}
+          </select>
+        </label>
+        <label style="grid-column:1 / -1">Terms notes<textarea id="oc-terms-notes">${safeHtml(terms.notes || '')}</textarea></label>
+      </div>
+    </div>
+    <div class="oc-detail-section">
+      <h5>Project dates</h5>
+      <div class="oc-detail-fields">
+        <label>Start<input type="date" id="oc-start" value="${fmtDate(it.projectStartAt)}" /></label>
+        <label>End  <input type="date" id="oc-end"   value="${fmtDate(it.projectEndAt)}"   /></label>
+      </div>
+    </div>
+    <div class="oc-detail-section">
+      <h5>Labor plan (techs / week)</h5>
+      <div class="oc-labor" style="--wks:${wks.length}">${laborCells}</div>
+      <div class="oc-actions-row" style="margin-top:6px">
+        <button data-act="oc-add-week"  type="button">+ Add week</button>
+        <button data-act="oc-rm-week"   type="button" ${wks.length<=1?'disabled':''}>– Remove week</button>
+      </div>
+    </div>
+  `;
+}
+function recomputeTotals(alts, deducts, it) {
+  const altSel = alts.filter(a => a.selected).reduce((s,a)=>s+(Number(a.amount)||0),0);
+  const dedSel = deducts.filter(d => d.selected).reduce((s,d)=>s+(Number(d.amount)||0),0);
+  const at = $('oc-alts-total');  if (at) at.textContent  = fmtUsd(altSel);
+  const dt = $('oc-ded-total');   if (dt) dt.textContent  = fmtUsd(dedSel);
+  const gt = $('oc-grand-total'); if (gt) gt.textContent  = fmtUsd((Number(it.bidAmountUsd)||0) + altSel - dedSel);
+}
+function collectOutcomePayload(it) {
+  const os = it.outcomeStatus || 'unknown';
+  const bidAmount = parseFloat($('oc-bid-amount')?.value || '');
+  const notes     = $('oc-notes')?.value || null;
+  const payload = {
+    bcBidId: it.bcBidId,
+    outcomeStatus: os,
+    bidAmountUsd: isFinite(bidAmount) ? bidAmount : null,
+    notes,
+  };
+  if (os === 'won') {
+    // Read the live alts/deducts (mutated in-place by listeners).
+    payload.altsJson    = it.altsJson    || JSON.stringify([]);
+    payload.deductsJson = it.deductsJson || JSON.stringify([]);
+    const terms = {
+      netDays:      parseInt($('oc-net-days')?.value || '30',  10),
+      retainagePct: parseFloat($('oc-retain')?.value   || '10'),
+      schedule:     $('oc-schedule')?.value || 'progress',
+      notes:        $('oc-terms-notes')?.value || '',
+    };
+    payload.paymentTermsJson = JSON.stringify(terms);
+    payload.projectStartAt = $('oc-start')?.value || null;
+    payload.projectEndAt   = $('oc-end')?.value   || null;
+    const wkEls  = document.querySelectorAll('.oc-labor input[type=range]');
+    const weeks  = Array.from(wkEls).map(el => ({ techs: parseInt(el.value, 10) }));
+    payload.laborPlanJson = JSON.stringify({ weeks: weeks.length ? weeks : [{techs:2}] });
+  }
+  return payload;
+}
+async function saveOutcome(_unused, manageAfter) {
+  const it = selectedOutcome();
+  if (!it) return;
+  try {
+    const payload = collectOutcomePayload(it);
+    await api('POST', '/api/outcomes/upsert', payload);
+    toast('Outcome saved.');
+    if (manageAfter) {
+      const params = new URLSearchParams({ bcBidId: it.bcBidId });
+      if (URL_PARAMS.get('secret')) params.set('secret', URL_PARAMS.get('secret'));
+      if (URL_PARAMS.get('api'))    params.set('api',    URL_PARAMS.get('api'));
+      window.location.href = '/staff/manage-job.html?' + params.toString();
+      return;
+    }
+    await loadOutcomes();
+    OC_STATE.selected = it.bcBidId;
+    renderOutcomes();
+  } catch (e) { toast(e.message, 4500); }
+}
+async function addToCalendar(it) {
+  try {
+    const r = await api('POST', '/api/outcomes/calendar-add', { bcBidId: it.bcBidId });
+    if (r.eventUrl) window.open(r.eventUrl, '_blank', 'noopener,noreferrer');
+    toast('Added to GCC staff calendar.');
+    await loadOutcomes();
+    OC_STATE.selected = it.bcBidId;
+    renderOutcomes();
+  } catch (e) { toast(e.message, 5000); }
+}
+// Filter / search wiring (set up once at startup, not on every render).
+$('oc-filter')?.addEventListener('change', () => { OC_STATE.filter = $('oc-filter').value; renderOutcomes(); });
+$('oc-search')?.addEventListener('input',  () => { OC_STATE.search = $('oc-search').value; renderOutcomes(); });
+// Add/remove labor week buttons (delegated; the buttons re-render but lifetime is per-render).
+document.addEventListener('click', (e) => {
+  const it = selectedOutcome(); if (!it) return;
+  if (e.target.matches('button[data-act="oc-add-week"]')) {
+    const labor = safeJsonParse(it.laborPlanJson, { weeks:[{techs:2}] });
+    labor.weeks.push({ techs:2 });
+    it.laborPlanJson = JSON.stringify(labor);
+    renderOutcomeDetail();
+  }
+  if (e.target.matches('button[data-act="oc-rm-week"]')) {
+    const labor = safeJsonParse(it.laborPlanJson, { weeks:[{techs:2}] });
+    if (labor.weeks.length > 1) labor.weeks.pop();
+    it.laborPlanJson = JSON.stringify(labor);
+    renderOutcomeDetail();
+  }
+});
+// Live tech count update on the labor sliders.
+document.addEventListener('input', (e) => {
+  if (!e.target.matches('.oc-labor input[type=range]')) return;
+  const wk = parseInt(e.target.dataset.wk, 10);
+  const lbl = e.target.parentElement.querySelector(`[data-techs="${wk}"]`);
+  if (lbl) lbl.textContent = e.target.value;
 });
 
 // ===== Health Board (Processes tab) =====
