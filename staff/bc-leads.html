@@ -143,6 +143,13 @@
     .counts-toolbar .show-all:hover { background:var(--green-tint); color:var(--forest); }
     .counts-toolbar .show-all.active { background:var(--forest); color:white; }
     .due-overdue { color:var(--danger); font-weight:600; }
+    /* Per-row action buttons live in the expanded sub-row, above the
+       drop-counts grid -- clicking the chevron in the Project column
+       reveals them. Keeps the main table dense; surfaces actions in
+       context with the per-RFP detail. */
+    .row-actions-bar { display:flex; gap:8px; align-items:center; padding:0 0 8px;
+                       border-bottom:1px dashed var(--line); margin-bottom:8px; }
+    .row-actions-bar .row-actions { gap:6px; }
 
     .progress-bar { display:inline-block; width:70px; height:6px; background:var(--line);
                     border-radius:3px; overflow:hidden; vertical-align:middle; margin-right:5px; }
@@ -300,8 +307,6 @@ function safeHtml(s) {
 }
 
 const COLS = [
-  { id:'actions', label:'Actions', sort:(a,b) => 0, cell:(r) => actionsCell(r) },
-
   { id:'project', label:'Project',
     sort:(a,b) => projectLabel(a).localeCompare(projectLabel(b)),
     cell:(r) => `<span class="toggle">▶</span> <a href="${r.href || '#'}" data-act="open-bc" data-href="${r.href || ''}">${safeHtml(projectLabel(r))}</a>` },
@@ -560,7 +565,7 @@ function render() {
       html.push(`<tr class="row${open ? ' open' : ''}" data-id="${r.bcBidId}">` +
         COLS.map(c => `<td>${c.cell(r)}</td>`).join('') +
         `</tr>`);
-      html.push(`<tr class="counts${open ? ' open' : ''}" data-counts-for="${r.bcBidId}"><td colspan="${COLS.length}" data-stop>${countsGrid(r.counts)}</td></tr>`);
+      html.push(`<tr class="counts${open ? ' open' : ''}" data-counts-for="${r.bcBidId}"><td colspan="${COLS.length}" data-stop><div class="row-actions-bar">${actionsCell(r)}</div>${countsGrid(r.counts)}</td></tr>`);
     }
   }
   $('rows').innerHTML = html.join('');
