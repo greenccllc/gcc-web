@@ -28,19 +28,6 @@
     </div>
   </header>
 
-  <!-- =================== BC session banner (all tabs) =================== -->
-  <div class="bc-banner" id="bc-banner" role="alert" aria-live="polite">
-    <span class="ico">⚠️</span>
-    <div class="msg">
-      <strong id="bc-banner-title">BC scraper session expired</strong>
-      <span id="bc-banner-detail">Run <code>cd C:\GCC_LLC\Repos\bc-scraper; npm run login</code> to refresh, then click "Fix folders" to reimport.</span>
-      <div class="meta-small" id="bc-banner-meta"></div>
-    </div>
-    <button id="bc-banner-recheck" type="button">↻ Re-check</button>
-    <button id="bc-banner-fix"     type="button" title="After login, fix folders + re-pull attachments">🗂 Fix folders &amp; reimport</button>
-    <button class="dismiss" id="bc-banner-dismiss" title="Dismiss until next refresh">×</button>
-  </div>
-
   <!-- =================== Leads tab =================== -->
   <section id="tab-leads">
     <div class="summary" id="summary"></div>
@@ -1573,57 +1560,9 @@ function scheduleRefresh() {
   $('auto').textContent = 'auto-refresh every 30s';
 }
 
-// ===== BC scraper session banner =====
-// Polls /api/bc/scraper-status; toggles the red banner above the summary
-// when sessionOk=false so the operator knows to re-run `npm run login`.
-// The banner is dismissible per-session (resets on page reload).
-let _bcBannerDismissed = false;
-function _agoText(iso) {
-  if (!iso) return null;
-  const ms = Date.now() - new Date(iso).getTime();
-  if (ms < 0)            return 'just now';
-  if (ms < 60_000)       return Math.floor(ms / 1_000)   + 's ago';
-  if (ms < 3_600_000)    return Math.floor(ms / 60_000)  + 'm ago';
-  if (ms < 86_400_000)   return Math.floor(ms / 3_600_000) + 'h ago';
-  return Math.floor(ms / 86_400_000) + 'd ago';
-}
-async function checkScraperStatus() {
-  if (_bcBannerDismissed) return;
-  try {
-    const s = await api('GET', '/api/bc/scraper-status');
-    const banner = $('bc-banner');
-    if (s.sessionOk) {
-      banner.classList.remove('show');
-      return;
-    }
-    // Headline: how stale is BC -> our DB?
-    const stale = _agoText(s.lastList?.lastSuccessfulAt);
-    const detail = $('bc-banner-detail');
-    detail.innerHTML = stale
-      ? `BC list scrape hasn't completed since <strong>${stale}</strong>. Status changes (Undecided→Accepted, etc.) made in BC after that aren't reflected here yet.<br>Run <code>cd C:\\GCC_LLC\\Repos\\bc-scraper; npm run login</code>, then click "Fix folders &amp; reimport" or "Re-check".`
-      : `Run <code>cd C:\\GCC_LLC\\Repos\\bc-scraper; npm run login</code> to refresh, then click "Fix folders &amp; reimport".`;
-
-    const meta = [];
-    if (s.lastList?.lastSuccessfulAt)   meta.push(`Last successful list scrape: ${new Date(s.lastList.lastSuccessfulAt).toLocaleString()} (${_agoText(s.lastList.lastSuccessfulAt)})`);
-    if (s.lastDetail?.lastSuccessfulAt) meta.push(`Last successful detail scrape: ${new Date(s.lastDetail.lastSuccessfulAt).toLocaleString()}`);
-    if (s.storageStateAt)               meta.push(`Session file: ${new Date(s.storageStateAt).toLocaleString()} (${_agoText(s.storageStateAt)})`);
-    if (s.lastError?.at)                meta.push(`Last error: ${new Date(s.lastError.at).toLocaleString()}`);
-    $('bc-banner-meta').textContent = meta.join('  ·  ');
-    banner.classList.add('show');
-  } catch (e) {
-    // Don't blow up the page if the status endpoint is unreachable; just leave the banner alone.
-  }
-}
-$('bc-banner-recheck')?.addEventListener('click', () => { _bcBannerDismissed = false; checkScraperStatus(); });
-$('bc-banner-dismiss')?.addEventListener('click', () => { _bcBannerDismissed = true; $('bc-banner').classList.remove('show'); });
-$('bc-banner-fix')?.addEventListener('click',     () => { _bcBannerDismissed = true; $('bc-banner').classList.remove('show'); $('fix-folders').click(); });
-// Re-check every minute on top of the manual button.
-setInterval(checkScraperStatus, 60000);
-
 wireIntakeFilters();
 load();
 scheduleRefresh();
-checkScraperStatus();
 </script>
 </body>
 </html>
