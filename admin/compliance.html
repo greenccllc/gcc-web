@@ -104,9 +104,10 @@
 <div id="gcc-footer"></div>
 
 <script src="/assets/js/api.js"></script>
-<script src="/assets/js/site.js"></script>
+<script src="/assets/js/header.js"></script>
+<script src="/assets/js/page.js"></script>
 <script>
-(function () {
+gccPage.requireRole(['admin']).then(() => {
   const btn = document.getElementById('run-btn');
   const status = document.getElementById('status');
   const result = document.getElementById('result');
@@ -177,7 +178,7 @@
       btn.disabled = false;
     }
   });
-})();
+}).catch(() => { /* gccPage already redirected */ });
 </script>
 
 </body>

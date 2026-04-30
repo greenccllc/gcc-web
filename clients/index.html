@@ -256,6 +256,43 @@ tabSignUp.addEventListener('click', () => showPanel('signup'));
 if (location.hash === '#signup') showPanel('signup');
 
 // ── Sign in ─────────────────────────────────────────────
+// Post-login routing precedence:
+//   1. ?next=<url> if it points at a known greencommllc subdomain (or relative)
+//   2. role-based:
+//        admin / staff      -> /staff/
+//        client residential -> /clients/estimator-residential.html
+//        client business    -> /clients/dashboard.html
+// `next` is validated against an allowlist to prevent open-redirect attacks.
+
+const SAFE_HOSTS = new Set([
+  'greencommllc.com', 'www.greencommllc.com',
+  'proposal.greencommllc.com', 'staff.greencommllc.com',
+  'api.greencommllc.com',
+]);
+
+function safeNextUrl(rawNext) {
+  if (!rawNext) return null;
+  try {
+    const url = new URL(rawNext, location.href);
+    if (url.origin === location.origin) return url.toString();
+    if (SAFE_HOSTS.has(url.host)) return url.toString();
+  } catch (_) { /* invalid url */ }
+  return null;
+}
+
+function postLoginRedirect(client) {
+  const params = new URLSearchParams(location.search);
+  const next   = safeNextUrl(params.get('next'));
+  if (next) { window.location.href = next; return; }
+  if (client.role === 'admin' || client.role === 'staff') {
+    window.location.href = '/staff/';
+  } else if (client.clientType === 'residential') {
+    window.location.href = '/clients/estimator-residential.html';
+  } else {
+    window.location.href = '/clients/dashboard.html';
+  }
+}
+
 document.getElementById('form-signin').addEventListener('submit', async e => {
   e.preventDefault();
   const btn = e.target.querySelector('button[type="submit"]');
@@ -267,9 +304,7 @@ document.getElementById('form-signin').addEventListener('submit', async e => {
     });
     localStorage.setItem('gcc-client-id', res.client.email);
     localStorage.setItem('gcc-client-type', res.client.clientType);
-    window.location.href = res.client.clientType === 'residential'
-      ? '/clients/estimator-residential.html'
-      : '/clients/estimator.html';
+    postLoginRedirect(res.client);
   } catch (err) {
     btn.disabled = false; btn.textContent = 'Sign In →';
     if (err.status === 401) alert('Email or password is incorrect.');
@@ -473,9 +508,8 @@ form.addEventListener('submit', async e => {
       } catch (_) { /* non-fatal */ }
     }
 
-    window.location.href = data.clientType === 'residential'
-      ? '/clients/estimator-residential.html'
-      : '/clients/estimator.html';
+    // Route via the same precedence rules as sign-in.
+    postLoginRedirect({ role: 'client', clientType: data.clientType });
   } catch (err) {
     btn.disabled = false; btn.textContent = 'Create Account →';
     if (err.status === 409) {
