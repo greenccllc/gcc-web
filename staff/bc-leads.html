@@ -1136,8 +1136,36 @@ async function loadProcesses() {
     function progressFor(taskName) {
       const n = (taskName || '').toLowerCase();
       if (n.includes('scrape-detail')) return progress.detail;
-      if (n.includes('scrape'))        return progress.list;
+      if (n.includes('bc-scrape'))     return progress.list;
+      if (n === 'gcc-bc-scrape')       return progress.list;
       return null;
+    }
+    // Daemon-style tasks that run continuously rather than processing a
+    // finite queue. We don't try to compute "X of Y" for these -- showing
+    // an indeterminate "starting…" bar forever was misleading. Show the
+    // run age + last activity instead.
+    function isDaemonTask(taskName) {
+      const n = (taskName || '').toLowerCase();
+      return n.includes('app-tray')
+          || n.includes('bidextractor')
+          || n.includes('webserver')
+          || n.includes('email-watch')
+          || n.includes('webserv')
+          || n.includes('webhook')
+          || n.includes('aidrive')
+          || n.includes('quoteproc')
+          || n.includes('dashboarddata')
+          || n.includes('bundler-intake')
+          || n.includes('api-service');
+    }
+    function runAge(t) {
+      if (!t.lastRunAt) return null;
+      const ms = Date.now() - new Date(t.lastRunAt).getTime();
+      if (ms < 0)              return 'just now';
+      if (ms < 60_000)         return Math.floor(ms / 1_000) + 's';
+      if (ms < 3_600_000)      return Math.floor(ms / 60_000) + 'm';
+      if (ms < 86_400_000)     return Math.floor(ms / 3_600_000) + 'h';
+      return Math.floor(ms / 86_400_000) + 'd';
     }
 
     const stateBadge = (s) => {
@@ -1154,6 +1182,7 @@ async function loadProcesses() {
       const p = isRunning ? progressFor(t.name) : null;
       let resultCell;
       if (p && p.running && p.total) {
+        // Real X-of-Y queue progress (BC scrape tasks).
         const pct = p.pctComplete ?? 0;
         const sub = [
           `${p.processed} of ${p.total}`,
@@ -1163,8 +1192,14 @@ async function loadProcesses() {
           <div class="proc-progress-bar"><span style="width:${pct}%"></span></div>
           <div class="proc-progress-meta"><strong>${pct}%</strong> <span class="small">${safeHtml(sub)}</span></div>
         </div>`;
+      } else if (isRunning && isDaemonTask(t.name)) {
+        // Continuously-running daemon (App-Tray, BidExtractor-Worker, etc.)
+        // -- don't try to fake a percent. Show "running for X" instead.
+        const age = runAge(t) || '?';
+        resultCell = `<span class="small"><span class="status status-Won" style="margin-right:6px">Running</span>for ${safeHtml(age)}</span>`;
       } else if (isRunning) {
-        // Running but no parsed progress yet (just kicked off, log not flushed).
+        // Finite queue task we know how to track but the log hasn't yielded
+        // a "Queue: N" line yet (just kicked off). Brief indeterminate bar.
         resultCell = `<div class="proc-progress">
           <div class="proc-progress-bar indeterminate"><span></span></div>
           <div class="proc-progress-meta small">starting…</div>
