@@ -761,6 +761,9 @@ function renderMeta(r) {
 function renderQuickLinks(r) {
   const items = [];
   if (r.href) items.push(`<a class="mj-ql" target="_blank" rel="noopener noreferrer" href="${safeHtml(r.href)}">🔗 BC opportunity ↗</a>`);
+  if (r.localJobFolderPath) items.push(
+    `<a class="mj-ql" data-local-path="${safeHtml(r.localJobFolderPath)}" title="Copy local Filestore path to clipboard" onclick="event.preventDefault(); navigator.clipboard.writeText(this.dataset.localPath).then(() => { const orig = this.textContent; this.textContent = '📋 Copied: paste into Explorer'; setTimeout(() => this.textContent = orig, 1400); }).catch(() => prompt('Local Filestore path (Ctrl+C to copy):', this.dataset.localPath));">📁 Local folder</a>`
+  );
   if (r.driveJobFolderId) items.push(
     `<a class="mj-ql" target="_blank" rel="noopener noreferrer" href="https://drive.google.com/drive/folders/${safeHtml(r.driveJobFolderId)}">📂 Drive folder ↗</a>`
   );

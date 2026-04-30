@@ -433,9 +433,18 @@ const COLS = [
   { id:'project', label:'Project',
     sort:(a,b) => projectLabel(a).localeCompare(projectLabel(b)),
     cell:(r) => {
-      const fIcon = r.driveJobFolderId
-        ? `<span class="proj-folder-icon" data-act="open-folder" data-folder-id="${r.driveJobFolderId}" title="${safeHtml(r.driveJobFolderName || '')}">📂</span>`
-        : '<span class="proj-folder-icon missing" title="No Drive folder linked">📂</span>';
+      // Folder icon: prefer local Filestore (post-2026-04-30 migration);
+      // fall back to Drive folder when local path isn't set yet
+      // (bc-scraper detail hasn't run on this RFP).
+      let fIcon;
+      if (r.localJobFolderPath) {
+        const localUrl = 'file:///' + r.localJobFolderPath.replace(/\\/g, '/').replace(/^([A-Za-z]):/, '$1:');
+        fIcon = `<span class="proj-folder-icon local" data-act="open-local-folder" data-local-path="${safeHtml(r.localJobFolderPath)}" title="Open local Filestore: ${safeHtml(r.localJobFolderPath)}">📁</span>`;
+      } else if (r.driveJobFolderId) {
+        fIcon = `<span class="proj-folder-icon" data-act="open-folder" data-folder-id="${r.driveJobFolderId}" title="${safeHtml(r.driveJobFolderName || 'Open Drive folder')}">📂</span>`;
+      } else {
+        fIcon = '<span class="proj-folder-icon missing" title="No folder linked">📂</span>';
+      }
       const tip = projTip(r);
       // Scope chips moved to the expand pane (top strip) so the
       // project-name cell can give the title room. Sibling badge +
@@ -593,6 +602,7 @@ function expandTopStrip(r) {
   const links = [
     `<a class="mini-link" href="${mjHref}" data-act="open-manage" data-href="${mjHref}">🛠 Manage Job</a>`,
     r.href ? `<a class="mini-link" href="${r.href}" data-act="open-bc" data-href="${r.href}">🔗 BC opportunity</a>` : '',
+    r.localJobFolderPath ? `<a class="mini-link" data-act="open-local-folder" data-local-path="${safeHtml(r.localJobFolderPath)}" title="Click to copy local path">📁 Local folder</a>` : '',
     r.driveJobFolderId ? `<a class="mini-link" data-act="open-folder" data-folder-id="${r.driveJobFolderId}">📂 Drive folder</a>` : '',
     `<a class="mini-link" href="${mjHref}#mj-extract-card" data-act="open-manage" data-href="${mjHref}#mj-extract-card">🔍 Extraction details</a>`,
   ].filter(Boolean).join('');
@@ -1042,6 +1052,27 @@ function render() {
       e.preventDefault(); e.stopPropagation();
       const fid = el.dataset.folderId;
       if (fid) window.open(`https://drive.google.com/drive/folders/${fid}`, '_blank', 'noopener,noreferrer');
+    });
+  });
+  // Local Filestore folder icon. Browsers refuse to navigate to file:///
+  // URLs from web pages (security boundary), so we copy the path to the
+  // clipboard and toast — operator pastes into Explorer's address bar.
+  $('rows').querySelectorAll('[data-act="open-local-folder"]').forEach(el => {
+    el.addEventListener('click', async (e) => {
+      e.preventDefault(); e.stopPropagation();
+      const path = el.dataset.localPath;
+      if (!path) return;
+      try {
+        await navigator.clipboard.writeText(path);
+        // brief flash so the operator knows the click registered
+        const orig = el.textContent;
+        el.textContent = '📋';
+        el.title = `Copied: ${path}`;
+        setTimeout(() => { el.textContent = orig; el.title = `Open local Filestore: ${path}`; }, 1200);
+      } catch (err) {
+        // Fallback: prompt() so the user can copy manually
+        prompt('Local Filestore path (Ctrl+C to copy):', path);
+      }
     });
   });
   $('rows').querySelectorAll('a[data-act="open-bc"]').forEach(a => {
