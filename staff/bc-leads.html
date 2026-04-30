@@ -7,7 +7,7 @@
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <meta name="theme-color" content="#1E4D2B" />
-  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-0900" />
+  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-0925" />
 </head>
 <body>
   <header>
@@ -862,9 +862,18 @@ function renderHead() {
 // shows one row per physical job, with merged trade chips, plus a
 // "🔗 +N" badge linking to the sibling jobIds.
 function mergeSiblings(items) {
-  // Key by trimmed-base-name + GC + state. trimScope() already strips the
-  // trade trailer; lowercasing + collapsing whitespace handles minor
-  // BC inconsistencies.
+  // HISTORY: this used to collapse sibling RFPs (Pleasant Lea Visual
+  // Display + Pleasant Lea Data & Tele, etc.) into a single primary row
+  // with the others tucked into _siblings. Operators kept asking "where
+  // did the second RFP go?" -- the merge hid scope-specific extraction
+  // status (one trade may be 100% extracted while the other is
+  // partial), and acceptance/move-to-status was per-jobId anyway.
+  //
+  // New behavior: ANNOTATE each sibling with _siblingJobIds pointing to
+  // the OTHER members of its group, but return every row separately.
+  // The 🔗 +N badge on each row signals "this RFP has N sibling
+  // scope(s)"; the manage-job page's Quick Links section deep-links
+  // between them. No collapsing.
   function key(it) {
     const name = trimScope(it.projectName || it.driveJobFolderName || '').toLowerCase().replace(/\s+/g, ' ').trim();
     const gc   = (it.gc || '').toLowerCase().trim();
@@ -878,29 +887,19 @@ function mergeSiblings(items) {
     if (!groups.has(k)) groups.set(k, []);
     groups.get(k).push(it);
   }
-  const merged = [];
+  const out = [];
   for (const group of groups.values()) {
-    if (group.length === 1) { merged.push(group[0]); continue; }
-    // Pick the primary -- prefer the one with the freshest extraction,
-    // else the newest LastSeenAt.
-    group.sort((a, b) => {
-      const ax = (a.extraction?.pagesProcessed || 0) + (a.extraction?.filesProcessed || 0);
-      const bx = (b.extraction?.pagesProcessed || 0) + (b.extraction?.filesProcessed || 0);
-      if (ax !== bx) return bx - ax;
-      return new Date(b.lastSeenAt || 0) - new Date(a.lastSeenAt || 0);
-    });
-    const primary = { ...group[0] };
-    // Merge trades from all siblings (deduped + normalized).
-    const allTrades = new Set();
-    for (const sib of group) {
-      for (const t of rowTrades(sib)) allTrades.add(t);
+    if (group.length === 1) { out.push(group[0]); continue; }
+    // Each row in a multi-member group gets _siblingJobIds = the OTHER
+    // members. Render order keeps BC's natural feed-order (no reshuffle).
+    for (const it of group) {
+      const annotated = { ...it };
+      annotated._siblingJobIds = group.filter(s => s.jobId !== it.jobId).map(s => s.jobId);
+      annotated._siblings      = group.filter(s => s.jobId !== it.jobId);
+      out.push(annotated);
     }
-    primary.trades = Array.from(allTrades);
-    primary._siblingJobIds = group.slice(1).map(s => s.jobId);
-    primary._siblings        = group.slice(1);  // full sibling rows for the expand pane
-    merged.push(primary);
   }
-  return merged;
+  return out;
 }
 
 function render() {
