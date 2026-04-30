@@ -85,11 +85,24 @@
     }
     .mj-descr em { color:var(--slate); }
 
-    /* ── Low-voltage scope grid (4 × 5) ─────────────────────────────── */
+    /* ── Low-voltage scope grid (grouped: Data + Telecomm + Other) ──── */
     .mj-scope-toolbar { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:8px; flex-wrap:wrap; }
     .mj-scope-conf { color:var(--slate); }
-    .mj-counts-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:6px; }
-    @media (max-width:600px) { .mj-counts-grid { grid-template-columns:repeat(2, 1fr); } }
+    .mj-counts-grid { display:flex; flex-direction:column; gap:14px; }
+    .mj-counts-children {
+      display:grid; grid-template-columns:repeat(4, 1fr); gap:6px;
+      flex-direction:row;
+    }
+    @media (max-width:600px) { .mj-counts-children { grid-template-columns:repeat(2, 1fr); } }
+    .mj-scope-group { display:flex; flex-direction:column; gap:6px; }
+    .mj-scope-grouphd {
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding:0 0 4px; border-bottom:1px solid var(--line);
+    }
+    .mj-scope-grouptitle {
+      font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+      font-size:11px; color:var(--forest);
+    }
     .mj-count-pill {
       display:flex; align-items:center; justify-content:space-between; gap:6px;
       padding:6px 10px; border:1px solid var(--line); border-radius:7px;
@@ -102,6 +115,18 @@
     .mj-count-pill.has .val { color:var(--forest); }
     .mj-count-pill.estimated .val { font-style:italic; }
     .mj-count-pill.estimated .val::after { content:' ?'; opacity:.55; font-size:10px; vertical-align:super; }
+    /* Parent pills (Drops total, Racks total): slightly wider, bolder. */
+    .mj-count-pill.parent {
+      padding:4px 10px; border-radius:6px;
+      background:transparent; border-color:transparent;
+      font-size:11px; gap:8px;
+    }
+    .mj-count-pill.parent .lbl { color:var(--forest); font-size:10.5px; }
+    .mj-count-pill.parent .val { font-size:14px; }
+    /* Computed/derived pills: dotted border so the operator can tell at a
+       glance which numbers came from a formula vs. an explicit spec. */
+    .mj-count-pill.derived { border-style:dashed; }
+    .mj-count-pill.derived.has { border-color:var(--forest); }
     /* Inline ? glyph used in the toolbar legend so the operator can map the
        superscript on each pill back to its meaning. */
     .mj-scope-conf em { font-style:italic; color:var(--slate); }
