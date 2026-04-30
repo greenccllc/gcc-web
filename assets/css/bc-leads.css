@@ -447,6 +447,45 @@
     }
     .hb-copy:hover { background:var(--green-tint); border-color:var(--forest); color:var(--forest); }
 
+    /* Queue tab: file processing status table */
+    .q-controls { display:flex; gap:8px; padding:6px 16px 8px; background:#FAFCF9;
+                   border-bottom:1px solid var(--line); align-items:center; flex-wrap:wrap; }
+    .q-controls select, .q-controls input {
+      padding:5px 8px; font-size:12px; border:1px solid var(--line); border-radius:7px;
+      background:white; color:var(--ink); cursor:pointer; min-width:140px;
+    }
+    #q-table { width:100%; border-collapse:collapse; background:white; }
+    #q-table thead th { background:var(--cream); border-bottom:2px solid var(--forest);
+                        padding:8px 12px; font-size:11px; font-weight:600;
+                        letter-spacing:.04em; text-transform:uppercase;
+                        color:var(--slate); text-align:left; white-space:nowrap; }
+    #q-table tbody td { border-bottom:1px solid var(--line); padding:8px 12px; vertical-align:middle; font-size:12px; }
+    #q-table tbody tr:hover { background:var(--green-tint); }
+    #q-table .q-file { font-family:ui-monospace, Consolas, Menlo, monospace; font-size:11px; }
+    #q-table .q-status {
+      display:inline-block; padding:2px 8px; border-radius:10px;
+      font-size:10.5px; font-weight:600; white-space:nowrap;
+    }
+    .q-status.queued     { background:#FFF4D8; color:#7A5A00; }
+    .q-status.processing { background:#CFE2F3; color:#1A5490; animation:pulseBlue 1.6s ease-in-out infinite; }
+    .q-status.completed  { background:#D9EAD3; color:var(--forest); }
+    .q-status.skipped    { background:#EEE; color:#666; }
+    .q-status.cancelled  { background:#F4CCCC; color:var(--danger); }
+    .q-status.failed     { background:#F4CCCC; color:var(--danger); }
+    @keyframes pulseBlue { 0%,100% { box-shadow:0 0 0 0 rgba(26,84,144,.0); }
+                            50%     { box-shadow:0 0 0 4px rgba(26,84,144,.18); } }
+    .q-progress-bar { display:inline-block; width:90px; height:6px; background:var(--line);
+                       border-radius:3px; overflow:hidden; vertical-align:middle; margin-right:5px; }
+    .q-progress-bar > span { display:block; height:100%;
+                              background:linear-gradient(90deg, var(--forest), var(--gold)); }
+    #q-table .q-actions button {
+      background:transparent; border:1px solid var(--line); color:var(--slate);
+      padding:3px 8px; font-size:10.5px; border-radius:5px; cursor:pointer;
+      transition:all .12s ease;
+    }
+    #q-table .q-actions button:hover { border-color:var(--danger); color:var(--danger); }
+    #q-table .q-actions button:disabled { opacity:.4; cursor:not-allowed; }
+
     /* Process progress bar -- shown in the "Last result" column for tasks
        that are currently in Running state. The indeterminate variant is the
        fallback when the log hasn't yielded a "Queue: N RFPs" line yet. */

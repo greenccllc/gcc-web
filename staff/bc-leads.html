@@ -17,6 +17,7 @@
     </div>
     <div class="tabs" id="tabs">
       <button class="tab active" data-tab="leads">BC Leads</button>
+      <button class="tab" data-tab="queue">Queue</button>
       <button class="tab" data-tab="outcomes">Outcomes</button>
       <button class="tab" data-tab="processes">Processes</button>
     </div>
@@ -59,6 +60,41 @@
       <tbody id="rows"></tbody>
     </table>
     <div id="empty" hidden>No RFPs scraped yet. Click "Rescan now" to trigger a fresh pull.</div>
+  </section>
+
+  <!-- =================== Queue tab =================== -->
+  <section id="tab-queue" hidden>
+    <div class="summary" id="q-summary"></div>
+    <div class="q-controls">
+      <span class="if-label" style="text-transform:none;font-weight:500">Filter</span>
+      <select id="q-state">
+        <option value="">All</option>
+        <option value="queued">Queued</option>
+        <option value="processing">Processing</option>
+        <option value="completed">Completed</option>
+        <option value="skipped">Skipped</option>
+        <option value="cancelled">Cancelled</option>
+      </select>
+      <select id="q-scope">
+        <option value="accepted" selected>Accepted RFPs only</option>
+        <option value="all">All RFPs</option>
+      </select>
+      <button class="if-clear" id="q-refresh" type="button">↻ Refresh</button>
+      <span id="q-count" class="small" style="margin-left:auto"></span>
+    </div>
+    <table id="q-table">
+      <thead><tr>
+        <th>Project</th>
+        <th>File</th>
+        <th>Status</th>
+        <th>Progress</th>
+        <th>Cost</th>
+        <th>Updated</th>
+        <th>Actions</th>
+      </tr></thead>
+      <tbody id="q-rows"></tbody>
+    </table>
+    <div id="q-empty" hidden style="padding:60px 20px;text-align:center;color:var(--slate)">No files in the queue.</div>
   </section>
 
   <!-- =================== Outcomes tab =================== -->
@@ -1255,12 +1291,116 @@ $('tabs').addEventListener('click', (e) => {
   btn.classList.add('active');
   const which = btn.dataset.tab;
   $('tab-leads').hidden     = (which !== 'leads');
+  $('tab-queue').hidden     = (which !== 'queue');
   $('tab-outcomes').hidden  = (which !== 'outcomes');
   $('tab-processes').hidden = (which !== 'processes');
   $('rescan').style.display = (which === 'leads') ? '' : 'none';
   if (which === 'processes') { loadProcesses(); loadHealthBoard(); }
   if (which === 'outcomes')  { loadOutcomes(); }
+  if (which === 'queue')     { loadQueue(); scheduleQueueRefresh(); }
+  else                       { clearInterval(_queueTimer); }
 });
+
+// ===== Queue tab =====
+let _queueTimer = null;
+const QSTATE = { state: '', scope: 'accepted' };
+function scheduleQueueRefresh() {
+  clearInterval(_queueTimer);
+  _queueTimer = setInterval(loadQueue, 7000);
+}
+async function loadQueue() {
+  if ($('tab-queue').hidden) return;
+  try {
+    const params = new URLSearchParams();
+    if (QSTATE.state) params.set('status', QSTATE.state);
+    params.set('scope', QSTATE.scope || 'accepted');
+    const data = await api('GET', '/api/bc/extraction-queue?' + params.toString());
+    renderQueue(data);
+  } catch (e) {
+    $('q-rows').innerHTML = `<tr><td colspan="7" style="padding:20px;color:var(--danger)">${safeHtml(e.message)}</td></tr>`;
+  }
+}
+function renderQueue(data) {
+  const s = data.summary || {};
+  $('q-summary').innerHTML = [
+    `<span class="chip"><strong>${s.total || 0}</strong> total</span>`,
+    s.queued     ? `<span class="chip">⏳ <strong>${s.queued}</strong> queued</span>` : '',
+    s.processing ? `<span class="chip">⚙️ <strong>${s.processing}</strong> processing</span>` : '',
+    s.completed  ? `<span class="chip">✓ <strong>${s.completed}</strong> completed</span>` : '',
+    s.skipped    ? `<span class="chip">⏭ <strong>${s.skipped}</strong> skipped</span>` : '',
+    s.cancelled  ? `<span class="chip">✕ <strong>${s.cancelled}</strong> cancelled</span>` : '',
+  ].filter(Boolean).join('');
+  const items = data.items || [];
+  $('q-count').textContent = `${items.length} shown`;
+  if (items.length === 0) {
+    $('q-empty').hidden = false;
+    $('q-rows').innerHTML = '';
+    return;
+  }
+  $('q-empty').hidden = true;
+  $('q-rows').innerHTML = items.map(it => {
+    const pp = it.pagesProcessed || 0;
+    const pt = it.pagesTotal || it.pageCount || 0;
+    const pct = pt > 0 ? Math.min(100, Math.round(100 * pp / pt)) : null;
+    const progressCell = it.state === 'completed'
+      ? `<span class="small ok">✓ done</span>`
+      : it.state === 'skipped'
+        ? `<span class="small pad">—</span>`
+        : it.state === 'cancelled'
+          ? `<span class="small">cancelled</span>`
+          : (pct != null
+              ? `<span class="q-progress-bar"><span style="width:${pct}%"></span></span><strong>${pp}</strong><span class="small"> of ${pt}</span>`
+              : (pp > 0 ? `<strong>${pp}</strong><span class="small"> pages</span>` : '<span class="pad">—</span>'));
+    const costCell = it.costUsd != null
+      ? `$${Number(it.costUsd).toFixed(4)}`
+      : '<span class="pad">—</span>';
+    const updatedCell = fmt(it.liveUpdatedAt || it.costPatchedAt || it.uploadedAt);
+    const canCancel = it.state === 'queued' || it.state === 'processing';
+    const action = canCancel
+      ? `<button data-act="cancel" data-bid="${safeHtml(it.bcBidId)}" data-fid="${safeHtml(it.driveFileId)}" title="Mark this file as cancelled — worker will skip on next pull">✕ Cancel</button>`
+      : `<button disabled>—</button>`;
+    return `<tr>
+      <td><a href="#" data-act="goto-rfp" data-id="${safeHtml(it.bcBidId)}">${safeHtml(it.projectName || it.bcBidId)}</a></td>
+      <td class="q-file" title="${safeHtml(it.classification)}">${safeHtml(it.fileName)}</td>
+      <td><span class="q-status ${it.state}">${it.state}</span></td>
+      <td>${progressCell}</td>
+      <td>${costCell}</td>
+      <td class="small">${updatedCell}</td>
+      <td class="q-actions">${action}</td>
+    </tr>`;
+  }).join('');
+
+  // Wire cancel buttons.
+  $('q-rows').querySelectorAll('button[data-act="cancel"]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Cancel this extraction? The worker will skip on its next pull.')) return;
+      btn.disabled = true; const orig = btn.textContent; btn.textContent = '…';
+      try {
+        await api('POST', '/api/bc/extraction-cancel', {
+          bcBidId:     btn.dataset.bid,
+          driveFileId: btn.dataset.fid,
+          reason:      'operator-cancel',
+        });
+        toast('Cancelled. Worker will skip on next pull.');
+        await loadQueue();
+      } catch (e) { btn.disabled = false; btn.textContent = orig; toast(e.message, 4500); }
+    });
+  });
+  // "Open in BC Leads" link.
+  $('q-rows').querySelectorAll('a[data-act="goto-rfp"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const tabs = $('tabs'); tabs.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      const leadsTab = tabs.querySelector('[data-tab="leads"]'); leadsTab?.classList.add('active');
+      $('tab-leads').hidden = false; $('tab-queue').hidden = true; $('tab-outcomes').hidden = true; $('tab-processes').hidden = true;
+      $('rescan').style.display = '';
+      // Optional: scroll to / highlight the RFP row -- left as a TODO.
+    });
+  });
+}
+$('q-state')?.addEventListener('change',  () => { QSTATE.state = $('q-state').value; loadQueue(); });
+$('q-scope')?.addEventListener('change',  () => { QSTATE.scope = $('q-scope').value; loadQueue(); });
+$('q-refresh')?.addEventListener('click', () => loadQueue());
 
 // ===== Outcomes tab =====
 // State for the active proposal selection. The detail panel mirrors STATE.oc.selected.
