@@ -30,10 +30,19 @@
 
   <!-- =================== Leads tab =================== -->
   <section id="tab-leads">
-    <div class="summary" id="summary"></div>
-    <div class="status-pills" id="status-pills"></div>
     <div class="intake-filters" id="intake-filters">
-      <span class="if-label">Intake</span>
+      <span class="if-label">Filter</span>
+      <span class="if-group"><label class="if-label" style="text-transform:none;font-weight:500" for="if-status">Status</label>
+        <select id="if-status">
+          <option value="">All (no archive)</option>
+          <option value="Undecided">Undecided</option>
+          <option value="Accepted">Accepted</option>
+          <option value="Submitted">Submitted</option>
+          <option value="Won">Won</option>
+          <option value="Lost">Lost</option>
+          <option value="Archived">Archived</option>
+          <option value="__include_archived__">Show all (incl. Archived)</option>
+        </select></span>
       <span class="if-group"><label class="if-label" style="text-transform:none;font-weight:500" for="if-gc">GC</label>
         <select id="if-gc"><option value="">All</option></select></span>
       <span class="if-group"><label class="if-label" style="text-transform:none;font-weight:500" for="if-trade">Trade</label>
@@ -42,7 +51,7 @@
         <select id="if-state"><option value="">All</option></select></span>
       <span class="if-group"><label class="if-label" style="text-transform:none;font-weight:500" for="if-source">Source</label>
         <select id="if-source"><option value="">All</option><option value="scrape">BC scrape</option><option value="email">Email-driven</option><option value="manual">Manual</option></select></span>
-      <button class="if-clear" id="if-clear" type="button" title="Reset every Intake filter">Clear filters</button>
+      <button class="if-clear" id="if-clear" type="button" title="Reset every filter">Clear filters</button>
       <span id="if-count" class="small" style="margin-left:auto"></span>
     </div>
     <table id="t">
@@ -596,37 +605,34 @@ function renderDue(s) {
 }
 
 // ===== state =====
-// Status pills are MULTI-SELECT. The active set is persisted as a JSON array;
-// the empty set is the default view (= "All except Archived"). Intake filters
-// (GC / trade / state / source) compose AND with the status filter.
-const STATUS_TAB_KEY = 'gccLeadsActiveStatuses';
+// Single Filter band now: Status + GC + Trade + State + Source. Status is
+// just another dropdown alongside the rest. The empty value ("All (no
+// archive)") is the default view; "__include_archived__" = show all
+// statuses including Archived; any specific status = that status only.
 const INTAKE_KEY     = 'gccLeadsIntakeFilters';
 const COL_WIDTHS_KEY = 'gccLeadsColWidths';
-function loadStatusSet() {
-  try {
-    const raw = JSON.parse(localStorage.getItem(STATUS_TAB_KEY) || '[]');
-    if (Array.isArray(raw)) return new Set(raw);
-  } catch {}
-  return new Set();
-}
 function loadIntake() {
   try {
     const raw = JSON.parse(localStorage.getItem(INTAKE_KEY) || '{}');
-    return { gc:raw.gc||'', trade:raw.trade||'', state:raw.state||'', source:raw.source||'' };
-  } catch { return { gc:'', trade:'', state:'', source:'' }; }
+    return {
+      status: raw.status || '',
+      gc:     raw.gc     || '',
+      trade:  raw.trade  || '',
+      state:  raw.state  || '',
+      source: raw.source || '',
+    };
+  } catch { return { status:'', gc:'', trade:'', state:'', source:'' }; }
 }
 const STATE = {
   data : null,
   sort : { col: 'lastfile', dir: 'desc' },
   open : new Set(),                                                 // bcBidIds with expanded count rows
-  activeStatuses: loadStatusSet(),                                  // Set<string>; empty = all-except-archived
-  intake: loadIntake(),                                             // {gc, trade, state, source}
+  intake: loadIntake(),                                             // {status, gc, trade, state, source}
   autoAccepted: new Set(),                                          // bcBidIds we already POSTed accept for this session
   colWidths: JSON.parse(localStorage.getItem(COL_WIDTHS_KEY) || '{}'),
 };
-function saveActiveStatuses() { localStorage.setItem(STATUS_TAB_KEY, JSON.stringify(Array.from(STATE.activeStatuses))); }
-function saveIntake()         { localStorage.setItem(INTAKE_KEY, JSON.stringify(STATE.intake)); }
-function saveColWidths()      { localStorage.setItem(COL_WIDTHS_KEY, JSON.stringify(STATE.colWidths)); }
+function saveIntake()    { localStorage.setItem(INTAKE_KEY, JSON.stringify(STATE.intake)); }
+function saveColWidths() { localStorage.setItem(COL_WIDTHS_KEY, JSON.stringify(STATE.colWidths)); }
 
 const STATUS_ORDER = ['Undecided', 'Accepted', 'Submitted', 'Won', 'Archived', 'Lost'];
 
@@ -697,70 +703,21 @@ function render() {
   if (!STATE.data) return;
   renderHead();
 
-  // Summary chips -- TOTAL + cost only; per-status counts live on the
-  // status-pills band below so they aren't duplicated here.
-  const chips = [];
-  chips.push(`<span class="chip"><strong>${STATE.data.summary.total}</strong> total</span>`);
-  // Compound AI spend across every item (sums regardless of which status filter is active).
-  let totalCost = 0; let totalTokens = 0; let acceptedCount = 0;
-  for (const r of STATE.data.items) {
-    if (r.ai?.costUsd) totalCost += Number(r.ai.costUsd);
-    if (r.ai?.tokensUsed) totalTokens += Number(r.ai.tokensUsed);
-    if (r.extraction?.accepted) acceptedCount++;
-  }
-  chips.push(`<span class="chip" title="Compound Anthropic spend across every RFP, all statuses">💰 <strong>$${totalCost.toFixed(4)}</strong> AI · ${(totalTokens/1000).toFixed(1)}k tok</span>`);
-  if (acceptedCount > 0) chips.push(`<span class="chip">✓ <strong>${acceptedCount}</strong> accepted</span>`);
-  $('summary').innerHTML = chips.join('');
-
-  // Status filter pills -- MULTI-SELECT. The "All" pill clears the active set
-  // (= the default view, which hides Archived). Clicking any other pill
-  // toggles it in/out of the active set; you can have many active at once.
-  const counts = { All: STATE.data.items.length };
-  for (const r of STATE.data.items) {
-    const s = r.status || 'Unknown';
-    counts[s] = (counts[s] || 0) + 1;
-  }
-  const tabsOrder = ['All', ...STATUS_ORDER.filter(s => counts[s]),
-                     ...Object.keys(counts).filter(s => s !== 'All' && !STATUS_ORDER.includes(s)).sort()];
-  $('status-pills').innerHTML = tabsOrder.map(s => {
-    const isAll    = s === 'All';
-    const isArchive= s === 'Archived';
-    const active   = (isAll && STATE.activeStatuses.size === 0) ||
-                     (!isAll && STATE.activeStatuses.has(s));
-    const cls = `status-pill${active ? ' active' : ''}${isArchive ? ' archive' : ''}`;
-    return `<button class="${cls}" data-status-tab="${safeHtml(s)}">${safeHtml(s)}<span class="count">${counts[s] || 0}</span></button>`;
-  }).join('');
-  $('status-pills').querySelectorAll('button').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const s = btn.dataset.statusTab;
-      if (s === 'All') {
-        STATE.activeStatuses.clear();           // back to default (all-except-archived)
-      } else if (STATE.activeStatuses.has(s)) {
-        STATE.activeStatuses.delete(s);
-      } else {
-        STATE.activeStatuses.add(s);
-      }
-      saveActiveStatuses();
-      render();
-    });
-  });
-
   // Intake filters: populate dropdowns from the current dataset (GC, trade, state).
   populateIntakeFilters(STATE.data.items);
 
   // Filter + sort (single flat list).
   const sortFn = (COLS.find(c => c.id === STATE.sort.col) || COLS[0]).sort;
   const dirMul = STATE.sort.dir === 'asc' ? 1 : -1;
-  const activeStatuses = STATE.activeStatuses;
-  const intake         = STATE.intake;
+  const intake = STATE.intake;
   const filtered = STATE.data.items.filter(r => {
     const status = r.status || 'Unknown';
-    // Status filter: empty active set = "all except Archived" (default);
-    // non-empty set = strict whitelist.
-    if (activeStatuses.size === 0) {
+    // Status filter: "" = default (all except Archived); a specific status =
+    // that status only; "__include_archived__" = show everything.
+    if (intake.status === '') {
       if (status === 'Archived') return false;
-    } else {
-      if (!activeStatuses.has(status)) return false;
+    } else if (intake.status !== '__include_archived__') {
+      if (status !== intake.status) return false;
     }
     if (intake.gc) {
       const rgc = (r.gc || '').trim();
@@ -1018,8 +975,9 @@ function populateIntakeFilters(items) {
   fillIntakeSelect('if-gc',    Array.from(gcs).sort(),    STATE.intake.gc);
   fillIntakeSelect('if-trade', Array.from(trades).sort(), STATE.intake.trade);
   fillIntakeSelect('if-state', Array.from(states).sort(), STATE.intake.state);
-  // 'source' has fixed options in the markup; just set the value.
+  // 'source' and 'status' have fixed options in the markup; just set the value.
   const src = $('if-source'); if (src && src.value !== STATE.intake.source) src.value = STATE.intake.source || '';
+  const sst = $('if-status'); if (sst && sst.value !== STATE.intake.status) sst.value = STATE.intake.status || '';
 }
 function fillIntakeSelect(id, values, current) {
   const sel = $(id); if (!sel) return;
@@ -1037,9 +995,9 @@ function wireIntakeFilters() {
       render();
     });
   };
-  wire('if-gc', 'gc'); wire('if-trade', 'trade'); wire('if-state', 'state'); wire('if-source', 'source');
+  wire('if-status', 'status'); wire('if-gc', 'gc'); wire('if-trade', 'trade'); wire('if-state', 'state'); wire('if-source', 'source');
   $('if-clear')?.addEventListener('click', () => {
-    STATE.intake = { gc:'', trade:'', state:'', source:'' };
+    STATE.intake = { status:'', gc:'', trade:'', state:'', source:'' };
     saveIntake();
     render();
   });
