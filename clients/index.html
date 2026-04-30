@@ -232,6 +232,41 @@ body.login-page .login-card h1 { font-size: 24px; }
 <script src="/assets/js/api.js"></script>
 <script src="/assets/js/header.js"></script>
 <script>
+// ── If already signed in, redirect away from this page ────
+// /clients/ is the sign-in page; logged-in users have no business here.
+// Honor ?next= even when bouncing through, so an authenticated user
+// who came from proposal.greencommllc.com still ends up there rather
+// than at their dashboard.
+(async () => {
+  try {
+    const me = await gccApi.me();
+    const params = new URLSearchParams(location.search);
+    const next   = params.get('next');
+    const SAFE_HOSTS = new Set([
+      'greencommllc.com', 'www.greencommllc.com',
+      'proposal.greencommllc.com', 'staff.greencommllc.com',
+      'api.greencommllc.com',
+    ]);
+    function safeNext(raw) {
+      if (!raw) return null;
+      try {
+        const u = new URL(raw, location.href);
+        if (u.origin === location.origin || SAFE_HOSTS.has(u.host)) return u.toString();
+      } catch (_) {}
+      return null;
+    }
+    const target = safeNext(next) || (
+      me.role === 'admin' || me.role === 'staff' ? '/staff/' :
+      me.clientType === 'residential' ? '/clients/estimator-residential.html' :
+      '/clients/dashboard.html'
+    );
+    window.location.replace(target);
+    return;
+  } catch (_) {
+    // Not signed in (or me() failed) — show the sign-in form. Fall through.
+  }
+})();
+
 // ── Tab switcher ─────────────────────────────────────────
 const tabSignIn = document.getElementById('tab-signin');
 const tabSignUp = document.getElementById('tab-signup');
