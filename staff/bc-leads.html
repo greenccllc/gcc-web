@@ -7,7 +7,7 @@
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <meta name="theme-color" content="#1E4D2B" />
-  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-0400" />
+  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-0430" />
 </head>
 <body>
   <header>
@@ -1564,10 +1564,24 @@ function renderWorkerStatus(w) {
     qEl.classList.toggle('ok',   (q.processing || 0) > 0);
   }
 
-  // 4. Last-error pill (only shown when present)
+  // 4. Last-error pill -- show ONLY the most recent error AND only
+  // while it's still the leading edge of the log (i.e. the worker
+  // hasn't recovered past it). Hide once the heartbeat has advanced
+  // 5+ minutes past the error timestamp -- at that point the worker
+  // is back to processing cleanly and the operator doesn't need the
+  // old error nagging from the panel.
   const errEl = $('ws-error');
   if (errEl) {
+    let showErr = false;
     if (log.lastError && log.lastError.message) {
+      const errAt = Date.parse(log.lastError.at) || 0;
+      const hbAt2 = Date.parse(p.logHeartbeatAt || '') || 0;
+      // Show if: still errored per server, OR error is recent (<5 min),
+      // OR heartbeat hasn't moved past the error window.
+      const heartbeatRecovered = (hbAt2 > 0) && (errAt > 0) && ((hbAt2 - errAt) >= 5 * 60 * 1000);
+      showErr = !heartbeatRecovered;
+    }
+    if (showErr) {
       errEl.hidden = false;
       errEl.querySelector('.ws-err-msg').textContent =
         `${_wsSinceText(log.lastError.at)}: ${(log.lastError.message || '').slice(0, 240)}`;
