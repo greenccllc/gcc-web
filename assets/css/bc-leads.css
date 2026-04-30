@@ -78,7 +78,38 @@
     thead th:hover { background:#f5f1e1; }
     thead th .sort-ind { display:inline-block; width:10px; opacity:.55; margin-left:3px; }
     tbody td { border-bottom:1px solid var(--line); padding:7px 10px; vertical-align:middle; }
-    tbody tr.row { cursor:pointer; }
+    tbody tr.row { cursor:pointer; height:38px; }
+    tbody tr.row > td {
+      /* Force uniform single-line rows: every cell truncates with
+         ellipsis when content overflows. Per-column max-widths below
+         are tuned for a 1440px viewport; columns shrink proportionally
+         on smaller screens via the table layout's auto sizing. */
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      line-height:1.25;
+      max-width:300px;
+    }
+    /* Project cell: hold folder icon + name + tip + sibling badge +
+       subscript + scope chips on ONE line. */
+    tbody tr.row > td:nth-child(1) { max-width:380px; }
+    tbody tr.row > td:nth-child(1) .proj-link {
+      display:inline-block; max-width:160px; vertical-align:bottom;
+      overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    }
+    tbody tr.row > td:nth-child(1) .proj-scope {
+      display:inline-flex; flex-wrap:nowrap; max-width:140px;
+      overflow:hidden; vertical-align:middle;
+    }
+    tbody tr.row > td:nth-child(1) .proj-scope .scope-chip { flex-shrink:0; }
+    /* Hide all scope chips after the second one in collapsed rows --
+       the expanded row's summary col still renders the full set. */
+    tbody tr.row:not(.open) > td:nth-child(1) .proj-scope .scope-chip:nth-child(n+3) {
+      display:none;
+    }
+    /* Location: cap to keep address from blowing the row wide. */
+    tbody tr.row > td .loc-link { max-width:180px; display:inline-block;
+      overflow:hidden; text-overflow:ellipsis; white-space:nowrap; vertical-align:bottom; }
     tbody tr.row:hover { background:var(--green-tint); }
     tbody tr.row .toggle { display:inline-block; width:13px; color:var(--slate); transition:transform .15s; }
     tbody tr.row.open .toggle { transform:rotate(90deg); color:var(--forest); }
