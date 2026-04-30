@@ -7,7 +7,7 @@
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <meta name="theme-color" content="#1E4D2B" />
-  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-0610" />
+  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-0625" />
 </head>
 <body>
   <header>
@@ -412,8 +412,8 @@ const COLS = [
       // Scope chips moved to the expand pane (top strip) so the
       // project-name cell can give the title room. Sibling badge +
       // file/msg subscript still ride here.
-      const sibBadge = (r._siblingBcBidIds && r._siblingBcBidIds.length)
-        ? `<span class="sib-badge" title="${r._siblingBcBidIds.length} sibling RFP${r._siblingBcBidIds.length === 1 ? '' : 's'} for the same physical job (different trade scopes)">🔗 +${r._siblingBcBidIds.length}</span>`
+      const sibBadge = (r._siblingJobIds && r._siblingJobIds.length)
+        ? `<span class="sib-badge" title="${r._siblingJobIds.length} sibling RFP${r._siblingJobIds.length === 1 ? '' : 's'} for the same physical job (different trade scopes)">🔗 +${r._siblingJobIds.length}</span>`
         : '';
       const att = r.scrape?.attachmentsCount || 0;
       const msg = r.scrape?.messagesCount    || 0;
@@ -422,7 +422,7 @@ const COLS = [
         : '';
       // Project name -> Manage Job. BC link is preserved in the
       // expand pane footer.
-      const mjQs = new URLSearchParams({ jobId: r.jobId || r.bcBidId });
+      const mjQs = new URLSearchParams({ jobId: r.jobId });
       if (URL_PARAMS.get('secret')) mjQs.set('secret', URL_PARAMS.get('secret'));
       if (URL_PARAMS.get('api'))    mjQs.set('api',    URL_PARAMS.get('api'));
       const mjHref = `/staff/manage-job.html?${mjQs.toString()}`;
@@ -497,7 +497,7 @@ function projTip(r) {
   const conf = c == null ? 'No extraction yet' : `${Math.round(c)}% confidence`;
   const stepBlock = step
     ? `<div class="tip-reason">${safeHtml(step.reason || '')}</div>
-       <button class="tip-step-btn" data-act="next-step" data-id="${r.bcBidId}" data-step-act="${safeHtml(step.action)}">${safeHtml(step.label)}</button>`
+       <button class="tip-step-btn" data-act="next-step" data-id="${r.jobId}" data-step-act="${safeHtml(step.action)}">${safeHtml(step.label)}</button>`
     : `<div class="tip-reason">No specific recommendation -- this row looks good.</div>`;
   return `<span class="proj-tip" data-stop>
     <div class="tip-conf">${bar}<span>${conf}</span></div>
@@ -533,7 +533,7 @@ function expandTopStrip(r) {
     : `$${Number(cost).toFixed(2)}${tok ? ` <span class="small">(${(tok/1000).toFixed(1)}k tok)</span>` : ''}`;
 
   // Manage / BC / Drive links + Extraction details deep-link
-  const mjQs = new URLSearchParams({ jobId: r.jobId || r.bcBidId });
+  const mjQs = new URLSearchParams({ jobId: r.jobId });
   if (URL_PARAMS.get('secret')) mjQs.set('secret', URL_PARAMS.get('secret'));
   if (URL_PARAMS.get('api'))    mjQs.set('api',    URL_PARAMS.get('api'));
   const mjHref = `/staff/manage-job.html?${mjQs.toString()}`;
@@ -576,7 +576,7 @@ function expandDescriptionCol(r) {
 // Col 3: actions, vertically stacked. Replaces the old action-menu dropdown
 // in the expanded view (the menu is dense and clumsy when there's room).
 function expandActionsCol(r) {
-  const id       = r.bcBidId;
+  const id       = r.jobId;
   const accepted = r.extraction?.accepted;
   const paused   = r.extractionPaused;
   const status   = r.status || 'Unknown';
@@ -638,7 +638,7 @@ function expandMetaCol(r) {
     <div class="field"><span class="lbl">Last file</span><span class="val">${fmt(r.lastFileAt || r.lastSeenAt)}</span></div>
     <div class="field" style="display:flex;flex-direction:row;gap:6px;flex-wrap:wrap;margin-top:6px">${[acceptedBadge, addBadge, pausedBadge].filter(Boolean).join('')}</div>
     <div class="field" style="margin-top:8px">
-      <a class="ext-detail-link" href="/staff/manage-job.html?jobId=${safeHtml(r.jobId || r.bcBidId)}${URL_PARAMS.get('secret') ? '&secret=' + encodeURIComponent(URL_PARAMS.get('secret')) : ''}${URL_PARAMS.get('api') ? '&api=' + encodeURIComponent(URL_PARAMS.get('api')) : ''}">
+      <a class="ext-detail-link" href="/staff/manage-job.html?jobId=${safeHtml(r.jobId)}${URL_PARAMS.get('secret') ? '&secret=' + encodeURIComponent(URL_PARAMS.get('secret')) : ''}${URL_PARAMS.get('api') ? '&api=' + encodeURIComponent(URL_PARAMS.get('api')) : ''}">
         🔍 Extraction details
       </a>
       <span class="small pad" style="margin-left:6px">notes, specs, prop reqs, per-source counts</span>
@@ -655,7 +655,7 @@ function expandMetaCol(r) {
 const STATUS_OPTIONS = ['Undecided', 'Accepted', 'Submitted', 'Won', 'Archived', 'Lost'];
 
 function actionsCell(r) {
-  const id       = r.bcBidId;
+  const id       = r.jobId;
   const accepted = r.extraction?.accepted;
   const paused   = r.extractionPaused;
   const status   = r.status || 'Unknown';
@@ -779,9 +779,9 @@ function loadIntake() {
 const STATE = {
   data : null,
   sort : { col: 'lastfile', dir: 'desc' },
-  open : new Set(),                                                 // bcBidIds with expanded count rows
+  open : new Set(),                                                 // jobIds with expanded count rows
   intake: loadIntake(),                                             // {status, gc, trade, state, source}
-  autoAccepted: new Set(),                                          // bcBidIds we already POSTed accept for this session
+  autoAccepted: new Set(),                                          // jobIds we already POSTed accept for this session
   colWidths: JSON.parse(localStorage.getItem(COL_WIDTHS_KEY) || '{}'),
 };
 function saveIntake()    { localStorage.setItem(INTAKE_KEY, JSON.stringify(STATE.intake)); }
@@ -858,7 +858,7 @@ function renderHead() {
 // looking like "Planet Fitness Electrical" + "Planet Fitness Data &
 // Telecommunications" -- two near-duplicate rows. Group them so the table
 // shows one row per physical job, with merged trade chips, plus a
-// "🔗 +N" badge linking to the sibling bcBidIds.
+// "🔗 +N" badge linking to the sibling jobIds.
 function mergeSiblings(items) {
   // Key by trimmed-base-name + GC + state. trimScope() already strips the
   // trade trailer; lowercasing + collapsing whitespace handles minor
@@ -872,7 +872,7 @@ function mergeSiblings(items) {
   const groups = new Map();
   for (const it of items) {
     const k = key(it);
-    if (!k.replace(/\|/g, '')) { groups.set(`__solo__:${it.bcBidId}`, [it]); continue; }
+    if (!k.replace(/\|/g, '')) { groups.set(`__solo__:${it.jobId}`, [it]); continue; }
     if (!groups.has(k)) groups.set(k, []);
     groups.get(k).push(it);
   }
@@ -894,7 +894,7 @@ function mergeSiblings(items) {
       for (const t of rowTrades(sib)) allTrades.add(t);
     }
     primary.trades = Array.from(allTrades);
-    primary._siblingBcBidIds = group.slice(1).map(s => s.bcBidId);
+    primary._siblingJobIds = group.slice(1).map(s => s.jobId);
     primary._siblings        = group.slice(1);  // full sibling rows for the expand pane
     merged.push(primary);
   }
@@ -941,7 +941,7 @@ function render() {
   });
   // Merge sibling-RFP rows (same trimmed-base-name + GC + state) so the
   // table shows one physical job per row. The primary's _siblings array
-  // keeps the full sibling rows so per-bcBidId actions remain available.
+  // keeps the full sibling rows so per-jobId actions remain available.
   const merged = mergeSiblings(filtered);
   merged.sort((a,b) => sortFn(a,b) * dirMul);
   // Re-bind to the loop variable below.
@@ -950,8 +950,8 @@ function render() {
 
   const html = [];
   for (const r of filtered) {
-    const open = STATE.open.has(r.bcBidId);
-    html.push(`<tr class="row${open ? ' open' : ''}" data-id="${r.bcBidId}">` +
+    const open = STATE.open.has(r.jobId);
+    html.push(`<tr class="row${open ? ' open' : ''}" data-id="${r.jobId}">` +
       COLS.map(c => `<td>${c.cell(r)}</td>`).join('') + `</tr>`);
 
     // Expanded sub-panel layout (clean 2-tier):
@@ -959,7 +959,7 @@ function render() {
     //     pages, confidence, cost, files/msgs, badges, BC + Manage links)
     //   - body row 1 col 1: description (left, wide); col 2: actions (right)
     //   - body row 2: full-width drops grid (4 × 5 of LV scope counts)
-    html.push(`<tr class="counts${open ? ' open' : ''}" data-counts-for="${r.bcBidId}" data-stop><td colspan="${COLS.length}" data-stop>
+    html.push(`<tr class="counts${open ? ' open' : ''}" data-counts-for="${r.jobId}" data-stop><td colspan="${COLS.length}" data-stop>
       <div class="expand-pane">
         ${expandTopStrip(r)}
         <div class="expand-body">
@@ -1050,7 +1050,7 @@ function render() {
       if (!v) return;
       sel.disabled = true;
       try {
-        await api('POST', '/api/bc/extraction/move-status', { bcBidId: id, newStatus: v });
+        await api('POST', '/api/bc/extraction/move-status', { jobId: id, newStatus: v });
         toast(`Moved ${id.slice(0,8)}… to ${v}`);
         setTimeout(load, 800);
       } catch (err) { toast(err.message, 4500); }
@@ -1067,51 +1067,51 @@ function render() {
       btn.disabled = true; const orig = btn.innerHTML; btn.textContent = '…';
       try {
         if (act === 'extract-more') {
-          await api('POST', '/api/bc/extraction/extract-more', { bcBidId: id });
+          await api('POST', '/api/bc/extraction/extract-more', { jobId: id });
           toast(`Deeper extraction queued for ${id.slice(0,8)}…`);
           setTimeout(load, 1200);
         } else if (act === 'accept') {
-          await api('POST', '/api/bc/extraction/accept', { bcBidId: id });
+          await api('POST', '/api/bc/extraction/accept', { jobId: id });
           toast(`Extraction accepted for ${id.slice(0,8)}…`);
           setTimeout(load, 1500); return;
         } else if (act === 'pause-toggle') {
           const willBePaused = btn.dataset.paused !== '1';
-          await api('POST', '/api/bc/extraction/pause', { bcBidId: id, paused: willBePaused });
+          await api('POST', '/api/bc/extraction/pause', { jobId: id, paused: willBePaused });
           toast(`${willBePaused ? 'Paused' : 'Resumed'} extraction for ${id.slice(0,8)}…`);
           setTimeout(load, 800); return;
         } else if (act === 'project-details') {
-          const r = (STATE.data.items || []).find(x => x.bcBidId === id);
+          const r = (STATE.data.items || []).find(x => x.jobId === id);
           showProjectDetails(r);
         } else if (act === 'view-prop') {
           const resp = await api('GET', '/api/bc/proposal-folder?jobId=' + encodeURIComponent(id));
           if (resp && resp.url) window.open(resp.url, '_blank', 'noopener,noreferrer');
           else toast('No proposal folder yet for this RFP.', 4000);
         } else if (act === 'scan-addenda') {
-          const r = (STATE.data.items || []).find(x => x.bcBidId === id);
+          const r = (STATE.data.items || []).find(x => x.jobId === id);
           if (!r?.addendaSeen) {
             toast('No new addendum detected during the last BC scrape.', 3500);
           } else if (confirm('A new addendum was detected. Re-extract and move this job back to Accepted with an "Addendum-" name prefix?')) {
-            await api('POST', '/api/bc/extraction/process-addendum', { bcBidId: id });
+            await api('POST', '/api/bc/extraction/process-addendum', { jobId: id });
             toast('Addendum queued: re-extracting and moving to Accepted.', 4000);
             setTimeout(load, 1500); return;
           }
         } else if (act === 'rescan-details') {
-          await api('POST', '/api/bc/extraction/rescan-details', { bcBidId: id });
+          await api('POST', '/api/bc/extraction/rescan-details', { jobId: id });
           toast(`Rescan project details queued for ${id.slice(0,8)}…`);
         } else if (act === 'delete') {
           if (confirm('Delete this RFP from GCC Manager? This wipes dbo.BcRfps + Details + Attachments. Drive folder is left alone. Cannot be undone.')) {
-            await api('POST', '/api/bc/extraction/delete', { bcBidId: id });
+            await api('POST', '/api/bc/extraction/delete', { jobId: id });
             toast(`RFP ${id.slice(0,8)}… deleted`);
             setTimeout(load, 800); return;
           }
         } else if (act === 'next-step') {
           // Forwards to the actual underlying action.
           const real = btn.dataset.stepAct;
-          const r = (STATE.data.items || []).find(x => x.bcBidId === id);
-          if (real === 'extract-more')        { await api('POST', '/api/bc/extraction/extract-more', { bcBidId: id });  toast('Deeper extraction queued.'); setTimeout(load, 1200); }
-          else if (real === 'rescan-details') { await api('POST', '/api/bc/extraction/rescan-details', { bcBidId: id }); toast('Rescan queued.'); }
-          else if (real === 'accept')         { await api('POST', '/api/bc/extraction/accept', { bcBidId: id });          toast('Extraction accepted.'); setTimeout(load, 1500); }
-          else if (real === 'pause-toggle')   { await api('POST', '/api/bc/extraction/pause', { bcBidId: id, paused: false }); toast('Resumed.'); setTimeout(load, 800); }
+          const r = (STATE.data.items || []).find(x => x.jobId === id);
+          if (real === 'extract-more')        { await api('POST', '/api/bc/extraction/extract-more', { jobId: id });  toast('Deeper extraction queued.'); setTimeout(load, 1200); }
+          else if (real === 'rescan-details') { await api('POST', '/api/bc/extraction/rescan-details', { jobId: id }); toast('Rescan queued.'); }
+          else if (real === 'accept')         { await api('POST', '/api/bc/extraction/accept', { jobId: id });          toast('Extraction accepted.'); setTimeout(load, 1500); }
+          else if (real === 'pause-toggle')   { await api('POST', '/api/bc/extraction/pause', { jobId: id, paused: false }); toast('Resumed.'); setTimeout(load, 800); }
           else { toast(`Unknown next-step action: ${real}`, 4000); }
         }
       } catch (err) { toast(err.message, 4500); }
@@ -1129,10 +1129,10 @@ function render() {
     if (c == null || c < 90) continue;
     if (r.extraction?.accepted) continue;
     if (r.extractionPaused) continue;
-    if (STATE.autoAccepted.has(r.bcBidId)) continue;
-    STATE.autoAccepted.add(r.bcBidId);
-    api('POST', '/api/bc/extraction/accept', { bcBidId: r.bcBidId })
-      .then(() => toast(`Auto-accepted ${r.bcBidId.slice(0,8)}… at ${Math.round(c)}% confidence`))
+    if (STATE.autoAccepted.has(r.jobId)) continue;
+    STATE.autoAccepted.add(r.jobId);
+    api('POST', '/api/bc/extraction/accept', { jobId: r.jobId })
+      .then(() => toast(`Auto-accepted ${r.jobId.slice(0,8)}… at ${Math.round(c)}% confidence`))
       .catch(e => toast(`Auto-accept failed: ${e.message}`, 4500));
   }
 }
@@ -1316,7 +1316,7 @@ async function loadProcesses() {
         const pct = p.pctComplete ?? 0;
         const sub = [
           `${p.processed} of ${p.total}`,
-          p.currentBcBidId ? `${p.currentBcBidId.slice(0,8)}… ${p.currentStep || ''}` : '',
+          p.currentJobId ? `${p.currentJobId.slice(0,8)}… ${p.currentStep || ''}` : '',
         ].filter(Boolean).join(' · ');
         resultCell = `<div class="proc-progress">
           <div class="proc-progress-bar"><span style="width:${pct}%"></span></div>
@@ -1469,7 +1469,7 @@ function renderCostApprovals(r) {
   $('ca-rows').innerHTML = items.map(it => {
     const cost = (it.projectedCostUsd != null) ? Number(it.projectedCostUsd).toFixed(2) : '?';
     const tok  = (it.projectedTokens != null) ? `${Math.round(it.projectedTokens / 1000)}k tok` : '';
-    const proj = it.projectName || it.bcBidId || '(unknown)';
+    const proj = it.projectName || it.jobId || '(unknown)';
     const file = it.fileName || it.driveFileId || '(no file)';
     return `<div class="ca-row" data-ext="${safeHtml(it.extractionId)}">
       <div class="ca-row-info">
@@ -1641,7 +1641,7 @@ function renderWorkerStatus(w) {
     logEl.textContent = (log.tail || []).join('\n');
   }
 }
-// Group items by project (bcBidId), compute group aggregates, then sort
+// Group items by project (jobId), compute group aggregates, then sort
 // the GROUPS by the active sort key. Files within each group are always
 // sorted state-first (processing on top) -- we don't want a project's
 // queued files mixed in front of its actively-processing one.
@@ -1649,12 +1649,12 @@ function _groupQueueItems(items) {
   const updatedAt = (it) => Date.parse(it.liveUpdatedAt || it.costPatchedAt || it.uploadedAt || 0) || 0;
   const groups = new Map();
   for (const it of items) {
-    const key = it.bcBidId || it.projectName || '(unknown)';
+    const key = it.jobId || it.projectName || '(unknown)';
     let g = groups.get(key);
     if (!g) {
       g = {
-        bcBidId:     it.bcBidId,
-        projectName: it.projectName || it.bcBidId || '(unknown)',
+        jobId:     it.jobId,
+        projectName: it.projectName || it.jobId || '(unknown)',
         rfpStatus:   it.rfpStatus,
         files:       [],
         // Aggregates -- filled after we collect every file.
@@ -1730,7 +1730,7 @@ function _updateSortIndicators() {
     ind.textContent = (th.dataset.sort === QSTATE.sortKey) ? arrow : '';
   });
 }
-// Persisted per-bcBidId expand/collapse memory (reset on full reload).
+// Persisted per-jobId expand/collapse memory (reset on full reload).
 const Q_EXPANDED = new Set();
 
 function _fileRowHtml(it) {
@@ -1759,9 +1759,9 @@ function _fileRowHtml(it) {
   const updatedCell = fmt(it.liveUpdatedAt || it.costPatchedAt || it.uploadedAt);
   const canCancel = it.state === 'queued' || it.state === 'processing';
   const action = canCancel
-    ? `<button data-act="cancel" data-bid="${safeHtml(it.bcBidId)}" data-fid="${safeHtml(it.driveFileId)}" title="Mark this file as cancelled — worker skips on next pull / breaks within 10s mid-run">✕ Cancel</button>`
+    ? `<button data-act="cancel" data-bid="${safeHtml(it.jobId)}" data-fid="${safeHtml(it.driveFileId)}" title="Mark this file as cancelled — worker skips on next pull / breaks within 10s mid-run">✕ Cancel</button>`
     : `<button disabled>—</button>`;
-  return `<tr class="q-row q-file-row state-${it.state}" data-parent="${safeHtml(it.bcBidId || '')}">
+  return `<tr class="q-row q-file-row state-${it.state}" data-parent="${safeHtml(it.jobId || '')}">
     <td class="q-file-cell"></td>
     <td class="q-file" title="${safeHtml(it.classification)}">${safeHtml(it.fileName)}</td>
     <td><span class="q-status ${it.state}">${it.state}</span></td>
@@ -1809,12 +1809,12 @@ function _groupRowHtml(g, expanded) {
   const arrow = expanded ? '▾' : '▸';
   const groupCancellable = (g.counts.queued + g.counts.processing) > 0;
   const groupCancel = groupCancellable
-    ? `<button data-act="cancel-group" data-bid="${safeHtml(g.bcBidId || '')}" title="Cancel every queued/processing file in this RFP">✕ Cancel ${g.counts.queued + g.counts.processing}</button>`
+    ? `<button data-act="cancel-group" data-bid="${safeHtml(g.jobId || '')}" title="Cancel every queued/processing file in this RFP">✕ Cancel ${g.counts.queued + g.counts.processing}</button>`
     : `<button disabled>—</button>`;
-  return `<tr class="q-row q-group-row state-${state}${expanded ? ' expanded' : ''}" data-bid="${safeHtml(g.bcBidId || '')}">
+  return `<tr class="q-row q-group-row state-${state}${expanded ? ' expanded' : ''}" data-bid="${safeHtml(g.jobId || '')}">
     <td class="q-group-name">
-      <button class="q-toggle" data-act="toggle-group" data-bid="${safeHtml(g.bcBidId || '')}" aria-expanded="${expanded}">${arrow}</button>
-      <a href="#" data-act="goto-rfp" data-id="${safeHtml(g.bcBidId || '')}">${safeHtml(g.projectName)}</a>
+      <button class="q-toggle" data-act="toggle-group" data-bid="${safeHtml(g.jobId || '')}" aria-expanded="${expanded}">${arrow}</button>
+      <a href="#" data-act="goto-rfp" data-id="${safeHtml(g.jobId || '')}">${safeHtml(g.projectName)}</a>
     </td>
     <td>${fileTally}</td>
     <td>${statePill}</td>
@@ -1836,7 +1836,7 @@ function renderQueue(data) {
   const groups = _sortQueueGroups(_groupQueueItems(items));
   _updateSortIndicators();
   for (const g of groups) {
-    if ((g.counts.processing || 0) > 0 && g.bcBidId) Q_EXPANDED.add(g.bcBidId);
+    if ((g.counts.processing || 0) > 0 && g.jobId) Q_EXPANDED.add(g.jobId);
   }
   if (groups.length === 0) {
     $('q-empty').hidden = false;
@@ -1845,7 +1845,7 @@ function renderQueue(data) {
   }
   $('q-empty').hidden = true;
   $('q-rows').innerHTML = groups.map(g => {
-    const expanded = !g.bcBidId || Q_EXPANDED.has(g.bcBidId);
+    const expanded = !g.jobId || Q_EXPANDED.has(g.jobId);
     const groupRow = _groupRowHtml(g, expanded);
     if (!expanded) return groupRow;
     const fileRows = g.files.map(_fileRowHtml).join('');
@@ -1867,7 +1867,7 @@ function renderQueue(data) {
   $('q-rows').querySelectorAll('button[data-act="cancel-group"]').forEach(btn => {
     btn.addEventListener('click', async () => {
       const bid = btn.dataset.bid;
-      const g = groups.find(x => x.bcBidId === bid);
+      const g = groups.find(x => x.jobId === bid);
       if (!g) return;
       const live = g.files.filter(f => f.state === 'queued' || f.state === 'processing');
       if (live.length === 0) return;
@@ -1876,7 +1876,7 @@ function renderQueue(data) {
       try {
         for (const f of live) {
           await api('POST', '/api/bc/extraction-cancel', {
-            bcBidId:     f.bcBidId,
+            jobId:     f.jobId,
             driveFileId: f.driveFileId,
             reason:      'operator-cancel-group',
           });
@@ -1897,7 +1897,7 @@ function renderQueue(data) {
       btn.disabled = true; const orig = btn.textContent; btn.textContent = '…';
       try {
         await api('POST', '/api/bc/extraction-cancel', {
-          bcBidId:     btn.dataset.bid,
+          jobId:     btn.dataset.bid,
           driveFileId: btn.dataset.fid,
           reason:      'operator-cancel',
         });
@@ -2018,8 +2018,8 @@ function renderOutcomes() {
     ? '<div class="oc-empty">No proposals match.</div>'
     : list.map(it => {
         const cls = ocStateClass(it);
-        const sel = OC_STATE.selected === it.bcBidId ? ' selected' : '';
-        return `<div class="oc-card ${cls}${sel}" data-id="${safeHtml(it.bcBidId)}">
+        const sel = OC_STATE.selected === it.jobId ? ' selected' : '';
+        return `<div class="oc-card ${cls}${sel}" data-id="${safeHtml(it.jobId)}">
           <div class="oc-glyph">${ocGlyph(it)}</div>
           <div class="oc-meta">
             <div class="name">${safeHtml(projectLabel({projectName:it.projectName, driveJobFolderName:it.driveFolderName}))}</div>
@@ -2078,7 +2078,7 @@ function renderOutcomes() {
 // ===== Outcome detail panel (col 4) =====
 function selectedOutcome() {
   if (!OC_STATE.selected || !OC_STATE.data) return null;
-  return OC_STATE.data.items.find(i => i.bcBidId === OC_STATE.selected) || null;
+  return OC_STATE.data.items.find(i => i.jobId === OC_STATE.selected) || null;
 }
 function safeJsonParse(s, fallback) {
   if (!s) return fallback;
@@ -2255,7 +2255,7 @@ function collectOutcomePayload(it) {
   const bidAmount = parseFloat($('oc-bid-amount')?.value || '');
   const notes     = $('oc-notes')?.value || null;
   const payload = {
-    bcBidId: it.bcBidId,
+    jobId: it.jobId,
     outcomeStatus: os,
     bidAmountUsd: isFinite(bidAmount) ? bidAmount : null,
     notes,
@@ -2287,24 +2287,24 @@ async function saveOutcome(_unused, manageAfter) {
     await api('POST', '/api/outcomes/upsert', payload);
     toast('Outcome saved.');
     if (manageAfter) {
-      const params = new URLSearchParams({ jobId: it.jobId || it.bcBidId });
+      const params = new URLSearchParams({ jobId: it.jobId });
       if (URL_PARAMS.get('secret')) params.set('secret', URL_PARAMS.get('secret'));
       if (URL_PARAMS.get('api'))    params.set('api',    URL_PARAMS.get('api'));
       window.location.href = '/staff/manage-job.html?' + params.toString();
       return;
     }
     await loadOutcomes();
-    OC_STATE.selected = it.bcBidId;
+    OC_STATE.selected = it.jobId;
     renderOutcomes();
   } catch (e) { toast(e.message, 4500); }
 }
 async function addToCalendar(it) {
   try {
-    const r = await api('POST', '/api/outcomes/calendar-add', { bcBidId: it.bcBidId });
+    const r = await api('POST', '/api/outcomes/calendar-add', { jobId: it.jobId });
     if (r.eventUrl) window.open(r.eventUrl, '_blank', 'noopener,noreferrer');
     toast('Added to GCC staff calendar.');
     await loadOutcomes();
-    OC_STATE.selected = it.bcBidId;
+    OC_STATE.selected = it.jobId;
     renderOutcomes();
   } catch (e) { toast(e.message, 5000); }
 }

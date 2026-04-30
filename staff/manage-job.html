@@ -125,11 +125,9 @@ const SECRET    = URL_PARAMS.get('secret') || localStorage.getItem('gccAdminSecr
 if (URL_PARAMS.get('secret')) localStorage.setItem('gccAdminSecret', URL_PARAMS.get('secret'));
 const API_BASE  = URL_PARAMS.get('api') || ('https://api.' + location.hostname.replace(/^www\./, '').replace(/^staff\./, ''));
 // JobId is the canonical identifier (set/displayed at folder creation).
-// Accept either ?jobId= (canonical) or ?bcBidId= (legacy alias) so old
-// links keep working through the Phase 1 transition.
-const JOB_ID    = URL_PARAMS.get('jobId') || URL_PARAMS.get('bcBidId') || '';
-// Backward-compat alias for any code below that still reads BC_BID_ID.
-const BC_BID_ID = JOB_ID;
+// We still accept ?bcBidId= as a fallback for any legacy bookmarks
+// out in the wild; new code emits ?jobId= exclusively.
+const JOB_ID = URL_PARAMS.get('jobId') || URL_PARAMS.get('bcBidId') || '';
 
 const $   = (id) => document.getElementById(id);
 const fmt = (d) => d ? new Date(d).toLocaleString([], { month:'short', day:'numeric', year:'numeric' }) : '—';
@@ -159,12 +157,12 @@ async function api(method, path, body) {
 let JOB = null;
 
 async function load() {
-  if (!BC_BID_ID) { $('crumb').textContent = 'Missing ?bcBidId'; return; }
+  if (!JOB_ID) { $('crumb').textContent = 'Missing ?jobId'; return; }
   $('crumb').textContent = 'loading…';
   try {
     const list = await api('GET', '/api/outcomes/list');
-    const it = (list.items || []).find(x => x.bcBidId === BC_BID_ID);
-    if (!it) { $('crumb').textContent = `No outcome record for ${BC_BID_ID.slice(0,8)}…`; return; }
+    const it = (list.items || []).find(x => x.jobId === JOB_ID);
+    if (!it) { $('crumb').textContent = `No outcome record for ${JOB_ID.slice(0,8)}…`; return; }
     JOB = it;
     renderJob(it);
   } catch (e) { toast(e.message, 5000); $('crumb').textContent = 'error: ' + e.message; }
@@ -184,7 +182,7 @@ function renderJob(it) {
     it.calendarEventId ? `<span class="mj-chip">📅 On calendar</span>` : '',
   ].filter(Boolean).join('');
   $('mj-meta').innerHTML = [
-    ['BC ID',         it.bcBidId.slice(0,8) + '…'],
+    ['Job ID',        (it.jobId || '').slice(0,8) + '…'],
     ['GC / Client',   it.gc || '—'],
     ['Location',      it.location || '—'],
     ['Due',           it.dueAt || '—'],
@@ -212,7 +210,7 @@ $('mj-docs').addEventListener('click', async (e) => {
   if (!JOB) { toast('Job not loaded yet.', 3000); return; }
   btn.disabled = true; const orig = btn.textContent; btn.textContent = '…';
   try {
-    const r = await api('POST', '/api/outcomes/generate-doc', { bcBidId: JOB.bcBidId, kind });
+    const r = await api('POST', '/api/outcomes/generate-doc', { jobId: JOB.jobId, kind });
     if (r.url) {
       window.open(r.url, '_blank', 'noopener,noreferrer');
       btn.closest('.mj-doc').classList.add('done');
@@ -230,7 +228,7 @@ $('mj-cal-add').addEventListener('click', async () => {
   const btn = $('mj-cal-add');
   btn.disabled = true; const orig = btn.textContent; btn.textContent = '…';
   try {
-    const r = await api('POST', '/api/outcomes/calendar-add', { bcBidId: JOB.bcBidId });
+    const r = await api('POST', '/api/outcomes/calendar-add', { jobId: JOB.jobId });
     if (r.eventUrl) window.open(r.eventUrl, '_blank', 'noopener,noreferrer');
     JOB.calendarEventId = r.eventId || JOB.calendarEventId || 'added';
     btn.textContent = '✓ On calendar';
@@ -313,7 +311,7 @@ let _extRows = null;
 async function loadExtractions() {
   $('mj-ext-body').innerHTML = `<div class="small pad">loading…</div>`;
   try {
-    const r = await api('GET', '/api/admin/bid-extractions/list?jobId=' + encodeURIComponent(BC_BID_ID));
+    const r = await api('GET', '/api/admin/bid-extractions/list?jobId=' + encodeURIComponent(JOB_ID));
     _extRows = r.items || [];
     renderExtractions();
   } catch (e) {
