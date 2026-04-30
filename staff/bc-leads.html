@@ -7,7 +7,7 @@
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <meta name="theme-color" content="#1E4D2B" />
-  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-0430" />
+  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-0500" />
 </head>
 <body>
   <header>
@@ -1610,8 +1610,8 @@ function renderWorkerStatus(w) {
           : `<span class="ws-age stale">${_wsSinceText(it.updatedAt)}</span>`;
         const stuckClass = it.fresh ? '' : ' stuck';
         return `<div class="ws-inflight-row${stuckClass}">
-          <div class="ws-if-proj">${safeHtml(it.projectName || it.bcBidId || '(unknown)')}</div>
-          <div class="ws-if-file" title="${safeHtml(it.fileName || '')}">${safeHtml(it.fileName || '—')}</div>
+          <div class="ws-if-proj" title="${safeHtml(it.fileName || '')}">${safeHtml(it.fileName || '(file pending)')}</div>
+          <div class="ws-if-file small" title="${safeHtml(it.projectName || '')}">${safeHtml(it.projectName || it.bcBidId || '(unknown project)')}</div>
           <div class="ws-if-bar">${bar}${counts}</div>
           ${ageBadge}
         </div>`;
