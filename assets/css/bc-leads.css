@@ -557,6 +557,17 @@
     @keyframes wsPulse { 0%,100% { box-shadow:0 0 0 0 rgba(58,139,58,.55); }
                           50%     { box-shadow:0 0 0 6px rgba(58,139,58,0); } }
 
+    /* Reset button on the Heartbeat pill: small, subdued, only nudge
+       attention when the pill itself goes warn/err. */
+    .ws-hb-reset { font-size:10.5px; padding:2px 8px; margin-left:6px;
+                    background:transparent; border:1px solid currentColor;
+                    color:var(--slate); border-radius:4px; cursor:pointer;
+                    line-height:1.2; }
+    .ws-hb-reset:hover     { background:rgba(0,0,0,0.05); color:var(--ink); }
+    .ws-hb-reset:disabled  { opacity:0.5; cursor:wait; }
+    .ws-pill.warn .ws-hb-reset { color:#7A5300; }
+    .ws-pill.err  .ws-hb-reset { color:#7E1F1F; }
+
     .ws-inflight { display:flex; flex-direction:column; gap:4px; }
     .ws-inflight-empty { font-style:italic; }
     /* Three columns: filename | progress bar | age. Project name was

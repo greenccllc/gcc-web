@@ -7,7 +7,7 @@
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <meta name="theme-color" content="#1E4D2B" />
-  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-0635" />
+  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-0700" />
 </head>
 <body>
   <header>
@@ -76,6 +76,8 @@
           <span class="ws-dot"></span>
           <strong class="ws-hb-state">…</strong>
           <span class="small ws-hb-meta"></span>
+          <button type="button" class="ws-hb-reset" data-act="ws-reset"
+                  title="Clear processing strip + dismiss any logged error">↺ Reset</button>
         </div>
         <div class="ws-pill" id="ws-queue" title="Queue depth">
           <strong class="ws-q-counts">… queued · … processing</strong>
@@ -1448,6 +1450,27 @@ async function loadWorkerStatus() {
   // Cost-approval poll runs in parallel -- separate endpoint, separate render.
   loadCostApprovals().catch(() => {});
 }
+
+// Reset button on the Heartbeat pill: clears the processing strip
+// (DELETE FROM AiExtractionProgress) and marks any current lastError
+// dismissed. Useful after a worker kill / interruption when the panel
+// is showing stale ghosts. Active workers will write fresh rows on
+// their next heartbeat tick (~30s).
+document.addEventListener('click', async (e) => {
+  const btn = e.target.closest('[data-act="ws-reset"]'); if (!btn) return;
+  e.preventDefault(); e.stopPropagation();
+  if (!confirm('Reset Heartbeat panel? This clears the processing strip and dismisses any logged error.')) return;
+  btn.disabled = true; const orig = btn.textContent; btn.textContent = '…';
+  try {
+    const r = await api('POST', '/api/bc/worker-status/reset', {});
+    toast(`Reset (${r.progressRowsCleared || 0} rows cleared)`);
+    await loadWorkerStatus();
+  } catch (err) {
+    toast('Reset failed: ' + err.message, 5000);
+  } finally {
+    btn.disabled = false; btn.textContent = orig;
+  }
+});
 
 // ----- Cost-approval panel (between worker-status and the queue table) -----
 async function loadCostApprovals() {
