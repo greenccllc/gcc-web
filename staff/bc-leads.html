@@ -7,7 +7,7 @@
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <meta name="theme-color" content="#1E4D2B" />
-  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-0130" />
+  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-0220" />
 </head>
 <body>
   <header>
@@ -94,6 +94,16 @@
         <pre class="ws-log-tail" id="ws-log-tail"></pre>
       </details>
     </div>
+
+    <!-- Cost-approval panel -- files projected over $20 wait here -->
+    <div class="ca-panel" id="ca-panel" hidden>
+      <div class="ca-header">
+        <strong>Cost approval pending</strong>
+        <span class="small ca-threshold"></span>
+      </div>
+      <div class="ca-rows" id="ca-rows"></div>
+    </div>
+
     <div class="summary" id="q-summary"></div>
     <div class="q-controls">
       <span class="if-label" style="text-transform:none;font-weight:500">Filter</span>
@@ -1378,6 +1388,67 @@ async function loadWorkerStatus() {
   } catch (e) {
     // Silent fail -- panel just stays at last known state.
   }
+  // Cost-approval poll runs in parallel -- separate endpoint, separate render.
+  loadCostApprovals().catch(() => {});
+}
+
+// ----- Cost-approval panel (between worker-status and the queue table) -----
+async function loadCostApprovals() {
+  if ($('tab-queue').hidden) return;
+  try {
+    const r = await api('GET', '/api/bc/extraction-cost-approval-list?status=pending');
+    renderCostApprovals(r);
+  } catch (e) { /* silent */ }
+}
+function renderCostApprovals(r) {
+  const items = r.items || [];
+  const panel = $('ca-panel');
+  if (!panel) return;
+  if (items.length === 0) { panel.hidden = true; return; }
+  panel.hidden = false;
+  const threshold = r.thresholdUsd || 20;
+  const tEl = panel.querySelector('.ca-threshold');
+  if (tEl) tEl.textContent = `Threshold: $${Number(threshold).toFixed(2)} -- the worker projects each file's cost before running and pauses any over the threshold.`;
+  $('ca-rows').innerHTML = items.map(it => {
+    const cost = (it.projectedCostUsd != null) ? Number(it.projectedCostUsd).toFixed(2) : '?';
+    const tok  = (it.projectedTokens != null) ? `${Math.round(it.projectedTokens / 1000)}k tok` : '';
+    const proj = it.projectName || it.bcBidId || '(unknown)';
+    const file = it.fileName || it.driveFileId || '(no file)';
+    return `<div class="ca-row" data-ext="${safeHtml(it.extractionId)}">
+      <div class="ca-row-info">
+        <div class="ca-row-proj">${safeHtml(proj)}</div>
+        <div class="ca-row-file" title="${safeHtml(file)}">${safeHtml(file)}</div>
+      </div>
+      <div class="ca-row-cost">
+        <strong>$${cost}</strong>
+        <span class="small">${tok}</span>
+      </div>
+      <div class="ca-row-actions">
+        <button class="ca-approve" data-ext="${safeHtml(it.extractionId)}" title="Approve this run -- worker will pick it up on next delivery">✓ Approve</button>
+        <button class="ca-deny"    data-ext="${safeHtml(it.extractionId)}" title="Deny -- file will NOT be extracted">✕ Deny</button>
+      </div>
+    </div>`;
+  }).join('');
+  // Wire actions
+  $('ca-rows').querySelectorAll('.ca-approve, .ca-deny').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const intent = btn.classList.contains('ca-approve') ? 'approve' : 'deny';
+      const ext = btn.dataset.ext;
+      btn.disabled = true; const orig = btn.textContent; btn.textContent = '…';
+      try {
+        await api('POST', '/api/bc/extraction-cost-approval', {
+          intent,
+          extractionId: ext,
+          reason: `operator-${intent}`,
+        });
+        toast(intent === 'approve' ? 'Approved -- worker will pick it up on next delivery.' : 'Denied -- file will not be extracted.');
+        await loadCostApprovals();
+        await loadQueue();
+      } catch (e) {
+        btn.disabled = false; btn.textContent = orig; toast(e.message, 4500);
+      }
+    });
+  });
 }
 function _wsSinceText(iso) {
   if (!iso) return '—';

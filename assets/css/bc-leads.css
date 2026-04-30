@@ -507,6 +507,44 @@
                     font-family:ui-monospace, Consolas, Menlo, monospace;
                     font-size:10.5px; line-height:1.4; }
 
+    /* Cost-approval panel -- between worker-status and the queue table */
+    .ca-panel {
+      background:#FFF8E5;
+      border-bottom:1px solid #E8C679;
+      padding:10px 16px;
+    }
+    .ca-panel .ca-header { display:flex; align-items:baseline; gap:10px; margin-bottom:6px; }
+    .ca-panel .ca-header strong { color:#7E5400; font-size:13px; }
+    .ca-panel .ca-threshold { color:#7E5400; font-size:11.5px; }
+    .ca-rows { display:flex; flex-direction:column; gap:5px; }
+    .ca-row {
+      display:grid; grid-template-columns: 1fr auto auto;
+      align-items:center; gap:14px;
+      background:#FFFFFF; border:1px solid #E8C679; border-radius:6px;
+      padding:7px 12px; box-shadow: inset 4px 0 0 0 #C9A158;
+    }
+    .ca-row-proj { font-weight:600; color:var(--ink); font-size:12.5px; }
+    .ca-row-file {
+      font-family:ui-monospace, Consolas, Menlo, monospace;
+      font-size:11px; color:var(--slate);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      max-width:480px;
+    }
+    .ca-row-cost { text-align:right; }
+    .ca-row-cost strong { color:#7E5400; font-size:14px; display:block; }
+    .ca-row-cost .small { color:var(--slate); font-size:10.5px; }
+    .ca-row-actions { display:flex; gap:6px; }
+    .ca-row-actions button {
+      padding:5px 11px; font-size:11.5px; border-radius:5px; cursor:pointer;
+      border:1px solid var(--line); background:white; transition:all .12s ease;
+    }
+    .ca-row-actions .ca-approve {
+      border-color:var(--forest); color:var(--forest); font-weight:600;
+    }
+    .ca-row-actions .ca-approve:hover { background:var(--forest); color:white; }
+    .ca-row-actions .ca-deny:hover { border-color:var(--danger); color:var(--danger); }
+    .ca-row-actions button:disabled { opacity:.4; cursor:not-allowed; }
+
     /* Queue tab: file processing status table */
     .q-controls { display:flex; gap:8px; padding:6px 16px 8px; background:#FAFCF9;
                    border-bottom:1px solid var(--line); align-items:center; flex-wrap:wrap; }
