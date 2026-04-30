@@ -7,7 +7,7 @@
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <meta name="theme-color" content="#1E4D2B" />
-  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-0710" />
+  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-0745" />
 </head>
 <body>
   <header>
@@ -1009,13 +1009,19 @@ function render() {
       if (href) window.open(href, '_blank', 'noopener,noreferrer');
     });
   });
-  // Project-name click -> Manage Job. Opens in a new tab so the
-  // operator's place in the BC Leads list isn't lost.
+  // Project-name click -> Manage Job. Navigate IN PLACE rather than
+  // window.open(_, '_blank'). The tray launches BC Leads via
+  // `chrome.exe --app=<url>` which is a chromeless desktop-style
+  // window; calling window.open with target=_blank from inside it
+  // punts the new URL to the user's default-browser session instead
+  // of staying in the app window. In-place nav keeps everything
+  // inside the same chrome --app window. Use the browser back button
+  // to return to BC Leads (manage-job has its own crumb back-link too).
   $('rows').querySelectorAll('a[data-act="open-manage"]').forEach(a => {
     a.addEventListener('click', (e) => {
       e.preventDefault(); e.stopPropagation();
       const href = a.dataset.href;
-      if (href) window.open(href, '_blank', 'noopener,noreferrer');
+      if (href) window.location.href = href;
     });
   });
   $('rows').querySelectorAll('a[data-act="open-maps"]').forEach(a => {

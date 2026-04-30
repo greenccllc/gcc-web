@@ -16,7 +16,7 @@
       <div class="crumb" id="crumb">loading…</div>
     </div>
     <div style="display:flex;gap:10px;align-items:center">
-      <a class="back" href="/staff/bc-leads.html">← GCC Manager</a>
+      <a class="back" id="back-to-leads" href="/staff/bc-leads.html">← GCC Manager</a>
     </div>
   </header>
 
@@ -128,6 +128,23 @@ const API_BASE  = URL_PARAMS.get('api') || ('https://api.' + location.hostname.r
 // We still accept ?bcBidId= as a fallback for any legacy bookmarks
 // out in the wild; new code emits ?jobId= exclusively.
 const JOB_ID = URL_PARAMS.get('jobId') || URL_PARAMS.get('bcBidId') || '';
+
+// Preserve `secret` + `api` URL params on the back-to-leads link --
+// the tray launches BC Leads with `?secret=<shared>` and the page
+// passes that through to manage-job. Without this preservation the
+// back-link would land on a session-cookie-only BC Leads, which is
+// fine in a regular browser but breaks in `chrome.exe --app=...`
+// mode where there's no logged-in cookie session.
+{
+  const back = document.getElementById('back-to-leads');
+  if (back) {
+    const qs = new URLSearchParams();
+    if (URL_PARAMS.get('secret')) qs.set('secret', URL_PARAMS.get('secret'));
+    if (URL_PARAMS.get('api'))    qs.set('api',    URL_PARAMS.get('api'));
+    const q = qs.toString();
+    back.href = '/staff/bc-leads.html' + (q ? '?' + q : '');
+  }
+}
 
 const $   = (id) => document.getElementById(id);
 const fmt = (d) => d ? new Date(d).toLocaleString([], { month:'short', day:'numeric', year:'numeric' }) : '—';
