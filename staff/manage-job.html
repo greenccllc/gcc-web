@@ -47,30 +47,13 @@
           <button id="mj-scope-synth" class="mj-btn-sm" type="button"
                   title="Run a single Gemini pass over every per-file extraction for this job and emit one canonical count per LV category. The synthesized values become the displayed numbers."
                   style="margin-left:auto">Synthesize scope</button>
+          <button id="mj-send-proposal" class="mj-btn-sm" type="button"
+                  title="Publish this job (latest extraction + synthesized counts + project context) to the gcc-proposal Pub/Sub topic. The proposal-worker generates a draft into the job's Internal/ folder; review + Accept in the GCC Manager tray to promote.">Send to proposal generator</button>
         </div>
         <div class="mj-counts-grid" id="mj-counts-grid"></div>
         <div class="small mj-scope-reasoning" id="mj-scope-reasoning"></div>
       </div>
 
-      <div class="mj-card" style="margin-top:14px" id="mj-extract-card">
-        <h2>Extraction details</h2>
-        <div class="sub">Every count, note, spec, and proposal-required field the bid-extractor pulled from this RFP's intake files. The picker chooses the highest-authority source per (count type) — expand a row to see all candidates and pick a different one if needed.</div>
-        <div class="mj-ext-controls">
-          <span class="if-label" style="text-transform:none;font-weight:500">Show</span>
-          <select id="mj-ext-filter">
-            <option value="all" selected>All</option>
-            <option value="counts">Counts only</option>
-            <option value="note">Notes</option>
-            <option value="spec">Specs</option>
-            <option value="prop_req">Proposal requirements</option>
-          </select>
-          <button id="mj-ext-refresh" class="if-clear" type="button">↻ Refresh</button>
-          <span id="mj-ext-count" class="small" style="margin-left:auto"></span>
-        </div>
-        <div id="mj-ext-body" class="mj-ext-body">
-          <div class="small pad">loading…</div>
-        </div>
-      </div>
     </div>
 
     <!-- Right: meta + quick-links + docs + calendar -->
@@ -142,6 +125,28 @@
       </div>
     </div>
   </div>
+
+  <details class="mj-card mj-audit" id="mj-extract-card" style="margin:14px 0">
+    <summary style="cursor:pointer;font-weight:600;color:#1E4D2B;font-size:15px">
+      Audit <span class="mj-card-sub" style="font-weight:400">· per-file extraction sources</span>
+    </summary>
+    <div class="sub" style="margin-top:8px">Every count, note, spec, and proposal-required field the bid-extractor pulled from this RFP's intake files. The picker chooses the highest-authority source per (count type) — expand a row to see all candidates and pick a different one if needed.</div>
+    <div class="mj-ext-controls">
+      <span class="if-label" style="text-transform:none;font-weight:500">Show</span>
+      <select id="mj-ext-filter">
+        <option value="all" selected>All</option>
+        <option value="counts">Counts only</option>
+        <option value="note">Notes</option>
+        <option value="spec">Specs</option>
+        <option value="prop_req">Proposal requirements</option>
+      </select>
+      <button id="mj-ext-refresh" class="if-clear" type="button">↻ Refresh</button>
+      <span id="mj-ext-count" class="small" style="margin-left:auto"></span>
+    </div>
+    <div id="mj-ext-body" class="mj-ext-body">
+      <div class="small pad">click to load…</div>
+    </div>
+  </details>
 
   <div id="status-bar"></div>
 
@@ -435,6 +440,31 @@ function renderScope(r) {
   $('mj-scope-conf').innerHTML = safeHtml(confText) + legend;
 }
 
+// ===== Send to proposal generator (Pub/Sub publish) =====
+$('mj-send-proposal').addEventListener('click', async () => {
+  if (!LEAD?.jobId) { toast('Job not loaded yet.', 3000); return; }
+  const note = (window.prompt(
+    'Optional context for the proposal-worker (e.g. "lean fast install, prevailing wage on labor"). Leave blank for none.',
+    ''
+  ) ?? '').trim();
+  const btn = $('mj-send-proposal');
+  btn.disabled = true;
+  const orig = btn.textContent;
+  btn.textContent = 'Publishing…';
+  try {
+    const r = await api('POST', `/api/admin/jobs/${encodeURIComponent(LEAD.jobId)}/generate-proposal`,
+                        note ? { note } : {});
+    if (!r?.ok) throw new Error(r?.error || 'publish failed');
+    const fn = r.sourceFileName ? ` · ${r.sourceFileName}` : '';
+    toast(`Queued for proposal-worker · extractionId ${String(r.extractionId).slice(0,12)}…${fn}`, 6000);
+  } catch (e) {
+    toast(e.message || 'publish failed', 6000);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = orig;
+  }
+});
+
 // ===== Synthesize scope (Gemini pass) =====
 $('mj-scope-synth').addEventListener('click', async () => {
   if (!LEAD?.jobId) { toast('Job not loaded yet.', 3000); return; }
@@ -633,6 +663,7 @@ async function loadExtractions() {
     const r = await api('GET', '/api/admin/bid-extractions/list?jobId=' + encodeURIComponent(JOB_ID));
     _extRows = r.items || [];
     renderExtractions();
+    _auditLoaded = true;       // any successful load satisfies the lazy-load flag
   } catch (e) {
     $('mj-ext-body').innerHTML = `<div class="small pad" style="color:var(--danger)">${safeHtml(e.message)}</div>`;
   }
@@ -741,7 +772,17 @@ function renderExtractions() {
 $('mj-ext-filter')?.addEventListener('change', renderExtractions);
 $('mj-ext-refresh')?.addEventListener('click', loadExtractions);
 
-load().then(() => loadExtractions());
+// Audit card is collapsed by default — lazy-load extractions the first time
+// the operator opens it, so the API call doesn't fire on every page view.
+let _auditLoaded = false;
+$('mj-extract-card')?.addEventListener('toggle', () => {
+  if ($('mj-extract-card').open && !_auditLoaded) {
+    _auditLoaded = true;
+    loadExtractions();
+  }
+});
+
+load();
 </script>
 </body>
 </html>
