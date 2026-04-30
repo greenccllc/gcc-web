@@ -225,7 +225,7 @@
     var rows = d.items.slice(0, 10).map(it => {
       var pdf = it.has_proposal_pdf ? '<span class="pill pill-pdf">PDF</span>' : '';
       var md  = it.has_proposal_md  ? ' <span class="pill pill-md">MD</span>' : '';
-      var folderUrl = encodeURI('file:///C:/GCC LLC/MyAiDrive/1-Bids/' + it.name);
+      var folderUrl = encodeURI('file:///C:/GCC_LLC/Filestore/1-Bids/' + it.name);
       return '<tr>'
         + '<td class="num">' + escapeHtml(it.name.split(' - ')[0]) + '</td>'
         + '<td>' + escapeHtml(it.company) + '</td>'

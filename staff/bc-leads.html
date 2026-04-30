@@ -1052,13 +1052,13 @@ function render() {
     });
   });
   // Project-name click -> Manage Job. Navigate IN PLACE rather than
-  // window.open(_, '_blank'). The tray launches BC Leads via
+  // window.open(_, '_blank'). The tray launches the Projects tab via
   // `chrome.exe --app=<url>` which is a chromeless desktop-style
   // window; calling window.open with target=_blank from inside it
   // punts the new URL to the user's default-browser session instead
   // of staying in the app window. In-place nav keeps everything
   // inside the same chrome --app window. Use the browser back button
-  // to return to BC Leads (manage-job has its own crumb back-link too).
+  // to return to Projects (manage-job has its own crumb back-link too).
   $('rows').querySelectorAll('a[data-act="open-manage"]').forEach(a => {
     a.addEventListener('click', (e) => {
       e.preventDefault(); e.stopPropagation();
@@ -2133,7 +2133,8 @@ function renderQueue(data) {
       } catch (e) { btn.disabled = false; btn.textContent = orig; toast(e.message, 4500); }
     });
   });
-  // "Open in BC Leads" link.
+  // "Open in Projects" link -- jumps from a Queue-tab row back to the
+  // Projects tab and scrolls the matching RFP into view.
   $('q-rows').querySelectorAll('a[data-act="goto-rfp"]').forEach(a => {
     a.addEventListener('click', e => {
       e.preventDefault();
