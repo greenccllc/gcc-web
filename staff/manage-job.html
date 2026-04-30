@@ -7,7 +7,7 @@
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <meta name="theme-color" content="#1E4D2B" />
-  <link rel="stylesheet" href="/assets/css/staff-manage-job.css?v=20260430-0900" />
+  <link rel="stylesheet" href="/assets/css/staff-manage-job.css?v=20260430-0905" />
 </head>
 <body>
   <header>
@@ -395,20 +395,40 @@ const COUNT_KEYS = [
 function renderScope(r) {
   const counts = r.counts || {};
   const conf   = r.extraction?.confidencePct;
+  // Italic + " ?" superscript fires whenever the agent had to lean on
+  // drawing-symbol counting / riser-diagram inference instead of reading
+  // an explicit number out of a spec. Confidence < 70% triggers it; so
+  // does null confidence (no signal yet -> treat as estimated by default
+  // so the operator spot-checks before bidding).
   const estimated = conf == null || conf < 70;
+  // Per-pill tooltip explaining the ? -- only attached to the marked ones
+  // so hovering an explicit/high-confidence value doesn't claim it's
+  // estimated.
+  const estimatedTip = 'Estimated by the agent from drawing symbols / riser diagrams (not an explicit spec number). Spot-check before bidding.';
   let hasN = 0;
   const pills = COUNT_KEYS.map(([k, label]) => {
     const v = counts[k];
     const has = v != null && v !== 0;
     if (has) hasN++;
     const cls = (has ? 'has' : 'empty') + (has && estimated ? ' estimated' : '');
-    return `<div class="mj-count-pill ${cls}"><span class="lbl">${label}</span><span class="val">${v == null ? '—' : v}</span></div>`;
+    const tip = (has && estimated) ? ` title="${safeHtml(estimatedTip)}"` : '';
+    return `<div class="mj-count-pill ${cls}"${tip}><span class="lbl">${label}</span><span class="val">${v == null ? '—' : v}</span></div>`;
   }).join('');
   $('mj-counts-grid').innerHTML = pills;
   $('mj-scope-summary').textContent = `${hasN} in scope · ${COUNT_KEYS.length - hasN} empty`;
-  $('mj-scope-conf').textContent = conf == null
-    ? 'No agent confidence yet'
-    : `${Math.round(conf)}% confidence${estimated ? ' (estimated values italicized)' : ''}`;
+  // Confidence + "what does ? mean" legend. The legend renders whenever
+  // any pill is marked estimated -- which is the only time the ? shows
+  // up -- so the operator never has to ask "what's the question mark?".
+  let confText;
+  if (conf == null) {
+    confText = 'No agent confidence yet';
+  } else {
+    confText = `${Math.round(conf)}% confidence`;
+  }
+  const legend = estimated && hasN > 0
+    ? ` · <em title="${safeHtml(estimatedTip)}">italic + <span class="mj-scope-q">?</span> = agent estimated, spot-check</em>`
+    : '';
+  $('mj-scope-conf').innerHTML = safeHtml(confText) + legend;
 }
 
 // ===== Project meta =====
