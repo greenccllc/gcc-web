@@ -478,6 +478,7 @@
     <div style="display:flex;gap:10px;align-items:center">
       <span class="small" id="auto" style="color:rgba(255,255,255,.7)"></span>
       <button id="refresh" title="Refetch the leads-summary feed (no BC scrape)">↻ Refresh</button>
+      <button id="fix-folders" title="Create any missing Drive job/Intake folders, stale the scrape, and re-pull BC attachments unzipped" style="background:rgba(255,255,255,.15);color:white;border:0;padding:8px 14px;font-size:12px;font-weight:600;border-radius:8px;cursor:pointer;transition:all .12s ease">🗂 Fix folders</button>
       <button id="rescan" title="Force-fire BC scrape tasks now">Rescan now</button>
     </div>
   </header>
@@ -647,7 +648,12 @@ function compactLocation(loc) {
   return s;
 }
 
-// Auth: ?secret= on the URL (set by the tray launcher) OR localStorage fallback.
+// Auth precedence:
+//   1. ?secret= on URL (set by GCC Manager tray launcher) — lasts the session via localStorage
+//   2. localStorage.gccAdminSecret (sticky after a tray-launched session)
+//   3. browser session cookie (gcc_sess) sent automatically — lets staff bookmark/open this page
+//      in a normal browser without the tray, as long as they're already signed in at /clients/
+//   4. nothing → bounce to /clients/ to log in
 const URL_PARAMS = new URLSearchParams(location.search);
 const SECRET = URL_PARAMS.get('secret') || localStorage.getItem('gccAdminSecret') || '';
 if (URL_PARAMS.get('secret')) localStorage.setItem('gccAdminSecret', URL_PARAMS.get('secret'));
@@ -661,10 +667,21 @@ const fmtDate = (d) => d ? new Date(d).toLocaleDateString([], { month:'short', d
 const toast = (msg, ms = 2200) => { const b = $('status-bar'); b.textContent = msg; b.classList.add('show'); setTimeout(() => b.classList.remove('show'), ms); };
 
 async function api(method, path, body = null) {
-  if (!SECRET) throw new Error('No admin secret. Re-launch from the tray icon, or paste your secret into localStorage.gccAdminSecret.');
-  const opts = { method, headers: { 'X-Gcc-Admin-Secret': SECRET, 'Content-Type': 'application/json' } };
+  // Always send cookies so a staff session works without the secret header.
+  const opts = {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+  };
+  // Add secret header only if we have one — gcc-api accepts either path.
+  if (SECRET) opts.headers['X-Gcc-Admin-Secret'] = SECRET;
   if (body) opts.body = JSON.stringify(body);
   const res = await fetch(API_BASE + path, opts);
+  if (res.status === 401 || res.status === 403) {
+    // Cookie absent/expired AND no valid secret — bounce to login, preserve URL.
+    window.location.href = '/clients/?next=' + encodeURIComponent(location.href);
+    throw new Error(`${method} ${path} -> ${res.status}: not authenticated`);
+  }
   const text = await res.text();
   if (!res.ok) throw new Error(`${method} ${path} -> ${res.status}: ${text.slice(0, 300)}`);
   return text ? JSON.parse(text) : {};
@@ -1954,6 +1971,25 @@ $('refresh').addEventListener('click', async () => {
   btn.disabled = true; const orig = btn.textContent; btn.textContent = '↻ refreshing…';
   try { await load(); toast('Refreshed.'); }
   catch (e) { toast(e.message, 5000); }
+  finally   { btn.disabled = false; btn.textContent = orig; }
+});
+
+$('fix-folders').addEventListener('click', async () => {
+  const btn = $('fix-folders');
+  if (!confirm('Create any missing Drive job folders + Intake subfolders, stale the BC scrape freshness, and trigger a re-pull (which will unzip BC ZIPs into Intake)?\n\nThis only CREATES folders — it never moves your hand-curated ones.')) return;
+  btn.disabled = true; const orig = btn.textContent; btn.textContent = 'fixing…';
+  try {
+    const r = await api('POST', '/api/bc/fix-job-folders', { triggerScrape: true });
+    const parts = [];
+    if (r.created) parts.push(`${r.created} job folder${r.created === 1 ? '' : 's'} created`);
+    if (r.intakeCreated) parts.push(`${r.intakeCreated} Intake subfolder${r.intakeCreated === 1 ? '' : 's'} created`);
+    if (r.healed) parts.push(`${r.healed} dangling pointer${r.healed === 1 ? '' : 's'} healed`);
+    if (r.verified) parts.push(`${r.verified} already OK`);
+    if (r.failed) parts.push(`${r.failed} failed`);
+    if (r.scrapeTriggered) parts.push('scrape-detail triggered');
+    toast(parts.join(' · ') || 'No folders needed fixing.', 6000);
+    setTimeout(load, 4000);
+  } catch (e) { toast(e.message, 6000); }
   finally   { btn.disabled = false; btn.textContent = orig; }
 });
 
