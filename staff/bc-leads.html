@@ -7,7 +7,7 @@
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <meta name="theme-color" content="#1E4D2B" />
-  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-1255" />
+  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-1310" />
 </head>
 <body>
   <header>
@@ -109,6 +109,10 @@
           <strong>⚠ Last error</strong>
           <span class="small ws-err-msg"></span>
         </div>
+        <button type="button" class="ws-restart-all" data-act="ws-restart-all"
+                title="Force-quit all in-flight extractions + claude.exe agents, then relaunch the worker with the most recent code. In-flight messages NACK and Pub/Sub re-delivers them.">
+          🔁 Restart all
+        </button>
       </div>
       <div class="ws-inflight" id="ws-inflight">
         <div class="ws-inflight-empty small pad">No active extractions in the last 10 min.</div>
@@ -1553,25 +1557,36 @@ async function loadWatchdog() {
     fmt('Worker restarts',          h.workerRestarts      || 0, t.workerRestarts      || 0, a.workerRestarts      || 0),
     fmt('Drift attempts (blocked)', h.driftDetections     || 0, t.driftDetections     || 0, a.driftDetections     || 0),
     fmt('Orphan cleanups',          h.orphanCleanups      || 0, t.orphanCleanups      || 0, a.orphanCleanups      || 0),
+    fmt('Errors cleared',           t.errorsCleared       || 0, t.errorsCleared       || 0, a.errorsCleared       || 0),
     fmt('Healthy ticks',            h.ticks               || 0, t.ticks               || 0, a.ticks               || 0),
   ].join('');
 
-  // Patterns the dog "learned" -- top forbidden tools the agent's reflexes
-  // keep reaching for. SDK blocks them; this surfaces the count so the
-  // operator can see whether the pattern is improving over time.
-  const patterns = (r.driftPatterns || []).filter(p => p.samples > 0);
-  if (patterns.length === 0) {
-    $('wd-patterns').innerHTML = '<div class="small wd-pattern-empty">No drift patterns recently. Agent reflexes are clean. ✓</div>';
-  } else {
-    $('wd-patterns').innerHTML =
-      '<div class="wd-pattern-title small">Patterns sniffed out</div>' +
-      patterns.map(p =>
-        `<div class="wd-pattern" title="${p.samples} samples in the watchdog log -- SDK rejected each one">
-           <span class="wd-pattern-tool">${safeHtml(p.tool)}</span>
-           <span class="wd-pattern-count">${p.samples}×</span>
-         </div>`
-      ).join('');
+  // Two pattern stacks the dog tracks:
+  //   * driftPatterns -- forbidden tools the agent reflexively reaches for
+  //                      (SDK blocks; we surface the count).
+  //   * learnedPatterns -- error patterns the dog has classified as known
+  //                        and auto-clears (worker recovers, transient).
+  const drift = (r.driftPatterns || []).filter(p => p.samples > 0);
+  const learned = (r.learnedPatterns || []).filter(p => p.seenCount > 0);
+  let pHtml = '';
+  if (drift.length > 0) {
+    pHtml += '<div class="wd-pattern-title small">Drift attempts (SDK blocked)</div>';
+    pHtml += drift.map(p =>
+      `<div class="wd-pattern" title="The agent reached for tool:${safeHtml(p.tool)} ${p.samples} times -- the SDK rejected each one">
+         <span class="wd-pattern-tool">tool:${safeHtml(p.tool)}</span>
+         <span class="wd-pattern-count">${p.samples}×</span>
+       </div>`).join('');
   }
+  if (learned.length > 0) {
+    pHtml += '<div class="wd-pattern-title small" style="margin-top:6px">Errors I know how to clear</div>';
+    pHtml += learned.slice(0, 5).map(p =>
+      `<div class="wd-pattern" title="${safeHtml(p.desc || '')}">
+         <span class="wd-pattern-tool">${safeHtml(p.name)}</span>
+         <span class="wd-pattern-count">${p.seenCount}×</span>
+       </div>`).join('');
+  }
+  if (!pHtml) pHtml = '<div class="small wd-pattern-empty">No patterns to report. Worker is humming. ✓</div>';
+  $('wd-patterns').innerHTML = pHtml;
 
   // Recent events timeline -- collapsed by default, only shown when there are events.
   const events = r.recentEvents || [];
@@ -1634,6 +1649,29 @@ document.addEventListener('click', async (e) => {
     await loadWorkerStatus();
   } catch (err) {
     toast('Reset failed: ' + err.message, 5000);
+  } finally {
+    btn.disabled = false; btn.textContent = orig;
+  }
+});
+
+// "Restart all" button on the worker-status panel.
+// Hard-quits the worker process + every claude.exe child agent, then
+// relaunches the worker via its scheduled task. In-flight Pub/Sub
+// messages NACK + redeliver. Use this after a deploy of new bid-
+// extractor code (worker.py / system_prompt.py / prompt-ref.md) so
+// the new code takes effect immediately on the entire fleet rather
+// than waiting for the natural agent-rotation pace.
+document.addEventListener('click', async (e) => {
+  const btn = e.target.closest('[data-act="ws-restart-all"]'); if (!btn) return;
+  e.preventDefault(); e.stopPropagation();
+  if (!confirm('Restart all extractions?\n\nThis will:\n  • Kill every claude.exe agent (in-flight files NACK and redeliver via Pub/Sub)\n  • Restart the bid-extractor worker process\n  • New code (most recent push) takes effect on every new agent\n\n~10-30s of downtime; messages re-process from the start.')) return;
+  btn.disabled = true; const orig = btn.textContent; btn.textContent = 'Restarting…';
+  try {
+    const r = await api('POST', '/api/bc/worker/restart-all', {});
+    toast(`Worker restarted (killed ${r.agentsKilled || 0} agents).`, 5000);
+    setTimeout(() => loadWorkerStatus().catch(()=>{}), 5000);
+  } catch (err) {
+    toast('Restart failed: ' + err.message, 6000);
   } finally {
     btn.disabled = false; btn.textContent = orig;
   }

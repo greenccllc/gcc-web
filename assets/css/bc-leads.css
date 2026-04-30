@@ -550,6 +550,17 @@
     .hb-copy:hover { background:var(--green-tint); border-color:var(--forest); color:var(--forest); }
 
     /* Queue tab: worker status panel (top of the tab) */
+    /* Restart All button on the worker-status panel. Brighter / more
+       visible than the Heartbeat Reset button so the operator sees it
+       as a heavier action (it nukes every agent + restarts worker). */
+    .ws-restart-all {
+      margin-left:auto; padding:7px 14px; font-size:12px; font-weight:700;
+      border:1px solid var(--gold); background:#FFF4D8; color:#7A5A00;
+      border-radius:7px; cursor:pointer; transition:all .12s ease;
+    }
+    .ws-restart-all:hover  { background:var(--gold); color:white; }
+    .ws-restart-all:disabled { opacity:.6; cursor:wait; }
+
     /* Watchdog (Chihuahua) pane -- summarizes the bid-extractor watchdog
        scheduled task. Shown at the top of the Queue tab. */
     .wd-pane {
