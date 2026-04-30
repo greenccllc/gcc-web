@@ -124,7 +124,12 @@ const URL_PARAMS = new URLSearchParams(location.search);
 const SECRET    = URL_PARAMS.get('secret') || localStorage.getItem('gccAdminSecret') || '';
 if (URL_PARAMS.get('secret')) localStorage.setItem('gccAdminSecret', URL_PARAMS.get('secret'));
 const API_BASE  = URL_PARAMS.get('api') || ('https://api.' + location.hostname.replace(/^www\./, '').replace(/^staff\./, ''));
-const BC_BID_ID = URL_PARAMS.get('bcBidId') || '';
+// JobId is the canonical identifier (set/displayed at folder creation).
+// Accept either ?jobId= (canonical) or ?bcBidId= (legacy alias) so old
+// links keep working through the Phase 1 transition.
+const JOB_ID    = URL_PARAMS.get('jobId') || URL_PARAMS.get('bcBidId') || '';
+// Backward-compat alias for any code below that still reads BC_BID_ID.
+const BC_BID_ID = JOB_ID;
 
 const $   = (id) => document.getElementById(id);
 const fmt = (d) => d ? new Date(d).toLocaleString([], { month:'short', day:'numeric', year:'numeric' }) : '—';

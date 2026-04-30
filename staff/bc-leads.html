@@ -7,7 +7,7 @@
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <meta name="theme-color" content="#1E4D2B" />
-  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-0408" />
+  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-0445" />
 </head>
 <body>
   <header>
@@ -422,7 +422,7 @@ const COLS = [
         : '';
       // Project name -> Manage Job. BC link is preserved in the
       // expand pane footer.
-      const mjQs = new URLSearchParams({ bcBidId: r.bcBidId });
+      const mjQs = new URLSearchParams({ jobId: r.jobId || r.bcBidId });
       if (URL_PARAMS.get('secret')) mjQs.set('secret', URL_PARAMS.get('secret'));
       if (URL_PARAMS.get('api'))    mjQs.set('api',    URL_PARAMS.get('api'));
       const mjHref = `/staff/manage-job.html?${mjQs.toString()}`;
@@ -533,7 +533,7 @@ function expandTopStrip(r) {
     : `$${Number(cost).toFixed(2)}${tok ? ` <span class="small">(${(tok/1000).toFixed(1)}k tok)</span>` : ''}`;
 
   // Manage / BC / Drive links + Extraction details deep-link
-  const mjQs = new URLSearchParams({ bcBidId: r.bcBidId });
+  const mjQs = new URLSearchParams({ jobId: r.jobId || r.bcBidId });
   if (URL_PARAMS.get('secret')) mjQs.set('secret', URL_PARAMS.get('secret'));
   if (URL_PARAMS.get('api'))    mjQs.set('api',    URL_PARAMS.get('api'));
   const mjHref = `/staff/manage-job.html?${mjQs.toString()}`;
@@ -638,7 +638,7 @@ function expandMetaCol(r) {
     <div class="field"><span class="lbl">Last file</span><span class="val">${fmt(r.lastFileAt || r.lastSeenAt)}</span></div>
     <div class="field" style="display:flex;flex-direction:row;gap:6px;flex-wrap:wrap;margin-top:6px">${[acceptedBadge, addBadge, pausedBadge].filter(Boolean).join('')}</div>
     <div class="field" style="margin-top:8px">
-      <a class="ext-detail-link" href="/staff/manage-job.html?bcBidId=${safeHtml(r.bcBidId)}${URL_PARAMS.get('secret') ? '&secret=' + encodeURIComponent(URL_PARAMS.get('secret')) : ''}${URL_PARAMS.get('api') ? '&api=' + encodeURIComponent(URL_PARAMS.get('api')) : ''}">
+      <a class="ext-detail-link" href="/staff/manage-job.html?jobId=${safeHtml(r.jobId || r.bcBidId)}${URL_PARAMS.get('secret') ? '&secret=' + encodeURIComponent(URL_PARAMS.get('secret')) : ''}${URL_PARAMS.get('api') ? '&api=' + encodeURIComponent(URL_PARAMS.get('api')) : ''}">
         🔍 Extraction details
       </a>
       <span class="small pad" style="margin-left:6px">notes, specs, prop reqs, per-source counts</span>
@@ -1083,7 +1083,7 @@ function render() {
           const r = (STATE.data.items || []).find(x => x.bcBidId === id);
           showProjectDetails(r);
         } else if (act === 'view-prop') {
-          const resp = await api('GET', '/api/bc/proposal-folder?bcBidId=' + encodeURIComponent(id));
+          const resp = await api('GET', '/api/bc/proposal-folder?jobId=' + encodeURIComponent(id));
           if (resp && resp.url) window.open(resp.url, '_blank', 'noopener,noreferrer');
           else toast('No proposal folder yet for this RFP.', 4000);
         } else if (act === 'scan-addenda') {
@@ -2287,7 +2287,7 @@ async function saveOutcome(_unused, manageAfter) {
     await api('POST', '/api/outcomes/upsert', payload);
     toast('Outcome saved.');
     if (manageAfter) {
-      const params = new URLSearchParams({ bcBidId: it.bcBidId });
+      const params = new URLSearchParams({ jobId: it.jobId || it.bcBidId });
       if (URL_PARAMS.get('secret')) params.set('secret', URL_PARAMS.get('secret'));
       if (URL_PARAMS.get('api'))    params.set('api',    URL_PARAMS.get('api'));
       window.location.href = '/staff/manage-job.html?' + params.toString();
