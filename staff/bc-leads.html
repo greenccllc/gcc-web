@@ -7,7 +7,7 @@
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <meta name="theme-color" content="#1E4D2B" />
-  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-1245" />
+  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-1255" />
 </head>
 <body>
   <header>
@@ -1468,18 +1468,25 @@ const QSTATE = {
   sortDir: 'asc',
   lastData: null,
 };
+let _watchdogTimer = null;
 function scheduleQueueRefresh() {
   clearInterval(_queueTimer);
   _queueTimer = setInterval(loadQueue, 7000);
+  // Watchdog pane runs on its own 60s tick -- it's a slower-moving
+  // signal (the watchdog itself only fires once a minute) so polling
+  // it 8x more often than it changes is wasted bandwidth.
+  loadWatchdog().catch(()=>{});
+  clearInterval(_watchdogTimer);
+  _watchdogTimer = setInterval(() => loadWatchdog().catch(()=>{}), 60000);
 }
 async function loadQueue() {
   if ($('tab-queue').hidden) return;
   // Visual cue on the refresh button so the user can tell a click registered.
   const btn = $('q-refresh');
   if (btn) { btn.disabled = true; btn.dataset.origText = btn.dataset.origText || btn.textContent; btn.textContent = '… refreshing'; }
-  // Fire worker-status + watchdog summary in parallel -- they don't block the table render.
+  // Fire worker-status in parallel -- it doesn't block the table render.
+  // Watchdog summary runs on its own 60s timer (scheduleQueueRefresh).
   loadWorkerStatus().catch(()=>{});
-  loadWatchdog().catch(()=>{});
   try {
     const params = new URLSearchParams();
     if (QSTATE.state) params.set('status', QSTATE.state);
@@ -1531,20 +1538,22 @@ async function loadWatchdog() {
   $('wd-verdict').textContent = r.verdict || '';
   $('wd-verdict').className = 'wd-verdict wd-mood-' + (r.mood || 'watching');
 
-  // Today / week / all-time aggregate badges
-  const t = r.today || {}, w = r.week || {}, a = r.allTime || {};
-  const fmt = (label, today, week, all) =>
-    `<span class="wd-stat" title="${label}: ${today} today · ${week} this week · ${all} all-time">
+  // Last-hour / today / all-time aggregate badges. Headline number is
+  // last-hour (most actionable for the operator); today + all-time are
+  // in the tooltip for context.
+  const t = r.today || {}, h = r.lastHour || {}, a = r.allTime || {};
+  const fmt = (label, hour, today, all) =>
+    `<span class="wd-stat" title="${label}: ${hour} last hour · ${today} today · ${all} all-time">
        <span class="wd-stat-lbl">${label}</span>
-       <span class="wd-stat-val">${today}</span>
-       <span class="wd-stat-week">/ ${week} week</span>
+       <span class="wd-stat-val">${hour}</span>
+       <span class="wd-stat-week">/ ${today} today</span>
      </span>`;
   $('wd-stats').innerHTML = [
-    fmt('Stalled agents killed',    t.stalledAgentsKilled || 0, w.stalledAgentsKilled || 0, a.stalledAgentsKilled || 0),
-    fmt('Worker restarts',          t.workerRestarts      || 0, w.workerRestarts      || 0, a.workerRestarts      || 0),
-    fmt('Drift attempts (blocked)', t.driftDetections     || 0, w.driftDetections     || 0, a.driftDetections     || 0),
-    fmt('Orphan cleanups',          t.orphanCleanups      || 0, w.orphanCleanups      || 0, a.orphanCleanups      || 0),
-    fmt('Healthy ticks',            t.ticks               || 0, w.ticks               || 0, a.ticks               || 0),
+    fmt('Stalled agents killed',    h.stalledAgentsKilled || 0, t.stalledAgentsKilled || 0, a.stalledAgentsKilled || 0),
+    fmt('Worker restarts',          h.workerRestarts      || 0, t.workerRestarts      || 0, a.workerRestarts      || 0),
+    fmt('Drift attempts (blocked)', h.driftDetections     || 0, t.driftDetections     || 0, a.driftDetections     || 0),
+    fmt('Orphan cleanups',          h.orphanCleanups      || 0, t.orphanCleanups      || 0, a.orphanCleanups      || 0),
+    fmt('Healthy ticks',            h.ticks               || 0, t.ticks               || 0, a.ticks               || 0),
   ].join('');
 
   // Patterns the dog "learned" -- top forbidden tools the agent's reflexes
