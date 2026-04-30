@@ -7,7 +7,7 @@
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <meta name="theme-color" content="#1E4D2B" />
-  <link rel="stylesheet" href="/assets/css/staff-manage-job.css?v=20260430-0240" />
+  <link rel="stylesheet" href="/assets/css/staff-manage-job.css?v=20260430-0900" />
 </head>
 <body>
   <header>
@@ -20,20 +20,37 @@
     </div>
   </header>
 
-  <div class="mj-summary" id="mj-summary"></div>
+  <!-- Hero: project name + identity chips + status badges -->
+  <section class="mj-hero" id="mj-hero" hidden>
+    <h2 class="mj-hero-title" id="mj-hero-title">…</h2>
+    <div class="mj-hero-chips" id="mj-hero-chips"></div>
+  </section>
+
+  <!-- Action bar: every workflow + maintenance action that used to live in
+       the bc-leads row drawer's "Actions" column. Always visible at the
+       top so the operator never scrolls hunting for the Accept button. -->
+  <section class="mj-action-bar" id="mj-action-bar" hidden></section>
 
   <div class="mj-grid">
-    <!-- Left: doc generators + project meta -->
+    <!-- Left: description + LV scope + extraction details -->
     <div>
-      <div class="mj-card">
-        <h2>Project meta</h2>
-        <div class="sub">Pulled from the BC RFP record + saved outcome.</div>
-        <div class="mj-meta" id="mj-meta"></div>
+      <div class="mj-card" id="mj-desc-card">
+        <h2>Project description</h2>
+        <div class="mj-descr" id="mj-descr"><span class="small pad">loading…</span></div>
+      </div>
+
+      <div class="mj-card" style="margin-top:14px" id="mj-scope-card">
+        <h2>Low-voltage scope <span class="mj-card-sub">· 4 × 5</span></h2>
+        <div class="mj-scope-toolbar">
+          <span class="small" id="mj-scope-summary">—</span>
+          <span class="small mj-scope-conf" id="mj-scope-conf"></span>
+        </div>
+        <div class="mj-counts-grid" id="mj-counts-grid"></div>
       </div>
 
       <div class="mj-card" style="margin-top:14px" id="mj-extract-card">
         <h2>Extraction details</h2>
-        <div class="sub">Every count, note, spec, and proposal-required field the bid-extractor pulled from this RFP's intake files. The picker chooses the highest-authority source per (count type) -- expand a row to see all candidates and pick a different one if needed.</div>
+        <div class="sub">Every count, note, spec, and proposal-required field the bid-extractor pulled from this RFP's intake files. The picker chooses the highest-authority source per (count type) — expand a row to see all candidates and pick a different one if needed.</div>
         <div class="mj-ext-controls">
           <span class="if-label" style="text-transform:none;font-weight:500">Show</span>
           <select id="mj-ext-filter">
@@ -49,6 +66,20 @@
         <div id="mj-ext-body" class="mj-ext-body">
           <div class="small pad">loading…</div>
         </div>
+      </div>
+    </div>
+
+    <!-- Right: meta + quick-links + docs + calendar -->
+    <div>
+      <div class="mj-card">
+        <h2>Project meta</h2>
+        <div class="sub">Pulled from the BC RFP record + saved outcome.</div>
+        <div class="mj-meta" id="mj-meta"></div>
+      </div>
+
+      <div class="mj-card" style="margin-top:14px" id="mj-quick-card">
+        <h2>Quick links</h2>
+        <div class="mj-quick-list" id="mj-quick-list"></div>
       </div>
 
       <div class="mj-card" style="margin-top:14px">
@@ -93,11 +124,8 @@
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Right: calendar -->
-    <div>
-      <div class="mj-card">
+      <div class="mj-card" style="margin-top:14px">
         <h2>GCC Staff Calendar</h2>
         <div class="sub">Project events live on the GCC primary calendar. The Outcome's project start / end dates seed the kickoff &amp; closeout events.</div>
         <div class="mj-cal-actions">
@@ -129,12 +157,7 @@ const API_BASE  = URL_PARAMS.get('api') || ('https://api.' + location.hostname.r
 // out in the wild; new code emits ?jobId= exclusively.
 const JOB_ID = URL_PARAMS.get('jobId') || URL_PARAMS.get('bcBidId') || '';
 
-// Preserve `secret` + `api` URL params on the back-to-leads link --
-// the tray launches BC Leads with `?secret=<shared>` and the page
-// passes that through to manage-job. Without this preservation the
-// back-link would land on a session-cookie-only BC Leads, which is
-// fine in a regular browser but breaks in `chrome.exe --app=...`
-// mode where there's no logged-in cookie session.
+// Preserve `secret` + `api` URL params on the back-to-leads link.
 {
   const back = document.getElementById('back-to-leads');
   if (back) {
@@ -152,8 +175,6 @@ const toast = (m, ms=2200) => { const b = $('status-bar'); b.textContent=m; b.cl
 const safeHtml = (s) => String(s||'').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 
 async function api(method, path, body) {
-  // Auth: secret header (tray launcher) OR session cookie (regular browser).
-  // gcc-api's RequireGoogleAdminAuth accepts either path; we send both when available.
   const opts = {
     method,
     headers: { 'Content-Type': 'application/json' },
@@ -171,77 +192,277 @@ async function api(method, path, body) {
   return text ? JSON.parse(text) : {};
 }
 
-let JOB = null;
+// LEAD = the bc/leads-summary item for this JobId. Has the full row payload:
+// description, counts, extraction state, scrape state, ai cost, etc.
+// JOB  = the outcomes/list item (subset; only set if there's an outcome row).
+let LEAD = null;
+let JOB  = null;
+
+const STATUS_OPTIONS = ['Undecided', 'Accepted', 'Submitted', 'Won', 'Archived', 'Lost'];
+function statusBadge(s) {
+  const cls = `mj-status mj-status-${(s || 'Unknown').replace(/[^A-Za-z]/g,'')}`;
+  return `<span class="${cls}">${safeHtml(s || 'Unknown')}</span>`;
+}
 
 async function load() {
   if (!JOB_ID) { $('crumb').textContent = 'Missing ?jobId'; return; }
   $('crumb').textContent = 'loading…';
   try {
-    const list = await api('GET', '/api/outcomes/list');
-    const it = (list.items || []).find(x => x.jobId === JOB_ID);
-    if (!it) { $('crumb').textContent = `No outcome record for ${JOB_ID.slice(0,8)}…`; return; }
-    JOB = it;
-    renderJob(it);
+    // Pull the full leads-summary feed and pick this JobId out of it.
+    // Also pull outcomes/list for the calendar + start/end dates (a
+    // subset of what we already have in LEAD; merge for the meta panel).
+    const [leads, outs] = await Promise.all([
+      api('GET', '/api/bc/leads-summary'),
+      api('GET', '/api/outcomes/list').catch(() => ({ items: [] })),
+    ]);
+    LEAD = (leads.items || []).find(x => x.jobId === JOB_ID) || null;
+    JOB  = (outs.items  || []).find(x => x.jobId === JOB_ID) || null;
+    if (!LEAD) {
+      $('crumb').textContent = `No RFP record for ${JOB_ID.slice(0,8)}…`;
+      return;
+    }
+    renderAll();
   } catch (e) { toast(e.message, 5000); $('crumb').textContent = 'error: ' + e.message; }
 }
 
-function renderJob(it) {
-  const name = it.projectName || it.driveFolderName || '(no name)';
+function renderAll() {
+  const r    = LEAD;
+  const name = r.projectName || r.driveJobFolderName || '(no name)';
   $('crumb').textContent = name;
   document.title = `Manage Job · ${name}`;
-  const status = it.outcomeStatus || (it.status === 'Won' ? 'won' : it.status === 'Lost' ? 'lost' : 'unknown');
-  $('mj-summary').innerHTML = [
-    `<span class="mj-chip"><strong>${safeHtml(name)}</strong></span>`,
-    `<span class="mj-chip">${safeHtml(it.gc || 'unknown GC')}</span>`,
-    it.location ? `<span class="mj-chip">📍 ${safeHtml(it.location)}</span>` : '',
-    it.bidAmountUsd ? `<span class="mj-chip">💵 $${Number(it.bidAmountUsd).toLocaleString()}</span>` : '',
-    `<span class="mj-chip">Outcome: <strong>${safeHtml(status)}</strong></span>`,
-    it.calendarEventId ? `<span class="mj-chip">📅 On calendar</span>` : '',
+
+  renderHero(r);
+  renderActionBar(r);
+  renderDescription(r);
+  renderScope(r);
+  renderMeta(r);
+  renderQuickLinks(r);
+  renderCalendar();
+}
+
+// ===== Hero =====
+function renderHero(r) {
+  $('mj-hero').hidden = false;
+  $('mj-hero-title').textContent = r.projectName || r.driveJobFolderName || '(no name)';
+  const status = r.status || 'Unknown';
+  const accepted   = r.extraction?.accepted;
+  const paused     = r.extractionPaused;
+  const flagged    = !!r.addendaSeen;
+  const cost       = r.ai?.costUsd;
+  const att        = r.scrape?.attachmentsCount || 0;
+  const msg        = r.scrape?.messagesCount    || 0;
+  const pp         = r.extraction?.pagesProcessed || 0;
+  const pt         = r.extraction?.pagesTotal     || 0;
+  const conf       = r.extraction?.confidencePct;
+  const chips = [
+    r.gc       ? `<span class="mj-chip"><span class="lbl">GC</span> ${safeHtml(r.gc)}</span>` : '',
+    r.location ? `<span class="mj-chip"><span class="lbl">📍</span> ${safeHtml(r.location)}</span>` : '',
+    r.dueAt    ? `<span class="mj-chip"><span class="lbl">Due</span> ${safeHtml(r.dueAt)}</span>` : '',
+    JOB?.bidAmountUsd ? `<span class="mj-chip"><span class="lbl">💵</span> $${Number(JOB.bidAmountUsd).toLocaleString()}</span>` : '',
+    `<span class="mj-chip"><span class="lbl">Status</span> ${statusBadge(status)}</span>`,
+    pt > 0 ? `<span class="mj-chip"><span class="lbl">Pages</span> ${pp} of ${pt}</span>` : '',
+    conf != null ? `<span class="mj-chip"><span class="lbl">Confidence</span> ${Math.round(conf)}%</span>` : '',
+    cost != null ? `<span class="mj-chip"><span class="lbl">AI cost</span> $${Number(cost).toFixed(2)}</span>` : '',
+    (att || msg) ? `<span class="mj-chip"><span class="lbl">Files</span> ${att} att · ${msg} msg</span>` : '',
+    accepted ? '<span class="mj-chip mj-chip-good">✓ Accepted</span>' : '',
+    flagged  ? '<span class="mj-chip mj-chip-warn">⚠ Addendum</span>' : '',
+    paused   ? '<span class="mj-chip mj-chip-mute">⏸ Paused</span>' : '',
+    JOB?.calendarEventId ? '<span class="mj-chip">📅 On calendar</span>' : '',
   ].filter(Boolean).join('');
-  $('mj-meta').innerHTML = [
-    ['Job ID',        (it.jobId || '').slice(0,8) + '…'],
-    ['GC / Client',   it.gc || '—'],
-    ['Location',      it.location || '—'],
-    ['Due',           it.dueAt || '—'],
-    ['Project start', fmt(it.projectStartAt)],
-    ['Project end',   fmt(it.projectEndAt)],
-    ['Bid total',     it.bidAmountUsd ? '$' + Number(it.bidAmountUsd).toLocaleString() : '—'],
-    ['Status',        it.status],
-  ].map(([k,v]) => `<div class="field"><span class="lbl">${k}</span><span class="val">${safeHtml(v)}</span></div>`).join('');
+  $('mj-hero-chips').innerHTML = chips;
+}
 
-  // Calendar add button: enabled only if outcome is "won" and not already added.
+// ===== Action bar =====
+// Workflow + maintenance buttons. Mirrors the row-drawer Actions column from
+// bc-leads (now stripped) but lives at the page top so it's always reachable.
+// Buttons appear/disappear based on the row's current Status — same logic as
+// the prior expandActionsCol().
+function renderActionBar(r) {
+  $('mj-action-bar').hidden = false;
+  const id       = r.jobId;
+  const accepted = r.extraction?.accepted;
+  const paused   = r.extractionPaused;
+  const status   = r.status || 'Unknown';
+  const flagged  = !!r.addendaSeen;
+  const items = [];
+  // Per-status primary actions
+  if (status === 'Undecided') {
+    items.push(`<button class="primary" data-act="project-details" data-id="${id}">📋 Project details</button>`);
+  }
+  if (status === 'Accepted') {
+    items.push(`<button class="primary" data-act="extract-more"  data-id="${id}">🔬 Extract more</button>`);
+    items.push(`<button class="${accepted ? 'primary' : ''}" data-act="accept" data-id="${id}">${accepted ? '✓ Accepted' : '✓ Accept extraction'}</button>`);
+    items.push(`<button data-act="pause-toggle" data-id="${id}" data-paused="${paused ? '1' : '0'}">${paused ? '▶ Resume' : '⏸ Pause'}</button>`);
+  }
+  if (status === 'Submitted') {
+    items.push(`<button class="primary" data-act="view-prop" data-id="${id}">📤 View latest proposal</button>`);
+    items.push(`<button class="${flagged ? 'warn' : ''}" data-act="scan-addenda" data-id="${id}">${flagged ? '⚠ Scan addenda (NEW)' : '🔍 Scan addenda'}</button>`);
+  }
+  if (status === 'Won' || status === 'Lost' || status === 'Archived') {
+    items.push(`<button data-act="view-prop" data-id="${id}">📤 View latest proposal</button>`);
+  }
+  // Move-to-status select
+  items.push(`<select data-act="move-status" data-id="${id}">
+    <option value="">— Move to status —</option>
+    ${STATUS_OPTIONS.map(s => `<option value="${s}" ${s === status ? 'disabled' : ''}>${s}${s === status ? ' (current)' : ''}</option>`).join('')}
+  </select>`);
+  // Maintenance
+  items.push(`<button data-act="rescan-details" data-id="${id}">🔄 Rescan details</button>`);
+  items.push(`<button class="danger" data-act="delete" data-id="${id}">🗑 Delete RFP</button>`);
+  $('mj-action-bar').innerHTML = items.join('');
+  // Wire up
+  $('mj-action-bar').querySelectorAll('button[data-act]').forEach(btn => {
+    btn.addEventListener('click', (e) => onAction(e, btn));
+  });
+  $('mj-action-bar').querySelector('select[data-act="move-status"]')?.addEventListener('change', onMoveStatus);
+}
+async function onMoveStatus(e) {
+  const sel = e.currentTarget;
+  const id  = sel.dataset.id;
+  const v   = sel.value;
+  if (!v) return;
+  sel.disabled = true;
+  try {
+    await api('POST', '/api/bc/extraction/move-status', { jobId: id, newStatus: v });
+    toast(`Moved to ${v}`);
+    setTimeout(load, 800);
+  } catch (err) { toast(err.message, 4500); }
+  finally { sel.disabled = false; }
+}
+async function onAction(e, btn) {
+  e.stopPropagation();
+  const act = btn.dataset.act, id = btn.dataset.id;
+  btn.disabled = true; const orig = btn.innerHTML; btn.textContent = '…';
+  try {
+    if (act === 'extract-more') {
+      await api('POST', '/api/bc/extraction/extract-more', { jobId: id });
+      toast('Deeper extraction queued.');
+      setTimeout(load, 1200);
+    } else if (act === 'accept') {
+      await api('POST', '/api/bc/extraction/accept', { jobId: id });
+      toast('Extraction accepted.');
+      setTimeout(load, 1500); return;
+    } else if (act === 'pause-toggle') {
+      const willBePaused = btn.dataset.paused !== '1';
+      await api('POST', '/api/bc/extraction/pause', { jobId: id, paused: willBePaused });
+      toast(`${willBePaused ? 'Paused' : 'Resumed'}.`);
+      setTimeout(load, 800); return;
+    } else if (act === 'project-details') {
+      // Inline: build a one-shot details popup using the LEAD payload.
+      showProjectDetails();
+    } else if (act === 'view-prop') {
+      const resp = await api('GET', '/api/bc/proposal-folder?jobId=' + encodeURIComponent(id));
+      if (resp && resp.url) window.open(resp.url, '_blank', 'noopener,noreferrer');
+      else toast('No proposal folder yet for this RFP.', 4000);
+    } else if (act === 'scan-addenda') {
+      if (!LEAD?.addendaSeen) {
+        toast('No new addendum detected during the last BC scrape.', 3500);
+      } else if (confirm('A new addendum was detected. Re-extract and move this job back to Accepted with an "Addendum-" name prefix?')) {
+        await api('POST', '/api/bc/extraction/process-addendum', { jobId: id });
+        toast('Addendum queued.', 4000);
+        setTimeout(load, 1500); return;
+      }
+    } else if (act === 'rescan-details') {
+      await api('POST', '/api/bc/extraction/rescan-details', { jobId: id });
+      toast('Rescan project details queued.');
+    } else if (act === 'delete') {
+      if (confirm('Delete this RFP from GCC Manager? This wipes dbo.BcRfps + Details + Attachments. Drive folder is left alone. Cannot be undone.')) {
+        await api('POST', '/api/bc/extraction/delete', { jobId: id });
+        toast('RFP deleted.');
+        setTimeout(() => { window.location.href = $('back-to-leads').href; }, 1000);
+        return;
+      }
+    }
+  } catch (err) { toast(err.message, 4500); }
+  finally      { btn.disabled = false; if (btn.textContent === '…') btn.innerHTML = orig; }
+}
+
+// ===== Project description =====
+function renderDescription(r) {
+  const desc = r.description && r.description.trim()
+    ? safeHtml(r.description)
+    : '<em>No description from BC yet. Use Rescan details to refresh.</em>';
+  $('mj-descr').innerHTML = desc;
+}
+
+// ===== Low-voltage scope grid =====
+const COUNT_KEYS = [
+  ['data','DATA'],     ['fiber','FIBER'],   ['fiberEnc','FIBER ENC'], ['fiberPp','FIBER PP'], ['coax','COAX'],
+  ['hdmi','HDMI'],     ['tv','TV'],         ['iot','IOT'],            ['aps','APS'],          ['intercom','INTERCOM'],
+  ['camInt','CAM INT'],['camExt','CAM EXT'],['doors','DOORS'],        ['elevator','ELEVATOR'],['ups','UPS'],
+  ['mdf','MDF'],       ['idf','IDF'],       ['switch','SWITCH'],      ['patch','PATCH'],      ['ladder','LADDER'],
+];
+function renderScope(r) {
+  const counts = r.counts || {};
+  const conf   = r.extraction?.confidencePct;
+  const estimated = conf == null || conf < 70;
+  let hasN = 0;
+  const pills = COUNT_KEYS.map(([k, label]) => {
+    const v = counts[k];
+    const has = v != null && v !== 0;
+    if (has) hasN++;
+    const cls = (has ? 'has' : 'empty') + (has && estimated ? ' estimated' : '');
+    return `<div class="mj-count-pill ${cls}"><span class="lbl">${label}</span><span class="val">${v == null ? '—' : v}</span></div>`;
+  }).join('');
+  $('mj-counts-grid').innerHTML = pills;
+  $('mj-scope-summary').textContent = `${hasN} in scope · ${COUNT_KEYS.length - hasN} empty`;
+  $('mj-scope-conf').textContent = conf == null
+    ? 'No agent confidence yet'
+    : `${Math.round(conf)}% confidence${estimated ? ' (estimated values italicized)' : ''}`;
+}
+
+// ===== Project meta =====
+function renderMeta(r) {
+  const fields = [
+    ['Job ID',        (r.jobId || '').slice(0,12) + '…'],
+    ['GC / Client',   r.gc || '—'],
+    ['Location',      r.location || '—'],
+    ['Due',           r.dueAt || '—'],
+    ['Bid total',     JOB?.bidAmountUsd ? '$' + Number(JOB.bidAmountUsd).toLocaleString() : '—'],
+    ['Project start', fmt(JOB?.projectStartAt)],
+    ['Project end',   fmt(JOB?.projectEndAt)],
+    ['First seen',    fmt(r.firstSeenAt)],
+    ['Last list',     fmt(r.lastSeenAt)],
+    ['Last file',     fmt(r.lastFileAt || r.lastSeenAt)],
+    ['BC status',     r.status || 'Unknown'],
+    ['Outcome',       JOB?.outcomeStatus || (r.status === 'Won' ? 'won' : r.status === 'Lost' ? 'lost' : 'unknown')],
+  ];
+  $('mj-meta').innerHTML = fields.map(([k,v]) =>
+    `<div class="field"><span class="lbl">${k}</span><span class="val">${safeHtml(v)}</span></div>`).join('');
+}
+
+// ===== Quick links (BC, Drive, sibling RFPs) =====
+function renderQuickLinks(r) {
+  const items = [];
+  if (r.href) items.push(`<a class="mj-ql" target="_blank" rel="noopener noreferrer" href="${safeHtml(r.href)}">🔗 BC opportunity ↗</a>`);
+  if (r.driveJobFolderId) items.push(
+    `<a class="mj-ql" target="_blank" rel="noopener noreferrer" href="https://drive.google.com/drive/folders/${safeHtml(r.driveJobFolderId)}">📂 Drive folder ↗</a>`
+  );
+  // Sibling RFPs (same physical project, different trade scopes)
+  const sibs = Array.isArray(r._siblingJobIds) ? r._siblingJobIds : [];
+  if (sibs.length) {
+    items.push(`<div class="mj-ql-group"><span class="mj-ql-grouplbl">Sibling RFPs</span>${sibs.map(sid => {
+      const qs = new URLSearchParams({ jobId: sid });
+      if (URL_PARAMS.get('secret')) qs.set('secret', URL_PARAMS.get('secret'));
+      if (URL_PARAMS.get('api'))    qs.set('api',    URL_PARAMS.get('api'));
+      return `<a class="mj-ql mj-ql-sib" href="/staff/manage-job.html?${qs.toString()}">🔗 ${safeHtml(sid.slice(0,12))}…</a>`;
+    }).join('')}</div>`);
+  }
+  if (!items.length) items.push('<span class="small pad">No links yet — Drive folder is created on Accept.</span>');
+  $('mj-quick-list').innerHTML = items.join('');
+}
+
+// ===== Calendar =====
+function renderCalendar() {
   const addBtn = $('mj-cal-add');
-  addBtn.disabled = !(status === 'won' && !it.calendarEventId);
-  if (it.calendarEventId) addBtn.textContent = '✓ On calendar';
-
-  // Mount the embedded calendar iframe pointed at the GCC primary calendar.
-  // Uses Google's public embed URL; the staff is signed in via Workspace SSO.
+  const status = JOB?.outcomeStatus || (LEAD?.status === 'Won' ? 'won' : 'unknown');
+  addBtn.disabled = !(status === 'won' && !JOB?.calendarEventId);
+  if (JOB?.calendarEventId) addBtn.textContent = '✓ On calendar';
   const calSrc = 'https://calendar.google.com/calendar/embed?src=primary&ctz=America%2FChicago&mode=AGENDA';
   $('mj-cal-frame').src = calSrc;
 }
-
-// ===== Doc generators =====
-$('mj-docs').addEventListener('click', async (e) => {
-  const btn = e.target.closest('button[data-kind]'); if (!btn) return;
-  const kind = btn.dataset.kind;
-  if (!JOB) { toast('Job not loaded yet.', 3000); return; }
-  btn.disabled = true; const orig = btn.textContent; btn.textContent = '…';
-  try {
-    const r = await api('POST', '/api/outcomes/generate-doc', { jobId: JOB.jobId, kind });
-    if (r.url) {
-      window.open(r.url, '_blank', 'noopener,noreferrer');
-      btn.closest('.mj-doc').classList.add('done');
-      toast(`Generated: ${kind} — opening Drive…`, 3500);
-    } else {
-      toast(r.message || 'Generated.', 3500);
-    }
-  } catch (err) { toast(err.message, 5000); }
-  finally     { btn.disabled = false; btn.textContent = orig; }
-});
-
-// ===== Calendar add =====
 $('mj-cal-add').addEventListener('click', async () => {
-  if (!JOB) return;
+  if (!JOB) { toast('No outcome record yet — Accept the RFP first.', 4000); return; }
   const btn = $('mj-cal-add');
   btn.disabled = true; const orig = btn.textContent; btn.textContent = '…';
   try {
@@ -259,9 +480,39 @@ $('mj-cal-open').addEventListener('click', () => {
   window.open('https://calendar.google.com/calendar/r', '_blank', 'noopener,noreferrer');
 });
 
+// ===== Doc generators =====
+$('mj-docs').addEventListener('click', async (e) => {
+  const btn = e.target.closest('button[data-kind]'); if (!btn) return;
+  const kind = btn.dataset.kind;
+  if (!LEAD) { toast('Job not loaded yet.', 3000); return; }
+  btn.disabled = true; const orig = btn.textContent; btn.textContent = '…';
+  try {
+    const r = await api('POST', '/api/outcomes/generate-doc', { jobId: LEAD.jobId, kind });
+    if (r.url) {
+      window.open(r.url, '_blank', 'noopener,noreferrer');
+      btn.closest('.mj-doc').classList.add('done');
+      toast(`Generated: ${kind} — opening Drive…`, 3500);
+    } else {
+      toast(r.message || 'Generated.', 3500);
+    }
+  } catch (err) { toast(err.message, 5000); }
+  finally     { btn.disabled = false; btn.textContent = orig; }
+});
+
+// ===== Project details popup (used for Status=Undecided) =====
+function showProjectDetails() {
+  if (!LEAD) return;
+  const d = LEAD.description ? safeHtml(LEAD.description) : '<em>No description yet.</em>';
+  const w = window.open('', '_blank', 'width=600,height=600');
+  w.document.write(`<style>body{font:14px/1.45 system-ui;padding:20px;color:#1c2a23} h1{font-size:16px;margin:0 0 10px;color:#1E4D2B}</style>
+    <h1>${safeHtml(LEAD.projectName || '(no name)')}</h1>
+    <div><strong>GC:</strong> ${safeHtml(LEAD.gc || '—')}</div>
+    <div><strong>Location:</strong> ${safeHtml(LEAD.location || '—')}</div>
+    <div><strong>Due:</strong> ${safeHtml(LEAD.dueAt || '—')}</div>
+    <hr/>${d}`);
+}
+
 // ===== Extraction details =====
-// CountType -> display label + section. Anything not in this map gets
-// shown under "Other" with the raw CountType as the label.
 const COUNT_LABELS = {
   drop_count:               { label: 'Data drops (Cat6/Cat6A)', section: 'counts' },
   cat6a_drop_count:         { label: 'Cat6A drops',             section: 'counts' },
@@ -302,7 +553,6 @@ const COUNT_LABELS = {
   prop_req:                 { label: 'Proposal requirement',    section: 'prop_req' },
 };
 
-// Picker score for ranking candidates (mirror of the SQL CTE in leads-summary).
 function _pickerScore(row) {
   const m = (row.SourceMethod || '').toLowerCase();
   let s =
@@ -338,17 +588,12 @@ async function loadExtractions() {
 function renderExtractions() {
   if (!_extRows) return;
   const filter = ($('mj-ext-filter') || {}).value || 'all';
-
-  // Group by CountType -> array of rows. Notes / specs / prop_reqs get
-  // listed individually (no de-dupe across files); numeric counts get
-  // candidate-stack treatment so the picker's choice can be highlighted.
   const byType = new Map();
   for (const r of _extRows) {
     if (!byType.has(r.CountType)) byType.set(r.CountType, []);
     byType.get(r.CountType).push(r);
   }
   $('mj-ext-count').textContent = `${_extRows.length} rows across ${byType.size} count-types`;
-
   const sections = { counts: [], note: [], spec: [], prop_req: [], other: [] };
   for (const [type, rows] of byType) {
     const meta = COUNT_LABELS[type] || { label: type, section: 'other' };
@@ -358,8 +603,6 @@ function renderExtractions() {
   for (const k of Object.keys(sections)) sections[k].sort((a, b) => a.label.localeCompare(b.label));
 
   function renderCountBlock(group) {
-    // Numeric sort + score ranking. Picker's choice = highest score (with
-    // tie-break on UpdatedAt, mirroring the SQL ROW_NUMBER OVER).
     const ranked = group.rows
       .map(r => ({ ...r, _num: parseInt(r.Value, 10), _score: _pickerScore(r) }))
       .sort((a, b) => (b._score - a._score) || (Date.parse(b.UpdatedAt) - Date.parse(a.UpdatedAt)));

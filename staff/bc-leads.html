@@ -7,7 +7,7 @@
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <meta name="theme-color" content="#1E4D2B" />
-  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-0745" />
+  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-0900" />
 </head>
 <body>
   <header>
@@ -956,22 +956,14 @@ function render() {
     html.push(`<tr class="row${open ? ' open' : ''}" data-id="${r.jobId}">` +
       COLS.map(c => `<td>${c.cell(r)}</td>`).join('') + `</tr>`);
 
-    // Expanded sub-panel layout (clean 2-tier):
-    //   - top strip: at-a-glance meta as inline chips (GC, location, due,
-    //     pages, confidence, cost, files/msgs, badges, BC + Manage links)
-    //   - body row 1 col 1: description (left, wide); col 2: actions (right)
-    //   - body row 2: full-width drops grid (4 × 5 of LV scope counts)
+    // Expanded sub-panel: just the at-a-glance top strip now. Project
+    // description, the action bar, and the LV scope grid all live on the
+    // Manage Job page (linked from the strip), so the row drawer stays
+    // light. Operators who want to take action on a row click through to
+    // Manage Job rather than acting from inside the table.
     html.push(`<tr class="counts${open ? ' open' : ''}" data-counts-for="${r.jobId}" data-stop><td colspan="${COLS.length}" data-stop>
       <div class="expand-pane">
         ${expandTopStrip(r)}
-        <div class="expand-body">
-          ${expandDescriptionCol(r)}
-          ${expandActionsCol(r)}
-        </div>
-        <div class="expand-drops">
-          <h4>Low-voltage scope · 4 × 5</h4>
-          ${countsGrid(r.counts, r.extraction?.confidencePct)}
-        </div>
       </div>
     </td></tr>`);
   }
