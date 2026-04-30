@@ -7,7 +7,7 @@
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <meta name="theme-color" content="#1E4D2B" />
-  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-0220" />
+  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-0240" />
 </head>
 <body>
   <header>
@@ -597,6 +597,12 @@ function expandMetaCol(r) {
     <div class="field"><span class="lbl">Last list scrape</span><span class="val">${fmt(r.lastSeenAt)}</span></div>
     <div class="field"><span class="lbl">Last file</span><span class="val">${fmt(r.lastFileAt || r.lastSeenAt)}</span></div>
     <div class="field" style="display:flex;flex-direction:row;gap:6px;flex-wrap:wrap;margin-top:6px">${[acceptedBadge, addBadge, pausedBadge].filter(Boolean).join('')}</div>
+    <div class="field" style="margin-top:8px">
+      <a class="ext-detail-link" href="/staff/manage-job.html?bcBidId=${safeHtml(r.bcBidId)}${URL_PARAMS.get('secret') ? '&secret=' + encodeURIComponent(URL_PARAMS.get('secret')) : ''}${URL_PARAMS.get('api') ? '&api=' + encodeURIComponent(URL_PARAMS.get('api')) : ''}">
+        🔍 Extraction details
+      </a>
+      <span class="small pad" style="margin-left:6px">notes, specs, prop reqs, per-source counts</span>
+    </div>
   </div>`;
 }
 

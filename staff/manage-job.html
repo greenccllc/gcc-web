@@ -7,7 +7,7 @@
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <meta name="theme-color" content="#1E4D2B" />
-  <link rel="stylesheet" href="/assets/css/staff-manage-job.css" />
+  <link rel="stylesheet" href="/assets/css/staff-manage-job.css?v=20260430-0240" />
 </head>
 <body>
   <header>
@@ -29,6 +29,26 @@
         <h2>Project meta</h2>
         <div class="sub">Pulled from the BC RFP record + saved outcome.</div>
         <div class="mj-meta" id="mj-meta"></div>
+      </div>
+
+      <div class="mj-card" style="margin-top:14px" id="mj-extract-card">
+        <h2>Extraction details</h2>
+        <div class="sub">Every count, note, spec, and proposal-required field the bid-extractor pulled from this RFP's intake files. The picker chooses the highest-authority source per (count type) -- expand a row to see all candidates and pick a different one if needed.</div>
+        <div class="mj-ext-controls">
+          <span class="if-label" style="text-transform:none;font-weight:500">Show</span>
+          <select id="mj-ext-filter">
+            <option value="all" selected>All</option>
+            <option value="counts">Counts only</option>
+            <option value="note">Notes</option>
+            <option value="spec">Specs</option>
+            <option value="prop_req">Proposal requirements</option>
+          </select>
+          <button id="mj-ext-refresh" class="if-clear" type="button">↻ Refresh</button>
+          <span id="mj-ext-count" class="small" style="margin-left:auto"></span>
+        </div>
+        <div id="mj-ext-body" class="mj-ext-body">
+          <div class="small pad">loading…</div>
+        </div>
       </div>
 
       <div class="mj-card" style="margin-top:14px">
@@ -219,7 +239,194 @@ $('mj-cal-open').addEventListener('click', () => {
   window.open('https://calendar.google.com/calendar/r', '_blank', 'noopener,noreferrer');
 });
 
-load();
+// ===== Extraction details =====
+// CountType -> display label + section. Anything not in this map gets
+// shown under "Other" with the raw CountType as the label.
+const COUNT_LABELS = {
+  drop_count:               { label: 'Data drops (Cat6/Cat6A)', section: 'counts' },
+  cat6a_drop_count:         { label: 'Cat6A drops',             section: 'counts' },
+  cat6_drop_count:          { label: 'Cat6 drops',              section: 'counts' },
+  fiber_strand_count:       { label: 'Fiber strands',           section: 'counts' },
+  fiber_type:               { label: 'Fiber type',              section: 'counts' },
+  fiber_enclosure_count:    { label: 'Fiber enclosures',        section: 'counts' },
+  fiber_patch_panel_count:  { label: 'Fiber patch panels',      section: 'counts' },
+  coax_drop_count:          { label: 'Coax drops',              section: 'counts' },
+  hdmi_drop_count:          { label: 'HDMI drops',              section: 'counts' },
+  tv_display_count:         { label: 'TV / displays',           section: 'counts' },
+  iot_device_count:         { label: 'IoT devices',             section: 'counts' },
+  wap_count:                { label: 'WAPs',                    section: 'counts' },
+  intercom_count:           { label: 'Intercoms',               section: 'counts' },
+  paging_zone_count:        { label: 'Paging zones',            section: 'counts' },
+  camera_count:             { label: 'Cameras (total)',         section: 'counts' },
+  camera_interior_count:    { label: 'Cameras (interior)',      section: 'counts' },
+  camera_exterior_count:    { label: 'Cameras (exterior)',      section: 'counts' },
+  door_count:               { label: 'Access-control doors',    section: 'counts' },
+  elevator_endpoint_count:  { label: 'Elevator endpoints',      section: 'counts' },
+  ups_count:                { label: 'UPS units',               section: 'counts' },
+  mdf_count:                { label: 'MDFs',                    section: 'counts' },
+  idf_count:                { label: 'IDFs',                    section: 'counts' },
+  switch_count:             { label: 'Network switches',        section: 'counts' },
+  patch_panel_count:        { label: 'Patch panels',            section: 'counts' },
+  ladder_rack_count:        { label: 'Ladder rack',             section: 'counts' },
+  total_sf:                 { label: 'Total SF',                section: 'counts' },
+  addition_sf:              { label: 'Addition SF',             section: 'counts' },
+  floor_count:              { label: 'Floor count',             section: 'counts' },
+  guest_keys:               { label: 'Guest keys',              section: 'counts' },
+  cable_lf_horizontal_estimate: { label: 'Cable LF (horizontal)', section: 'counts' },
+  pages_processed:          { label: 'Pages processed',         section: 'counts' },
+  pages_total:              { label: 'Pages total',             section: 'counts' },
+  vertical:                 { label: 'Vertical',                section: 'counts' },
+  confidence:               { label: 'Confidence',              section: 'counts' },
+  note:                     { label: 'Note',                    section: 'note' },
+  spec:                     { label: 'Spec',                    section: 'spec' },
+  prop_req:                 { label: 'Proposal requirement',    section: 'prop_req' },
+};
+
+// Picker score for ranking candidates (mirror of the SQL CTE in leads-summary).
+function _pickerScore(row) {
+  const m = (row.SourceMethod || '').toLowerCase();
+  let s =
+    m === 'vision-ocr' ? 1.00
+    : m === 'document-ai-form' ? 0.95
+    : m === 'document-ai-custom' ? 0.95
+    : m === 'gemini-long-read' ? 0.85
+    : m.includes('embedded-pdf') ? 0.70
+    : m.includes('regex') ? 0.60
+    : 0.50;
+  const f = (row.SourceFileName || '').toLowerCase();
+  if (f.includes('spec'))           s += 0.20;
+  else if (f.includes('plan'))      s += 0.18;
+  else if (f.includes('permit'))    s += 0.18;
+  else if (f.includes('addend'))    s += 0.10;
+  else if (f.includes('bc-messages')) s -= 0.30;
+  else if (f.includes('rfi'))       s -= 0.20;
+  else if (/q&a|q\&a/.test(f))      s -= 0.20;
+  return Number(s.toFixed(2));
+}
+
+let _extRows = null;
+async function loadExtractions() {
+  $('mj-ext-body').innerHTML = `<div class="small pad">loading…</div>`;
+  try {
+    const r = await api('GET', '/api/admin/bid-extractions/list?jobId=' + encodeURIComponent(BC_BID_ID));
+    _extRows = r.items || [];
+    renderExtractions();
+  } catch (e) {
+    $('mj-ext-body').innerHTML = `<div class="small pad" style="color:var(--danger)">${safeHtml(e.message)}</div>`;
+  }
+}
+function renderExtractions() {
+  if (!_extRows) return;
+  const filter = ($('mj-ext-filter') || {}).value || 'all';
+
+  // Group by CountType -> array of rows. Notes / specs / prop_reqs get
+  // listed individually (no de-dupe across files); numeric counts get
+  // candidate-stack treatment so the picker's choice can be highlighted.
+  const byType = new Map();
+  for (const r of _extRows) {
+    if (!byType.has(r.CountType)) byType.set(r.CountType, []);
+    byType.get(r.CountType).push(r);
+  }
+  $('mj-ext-count').textContent = `${_extRows.length} rows across ${byType.size} count-types`;
+
+  const sections = { counts: [], note: [], spec: [], prop_req: [], other: [] };
+  for (const [type, rows] of byType) {
+    const meta = COUNT_LABELS[type] || { label: type, section: 'other' };
+    const bucket = sections[meta.section] || sections.other;
+    bucket.push({ type, label: meta.label, rows });
+  }
+  for (const k of Object.keys(sections)) sections[k].sort((a, b) => a.label.localeCompare(b.label));
+
+  function renderCountBlock(group) {
+    // Numeric sort + score ranking. Picker's choice = highest score (with
+    // tie-break on UpdatedAt, mirroring the SQL ROW_NUMBER OVER).
+    const ranked = group.rows
+      .map(r => ({ ...r, _num: parseInt(r.Value, 10), _score: _pickerScore(r) }))
+      .sort((a, b) => (b._score - a._score) || (Date.parse(b.UpdatedAt) - Date.parse(a.UpdatedAt)));
+    const picker = ranked[0];
+    const pickedTxt = picker
+      ? (Number.isFinite(picker._num) ? `<strong class="ext-val">${picker._num}</strong>` : `<strong class="ext-val">${safeHtml(picker.Value || '')}</strong>`)
+      : `<span class="pad">—</span>`;
+    return `
+      <details class="ext-row">
+        <summary>
+          <span class="ext-label">${safeHtml(group.label)}</span>
+          ${pickedTxt}
+          <span class="small ext-count">${ranked.length} ${ranked.length === 1 ? 'source' : 'sources'}</span>
+        </summary>
+        <table class="ext-cand-table">
+          <thead><tr><th>Value</th><th>Source file</th><th>Method</th><th>Score</th><th>Updated</th></tr></thead>
+          <tbody>
+          ${ranked.map((r, i) => `
+            <tr class="${i === 0 ? 'picked' : ''}">
+              <td>${i === 0 ? '<span class="ext-pick-badge">picked</span> ' : ''}<strong>${safeHtml(r.Value || '—')}</strong></td>
+              <td class="ext-file">${safeHtml(r.SourceFileName || '(job-level)')}</td>
+              <td><span class="ext-method ext-method-${(r.SourceMethod || '').replace(/[^a-z]/gi,'')}">${safeHtml(r.SourceMethod || '?')}</span></td>
+              <td>${r._score.toFixed(2)}</td>
+              <td class="small">${fmt(r.UpdatedAt)}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </details>`;
+  }
+
+  function renderTextBlock(group) {
+    return `
+      <details class="ext-row">
+        <summary>
+          <span class="ext-label">${safeHtml(group.label)}</span>
+          <span class="small ext-count">${group.rows.length} ${group.rows.length === 1 ? 'entry' : 'entries'}</span>
+        </summary>
+        <div class="ext-text-list">
+          ${group.rows.map(r => {
+            const v = r.Value || '';
+            const trim = v.length > 1200 ? v.slice(0, 1200) + '…' : v;
+            return `<div class="ext-text-row">
+              <div class="ext-text-meta small">
+                <span class="ext-file">${safeHtml(r.SourceFileName || '(job-level)')}</span>
+                <span class="ext-method ext-method-${(r.SourceMethod || '').replace(/[^a-z]/gi,'')}">${safeHtml(r.SourceMethod || '?')}</span>
+                <span>${fmt(r.UpdatedAt)}</span>
+              </div>
+              <pre class="ext-text-body">${safeHtml(trim)}</pre>
+            </div>`;
+          }).join('')}
+        </div>
+      </details>`;
+  }
+
+  function sectionShouldRender(name) {
+    if (filter === 'all') return true;
+    return filter === name;
+  }
+
+  let html = '';
+  if (sections.counts.length && sectionShouldRender('counts')) {
+    html += `<h3 class="ext-section-title">Counts</h3>`;
+    html += sections.counts.map(renderCountBlock).join('');
+  }
+  if (sections.note.length && sectionShouldRender('note')) {
+    html += `<h3 class="ext-section-title">Notes</h3>`;
+    html += sections.note.map(renderTextBlock).join('');
+  }
+  if (sections.spec.length && sectionShouldRender('spec')) {
+    html += `<h3 class="ext-section-title">Specs</h3>`;
+    html += sections.spec.map(renderTextBlock).join('');
+  }
+  if (sections.prop_req.length && sectionShouldRender('prop_req')) {
+    html += `<h3 class="ext-section-title">Proposal requirements</h3>`;
+    html += sections.prop_req.map(renderTextBlock).join('');
+  }
+  if (sections.other.length && sectionShouldRender('all')) {
+    html += `<h3 class="ext-section-title">Other</h3>`;
+    html += sections.other.map(renderCountBlock).join('');
+  }
+  if (!html) html = `<div class="small pad" style="font-style:italic">No extractions yet for this RFP.</div>`;
+  $('mj-ext-body').innerHTML = html;
+}
+$('mj-ext-filter')?.addEventListener('change', renderExtractions);
+$('mj-ext-refresh')?.addEventListener('click', loadExtractions);
+
+load().then(() => loadExtractions());
 </script>
 </body>
 </html>

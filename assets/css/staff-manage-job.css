@@ -80,3 +80,95 @@
     }
     footer.site-footer a { color:rgba(255,255,255,.92); border-bottom:1px dotted rgba(255,255,255,.4); text-decoration:none; }
     footer.site-footer a:hover { color:var(--gold); border-bottom-color:var(--gold); }
+
+/* ── Extraction details panel (per-RFP scope rows from dbo.BidExtractions) ── */
+.mj-ext-controls {
+  display:flex; gap:8px; align-items:center; margin:8px 0 12px; flex-wrap:wrap;
+}
+.mj-ext-controls select {
+  padding:5px 8px; font-size:12px; border:1px solid var(--line); border-radius:6px;
+  background:white; color:var(--ink); cursor:pointer; min-width:160px;
+}
+.mj-ext-controls .if-clear {
+  padding:5px 11px; font-size:12px; border-radius:6px;
+  border:1px solid var(--line); background:white; color:var(--slate); cursor:pointer;
+}
+.mj-ext-controls .if-clear:hover { border-color:var(--forest); color:var(--forest); }
+.mj-ext-body { display:flex; flex-direction:column; gap:6px; }
+.ext-section-title {
+  font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.04em;
+  color:var(--slate); margin:14px 0 4px; padding-bottom:3px;
+  border-bottom:1px solid var(--line);
+}
+.ext-section-title:first-child { margin-top:4px; }
+.ext-row {
+  background:#FAFCF9; border:1px solid var(--line); border-radius:6px;
+}
+.ext-row > summary {
+  list-style:none; cursor:pointer; padding:8px 12px;
+  display:grid; grid-template-columns: minmax(200px, 1fr) auto auto;
+  align-items:center; gap:14px; font-size:13px;
+}
+.ext-row > summary::-webkit-details-marker { display:none; }
+.ext-row > summary::before {
+  content:"▸"; color:var(--slate); font-size:11px; margin-right:6px;
+  display:inline-block; transition: transform .12s ease;
+}
+.ext-row[open] > summary::before { transform: rotate(90deg); }
+.ext-row[open] { background:#FFFFFF; box-shadow: inset 3px 0 0 0 var(--forest); }
+.ext-row .ext-label { font-weight:600; color:var(--ink); }
+.ext-row .ext-val   { font-size:14px; color:var(--forest); }
+.ext-row .ext-count { color:var(--slate); }
+
+/* Candidate table inside an open count row */
+.ext-cand-table {
+  width:100%; border-collapse:collapse; font-size:12px;
+  border-top:1px solid var(--line); margin-top:0;
+}
+.ext-cand-table th {
+  text-align:left; padding:6px 12px; background:var(--cream);
+  font-size:10.5px; font-weight:600; text-transform:uppercase;
+  letter-spacing:.04em; color:var(--slate); border-bottom:1px solid var(--line);
+}
+.ext-cand-table td { padding:6px 12px; border-bottom:1px solid #F1F1ED; vertical-align:top; }
+.ext-cand-table tr.picked { background:#F1F8F1; }
+.ext-cand-table .ext-pick-badge {
+  display:inline-block; padding:1px 7px; border-radius:8px;
+  font-size:9.5px; font-weight:600; letter-spacing:.04em;
+  background:var(--forest); color:white; text-transform:uppercase; margin-right:4px;
+}
+.ext-cand-table .ext-file {
+  font-family:ui-monospace, Consolas, Menlo, monospace;
+  font-size:11px; color:var(--slate);
+  max-width:340px; word-break:break-all;
+}
+.ext-method {
+  display:inline-block; padding:1px 7px; border-radius:8px;
+  font-size:10px; font-weight:600;
+  background:#EFEFEC; color:var(--slate);
+}
+.ext-method-visionocr,
+.ext-method-documentaiform,
+.ext-method-documentaicustom { background:#D9EAD3; color:var(--forest); }
+.ext-method-geminilongread   { background:#D6E1F0; color:#1A5490; }
+.ext-method-embeddedpdftextregex,
+.ext-method-embeddedpdftext  { background:#FFF4D8; color:#7A5A00; }
+
+/* Text block inside an open notes/specs/prop_req row */
+.ext-text-list { display:flex; flex-direction:column; gap:8px; padding:8px 12px; }
+.ext-text-row {
+  background:#FAFCF9; border:1px solid var(--line); border-radius:5px;
+  padding:6px 10px;
+}
+.ext-text-meta {
+  display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+  color:var(--slate); margin-bottom:4px;
+}
+.ext-text-body {
+  margin:0; padding:6px 8px;
+  background:#FFFFFF; border:1px solid #F1F1ED; border-radius:4px;
+  font-family:ui-monospace, Consolas, Menlo, monospace;
+  font-size:11px; line-height:1.4; color:#3a2a0a;
+  max-height:280px; overflow:auto;
+  white-space:pre-wrap; word-break:break-word;
+}
