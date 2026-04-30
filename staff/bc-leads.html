@@ -7,7 +7,7 @@
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <meta name="theme-color" content="#1E4D2B" />
-  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-0445" />
+  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-0610" />
 </head>
 <body>
   <header>
@@ -1532,7 +1532,11 @@ function renderWorkerStatus(w) {
   const p   = w.process       || {};
   const log = w.log           || {};
   const q   = w.queue         || {};
-  const inf = w.inflight      || [];
+  // Active processing list. The API renamed this from `inflight` to
+  // `processingList` and consolidated the 10-min stale window away --
+  // every row in this array is a currently-processing extraction
+  // (UpdatedAt within 60s, kept fresh by the worker's watchdog).
+  const proc = w.processingList || w.inflight || [];
 
   // 1. Scheduled task pill
   const taskState = String(t.state || '?').trim();
@@ -1601,13 +1605,15 @@ function renderWorkerStatus(w) {
     }
   }
 
-  // 5. In-flight rows
+  // 5. Processing rows. Every row is currently-active (UpdatedAt < 60s);
+  // there's no stale/stuck distinction anymore -- if a row stops being
+  // updated, it falls out of the list entirely on the next poll.
   const ifEl = $('ws-inflight');
   if (ifEl) {
-    if (!inf.length) {
-      ifEl.innerHTML = `<div class="ws-inflight-empty small pad">No active extractions in the last 10 min.</div>`;
+    if (!proc.length) {
+      ifEl.innerHTML = `<div class="ws-inflight-empty small pad">No active extractions.</div>`;
     } else {
-      ifEl.innerHTML = inf.map(it => {
+      ifEl.innerHTML = proc.map(it => {
         const pp  = it.pagesProcessed || 0;
         const pt  = it.pagesTotal || 0;
         const pct = pt > 0 ? Math.min(100, Math.round(100 * pp / pt)) : null;
@@ -1616,18 +1622,12 @@ function renderWorkerStatus(w) {
           : `<span class="q-progress-bar indeterminate"><span></span></span>`;
         const counts = pt > 0 ? `<strong>${pp}</strong><span class="small"> of ${pt}</span>`
                               : `<strong>${pp}</strong><span class="small"> pages so far</span>`;
-        // Use the API-computed ageS (server-side UTC math) rather than
-        // reparsing it.updatedAt -- the API serializes DateTime without
-        // a 'Z' suffix, so new Date(iso) treats it as local time and
-        // computes a negative delta that clamps to 0 ("0s ago" on every
-        // stale row). ageS is always non-negative seconds.
-        const ageBadge = it.fresh
-          ? `<span class="ws-age fresh">${it.ageS != null ? it.ageS + 's' : ''}</span>`
-          : `<span class="ws-age stale">${it.ageS != null ? _wsAgoFromSeconds(it.ageS) : '—'}</span>`;
-        const stuckClass = it.fresh ? '' : ' stuck';
-        return `<div class="ws-inflight-row${stuckClass}">
+        // ageS is the server-computed age in seconds (always non-negative)
+        // -- always < 60 here since the API filters for that window.
+        const ageBadge = `<span class="ws-age fresh">${it.ageS != null ? it.ageS + 's' : ''}</span>`;
+        return `<div class="ws-inflight-row">
           <div class="ws-if-proj" title="${safeHtml(it.fileName || '')}">${safeHtml(it.fileName || '(file pending)')}</div>
-          <div class="ws-if-file small" title="${safeHtml(it.projectName || '')}">${safeHtml(it.projectName || it.bcBidId || '(unknown project)')}</div>
+          <div class="ws-if-file small" title="${safeHtml(it.projectName || '')}">${safeHtml(it.projectName || it.jobId || '(unknown project)')}</div>
           <div class="ws-if-bar">${bar}${counts}</div>
           ${ageBadge}
         </div>`;
