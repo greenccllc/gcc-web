@@ -1,0 +1,51 @@
+/* quickbooks.html — QBO integration landing page */
+
+.qb-hero { padding: 64px 0 48px; background: linear-gradient(180deg, var(--paper) 0%, white 100%); }
+.qb-hero h1 { font-size: 36px; margin-bottom: 12px; line-height: 1.15; }
+.qb-hero .lede { font-size: 18px; color: var(--slate); max-width: 640px; line-height: 1.55; }
+.qb-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 48px; }
+@media (max-width: 760px) { .qb-grid { grid-template-columns: 1fr; } }
+.qb-card { background: white; border: 1px solid var(--hairline); border-radius: var(--r-md); padding: 24px; box-shadow: var(--shadow-xs); }
+.qb-card h3 { margin: 0 0 8px; font-size: 18px; }
+.qb-card p { color: var(--slate); font-size: 15px; line-height: 1.5; margin: 0 0 12px; }
+.qb-card ul { margin: 0; padding-left: 20px; color: var(--slate); font-size: 14px; line-height: 1.7; }
+.qb-card li { margin-bottom: 4px; }
+.cta-bar {
+  display: inline-flex; align-items: center; gap: 14px;
+  background: var(--forest); color: white;
+  padding: 14px 22px; border-radius: var(--r-md);
+  font-weight: 700; text-decoration: none; font-size: 15px;
+  box-shadow: var(--shadow-sm); transition: background 0.15s var(--ease);
+}
+.cta-bar:hover { background: var(--forest-dark); color: white; }
+.cta-bar .arrow { font-size: 18px; }
+.btn-secondary {
+  display: inline-block; padding: 12px 20px;
+  background: white; color: var(--forest);
+  border: 1px solid var(--hairline-strong); border-radius: var(--r-md);
+  font-weight: 600; text-decoration: none; font-size: 14px;
+  margin-left: 12px;
+}
+.btn-secondary:hover { border-color: var(--forest); }
+.qb-status {
+  margin-top: 32px; padding: 16px 20px;
+  background: var(--paper); border-radius: var(--r-md);
+  border: 1px solid var(--hairline);
+  font-size: 14px; color: var(--slate);
+}
+.qb-status strong { color: var(--ink); }
+.qb-status.signed-in { background: rgba(72,187,120,0.10); border-color: rgba(72,187,120,0.30); }
+.qb-mark {
+  display: inline-block; padding: 6px 12px;
+  background: rgba(0,119,194,0.10); color: #0077C2;
+  border-radius: var(--r-pill); font-size: 12px; font-weight: 700;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.intuit-badge { display: inline-flex; align-items: center; gap: 8px; }
+.scope-list {
+  background: var(--paper); border-radius: var(--r-md);
+  padding: 14px 18px; font-size: 13px; color: var(--slate);
+  margin-top: 16px;
+}
+.scope-list strong { color: var(--ink); }

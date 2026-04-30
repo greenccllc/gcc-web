@@ -76,10 +76,19 @@ html, body {
 body {
   font-size: clamp(15px, 0.5vw + 13px, 17px);
   min-height: 100vh;
+  /* Prevent accidental horizontal scroll on phones from stray wide elements.
+     Real horizontal scrollers (.tbl-scroll, code blocks) opt back in with
+     overflow-x: auto on themselves. */
+  overflow-x: hidden;
 }
 
 /* Block scroll behind open mobile menu / modals */
 body.menu-open { overflow: hidden; touch-action: none; }
+
+/* Long URLs / emails / IDs shouldn't overflow their container on phones */
+@media (max-width: 600px) {
+  td a, td code, .lede a, .lede code { word-break: break-word; overflow-wrap: anywhere; }
+}
 
 img, svg, video { max-width: 100%; height: auto; display: block; }
 a { color: var(--forest); text-decoration: none; transition: color .15s var(--ease); }
@@ -270,6 +279,18 @@ section {
   border: 1px solid var(--hairline-strong);
 }
 .btn-ghost:hover { background: var(--forest-tint); border-color: var(--forest); transform: translateY(-1px); }
+/* Ghost variant for dark/gradient hero overlays — see index/services/about/projects.
+   Replaces inline style="background:rgba(255,255,255,0.10); color:white; border-color:rgba(255,255,255,0.30)". */
+.btn-ghost.btn-on-dark, .btn-on-dark.btn-ghost {
+  background: rgba(255, 255, 255, 0.10);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.30);
+}
+.btn-ghost.btn-on-dark:hover, .btn-on-dark.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.20);
+  border-color: #fff;
+  color: #fff;
+}
 .btn-sm { padding: 9px 16px; font-size: 13px; min-height: 36px; }
 .btn-lg { padding: 16px 28px; font-size: 16px; min-height: 52px; }
 .btn-block { width: 100%; }

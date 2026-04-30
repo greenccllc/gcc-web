@@ -1,0 +1,79 @@
+/* clients/index.html — login + sign-up page */
+
+.client-type-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  margin-bottom: 20px;
+}
+@media (max-width: 480px) { .client-type-grid { grid-template-columns: 1fr; } }
+.client-type {
+  position: relative; cursor: pointer;
+  padding: 22px 16px;
+  border: 2px solid var(--hairline-strong);
+  border-radius: var(--r-md);
+  background: var(--paper);
+  text-align: center;
+  transition: all .18s var(--ease);
+}
+.client-type input { position: absolute; opacity: 0; pointer-events: none; }
+.client-type .ct-icon { font-size: 36px; margin-bottom: 8px; display: block; }
+.client-type .ct-label { font-size: 14px; font-weight: 800; color: var(--slate); letter-spacing: 0.04em; text-transform: uppercase; }
+.client-type .ct-hint { font-size: 12px; font-weight: 500; color: var(--slate-light); display: block; margin-top: 4px; text-transform: none; letter-spacing: 0; }
+.client-type:hover { border-color: var(--forest); background: white; transform: translateY(-1px); }
+.client-type:has(input:checked) {
+  border-color: var(--forest); background: white;
+  box-shadow: var(--shadow-ring);
+}
+.client-type:has(input:checked) .ct-label { color: var(--forest); }
+
+.tab-switch {
+  display: inline-flex; gap: 0;
+  background: var(--paper);
+  padding: 4px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--hairline);
+  margin-bottom: 24px;
+}
+.tab-switch button {
+  padding: 8px 18px;
+  border-radius: var(--r-pill);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--slate);
+  background: transparent; border: none;
+  cursor: pointer;
+  transition: all .12s var(--ease);
+  font-family: inherit;
+}
+.tab-switch button.active {
+  background: var(--forest); color: white;
+  box-shadow: var(--shadow-xs);
+}
+
+/* Wider login card for multi-step */
+body.login-page .login-card { max-width: 560px; padding: 36px 32px; }
+body.login-page .login-card.compact { max-width: 460px; padding: 40px 36px; }
+body.login-page .login-card h1 { font-size: 24px; }
+
+/* Teaser steppers reuse num-stepper from site.css, scoped lighter here */
+.teaser-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.teaser-row {
+  display: grid; grid-template-columns: 1fr auto; gap: 12px;
+  align-items: center; padding: 14px 16px;
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-md);
+}
+.teaser-row .t-label { font-size: 14px; font-weight: 700; color: var(--ink); text-align: left; }
+.teaser-row .t-hint { display: block; font-size: 12px; font-weight: 500; color: var(--slate); margin-top: 2px; text-align: left; }
+.teaser-row .num-stepper { background: white; }
+.teaser-out {
+  margin-top: 14px;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, var(--forest), var(--forest-dark));
+  color: white; border-radius: var(--r-md);
+  text-align: center;
+}
+.teaser-out .lbl { font-size: 11px; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase; opacity: 0.78; }
+.teaser-out .val { font-size: 22px; font-weight: 800; letter-spacing: -0.01em; margin-top: 2px; }
+.skip-teaser { display: inline-block; margin-top: 10px; font-size: 13px; font-weight: 600; color: var(--slate); }
+.skip-teaser:hover { color: var(--forest); }

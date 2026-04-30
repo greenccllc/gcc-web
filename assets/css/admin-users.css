@@ -1,0 +1,68 @@
+/* admin/users.html — admin user management */
+
+.dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 24px; }
+.kpi { background: white; border: 1px solid var(--hairline); border-radius: var(--r-md); padding: 16px; box-shadow: var(--shadow-xs); }
+.kpi .lbl { font-size: 11px; font-weight: 700; color: var(--slate-light); letter-spacing: 0.06em; text-transform: uppercase; }
+.kpi .val { font-size: 28px; font-weight: 800; color: var(--forest); margin-top: 4px; line-height: 1; font-family: var(--font-display); letter-spacing: -0.01em; }
+
+.toolbar { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+.search-box { flex: 1; min-width: 220px; padding: 9px 14px; border: 1px solid var(--hairline-strong); border-radius: var(--r-sm); font-size: 14px; font-family: inherit; background: white; }
+.search-box:focus { outline: none; border-color: var(--forest); box-shadow: 0 0 0 3px rgba(30,77,43,0.15); }
+
+.tabs { display: inline-flex; background: white; border: 1px solid var(--hairline); border-radius: var(--r-pill); padding: 3px; gap: 2px; }
+.tab {
+  padding: 6px 14px; border: 0; background: transparent; font-size: 13px; font-weight: 600;
+  color: var(--slate); cursor: pointer; border-radius: var(--r-pill); font-family: inherit;
+  transition: all 0.15s;
+}
+.tab:hover { color: var(--ink); }
+.tab.active { background: var(--forest); color: white; }
+.tab .count { display: inline-block; margin-left: 5px; padding: 1px 7px; background: rgba(255,255,255,0.25); border-radius: 8px; font-size: 11px; font-weight: 700; }
+.tab:not(.active) .count { background: rgba(0,0,0,0.06); color: var(--slate); }
+
+.tbl { width: 100%; border-collapse: collapse; background: white; border: 1px solid var(--hairline); border-radius: var(--r-md); overflow: hidden; font-size: 14px; }
+.tbl th { text-align: left; padding: 11px 12px; background: var(--paper); font-size: 11px; font-weight: 700; color: var(--slate); letter-spacing: 0.04em; text-transform: uppercase; border-bottom: 1px solid var(--hairline); }
+.tbl td { padding: 11px 12px; border-top: 1px solid var(--hairline); vertical-align: middle; }
+.tbl tr:hover td { background: rgba(30,77,43,0.03); }
+.tbl tr.is-self td { background: rgba(212,175,55,0.06); }
+.tbl tr.is-self td:first-child { border-left: 3px solid var(--gold); padding-left: 9px; }
+
+.role-pill, .status-pill {
+  display: inline-block; padding: 2px 10px; border-radius: var(--r-pill);
+  font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+}
+.role-client  { background: rgba(74,85,104,0.18); color: var(--slate); }
+.role-staff   { background: rgba(56,178,172,0.18); color: #2C7A7B; }
+.role-admin   { background: rgba(212,175,55,0.22); color: var(--gold-dark); }
+.status-active  { background: rgba(72,187,120,0.18); color: #276749; }
+.status-locked  { background: rgba(245,101,101,0.18); color: #C53030; }
+.status-deleted { background: rgba(160,174,192,0.18); color: var(--slate-light); }
+
+.inline-select {
+  padding: 4px 8px; border: 1px solid var(--hairline-strong); border-radius: 5px;
+  font-size: 12px; background: white; font-family: inherit; cursor: pointer;
+}
+.inline-select:hover { border-color: var(--forest); }
+.inline-select:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.empty-state { background: white; border: 1px dashed var(--hairline-strong); border-radius: var(--r-md); padding: 40px 20px; text-align: center; color: var(--slate); }
+.empty-state .es-icon { font-size: 48px; margin-bottom: 12px; }
+
+.muted { color: var(--slate-light); font-size: 12px; }
+.invite-card {
+  background: white; border: 1px solid var(--hairline); border-radius: var(--r-md);
+  padding: 18px; margin-top: 24px;
+}
+.invite-card h3 { margin: 0 0 6px; font-size: 15px; }
+.invite-card .lede { color: var(--slate); font-size: 13px; margin: 0 0 4px; }
+.invite-card code { background: var(--paper); padding: 1px 6px; border-radius: 4px; font-size: 12px; }
+
+.btn-sm { padding: 5px 12px; font-size: 12px; }
+.flash {
+  position: fixed; bottom: 24px; right: 24px; padding: 12px 18px;
+  background: var(--forest); color: white; border-radius: var(--r-md);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.18); font-size: 14px; font-weight: 600;
+  opacity: 0; transition: opacity 0.2s; pointer-events: none; z-index: 1000;
+}
+.flash.show { opacity: 1; }
+.flash.error { background: var(--danger); }

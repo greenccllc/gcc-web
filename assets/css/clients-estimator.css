@@ -1,0 +1,80 @@
+/* clients/estimator.html — full 20-category client portal estimator */
+
+.cest-wrap { display: grid; grid-template-columns: 1.5fr 1fr; gap: 32px; align-items: start; }
+@media (max-width: 1100px) { .cest-wrap { grid-template-columns: 1fr; } }
+.cest-form { background: white; border: 1px solid var(--hairline); border-radius: var(--r-lg); padding: 28px; box-shadow: var(--shadow-sm); }
+.cest-section { margin-bottom: 28px; }
+.cest-section h3 { font-size: 13px; font-weight: 800; color: var(--forest); letter-spacing: 0.10em; text-transform: uppercase; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--hairline); }
+.cat-grid20 { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; }
+.cat-pill {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-md);
+  transition: all .12s var(--ease);
+}
+.cat-pill.has-value { border-color: var(--forest); background: white; box-shadow: 0 0 0 2px rgba(30,77,43,0.10); }
+.cat-pill .cp-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: rgba(30,77,43,0.10); color: var(--forest);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0;
+}
+.cat-pill .cp-name {
+  font-size: 12px; font-weight: 700; color: var(--ink);
+  letter-spacing: 0.04em; text-transform: uppercase;
+  flex: 1;
+}
+.cat-pill .cp-num {
+  width: 56px;
+  padding: 5px 8px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 6px;
+  background: white;
+  font-size: 14px; font-weight: 700;
+  text-align: center;
+  font-family: inherit;
+}
+.cat-pill .cp-num:focus { outline: none; border-color: var(--forest); box-shadow: 0 0 0 2px rgba(30,77,43,0.18); }
+
+.cest-conditions { padding: 16px; background: var(--paper); border-radius: var(--r-md); border: 1px solid var(--hairline); }
+.cest-conditions .cond-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
+@media (max-width: 600px) { .cest-conditions .cond-grid { grid-template-columns: 1fr; } }
+.cest-conditions .chk-item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.cest-conditions input[type="checkbox"] { accent-color: var(--forest); width: 16px; height: 16px; }
+
+.cest-result {
+  position: sticky; top: 92px;
+  background: linear-gradient(135deg, var(--forest) 0%, var(--forest-dark) 100%);
+  color: white; border-radius: var(--r-lg);
+  padding: 28px 26px;
+  box-shadow: var(--shadow-lg);
+}
+.cest-result h3 { color: white; font-size: 13px; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase; margin-bottom: 6px; opacity: 0.82; }
+.cest-range { font-size: clamp(26px, 2.5vw + 14px, 38px); font-weight: 800; line-height: 1.1; margin-bottom: 4px; font-family: var(--font-display); letter-spacing: -0.02em; }
+.cest-mid { color: rgba(255,255,255,0.78); font-size: 14px; margin-bottom: 18px; }
+.cest-summary { background: rgba(0,0,0,0.20); border-radius: var(--r-md); padding: 14px 16px; font-size: 13px; max-height: 360px; overflow-y: auto; }
+.cest-summary h4 { font-size: 10px; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase; color: var(--gold); margin: 0 0 8px; }
+.cest-summary .sl { display: flex; justify-content: space-between; padding: 2px 0; color: rgba(255,255,255,0.85); }
+.cest-summary .sl .lbl { color: rgba(255,255,255,0.7); }
+.cest-summary .sl.tot { border-top: 1px solid rgba(255,255,255,0.20); margin-top: 6px; padding-top: 8px; font-weight: 700; color: white; }
+
+.cest-actions { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+.cest-actions .btn { width: 100%; justify-content: center; }
+.cest-actions .btn-primary { background: var(--gold); color: var(--ink); }
+.cest-actions .btn-primary:hover { background: var(--gold-dark); color: white; }
+.cest-actions .btn-ghost { background: rgba(255,255,255,0.10); color: white; border: 1px solid rgba(255,255,255,0.30); }
+.cest-actions .btn-ghost:hover { background: rgba(255,255,255,0.20); border-color: white; }
+
+.cest-disclaimer { font-size: 11px; color: rgba(255,255,255,0.65); margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.12); line-height: 1.5; }
+
+.client-banner {
+  background: linear-gradient(135deg, var(--ink) 0%, #2D3748 100%);
+  color: rgba(255,255,255,0.85);
+  padding: 12px 0;
+  font-size: 13px;
+}
+.client-banner .container { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+.client-banner strong { color: var(--gold); }
+.client-banner a { color: white; text-decoration: underline; }
