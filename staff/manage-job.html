@@ -396,27 +396,40 @@ function renderDescription(r) {
 
 // ===== Low-voltage scope grid =====
 // Grouped structure:
-//   DATA       parent = drop_count; children are the things that consume drops.
-//   TELECOMM   parent = MDF + IDF (rack count); children are rack/closet plant.
-//   OTHER      preserves count types not yet sorted into a parent group.
+//   DATA      parent = SUM of children (computed); children are every endpoint
+//             that consumes a Cat6 drop.
+//   SECURITY  parent = ACS Doors count; cameras shared with DATA (same value
+//             rendered in both groups, NOT double-counted in DATA's sum).
+//   TELECOMM  parent = MDF + IDF (rack count); children are rack/closet plant.
+//   AV        parent = none; HDMI / Coax / Speakers.
 //
-// Some children carry conditions:
-//   tv_count       only when the agent finds AV-with-data (smart panels etc.)
+// Some children carry conditions (agent honors them via the synthesis prompt;
+// UI just shows whatever made it through):
+//   tv_count       only when AV gear needs data (smart panels, IPTV)
+//   intercom_count only when intercom is PoE / data-fed (analog → omit)
 //   switch_count   only when owner is NOT providing switches
 //   ups_count      only when owner is NOT providing UPS
-// Until we have an explicit owner-provided flag on the job we honor whatever
-// the agent / synthesis stamped — non-null + non-zero shows the value, anything
-// else shows "—".
 const SCOPE_GROUPS = [
   {
-    id: 'data', title: 'DATA', parentKey: 'data', parentLabel: 'Drops',
+    id: 'data', title: 'DATA', derivedParent: 'dataTotal',
+    parentLabel: 'Total drops (sum)',
     children: [
+      ['data',     'Data Jacks',       { tip: 'Standalone Cat6 wall jacks (desktops, phones, printers) — not the parent total.' }],
       ['iot',      'IOT'],
       ['aps',      'WAP'],
       ['elevator', 'Elevator'],
-      ['camInt',   'Cam Int'],
-      ['camExt',   'Cam Ext'],
-      ['tv',       'TV',       { tip: 'Only when AV gear needs data — verify spec.' }],
+      ['camInt',   'Cam Int',          { tip: 'Also shown under SECURITY (same camera, not double-counted).' }],
+      ['camExt',   'Cam Ext',          { tip: 'Also shown under SECURITY (same camera, not double-counted).' }],
+      ['tv',       'TV',               { tip: 'Only when the TV needs a data drop (smart panel, IPTV) — AV-only TVs go to the AV group.' }],
+      ['intercom', 'Intercom (PoE)',   { tip: 'Only when intercom is PoE / data-fed; analog intercoms have separate cabling.' }],
+    ],
+  },
+  {
+    id: 'security', title: 'SECURITY', parentKey: 'doors', parentLabel: 'ACS Doors',
+    children: [
+      ['doors',    'ACS Doors'],
+      ['camInt',   'Cam Int',          { tip: 'Same value as in DATA (cameras are data drops too).' }],
+      ['camExt',   'Cam Ext',          { tip: 'Same value as in DATA (cameras are data drops too).' }],
     ],
   },
   {
@@ -424,23 +437,22 @@ const SCOPE_GROUPS = [
     parentLabel: 'Racks (MDF+IDF)',
     children: [
       ['fiber',    'Fiber Backbones'],
-      ['patch',    'Eth PP'],
+      ['patch',    'Eth PP',           { derived: 'ethPp',    tip: 'ceil(Data Jacks / 24) by default; agent overrides on explicit spec.' }],
       ['mdf',      'MDF'],
       ['idf',      'IDF'],
-      ['ladder',   'Ladder (LF)',  { derived: 'ladderLf', tip: '7 LF × (MDF + IDF) by default; agent overrides when an explicit spec exists.' }],
-      ['switch',   'Switches',     { tip: 'Only when owner does NOT provide switches.' }],
-      ['fiberPp',  'Fiber PP',     { derived: 'fiberPp',   tip: 'One per rack: MDF + IDF.' }],
-      ['ups',      'UPS',          { tip: 'Only when owner does NOT provide UPS.' }],
+      ['ladder',   'Ladder (LF)',      { derived: 'ladderLf', tip: '7 LF × racks by default; agent overrides on explicit spec.' }],
+      ['switch',   'Switches',         { tip: 'Only when owner does NOT provide switches.' }],
+      ['fiberPp',  'Fiber PP',         { derived: 'fiberPp',  tip: 'One in-rack fiber patch panel per rack: MDF + IDF.' }],
+      ['fiberEnc', 'Fiber Enc',        { tip: 'Out-of-rack fiber endpoints only (outdoor cameras, remote APs, etc.); never auto-computed.' }],
+      ['ups',      'UPS',              { tip: 'Only when owner does NOT provide UPS.' }],
     ],
   },
   {
-    id: 'other', title: 'OTHER', noParent: true,
+    id: 'av', title: 'AV', noParent: true,
     children: [
-      ['doors',    'ACS Doors'],
-      ['intercom', 'Intercom'],
       ['hdmi',     'HDMI'],
       ['coax',     'Coax'],
-      ['fiberEnc', 'Fiber Enc'],
+      ['speakers', 'Speakers'],
     ],
   },
 ];
@@ -456,8 +468,18 @@ function renderScope(r) {
   // default for the derived pills.
   const racks    = (counts.mdf ?? 0) + (counts.idf ?? 0);
   const ladderLf = racks > 0 ? 7 * racks : null;
-  const fiberPp  = racks > 0 ? racks    : null;
-  const derived  = { ladderLf, fiberPp, racks };
+  const fiberPp  = racks > 0 ? racks     : null;
+  // Eth PP fallback: ceil(Data Jacks / 24)
+  const ethPp    = (counts.data != null && counts.data > 0) ? Math.ceil(counts.data / 24) : null;
+  // DATA group parent total: sum of every data-consuming child. Each child
+  // is its OWN count (Data Jacks ≠ the sum) so summing is intentional, not
+  // double-counting. Cameras appear in the SECURITY group too but that's
+  // visual sharing, not a sum input there.
+  const dataKeys = ['data','iot','aps','elevator','camInt','camExt','tv','intercom'];
+  let dataTotal = 0; let dataAny = false;
+  for (const k of dataKeys) { if (counts[k] != null) { dataTotal += counts[k]; dataAny = true; } }
+  if (!dataAny) dataTotal = null;
+  const derived  = { ladderLf, fiberPp, ethPp, racks, dataTotal };
 
   let hasN = 0, totalN = 0;
   const pillHtml = (k, label, opts, isParent) => {
@@ -483,8 +505,9 @@ function renderScope(r) {
     let parentBlock = '';
     if (!g.noParent) {
       let pVal = null, pLbl = g.parentLabel || g.title;
-      if (g.parentKey)        pVal = counts[g.parentKey] ?? null;
-      else if (g.derivedParent === 'racks') pVal = racks > 0 ? racks : null;
+      if (g.parentKey)                       pVal = counts[g.parentKey] ?? null;
+      else if (g.derivedParent === 'racks')      pVal = racks > 0 ? racks : null;
+      else if (g.derivedParent === 'dataTotal')  pVal = dataTotal;
       const pHas = pVal != null && pVal !== 0;
       const pCls = (pHas ? 'has' : 'empty') + ' parent' + (pHas && estimated ? ' estimated' : '');
       parentBlock = `<div class="mj-count-pill ${pCls}"><span class="lbl">${safeHtml(pLbl)}</span><span class="val">${pVal == null ? '—' : pVal}</span></div>`;
@@ -660,19 +683,19 @@ function showProjectDetails() {
 
 // ===== Extraction details =====
 const COUNT_LABELS = {
-  drop_count:               { label: 'Data drops (Cat6/Cat6A)', section: 'counts' },
+  drop_count:               { label: 'Data Jacks',              section: 'counts' },
   cat6a_drop_count:         { label: 'Cat6A drops',             section: 'counts' },
   cat6_drop_count:          { label: 'Cat6 drops',              section: 'counts' },
-  fiber_strand_count:       { label: 'Fiber strands',           section: 'counts' },
+  fiber_strand_count:       { label: 'Fiber Backbones',         section: 'counts' },
   fiber_type:               { label: 'Fiber type',              section: 'counts' },
-  fiber_enclosure_count:    { label: 'Fiber enclosures',        section: 'counts' },
-  fiber_patch_panel_count:  { label: 'Fiber patch panels',      section: 'counts' },
+  fiber_enclosure_count:    { label: 'Fiber Enc (out-of-rack)', section: 'counts' },
+  fiber_patch_panel_count:  { label: 'Fiber PP (in-rack)',      section: 'counts' },
   coax_drop_count:          { label: 'Coax drops',              section: 'counts' },
   hdmi_drop_count:          { label: 'HDMI drops',              section: 'counts' },
-  tv_display_count:         { label: 'TV / displays',           section: 'counts' },
+  tv_display_count:         { label: 'TV (data-fed)',           section: 'counts' },
   iot_device_count:         { label: 'IoT devices',             section: 'counts' },
   wap_count:                { label: 'WAPs',                    section: 'counts' },
-  intercom_count:           { label: 'Intercoms',               section: 'counts' },
+  intercom_count:           { label: 'Intercoms (PoE)',         section: 'counts' },
   paging_zone_count:        { label: 'Paging zones',            section: 'counts' },
   camera_count:             { label: 'Cameras (total)',         section: 'counts' },
   camera_interior_count:    { label: 'Cameras (interior)',      section: 'counts' },
@@ -683,8 +706,9 @@ const COUNT_LABELS = {
   mdf_count:                { label: 'MDFs',                    section: 'counts' },
   idf_count:                { label: 'IDFs',                    section: 'counts' },
   switch_count:             { label: 'Network switches',        section: 'counts' },
-  patch_panel_count:        { label: 'Patch panels',            section: 'counts' },
-  ladder_rack_count:        { label: 'Ladder rack',             section: 'counts' },
+  patch_panel_count:        { label: 'Eth PP',                  section: 'counts' },
+  ladder_rack_count:        { label: 'Ladder rack (LF)',        section: 'counts' },
+  speaker_count:            { label: 'Speakers',                section: 'counts' },
   total_sf:                 { label: 'Total SF',                section: 'counts' },
   addition_sf:              { label: 'Addition SF',             section: 'counts' },
   floor_count:              { label: 'Floor count',             section: 'counts' },
