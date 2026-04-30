@@ -68,6 +68,36 @@
     .mj-status-Archived  { background:#EFEFEC; color:var(--slate); }
     .mj-status-Undecided { background:#D6E1F0; color:#1A5490; }
 
+    /* ── Live extraction-readiness strip ─────────────────────────────
+       Shown beneath the hero whenever this RFP has work in flight
+       (queued or processing > 0). Polls every 5s; self-hides when
+       complete. */
+    .mj-extract-strip {
+      padding:8px 16px; background:#F1F8F1; border-bottom:1px solid var(--line);
+    }
+    .mj-strip-row {
+      display:flex; gap:14px; align-items:center; flex-wrap:wrap;
+    }
+    .mj-strip-progress { display:flex; flex-direction:column; gap:3px; flex:1 1 280px; min-width:240px; }
+    .mj-strip-bar {
+      height:6px; background:#DDE5DF; border-radius:3px; overflow:hidden;
+    }
+    .mj-strip-fill {
+      height:100%; background:var(--forest);
+      transition:width .4s ease;
+    }
+    .mj-strip-label { font-size:11.5px; color:var(--slate); }
+    .mj-strip-counts { display:flex; gap:6px; flex-wrap:wrap; }
+    .mj-strip-chip {
+      display:inline-flex; align-items:center; gap:4px;
+      padding:3px 9px; border-radius:14px;
+      font-size:11px; font-weight:600; border:1px solid var(--line);
+    }
+    .mj-strip-queued { background:#FFF4D8; color:#7A5A00; border-color:#E5D08F; }
+    .mj-strip-proc   { background:#D6E1F0; color:#1A5490; border-color:#B6CFEA; }
+    .mj-strip-skip   { background:#EFEFEC; color:var(--slate); }
+    .mj-strip-cancel { background:#FFEBEE; color:var(--danger); border-color:#F4CCCC; }
+
     .mj-grid { display:grid; grid-template-columns:1.2fr 1fr; gap:14px; padding:14px 16px; align-items:start; }
     @media (max-width:1100px) { .mj-grid { grid-template-columns:1fr; } }
     .mj-card { background:white; border:1px solid var(--line); border-radius:10px; padding:14px 16px;
