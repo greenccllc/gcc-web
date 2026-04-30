@@ -1578,6 +1578,15 @@ function scheduleRefresh() {
 // when sessionOk=false so the operator knows to re-run `npm run login`.
 // The banner is dismissible per-session (resets on page reload).
 let _bcBannerDismissed = false;
+function _agoText(iso) {
+  if (!iso) return null;
+  const ms = Date.now() - new Date(iso).getTime();
+  if (ms < 0)            return 'just now';
+  if (ms < 60_000)       return Math.floor(ms / 1_000)   + 's ago';
+  if (ms < 3_600_000)    return Math.floor(ms / 60_000)  + 'm ago';
+  if (ms < 86_400_000)   return Math.floor(ms / 3_600_000) + 'h ago';
+  return Math.floor(ms / 86_400_000) + 'd ago';
+}
 async function checkScraperStatus() {
   if (_bcBannerDismissed) return;
   try {
@@ -1587,11 +1596,18 @@ async function checkScraperStatus() {
       banner.classList.remove('show');
       return;
     }
+    // Headline: how stale is BC -> our DB?
+    const stale = _agoText(s.lastList?.lastSuccessfulAt);
+    const detail = $('bc-banner-detail');
+    detail.innerHTML = stale
+      ? `BC list scrape hasn't completed since <strong>${stale}</strong>. Status changes (Undecided→Accepted, etc.) made in BC after that aren't reflected here yet.<br>Run <code>cd C:\\GCC_LLC\\Repos\\bc-scraper; npm run login</code>, then click "Fix folders &amp; reimport" or "Re-check".`
+      : `Run <code>cd C:\\GCC_LLC\\Repos\\bc-scraper; npm run login</code> to refresh, then click "Fix folders &amp; reimport".`;
+
     const meta = [];
-    if (s.lastError?.at) meta.push('Last error: ' + new Date(s.lastError.at).toLocaleString());
-    if (s.storageStateAt) meta.push('Session file last refreshed: ' + new Date(s.storageStateAt).toLocaleString());
-    if (s.lastList?.at)   meta.push(`List scrape last ran: ${new Date(s.lastList.at).toLocaleString()}${s.lastList.exitCode != null ? ` (exit ${s.lastList.exitCode})` : ''}`);
-    if (s.lastDetail?.at) meta.push(`Detail scrape last ran: ${new Date(s.lastDetail.at).toLocaleString()}${s.lastDetail.exitCode != null ? ` (exit ${s.lastDetail.exitCode})` : ''}`);
+    if (s.lastList?.lastSuccessfulAt)   meta.push(`Last successful list scrape: ${new Date(s.lastList.lastSuccessfulAt).toLocaleString()} (${_agoText(s.lastList.lastSuccessfulAt)})`);
+    if (s.lastDetail?.lastSuccessfulAt) meta.push(`Last successful detail scrape: ${new Date(s.lastDetail.lastSuccessfulAt).toLocaleString()}`);
+    if (s.storageStateAt)               meta.push(`Session file: ${new Date(s.storageStateAt).toLocaleString()} (${_agoText(s.storageStateAt)})`);
+    if (s.lastError?.at)                meta.push(`Last error: ${new Date(s.lastError.at).toLocaleString()}`);
     $('bc-banner-meta').textContent = meta.join('  ·  ');
     banner.classList.add('show');
   } catch (e) {
