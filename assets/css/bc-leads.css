@@ -211,6 +211,31 @@
     #status-bar.show { opacity:.92; }
     #empty { padding:60px 20px; text-align:center; color:var(--slate); }
 
+    /* BC session expired banner -- shows above the summary chip band when
+       /api/bc/scraper-status reports sessionOk=false. */
+    .bc-banner {
+      display:none; padding:10px 16px; background:#FFEBEE; color:var(--danger);
+      border-bottom:2px solid var(--danger); font-size:12px;
+      align-items:center; gap:14px; flex-wrap:wrap;
+    }
+    .bc-banner.show { display:flex; }
+    .bc-banner .ico { font-size:18px; line-height:1; }
+    .bc-banner .msg { flex:1; min-width:200px; line-height:1.4; }
+    .bc-banner .msg strong { display:block; font-size:13px; margin-bottom:2px; }
+    .bc-banner code {
+      font-family:ui-monospace, Consolas, Menlo, monospace; font-size:11px;
+      background:rgba(183,28,28,.10); padding:2px 6px; border-radius:5px;
+      user-select:all;
+    }
+    .bc-banner button {
+      background:white; color:var(--danger); border:1px solid var(--danger);
+      padding:5px 10px; border-radius:6px; font-size:11px; font-weight:600;
+      cursor:pointer; transition:all .12s ease;
+    }
+    .bc-banner button:hover    { background:var(--danger); color:white; }
+    .bc-banner button.dismiss  { background:transparent; border:0; color:var(--danger); padding:4px 8px; font-size:14px; }
+    .bc-banner .meta-small { font-size:10.5px; color:#7a3030; opacity:.85; }
+
     /* Status filter pills sit BELOW the summary band and ABOVE the table head.
        Pills are MULTI-SELECT: clicking adds to / removes from the active set.
        The "All" pill clears the set (= default view, which hides Archived). */

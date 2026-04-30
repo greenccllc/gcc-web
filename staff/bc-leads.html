@@ -28,6 +28,19 @@
     </div>
   </header>
 
+  <!-- =================== BC session banner (all tabs) =================== -->
+  <div class="bc-banner" id="bc-banner" role="alert" aria-live="polite">
+    <span class="ico">⚠️</span>
+    <div class="msg">
+      <strong id="bc-banner-title">BC scraper session expired</strong>
+      <span id="bc-banner-detail">Run <code>cd C:\GCC_LLC\Repos\bc-scraper; npm run login</code> to refresh, then click "Fix folders" to reimport.</span>
+      <div class="meta-small" id="bc-banner-meta"></div>
+    </div>
+    <button id="bc-banner-recheck" type="button">↻ Re-check</button>
+    <button id="bc-banner-fix"     type="button" title="After login, fix folders + re-pull attachments">🗂 Fix folders &amp; reimport</button>
+    <button class="dismiss" id="bc-banner-dismiss" title="Dismiss until next refresh">×</button>
+  </div>
+
   <!-- =================== Leads tab =================== -->
   <section id="tab-leads">
     <div class="summary" id="summary"></div>
@@ -1560,9 +1573,41 @@ function scheduleRefresh() {
   $('auto').textContent = 'auto-refresh every 30s';
 }
 
+// ===== BC scraper session banner =====
+// Polls /api/bc/scraper-status; toggles the red banner above the summary
+// when sessionOk=false so the operator knows to re-run `npm run login`.
+// The banner is dismissible per-session (resets on page reload).
+let _bcBannerDismissed = false;
+async function checkScraperStatus() {
+  if (_bcBannerDismissed) return;
+  try {
+    const s = await api('GET', '/api/bc/scraper-status');
+    const banner = $('bc-banner');
+    if (s.sessionOk) {
+      banner.classList.remove('show');
+      return;
+    }
+    const meta = [];
+    if (s.lastError?.at) meta.push('Last error: ' + new Date(s.lastError.at).toLocaleString());
+    if (s.storageStateAt) meta.push('Session file last refreshed: ' + new Date(s.storageStateAt).toLocaleString());
+    if (s.lastList?.at)   meta.push(`List scrape last ran: ${new Date(s.lastList.at).toLocaleString()}${s.lastList.exitCode != null ? ` (exit ${s.lastList.exitCode})` : ''}`);
+    if (s.lastDetail?.at) meta.push(`Detail scrape last ran: ${new Date(s.lastDetail.at).toLocaleString()}${s.lastDetail.exitCode != null ? ` (exit ${s.lastDetail.exitCode})` : ''}`);
+    $('bc-banner-meta').textContent = meta.join('  ·  ');
+    banner.classList.add('show');
+  } catch (e) {
+    // Don't blow up the page if the status endpoint is unreachable; just leave the banner alone.
+  }
+}
+$('bc-banner-recheck')?.addEventListener('click', () => { _bcBannerDismissed = false; checkScraperStatus(); });
+$('bc-banner-dismiss')?.addEventListener('click', () => { _bcBannerDismissed = true; $('bc-banner').classList.remove('show'); });
+$('bc-banner-fix')?.addEventListener('click',     () => { _bcBannerDismissed = true; $('bc-banner').classList.remove('show'); $('fix-folders').click(); });
+// Re-check every minute on top of the manual button.
+setInterval(checkScraperStatus, 60000);
+
 wireIntakeFilters();
 load();
 scheduleRefresh();
+checkScraperStatus();
 </script>
 </body>
 </html>
