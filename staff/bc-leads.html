@@ -7,7 +7,7 @@
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <meta name="theme-color" content="#1E4D2B" />
-  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-1100" />
+  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-1245" />
 </head>
 <body>
   <header>
@@ -64,6 +64,28 @@
 
   <!-- =================== Queue tab =================== -->
   <section id="tab-queue" hidden>
+    <!-- Watchdog (Chihuahua) pane -- summarizes the bid-extractor
+         watchdog scheduled task's recent activity. Polls every 30s
+         while the Queue tab is open. -->
+    <div class="wd-pane" id="wd-pane" hidden>
+      <div class="wd-row">
+        <div class="wd-emoji" id="wd-emoji">🐕</div>
+        <div class="wd-body">
+          <div class="wd-title">
+            <strong>Chihuahua</strong>
+            <span class="small wd-tick">…</span>
+          </div>
+          <div class="wd-verdict" id="wd-verdict">…</div>
+          <div class="wd-stats" id="wd-stats"></div>
+        </div>
+        <div class="wd-patterns" id="wd-patterns"></div>
+      </div>
+      <details class="wd-events" id="wd-events-details">
+        <summary>Recent fixes (today)</summary>
+        <ul class="wd-events-list" id="wd-events-list"></ul>
+      </details>
+    </div>
+
     <!-- Worker status panel -- bid-extractor health, in-flight, errors, queue counts -->
     <div class="ws-panel" id="ws-panel">
       <div class="ws-row ws-top">
@@ -1455,8 +1477,9 @@ async function loadQueue() {
   // Visual cue on the refresh button so the user can tell a click registered.
   const btn = $('q-refresh');
   if (btn) { btn.disabled = true; btn.dataset.origText = btn.dataset.origText || btn.textContent; btn.textContent = '… refreshing'; }
-  // Fire worker-status in parallel -- it doesn't block the table render.
+  // Fire worker-status + watchdog summary in parallel -- they don't block the table render.
   loadWorkerStatus().catch(()=>{});
+  loadWatchdog().catch(()=>{});
   try {
     const params = new URLSearchParams();
     if (QSTATE.state) params.set('status', QSTATE.state);
@@ -1468,6 +1491,94 @@ async function loadQueue() {
     $('q-rows').innerHTML = `<tr><td colspan="7" style="padding:20px;color:var(--danger)">${safeHtml(e.message)}</td></tr>`;
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = btn.dataset.origText || '↻ Refresh'; }
+  }
+}
+
+// ----- Watchdog (Chihuahua) pane -----
+// Polls /api/bc/watchdog/summary to surface what the watchdog scheduled
+// task has been fixing. The dog "learns from what it does" by tallying
+// drift patterns + trends week-over-week so the operator sees what's
+// improving / regressing.
+async function loadWatchdog() {
+  if ($('tab-queue').hidden) return;
+  let r;
+  try {
+    r = await api('GET', '/api/bc/watchdog/summary');
+  } catch { return; }
+  const pane = $('wd-pane');
+  if (!r || !r.ok) {
+    // Watchdog not yet logged anything (first install) -- hide pane.
+    pane.hidden = true;
+    return;
+  }
+  pane.hidden = false;
+
+  // Mood -> emoji: chihuahua-style (small, alert dog face)
+  const moodEmoji = {
+    'watching': '🐕',         // calm
+    'helping':  '🐕‍🦺',        // working
+    'worried':  '😾',         // wait, no -- use a worried dog
+  };
+  // Override worried with stronger alert so users notice
+  if (r.mood === 'worried') $('wd-emoji').textContent = '🐕💢';
+  else                      $('wd-emoji').textContent = moodEmoji[r.mood] || '🐕';
+
+  // Last-tick relative time
+  const lastTickStr = r.lastTickAt ? _wsSinceText(r.lastTickAt) : 'no ticks yet';
+  $('wd-pane').querySelector('.wd-tick').textContent = `last tick ${lastTickStr}`;
+
+  // Verdict (one-line summary)
+  $('wd-verdict').textContent = r.verdict || '';
+  $('wd-verdict').className = 'wd-verdict wd-mood-' + (r.mood || 'watching');
+
+  // Today / week / all-time aggregate badges
+  const t = r.today || {}, w = r.week || {}, a = r.allTime || {};
+  const fmt = (label, today, week, all) =>
+    `<span class="wd-stat" title="${label}: ${today} today · ${week} this week · ${all} all-time">
+       <span class="wd-stat-lbl">${label}</span>
+       <span class="wd-stat-val">${today}</span>
+       <span class="wd-stat-week">/ ${week} week</span>
+     </span>`;
+  $('wd-stats').innerHTML = [
+    fmt('Stalled agents killed',    t.stalledAgentsKilled || 0, w.stalledAgentsKilled || 0, a.stalledAgentsKilled || 0),
+    fmt('Worker restarts',          t.workerRestarts      || 0, w.workerRestarts      || 0, a.workerRestarts      || 0),
+    fmt('Drift attempts (blocked)', t.driftDetections     || 0, w.driftDetections     || 0, a.driftDetections     || 0),
+    fmt('Orphan cleanups',          t.orphanCleanups      || 0, w.orphanCleanups      || 0, a.orphanCleanups      || 0),
+    fmt('Healthy ticks',            t.ticks               || 0, w.ticks               || 0, a.ticks               || 0),
+  ].join('');
+
+  // Patterns the dog "learned" -- top forbidden tools the agent's reflexes
+  // keep reaching for. SDK blocks them; this surfaces the count so the
+  // operator can see whether the pattern is improving over time.
+  const patterns = (r.driftPatterns || []).filter(p => p.samples > 0);
+  if (patterns.length === 0) {
+    $('wd-patterns').innerHTML = '<div class="small wd-pattern-empty">No drift patterns recently. Agent reflexes are clean. ✓</div>';
+  } else {
+    $('wd-patterns').innerHTML =
+      '<div class="wd-pattern-title small">Patterns sniffed out</div>' +
+      patterns.map(p =>
+        `<div class="wd-pattern" title="${p.samples} samples in the watchdog log -- SDK rejected each one">
+           <span class="wd-pattern-tool">${safeHtml(p.tool)}</span>
+           <span class="wd-pattern-count">${p.samples}×</span>
+         </div>`
+      ).join('');
+  }
+
+  // Recent events timeline -- collapsed by default, only shown when there are events.
+  const events = r.recentEvents || [];
+  const eList = $('wd-events-list');
+  if (events.length === 0) {
+    eList.innerHTML = '<li class="small wd-pattern-empty">No fixes today.</li>';
+  } else {
+    eList.innerHTML = events.map(ev => {
+      const t = _wsSinceText(ev.at);
+      const kindClass = `wd-ev-${ev.kind}`;
+      return `<li class="${kindClass}">
+        <span class="wd-ev-time small">${t}</span>
+        <span class="wd-ev-kind">${safeHtml(ev.kind)}</span>
+        <span class="wd-ev-detail small">${safeHtml(ev.detail)}</span>
+      </li>`;
+    }).join('');
   }
 }
 
