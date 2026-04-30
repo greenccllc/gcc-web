@@ -281,6 +281,22 @@ function trimScope(name) {
 }
 function projectLabel(r) { return trimScope(r.projectName) || r.driveJobFolderName || '(no name)'; }
 
+// Single source of truth for the Extraction column %. Pages is the unit
+// of agent work (1 sheet = 1 page, 1 image = 1 page, 1 PDF page = 1 page),
+// so the cleanest progress signal is pages_processed / pages_total. Falls
+// back to files-based for legacy rows that predate the pages_* columns.
+// Capped at 100 because agents occasionally over-count when a single
+// physical page is reconciled multiple times.
+function extractionPct(r) {
+  const pp = r.extraction?.pagesProcessed || 0;
+  const pt = r.extraction?.pagesTotal     || 0;
+  if (pt > 0) return Math.min(100, Math.round(100 * pp / pt));
+  const proc  = r.extraction?.filesProcessed || 0;
+  const total = r.filesTotal                 || proc;
+  if (total > 0) return Math.min(100, Math.round(100 * proc / total));
+  return 0;
+}
+
 // safeHtml: escape user-controlled strings before injecting into innerHTML.
 function safeHtml(s) {
   return String(s || '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
@@ -321,24 +337,29 @@ const COLS = [
     sort:(a,b) => (parseDue(a.dueAt) || 0) - (parseDue(b.dueAt) || 0),
     cell:(r) => renderDue(r.dueAt) },
 
-  // Extraction: "73% (X of Y pages)" -- pages aggregate across all uploaded
-  // files for this bid (sheets / images / PDF pages all count as "pages" --
-  // it's the unit of agent work). Falls back to "(X of Y files)" only when
-  // page counts haven't been tracked yet (legacy rows pre-pages_processed).
+  // Extraction: "##% (X of Y pages)" where ##% is the PAGE-COMPLETION
+  // percentage (pagesProcessed / pagesTotal), NOT the agent's confidence
+  // value. The agent's confidence still drives the project-name tooltip /
+  // next-best-step button, but for the at-a-glance column it's progress
+  // that matters: how much of this RFP's spec has the agent gotten through?
+  // Falls back to file-based progress when page counts aren't tracked
+  // (legacy rows pre-pages_processed).
   { id:'extraction', label:'Extraction',
-    sort:(a,b) => (a.extraction?.confidencePct || 0) - (b.extraction?.confidencePct || 0),
+    sort:(a,b) => extractionPct(a) - extractionPct(b),
     cell:(r) => {
-      const c     = r.extraction?.confidencePct;
-      const pp    = r.extraction?.pagesProcessed || 0;
-      const pt    = r.extraction?.pagesTotal     || 0;
-      const proc  = r.extraction?.filesProcessed || 0;
-      const total = r.filesTotal                 || proc;
-      if (c == null && proc === 0 && pt === 0) return '<span class="pad">—</span>';
-      const pct   = c == null ? '—' : `${Math.round(c)}%`;
+      const pct = extractionPct(r);
+      const pp   = r.extraction?.pagesProcessed || 0;
+      const pt   = r.extraction?.pagesTotal     || 0;
+      const proc = r.extraction?.filesProcessed || 0;
+      const tot  = r.filesTotal                 || proc;
+      if (pt === 0 && proc === 0) return '<span class="pad">—</span>';
       const detail = pt > 0
         ? `${pp} of ${pt} pages`
-        : `${proc} of ${total} files`;
-      return `<strong>${pct}</strong> <span class="small">(${detail})</span>`;
+        : `${proc} of ${tot} files`;
+      // Confidence still surfaces on hover for context.
+      const conf = r.extraction?.confidencePct;
+      const titleAttr = conf == null ? '' : ` title="Agent confidence: ${Math.round(conf)}%"`;
+      return `<strong${titleAttr}>${Math.round(pct)}%</strong> <span class="small">(${detail})</span>`;
     } },
 
   { id:'cost', label:'AI cost',
@@ -449,10 +470,11 @@ function expandMetaCol(r) {
     ? '<span class="status status-Archived" title="Extraction is paused for this RFP.">⏸ Paused</span>' : '';
   const acceptedBadge = r.extraction?.accepted
     ? '<span class="status status-Accepted">✓ Accepted</span>' : '';
+  const pct = extractionPct(r);
   return `<div class="expand-col">
     <h4>Extraction & scrape</h4>
-    <div class="field"><span class="lbl">Confidence</span><span class="val">${c == null ? '—' : Math.round(c) + '%'}</span></div>
-    <div class="field"><span class="lbl">Pages</span><span class="val">${pt > 0 ? `${pp} of ${pt}` : `${proc} of ${tot} files`}</span></div>
+    <div class="field"><span class="lbl">Progress</span><span class="val">${pct}% (${pt > 0 ? `${pp} of ${pt} pages` : `${proc} of ${tot} files`})</span></div>
+    <div class="field"><span class="lbl">Agent confidence</span><span class="val">${c == null ? '—' : Math.round(c) + '%'}</span></div>
     <div class="field"><span class="lbl">AI cost</span><span class="val">${cost == null ? '—' : '$' + Number(cost).toFixed(4)}${tok ? ` <span class="small">(${(tok/1000).toFixed(1)}k tok)</span>` : ''}</span></div>
     <div class="field"><span class="lbl">Attachments</span><span class="val">${att} att · ${msg} msg</span></div>
     <div class="field"><span class="lbl">First seen</span><span class="val">${fmt(r.firstSeenAt)}</span></div>
