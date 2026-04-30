@@ -1336,42 +1336,86 @@ async function loadQueue() {
     if (btn) { btn.disabled = false; btn.textContent = btn.dataset.origText || '↻ Refresh'; }
   }
 }
-// Stable sort by current (sortKey, sortDir). 'auto' = state-rank then updated-desc.
-function _sortQueueItems(items) {
+// Group items by project (bcBidId), compute group aggregates, then sort
+// the GROUPS by the active sort key. Files within each group are always
+// sorted state-first (processing on top) -- we don't want a project's
+// queued files mixed in front of its actively-processing one.
+function _groupQueueItems(items) {
+  const updatedAt = (it) => Date.parse(it.liveUpdatedAt || it.costPatchedAt || it.uploadedAt || 0) || 0;
+  const groups = new Map();
+  for (const it of items) {
+    const key = it.bcBidId || it.projectName || '(unknown)';
+    let g = groups.get(key);
+    if (!g) {
+      g = {
+        bcBidId:     it.bcBidId,
+        projectName: it.projectName || it.bcBidId || '(unknown)',
+        rfpStatus:   it.rfpStatus,
+        files:       [],
+        // Aggregates -- filled after we collect every file.
+        counts:        { queued:0, processing:0, completed:0, skipped:0, cancelled:0 },
+        totalFiles:    0,
+        totalCostUsd:  0,
+        pagesDone:     0,
+        pagesTotal:    0,
+        latestUpdated: 0,
+        worstState:    'completed', // upgraded as we encounter live work
+      };
+      groups.set(key, g);
+    }
+    g.files.push(it);
+    g.totalFiles += 1;
+    if (g.counts[it.state] != null) g.counts[it.state] += 1;
+    if (typeof it.costUsd === 'number') g.totalCostUsd += it.costUsd;
+    g.pagesDone  += (it.pagesProcessed || 0);
+    g.pagesTotal += (it.pagesTotal || it.pageCount || 0);
+    const ts = updatedAt(it);
+    if (ts > g.latestUpdated) g.latestUpdated = ts;
+    // worstState: the most "alive" state in the group drives the group's
+    // visual treatment. processing > queued > completed > skipped > cancelled.
+    const rankCur = Q_STATE_RANK[g.worstState] ?? 9;
+    const rankNew = Q_STATE_RANK[it.state]     ?? 9;
+    if (rankNew < rankCur) g.worstState = it.state;
+  }
+  // Sort files within each group: processing first, then queued, etc.
+  for (const g of groups.values()) {
+    g.files.sort((a, b) => {
+      const ra = Q_STATE_RANK[a.state] ?? 9;
+      const rb = Q_STATE_RANK[b.state] ?? 9;
+      if (ra !== rb) return ra - rb;
+      return (a.fileName || '').localeCompare(b.fileName || '');
+    });
+  }
+  return Array.from(groups.values());
+}
+function _sortQueueGroups(groups) {
   const key = QSTATE.sortKey || 'auto';
   const dir = (QSTATE.sortDir === 'desc') ? -1 : 1;
-  const updatedAt = (it) => Date.parse(it.liveUpdatedAt || it.costPatchedAt || it.uploadedAt || 0) || 0;
-  const progressPct = (it) => {
-    const pp = it.pagesProcessed || 0;
-    const pt = it.pagesTotal || it.pageCount || 0;
-    return pt > 0 ? (pp / pt) : (pp > 0 ? 0.001 : 0);
-  };
+  const groupProgressPct = (g) => g.pagesTotal > 0 ? (g.pagesDone / g.pagesTotal) : 0;
   const accessor = {
-    auto:     (it) => [Q_STATE_RANK[it.state] ?? 9, -updatedAt(it)],
-    project:  (it) => (it.projectName || '').toLowerCase(),
-    file:     (it) => (it.fileName    || '').toLowerCase(),
-    state:    (it) => Q_STATE_RANK[it.state] ?? 9,
-    progress: (it) => progressPct(it),
-    cost:     (it) => it.costUsd ?? -1,
-    updated:  (it) => updatedAt(it),
-  }[key] || ((it) => 0);
-  // Decorate with original index for stable sort.
-  return items.map((it, i) => ({ it, i, k: accessor(it) }))
-              .sort((a, b) => {
-                const ka = a.k, kb = b.k;
-                // 'auto' returns a tuple; compare element-by-element.
-                if (Array.isArray(ka)) {
-                  for (let j = 0; j < ka.length; j++) {
-                    if (ka[j] < kb[j]) return -1 * dir;
-                    if (ka[j] > kb[j]) return  1 * dir;
-                  }
-                  return a.i - b.i;
-                }
-                if (ka < kb) return -1 * dir;
-                if (ka > kb) return  1 * dir;
-                return a.i - b.i;
-              })
-              .map(x => x.it);
+    auto:     (g) => [Q_STATE_RANK[g.worstState] ?? 9, -g.latestUpdated],
+    project:  (g) => (g.projectName || '').toLowerCase(),
+    file:     (g) => (g.files[0]?.fileName || '').toLowerCase(),
+    state:    (g) => Q_STATE_RANK[g.worstState] ?? 9,
+    progress: (g) => groupProgressPct(g),
+    cost:     (g) => g.totalCostUsd,
+    updated:  (g) => g.latestUpdated,
+  }[key] || ((g) => 0);
+  return groups.map((g, i) => ({ g, i, k: accessor(g) }))
+               .sort((a, b) => {
+                 const ka = a.k, kb = b.k;
+                 if (Array.isArray(ka)) {
+                   for (let j = 0; j < ka.length; j++) {
+                     if (ka[j] < kb[j]) return -1 * dir;
+                     if (ka[j] > kb[j]) return  1 * dir;
+                   }
+                   return a.i - b.i;
+                 }
+                 if (ka < kb) return -1 * dir;
+                 if (ka > kb) return  1 * dir;
+                 return a.i - b.i;
+               })
+               .map(x => x.g);
 }
 function _updateSortIndicators() {
   const arrow = QSTATE.sortDir === 'desc' ? '▾' : '▴';
@@ -1381,67 +1425,171 @@ function _updateSortIndicators() {
     ind.textContent = (th.dataset.sort === QSTATE.sortKey) ? arrow : '';
   });
 }
+// Persisted per-bcBidId expand/collapse memory (reset on full reload).
+const Q_EXPANDED = new Set();
+
+function _fileRowHtml(it) {
+  const pp = it.pagesProcessed || 0;
+  const pt = it.pagesTotal || it.pageCount || 0;
+  const pct = pt > 0 ? Math.min(100, Math.round(100 * pp / pt)) : null;
+  let progressCell;
+  if (it.state === 'completed') {
+    progressCell = `<span class="small ok">✓ done${pt > 0 ? ` (${pt} pages)` : ''}</span>`;
+  } else if (it.state === 'skipped') {
+    progressCell = `<span class="small pad">— skipped</span>`;
+  } else if (it.state === 'cancelled') {
+    progressCell = `<span class="small">cancelled</span>`;
+  } else if (it.state === 'processing') {
+    progressCell = pct != null
+      ? `<span class="q-progress-bar"><span style="width:${Math.max(pct, 4)}%"></span></span><strong>${pp}</strong><span class="small"> of ${pt}</span>`
+      : `<span class="q-progress-bar indeterminate"><span></span></span><span class="small">starting…</span>`;
+  } else { // queued
+    progressCell = pt > 0
+      ? `<span class="small">${pt} pages queued</span>`
+      : `<span class="small pad">— queued</span>`;
+  }
+  const costCell = it.costUsd != null
+    ? `$${Number(it.costUsd).toFixed(4)}`
+    : '<span class="pad">—</span>';
+  const updatedCell = fmt(it.liveUpdatedAt || it.costPatchedAt || it.uploadedAt);
+  const canCancel = it.state === 'queued' || it.state === 'processing';
+  const action = canCancel
+    ? `<button data-act="cancel" data-bid="${safeHtml(it.bcBidId)}" data-fid="${safeHtml(it.driveFileId)}" title="Mark this file as cancelled — worker skips on next pull / breaks within 10s mid-run">✕ Cancel</button>`
+    : `<button disabled>—</button>`;
+  return `<tr class="q-row q-file-row state-${it.state}" data-parent="${safeHtml(it.bcBidId || '')}">
+    <td class="q-file-cell"></td>
+    <td class="q-file" title="${safeHtml(it.classification)}">${safeHtml(it.fileName)}</td>
+    <td><span class="q-status ${it.state}">${it.state}</span></td>
+    <td>${progressCell}</td>
+    <td>${costCell}</td>
+    <td class="small">${updatedCell}</td>
+    <td class="q-actions">${action}</td>
+  </tr>`;
+}
+
+function _groupRowHtml(g, expanded) {
+  // Active state derives from the group's "worst" (most-alive) file state.
+  const state = g.worstState || 'queued';
+  // Aggregate progress: sum(pagesProcessed) / sum(pagesTotal) across all files.
+  const pct = g.pagesTotal > 0 ? Math.min(100, Math.round(100 * g.pagesDone / g.pagesTotal)) : null;
+  // Group progress cell: indeterminate bar if there's processing but no
+  // pagesTotal yet; static "N files" when fully queued.
+  let progressCell;
+  if (g.counts.processing > 0) {
+    progressCell = pct != null
+      ? `<span class="q-progress-bar"><span style="width:${Math.max(pct, 4)}%"></span></span><strong>${g.pagesDone}</strong><span class="small"> of ${g.pagesTotal} pages</span>`
+      : `<span class="q-progress-bar indeterminate"><span></span></span><span class="small">starting…</span>`;
+  } else if (g.counts.queued > 0) {
+    progressCell = g.pagesTotal > 0
+      ? `<span class="small">${g.pagesTotal} pages queued</span>`
+      : `<span class="small pad">queued</span>`;
+  } else if (g.counts.completed > 0 && g.counts.queued === 0 && g.counts.processing === 0) {
+    progressCell = `<span class="small ok">✓ ${g.counts.completed}/${g.totalFiles} done</span>`;
+  } else {
+    progressCell = `<span class="small pad">—</span>`;
+  }
+  // Status pill: the worst state with a count.
+  const statePill = `<span class="q-status ${state}">${state}</span>`;
+  // Mini-counts inline: ⚙ 2 / ⏳ 5 / ✓ 1 etc -- compact tally.
+  const tallies = [
+    g.counts.processing ? `<span class="q-tally tally-processing" title="processing">⚙️ ${g.counts.processing}</span>` : '',
+    g.counts.queued     ? `<span class="q-tally tally-queued"     title="queued">⏳ ${g.counts.queued}</span>` : '',
+    g.counts.completed  ? `<span class="q-tally tally-completed"  title="completed">✓ ${g.counts.completed}</span>` : '',
+    g.counts.skipped    ? `<span class="q-tally tally-skipped"    title="skipped">⏭ ${g.counts.skipped}</span>` : '',
+    g.counts.cancelled  ? `<span class="q-tally tally-cancelled"  title="cancelled">✕ ${g.counts.cancelled}</span>` : '',
+  ].filter(Boolean).join(' ');
+  const fileTally = `<span class="small q-file-tally">${g.totalFiles} ${g.totalFiles === 1 ? 'file' : 'files'}${tallies ? ' · ' + tallies : ''}</span>`;
+  const totalCost = g.totalCostUsd > 0 ? `$${g.totalCostUsd.toFixed(4)}` : '<span class="pad">—</span>';
+  const updated = g.latestUpdated > 0 ? fmt(new Date(g.latestUpdated).toISOString()) : '<span class="pad">—</span>';
+  const arrow = expanded ? '▾' : '▸';
+  const groupCancellable = (g.counts.queued + g.counts.processing) > 0;
+  const groupCancel = groupCancellable
+    ? `<button data-act="cancel-group" data-bid="${safeHtml(g.bcBidId || '')}" title="Cancel every queued/processing file in this RFP">✕ Cancel ${g.counts.queued + g.counts.processing}</button>`
+    : `<button disabled>—</button>`;
+  return `<tr class="q-row q-group-row state-${state}${expanded ? ' expanded' : ''}" data-bid="${safeHtml(g.bcBidId || '')}">
+    <td class="q-group-name">
+      <button class="q-toggle" data-act="toggle-group" data-bid="${safeHtml(g.bcBidId || '')}" aria-expanded="${expanded}">${arrow}</button>
+      <a href="#" data-act="goto-rfp" data-id="${safeHtml(g.bcBidId || '')}">${safeHtml(g.projectName)}</a>
+    </td>
+    <td>${fileTally}</td>
+    <td>${statePill}</td>
+    <td>${progressCell}</td>
+    <td>${totalCost}</td>
+    <td class="small">${updated}</td>
+    <td class="q-actions">${groupCancel}</td>
+  </tr>`;
+}
+
 function renderQueue(data) {
   const s = data.summary || {};
   $('q-summary').innerHTML = [
-    `<span class="chip"><strong>${s.total || 0}</strong> total</span>`,
+    `<span class="chip"><strong>${s.total || 0}</strong> files total</span>`,
     s.processing ? `<span class="chip processing"><span class="dot pulse"></span> <strong>${s.processing}</strong> processing</span>` : '',
     s.queued     ? `<span class="chip">⏳ <strong>${s.queued}</strong> queued</span>` : '',
     s.completed  ? `<span class="chip">✓ <strong>${s.completed}</strong> completed</span>` : '',
     s.skipped    ? `<span class="chip">⏭ <strong>${s.skipped}</strong> skipped</span>` : '',
     s.cancelled  ? `<span class="chip">✕ <strong>${s.cancelled}</strong> cancelled</span>` : '',
   ].filter(Boolean).join('');
-  const items = _sortQueueItems(data.items || []);
+  const groups = _sortQueueGroups(_groupQueueItems(data.items || []));
   _updateSortIndicators();
-  $('q-count').textContent = `${items.length} shown`;
-  if (items.length === 0) {
+  // Auto-expand any group that has live (processing) work, plus every
+  // group the operator has explicitly toggled. Keeps the eye drawn to
+  // motion without forcing all groups open.
+  for (const g of groups) {
+    if ((g.counts.processing || 0) > 0 && g.bcBidId) Q_EXPANDED.add(g.bcBidId);
+  }
+  $('q-count').textContent = `${groups.length} ${groups.length === 1 ? 'project' : 'projects'} · ${data.items?.length || 0} files`;
+  if (groups.length === 0) {
     $('q-empty').hidden = false;
     $('q-rows').innerHTML = '';
     return;
   }
   $('q-empty').hidden = true;
-  $('q-rows').innerHTML = items.map(it => {
-    const pp = it.pagesProcessed || 0;
-    const pt = it.pagesTotal || it.pageCount || 0;
-    const pct = pt > 0 ? Math.min(100, Math.round(100 * pp / pt)) : null;
-    // Always show a progress bar for processing rows -- even at pp=0
-    // we surface the indeterminate animation so the operator can see
-    // motion. This matches the "active processing should be at the top
-    // with a progress bar" requirement.
-    let progressCell;
-    if (it.state === 'completed') {
-      progressCell = `<span class="small ok">✓ done</span>`;
-    } else if (it.state === 'skipped') {
-      progressCell = `<span class="small pad">— skipped</span>`;
-    } else if (it.state === 'cancelled') {
-      progressCell = `<span class="small">cancelled</span>`;
-    } else if (it.state === 'processing') {
-      progressCell = pct != null
-        ? `<span class="q-progress-bar"><span style="width:${Math.max(pct, 4)}%"></span></span><strong>${pp}</strong><span class="small"> of ${pt}</span>`
-        : `<span class="q-progress-bar indeterminate"><span></span></span><span class="small">starting…</span>`;
-    } else { // queued
-      progressCell = pt > 0
-        ? `<span class="small">${pt} pages queued</span>`
-        : `<span class="small pad">— queued</span>`;
-    }
-    const costCell = it.costUsd != null
-      ? `$${Number(it.costUsd).toFixed(4)}`
-      : '<span class="pad">—</span>';
-    const updatedCell = fmt(it.liveUpdatedAt || it.costPatchedAt || it.uploadedAt);
-    const canCancel = it.state === 'queued' || it.state === 'processing';
-    const action = canCancel
-      ? `<button data-act="cancel" data-bid="${safeHtml(it.bcBidId)}" data-fid="${safeHtml(it.driveFileId)}" title="Mark this file as cancelled — worker will skip on next pull (or break out of a mid-run agent within 10s)">✕ Cancel</button>`
-      : `<button disabled>—</button>`;
-    return `<tr class="q-row state-${it.state}">
-      <td><a href="#" data-act="goto-rfp" data-id="${safeHtml(it.bcBidId)}">${safeHtml(it.projectName || it.bcBidId)}</a></td>
-      <td class="q-file" title="${safeHtml(it.classification)}">${safeHtml(it.fileName)}</td>
-      <td><span class="q-status ${it.state}">${it.state}</span></td>
-      <td>${progressCell}</td>
-      <td>${costCell}</td>
-      <td class="small">${updatedCell}</td>
-      <td class="q-actions">${action}</td>
-    </tr>`;
+  $('q-rows').innerHTML = groups.map(g => {
+    const expanded = !g.bcBidId || Q_EXPANDED.has(g.bcBidId);
+    const groupRow = _groupRowHtml(g, expanded);
+    if (!expanded) return groupRow;
+    const fileRows = g.files.map(_fileRowHtml).join('');
+    return groupRow + fileRows;
   }).join('');
+  // Wire group toggle buttons.
+  $('q-rows').querySelectorAll('button[data-act="toggle-group"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.bid;
+      if (!id) return;
+      if (Q_EXPANDED.has(id)) Q_EXPANDED.delete(id); else Q_EXPANDED.add(id);
+      // Re-render from cached data -- avoid a server round-trip.
+      if (QSTATE.lastData) renderQueue(QSTATE.lastData);
+    });
+  });
+  // Wire group-level cancel buttons. Iterates every cancellable file in
+  // the group and POSTs cancel one-by-one (the bulk endpoint can come
+  // later; this is correct).
+  $('q-rows').querySelectorAll('button[data-act="cancel-group"]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const bid = btn.dataset.bid;
+      const g = groups.find(x => x.bcBidId === bid);
+      if (!g) return;
+      const live = g.files.filter(f => f.state === 'queued' || f.state === 'processing');
+      if (live.length === 0) return;
+      if (!confirm(`Cancel ${live.length} ${live.length === 1 ? 'file' : 'files'} for this RFP? Worker will skip on next pull (or break mid-run within 10s).`)) return;
+      btn.disabled = true; const orig = btn.textContent; btn.textContent = '…';
+      try {
+        for (const f of live) {
+          await api('POST', '/api/bc/extraction-cancel', {
+            bcBidId:     f.bcBidId,
+            driveFileId: f.driveFileId,
+            reason:      'operator-cancel-group',
+          });
+        }
+        toast(`Cancelled ${live.length} ${live.length === 1 ? 'file' : 'files'} for this RFP.`);
+        await loadQueue();
+      } catch (e) {
+        btn.disabled = false; btn.textContent = orig;
+        toast(e.message, 4500);
+      }
+    });
+  });
 
   // Wire cancel buttons.
   $('q-rows').querySelectorAll('button[data-act="cancel"]').forEach(btn => {
