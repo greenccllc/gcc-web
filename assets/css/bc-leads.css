@@ -559,17 +559,15 @@
 
     .ws-inflight { display:flex; flex-direction:column; gap:4px; }
     .ws-inflight-empty { font-style:italic; }
+    /* Three columns: filename | progress bar | age. Project name was
+       removed -- the progress bar already says what's happening, and
+       the file name is enough context for the operator. */
     .ws-inflight-row { display:grid; gap:8px; align-items:center;
-                        grid-template-columns: minmax(180px, 1.5fr) minmax(220px, 2fr) minmax(220px, 2fr) auto;
+                        grid-template-columns: minmax(220px, 1fr) minmax(220px, auto) auto;
                         background:#EAF2FB; border:1px solid #BFD4EA;
                         padding:6px 10px; border-radius:6px; font-size:12px;
                         box-shadow: inset 3px 0 0 0 #1A5490; }
-    .ws-inflight-row.stuck { background:#FFF8E5; border-color:#E8C679;
-                              box-shadow: inset 3px 0 0 0 #C9A158; }
     .ws-inflight-row .ws-if-proj { font-weight:600; color:var(--ink);
-                                   white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .ws-inflight-row .ws-if-file { font-family:ui-monospace, Consolas, Menlo, monospace;
-                                   font-size:11px; color:var(--slate);
                                    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .ws-inflight-row .ws-if-bar { display:flex; align-items:center; gap:6px; }
     .ws-inflight-row .ws-if-bar .q-progress-bar { width:130px; }

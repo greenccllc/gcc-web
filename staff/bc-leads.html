@@ -7,7 +7,7 @@
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <meta name="theme-color" content="#1E4D2B" />
-  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-0625" />
+  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-0635" />
 </head>
 <body>
   <header>
@@ -1627,7 +1627,6 @@ function renderWorkerStatus(w) {
         const ageBadge = `<span class="ws-age fresh">${it.ageS != null ? it.ageS + 's' : ''}</span>`;
         return `<div class="ws-inflight-row">
           <div class="ws-if-proj" title="${safeHtml(it.fileName || '')}">${safeHtml(it.fileName || '(file pending)')}</div>
-          <div class="ws-if-file small" title="${safeHtml(it.projectName || '')}">${safeHtml(it.projectName || it.jobId || '(unknown project)')}</div>
           <div class="ws-if-bar">${bar}${counts}</div>
           ${ageBadge}
         </div>`;
