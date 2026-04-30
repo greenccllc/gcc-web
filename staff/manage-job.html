@@ -7,7 +7,7 @@
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <meta name="theme-color" content="#1E4D2B" />
-  <link rel="stylesheet" href="/assets/css/staff-manage-job.css?v=20260430-1015" />
+  <link rel="stylesheet" href="/assets/css/staff-manage-job.css?v=20260430-1145" />
 </head>
 <body>
   <header>
@@ -52,6 +52,15 @@
         </div>
         <div class="mj-counts-grid" id="mj-counts-grid"></div>
         <div class="small mj-scope-reasoning" id="mj-scope-reasoning"></div>
+      </div>
+
+      <div class="mj-card" style="margin-top:14px" id="mj-reqs-card">
+        <h2>Job requirements <span class="mj-card-sub" id="mj-reqs-sub">· loading…</span></h2>
+        <div class="sub">Material specs (jacks, plates, fiber), operational rules (background checks, working hours), compliance (prevailing wage, MBE/WBE), and closeout items pulled from every intake file. Refreshes when you re-synthesize the scope.</div>
+        <ul class="mj-reqs-list" id="mj-reqs-list"></ul>
+        <div class="small pad" id="mj-reqs-empty" hidden>
+          No requirements synthesized yet. Click <em>Synthesize scope</em> above to populate this list from the agent's spec / note / prop_req rows.
+        </div>
       </div>
 
     </div>
@@ -247,6 +256,93 @@ function renderAll() {
   renderMeta(r);
   renderQuickLinks(r);
   renderCalendar();
+  loadRequirements();
+  loadLocations();
+}
+
+// ===== Locations breakdown (per pill, hover tooltip) =====
+// LOCATIONS is keyed by BidExtractions CountType (drop_count, wap_count, etc.)
+// — we re-key it to the UI pill keys (data, aps, etc.) inside renderScope so
+// the pill renderer can attach a multi-line title attribute on hover.
+let LOCATIONS = {};   // { 'wap_count': [{floor,room,qty}], ... }
+
+async function loadLocations() {
+  if (!JOB_ID) return;
+  try {
+    const r = await api('GET', `/api/admin/jobs/${encodeURIComponent(JOB_ID)}/locations`);
+    LOCATIONS = r?.locations || {};
+    if (LEAD) renderScope(LEAD);  // re-render so tooltips attach
+  } catch { LOCATIONS = {}; }
+}
+
+// Map UI pill-key → BidExtractions CountType so we can look up the
+// locations array Gemini emitted for that category.
+const UI_KEY_TO_COUNT_TYPE = {
+  data:      'drop_count',
+  fiber:     'fiber_strand_count',
+  fiberEnc:  'fiber_enclosure_count',
+  fiberPp:   'fiber_patch_panel_count',
+  coax:      'coax_drop_count',
+  hdmi:      'hdmi_drop_count',
+  tv:        'tv_display_count',
+  iot:       'iot_device_count',
+  aps:       'wap_count',
+  intercom:  'intercom_count',
+  camInt:    'camera_interior_count',
+  camExt:    'camera_exterior_count',
+  doors:     'door_count',
+  elevator:  'elevator_endpoint_count',
+  ups:       'ups_count',
+  mdf:       'mdf_count',
+  idf:       'idf_count',
+  switch:    'switch_count',
+  patch:     'patch_panel_count',
+  ladder:    'ladder_rack_count',
+  speakers:  'speaker_count',
+};
+
+// Build a multi-line tooltip string from the locations array. Title attrs
+// render newlines natively in every modern browser, so the operator can
+// hover a pill and see "Floor 1: Rm 101 (3), Rm 102 (2)\nFloor 2: ..."
+function tooltipForKey(uiKey) {
+  const ct = UI_KEY_TO_COUNT_TYPE[uiKey];
+  if (!ct) return null;
+  const arr = LOCATIONS[ct];
+  if (!Array.isArray(arr) || arr.length === 0) return null;
+  // Group by floor → list of "Room (qty)"
+  const byFloor = new Map();
+  for (const e of arr) {
+    const f = (e.floor || '—').toString();
+    if (!byFloor.has(f)) byFloor.set(f, []);
+    byFloor.get(f).push(`${e.room || '—'} (${e.qty ?? '?'})`);
+  }
+  const lines = [];
+  for (const [floor, rooms] of byFloor) lines.push(`${floor}: ${rooms.join(', ')}`);
+  return lines.join('\n');
+}
+
+// ===== Job requirements (synthesized bullet list) =====
+async function loadRequirements() {
+  if (!JOB_ID) return;
+  $('mj-reqs-sub').textContent = '· loading…';
+  $('mj-reqs-list').innerHTML = '';
+  $('mj-reqs-empty').hidden = true;
+  try {
+    const r = await api('GET', `/api/admin/jobs/${encodeURIComponent(JOB_ID)}/requirements`);
+    const bullets = Array.isArray(r?.requirements) ? r.requirements : [];
+    if (bullets.length === 0) {
+      $('mj-reqs-sub').textContent = '· none yet';
+      $('mj-reqs-empty').hidden = false;
+      return;
+    }
+    $('mj-reqs-sub').textContent = `· ${bullets.length} item${bullets.length === 1 ? '' : 's'}`
+                                  + (r.synthesizedAt ? ` · synthesized ${fmt(r.synthesizedAt)}` : '');
+    $('mj-reqs-list').innerHTML = bullets.map(b => `<li>${safeHtml(b)}</li>`).join('');
+  } catch (e) {
+    $('mj-reqs-sub').textContent = '· error';
+    $('mj-reqs-empty').hidden = false;
+    $('mj-reqs-empty').innerHTML = `<span style="color:var(--danger)">${safeHtml(e.message)}</span>`;
+  }
 }
 
 // ===== Hero =====
@@ -489,14 +585,20 @@ function renderScope(r) {
     const has = v != null && v !== 0;
     totalN++; if (has) hasN++;
     const tipBits = [];
+    // Floor → Room grouped breakdown comes first so it's the most visible
+    // line in the native browser tooltip; rest of the bits append after a
+    // separator newline so they stay grouped at the bottom.
+    const locTip = !isParent ? tooltipForKey(k) : null;
+    if (locTip)                        tipBits.push(locTip);
     if (has && estimated)              tipBits.push(estimatedTip);
     if (opts?.tip)                     tipBits.push(opts.tip);
     if (isDerived && has)              tipBits.push('Computed value — agent will override when an explicit spec is found.');
-    const tip = tipBits.length ? ` title="${safeHtml(tipBits.join(' · '))}"` : '';
+    const tip = tipBits.length ? ` title="${safeHtml(tipBits.join('\n\n'))}"` : '';
     const cls = (has ? 'has' : 'empty')
               + (has && estimated ? ' estimated' : '')
               + (isDerived ? ' derived' : '')
-              + (isParent ? ' parent' : '');
+              + (isParent ? ' parent' : '')
+              + (locTip ? ' has-locations' : '');
     return `<div class="mj-count-pill ${cls}"${tip}><span class="lbl">${safeHtml(label)}</span><span class="val">${v == null ? '—' : v}</span></div>`;
   };
 

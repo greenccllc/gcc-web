@@ -127,6 +127,15 @@
        glance which numbers came from a formula vs. an explicit spec. */
     .mj-count-pill.derived { border-style:dashed; }
     .mj-count-pill.derived.has { border-color:var(--forest); }
+    /* Pill with a richer tooltip (locations breakdown) — give it a soft
+       cursor cue + slight underline on hover so the operator notices. */
+    .mj-count-pill.has-locations { cursor:help; }
+    .mj-count-pill.has-locations .lbl { border-bottom:1px dotted var(--slate); }
+
+    /* ── Job requirements (synthesized bullet list) ───────────────────── */
+    .mj-reqs-list { margin:10px 0 0; padding-left:20px; line-height:1.55; }
+    .mj-reqs-list li { font-size:13px; color:var(--ink); margin-bottom:4px; }
+    #mj-reqs-empty { color:var(--slate); font-style:italic; }
     /* Inline ? glyph used in the toolbar legend so the operator can map the
        superscript on each pill back to its meaning. */
     .mj-scope-conf em { font-style:italic; color:var(--slate); }
