@@ -7,7 +7,7 @@
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <meta name="theme-color" content="#1E4D2B" />
-  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-0100" />
+  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-0130" />
 </head>
 <body>
   <header>
@@ -64,6 +64,36 @@
 
   <!-- =================== Queue tab =================== -->
   <section id="tab-queue" hidden>
+    <!-- Worker status panel -- bid-extractor health, in-flight, errors, queue counts -->
+    <div class="ws-panel" id="ws-panel">
+      <div class="ws-row ws-top">
+        <div class="ws-pill" id="ws-task" title="Scheduled task state">
+          <span class="ws-dot"></span>
+          <strong class="ws-task-state">…</strong>
+          <span class="small ws-task-meta"></span>
+        </div>
+        <div class="ws-pill" id="ws-heartbeat" title="Last log heartbeat">
+          <span class="ws-dot"></span>
+          <strong class="ws-hb-state">…</strong>
+          <span class="small ws-hb-meta"></span>
+        </div>
+        <div class="ws-pill" id="ws-queue" title="Queue depth">
+          <strong class="ws-q-counts">… queued · … processing</strong>
+          <span class="small ws-q-pending"></span>
+        </div>
+        <div class="ws-pill ws-error" id="ws-error" hidden title="Most recent error in worker log">
+          <strong>⚠ Last error</strong>
+          <span class="small ws-err-msg"></span>
+        </div>
+      </div>
+      <div class="ws-inflight" id="ws-inflight">
+        <div class="ws-inflight-empty small pad">No active extractions in the last 10 min.</div>
+      </div>
+      <details class="ws-log-details" id="ws-log-details">
+        <summary>Worker log (last 30 lines)</summary>
+        <pre class="ws-log-tail" id="ws-log-tail"></pre>
+      </details>
+    </div>
     <div class="summary" id="q-summary"></div>
     <div class="q-controls">
       <span class="if-label" style="text-transform:none;font-weight:500">Filter</span>
@@ -1323,6 +1353,8 @@ async function loadQueue() {
   // Visual cue on the refresh button so the user can tell a click registered.
   const btn = $('q-refresh');
   if (btn) { btn.disabled = true; btn.dataset.origText = btn.dataset.origText || btn.textContent; btn.textContent = '… refreshing'; }
+  // Fire worker-status in parallel -- it doesn't block the table render.
+  loadWorkerStatus().catch(()=>{});
   try {
     const params = new URLSearchParams();
     if (QSTATE.state) params.set('status', QSTATE.state);
@@ -1334,6 +1366,121 @@ async function loadQueue() {
     $('q-rows').innerHTML = `<tr><td colspan="7" style="padding:20px;color:var(--danger)">${safeHtml(e.message)}</td></tr>`;
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = btn.dataset.origText || '↻ Refresh'; }
+  }
+}
+
+// ----- Worker status panel (above the Queue table) -----
+async function loadWorkerStatus() {
+  if ($('tab-queue').hidden) return;
+  try {
+    const w = await api('GET', '/api/bc/worker-status');
+    renderWorkerStatus(w);
+  } catch (e) {
+    // Silent fail -- panel just stays at last known state.
+  }
+}
+function _wsSinceText(iso) {
+  if (!iso) return '—';
+  const t = new Date(iso); if (isNaN(t)) return '—';
+  const s = Math.max(0, (Date.now() - t.getTime()) / 1000);
+  if (s < 60)   return Math.round(s) + 's ago';
+  if (s < 3600) return Math.round(s / 60) + 'm ago';
+  if (s < 86400) return Math.round(s / 3600) + 'h ago';
+  return Math.round(s / 86400) + 'd ago';
+}
+function renderWorkerStatus(w) {
+  const t   = w.scheduledTask || {};
+  const p   = w.process       || {};
+  const log = w.log           || {};
+  const q   = w.queue         || {};
+  const inf = w.inflight      || [];
+
+  // 1. Scheduled task pill
+  const taskState = String(t.state || '?').trim();
+  const taskCls   = /^Running$/i.test(taskState) ? 'ok'
+                  : /^Ready$/i.test(taskState)   ? 'ok'
+                  : /^Disabled$/i.test(taskState)? 'warn'
+                  :                                'err';
+  const taskEl = $('ws-task');
+  if (taskEl) {
+    taskEl.className = 'ws-pill ' + taskCls;
+    taskEl.querySelector('.ws-task-state').textContent = t.name ? `Worker: ${taskState}` : 'Worker task: not installed';
+    const meta = [];
+    if (t.lastRunAt && !/N\/A|Never/i.test(t.lastRunAt)) meta.push(`last run ${t.lastRunAt}`);
+    if (t.lastResult && t.lastResult !== '0' && t.lastResult !== '267011') meta.push(`exit ${t.lastResult}`);
+    taskEl.querySelector('.ws-task-meta').textContent = meta.join(' · ');
+  }
+
+  // 2. Heartbeat pill
+  const hbAt    = log && p.logHeartbeatAt;
+  const hbState = !hbAt          ? { txt:'No heartbeat', cls:'warn' }
+                : p.errored      ? { txt:'Heartbeat (error logged)', cls:'err' }
+                : p.stale        ? { txt:'Heartbeat stale', cls:'warn' }
+                :                  { txt:'Heartbeat fresh', cls:'ok' };
+  const hbEl = $('ws-heartbeat');
+  if (hbEl) {
+    hbEl.className = 'ws-pill ' + hbState.cls;
+    hbEl.querySelector('.ws-hb-state').textContent = hbState.txt;
+    hbEl.querySelector('.ws-hb-meta').textContent = hbAt ? `(${_wsSinceText(hbAt)})` : '';
+  }
+
+  // 3. Queue counts pill
+  const qEl = $('ws-queue');
+  if (qEl) {
+    qEl.querySelector('.ws-q-counts').textContent =
+      `${q.queued || 0} queued · ${q.processing || 0} processing`;
+    const pend = q.pendingApprovals || 0;
+    qEl.querySelector('.ws-q-pending').textContent =
+      pend > 0 ? `· ${pend} cost-approval pending` : '';
+    qEl.classList.toggle('warn', (q.processing || 0) === 0 && (q.queued || 0) > 0);
+    qEl.classList.toggle('ok',   (q.processing || 0) > 0);
+  }
+
+  // 4. Last-error pill (only shown when present)
+  const errEl = $('ws-error');
+  if (errEl) {
+    if (log.lastError && log.lastError.message) {
+      errEl.hidden = false;
+      errEl.querySelector('.ws-err-msg').textContent =
+        `${_wsSinceText(log.lastError.at)}: ${(log.lastError.message || '').slice(0, 240)}`;
+    } else {
+      errEl.hidden = true;
+    }
+  }
+
+  // 5. In-flight rows
+  const ifEl = $('ws-inflight');
+  if (ifEl) {
+    if (!inf.length) {
+      ifEl.innerHTML = `<div class="ws-inflight-empty small pad">No active extractions in the last 10 min.</div>`;
+    } else {
+      ifEl.innerHTML = inf.map(it => {
+        const pp  = it.pagesProcessed || 0;
+        const pt  = it.pagesTotal || 0;
+        const pct = pt > 0 ? Math.min(100, Math.round(100 * pp / pt)) : null;
+        const bar = pct != null
+          ? `<span class="q-progress-bar"><span style="width:${Math.max(pct, 4)}%"></span></span>`
+          : `<span class="q-progress-bar indeterminate"><span></span></span>`;
+        const counts = pt > 0 ? `<strong>${pp}</strong><span class="small"> of ${pt}</span>`
+                              : `<strong>${pp}</strong><span class="small"> pages so far</span>`;
+        const ageBadge = it.fresh
+          ? `<span class="ws-age fresh">${it.ageS != null ? it.ageS + 's' : ''}</span>`
+          : `<span class="ws-age stale">${_wsSinceText(it.updatedAt)}</span>`;
+        const stuckClass = it.fresh ? '' : ' stuck';
+        return `<div class="ws-inflight-row${stuckClass}">
+          <div class="ws-if-proj">${safeHtml(it.projectName || it.bcBidId || '(unknown)')}</div>
+          <div class="ws-if-file" title="${safeHtml(it.fileName || '')}">${safeHtml(it.fileName || '—')}</div>
+          <div class="ws-if-bar">${bar}${counts}</div>
+          ${ageBadge}
+        </div>`;
+      }).join('');
+    }
+  }
+
+  // 6. Log tail (collapsed by default, only re-rendered when expanded)
+  const logEl = $('ws-log-tail');
+  if (logEl && $('ws-log-details') && $('ws-log-details').open) {
+    logEl.textContent = (log.tail || []).join('\n');
   }
 }
 // Group items by project (bcBidId), compute group aggregates, then sort
