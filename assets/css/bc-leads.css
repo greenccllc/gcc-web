@@ -178,7 +178,58 @@
     tr.counts.open { display:table-row; }
     tr.counts td { background:var(--cream); padding:10px 14px 14px; border-bottom:2px solid var(--line); }
     /* 4-column expand pane: summary | drops 4x5 | actions | meta */
-    .expand-pane { display:grid; grid-template-columns:1.3fr 1.4fr .9fr 1fr; gap:14px; align-items:start; }
+    /* Reorganized expand pane: top strip (full-width meta chips) +
+       2-col body (description + actions) + full-width drops grid. */
+    .expand-pane { display:flex; flex-direction:column; gap:12px; }
+    .expand-strip { display:flex; flex-direction:column; gap:6px;
+                    background:white; border:1px solid var(--line); border-radius:10px;
+                    padding:10px 14px; }
+    .expand-strip .strip-row { display:flex; flex-wrap:wrap; gap:8px 14px; align-items:center; }
+    .expand-strip .strip-row.strip-meta { padding-bottom:6px; border-bottom:1px dashed var(--line); }
+    .expand-strip .strip-row.strip-extract { padding:2px 0 4px; }
+    .expand-strip .strip-row.strip-links {
+      gap:10px; padding-top:4px; border-top:1px dashed var(--line); margin-top:2px;
+    }
+    .expand-strip .chip {
+      display:inline-flex; align-items:center; gap:6px;
+      background:transparent; padding:2px 0; font-size:12px; color:var(--ink);
+      border:0;
+    }
+    .expand-strip .chip .lbl {
+      color:var(--slate); font-size:10px; font-weight:600;
+      letter-spacing:.04em; text-transform:uppercase;
+    }
+    .expand-strip .chip strong { color:var(--ink); font-weight:600; }
+    .expand-strip .strip-badge { padding:0; }
+    .expand-strip .mini-link {
+      display:inline-flex; align-items:center; gap:5px;
+      padding:5px 11px; border-radius:14px;
+      background:var(--green-tint); color:var(--forest);
+      font-size:11.5px; font-weight:600; text-decoration:none;
+      border:1px solid #C5DDC5; cursor:pointer;
+      transition: all .12s ease;
+    }
+    .expand-strip .mini-link:hover {
+      background:var(--forest); color:white; border-color:var(--forest);
+    }
+    .expand-body {
+      display:grid; grid-template-columns: 2.5fr 1fr; gap:12px; align-items:start;
+    }
+    .expand-desc-col { min-width:0; }
+    .expand-desc-col .descr {
+      font-size:12px; color:var(--ink); line-height:1.5;
+      max-height:200px; overflow:auto; padding:6px 8px;
+      background:#FAFCF9; border-radius:6px; border:1px solid #E5E7E2;
+    }
+    .expand-drops {
+      background:white; border:1px solid var(--line); border-radius:10px;
+      padding:10px 12px;
+    }
+    .expand-drops h4 {
+      margin:0 0 8px; font-size:10px; font-weight:700; text-transform:uppercase;
+      letter-spacing:.06em; color:var(--forest);
+    }
+    .expand-pane-legacy { display:grid; grid-template-columns:1.3fr 1.4fr .9fr 1fr; gap:14px; align-items:start; }
     .expand-col  { background:white; border:1px solid var(--line); border-radius:10px; padding:10px 12px;
                    box-shadow:0 1px 2px rgba(28,42,35,.04); min-width:0; }
     .expand-col h4 { margin:0 0 6px; font-size:10px; font-weight:700; text-transform:uppercase;
@@ -223,8 +274,8 @@
                                 border-radius:8px; }
     .counts-toolbar .show-all:hover { background:var(--green-tint); color:var(--forest); }
     .counts-toolbar .show-all.active { background:var(--forest); color:white; }
-    @media (max-width:1100px) { .expand-pane { grid-template-columns:1fr 1fr; } }
-    @media (max-width:700px)  { .expand-pane { grid-template-columns:1fr; } }
+    @media (max-width:1100px) { .expand-body { grid-template-columns:1fr; } }
+    @media (max-width:700px)  { .expand-strip .strip-row { gap:6px 10px; } }
     .due-overdue { color:var(--danger); font-weight:600; }
     /* Per-row action buttons live in the expanded sub-row, above the
        drop-counts grid -- clicking the chevron in the Project column

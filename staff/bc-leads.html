@@ -7,7 +7,7 @@
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <meta name="theme-color" content="#1E4D2B" />
-  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-0300" />
+  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-0330" />
 </head>
 <body>
   <header>
@@ -435,7 +435,13 @@ const COLS = [
       const subscript = (att || msg)
         ? `<sub class="proj-subscript">${att ? att + ' att' : ''}${att && msg ? '<span class="dot">·</span>' : ''}${msg ? msg + ' msg' : ''}</sub>`
         : '';
-      return `<span class="toggle">▶</span> ${fIcon}<span class="proj-link"><a href="${r.href || '#'}" data-act="open-bc" data-href="${r.href || ''}">${safeHtml(projectLabel(r))}</a>${tip}</span>${sibBadge}${subscript}${scopeChips}`;
+      // Project name -> Manage Job (was BC opportunity URL). Opens in
+      // a new tab; the BC link is preserved in the expand pane footer.
+      const mjQs = new URLSearchParams({ bcBidId: r.bcBidId });
+      if (URL_PARAMS.get('secret')) mjQs.set('secret', URL_PARAMS.get('secret'));
+      if (URL_PARAMS.get('api'))    mjQs.set('api',    URL_PARAMS.get('api'));
+      const mjHref = `/staff/manage-job.html?${mjQs.toString()}`;
+      return `<span class="toggle">▶</span> ${fIcon}<span class="proj-link"><a href="${mjHref}" data-act="open-manage" data-href="${mjHref}">${safeHtml(projectLabel(r))}</a>${tip}</span>${sibBadge}${subscript}${scopeChips}`;
     } },
 
   { id:'location', label:'Location',
@@ -516,20 +522,69 @@ function projTip(r) {
 
 // ===== Expanded-row column builders =====
 // Col 1: project summary -- key fields + description excerpt.
-function expandSummaryCol(r) {
-  const desc = r.description && r.description.trim()
-    ? safeHtml(r.description).slice(0, 1200)
-    : '<em>No description from BC yet. Use Actions ▾ → Rescan project details to refresh.</em>';
+// Top strip: every "at a glance" datum on one wrapping row of compact
+// chips. Click-throughs to manage-job, BC, and Drive folder live here.
+function expandTopStrip(r) {
+  const c    = r.extraction?.confidencePct;
+  const pp   = r.extraction?.pagesProcessed || 0;
+  const pt   = r.extraction?.pagesTotal     || 0;
+  const cost = r.ai?.costUsd;
+  const tok  = r.ai?.tokensUsed;
+  const att  = r.scrape?.attachmentsCount || 0;
+  const msg  = r.scrape?.messagesCount    || 0;
   const trades = Array.isArray(r.trades) && r.trades.length
     ? r.trades.map(t => `<span class="scope-chip"><span class="ico">${tradeIcon(t)}</span>${safeHtml(t)}</span>`).join('')
     : '<span class="scope-chip unknown">scope unknown</span>';
-  return `<div class="expand-col">
-    <h4>Project summary</h4>
-    <div class="field"><span class="lbl">GC / Client</span><span class="val">${safeHtml(r.gc || 'unknown')}</span></div>
-    <div class="field"><span class="lbl">Location</span><span class="val">${safeHtml(r.location || '—')}</span></div>
-    <div class="field"><span class="lbl">Due</span><span class="val">${safeHtml(r.dueAt || '—')}</span></div>
-    <div class="field"><span class="lbl">Status</span><span class="val">${statusBadge(r.status)}</span></div>
-    <div class="field"><span class="lbl">Scope</span><span class="val" style="display:flex;flex-wrap:wrap;gap:4px">${trades}</span></div>
+  const addBadge = r.addendaSeen
+    ? '<span class="status status-Lost" title="A new addendum was detected during the last BC scrape.">⚠ Addendum</span>' : '';
+  const pausedBadge = r.extractionPaused
+    ? '<span class="status status-Archived" title="Extraction is paused for this RFP.">⏸ Paused</span>' : '';
+  const acceptedBadge = r.extraction?.accepted
+    ? '<span class="status status-Accepted">✓ Accepted</span>' : '';
+  const progressVal = pt > 0 ? `${pp} of ${pt} pages` : '—';
+  const confVal     = c == null ? '—' : `${Math.round(c)}% confidence`;
+  const costVal     = cost == null
+    ? '—'
+    : `$${Number(cost).toFixed(4)}${tok ? ` <span class="small">(${(tok/1000).toFixed(1)}k tok)</span>` : ''}`;
+
+  // Manage / BC / Drive links + Extraction details deep-link
+  const mjQs = new URLSearchParams({ bcBidId: r.bcBidId });
+  if (URL_PARAMS.get('secret')) mjQs.set('secret', URL_PARAMS.get('secret'));
+  if (URL_PARAMS.get('api'))    mjQs.set('api',    URL_PARAMS.get('api'));
+  const mjHref = `/staff/manage-job.html?${mjQs.toString()}`;
+  const links = [
+    `<a class="mini-link" href="${mjHref}" data-act="open-manage" data-href="${mjHref}">🛠 Manage Job</a>`,
+    r.href ? `<a class="mini-link" href="${r.href}" data-act="open-bc" data-href="${r.href}">🔗 BC opportunity</a>` : '',
+    r.driveJobFolderId ? `<a class="mini-link" data-act="open-folder" data-folder-id="${r.driveJobFolderId}">📂 Drive folder</a>` : '',
+    `<a class="mini-link" href="${mjHref}#mj-extract-card" data-act="open-manage" data-href="${mjHref}#mj-extract-card">🔍 Extraction details</a>`,
+  ].filter(Boolean).join('');
+
+  return `<div class="expand-strip">
+    <div class="strip-row strip-meta">
+      <span class="chip"><span class="lbl">GC</span> ${safeHtml(r.gc || 'unknown')}</span>
+      <span class="chip"><span class="lbl">Location</span> ${safeHtml(r.location || '—')}</span>
+      <span class="chip"><span class="lbl">Due</span> ${safeHtml(r.dueAt || '—')}</span>
+      <span class="chip"><span class="lbl">Status</span> ${statusBadge(r.status)}</span>
+      <span class="chip"><span class="lbl">Scope</span> <span style="display:inline-flex;flex-wrap:wrap;gap:3px;vertical-align:middle">${trades}</span></span>
+    </div>
+    <div class="strip-row strip-extract">
+      <span class="chip"><span class="lbl">Pages</span> <strong>${progressVal}</strong></span>
+      <span class="chip"><span class="lbl">Confidence</span> ${confVal}</span>
+      <span class="chip"><span class="lbl">AI cost</span> ${costVal}</span>
+      <span class="chip"><span class="lbl">Files</span> ${att} att · ${msg} msg</span>
+      <span class="chip"><span class="lbl">Last file</span> ${fmt(r.lastFileAt || r.lastSeenAt) || '—'}</span>
+      ${[acceptedBadge, addBadge, pausedBadge].filter(Boolean).map(b => `<span class="chip strip-badge">${b}</span>`).join('')}
+    </div>
+    <div class="strip-row strip-links">${links}</div>
+  </div>`;
+}
+
+function expandDescriptionCol(r) {
+  const desc = r.description && r.description.trim()
+    ? safeHtml(r.description).slice(0, 1200)
+    : '<em>No description from BC yet. Use Actions → Rescan details to refresh.</em>';
+  return `<div class="expand-col expand-desc-col">
+    <h4>Project description</h4>
     <div class="descr">${desc}</div>
   </div>`;
 }
@@ -914,20 +969,22 @@ function render() {
     html.push(`<tr class="row${open ? ' open' : ''}" data-id="${r.bcBidId}">` +
       COLS.map(c => `<td>${c.cell(r)}</td>`).join('') + `</tr>`);
 
-    // Expanded sub-panel as a 4-column grid:
-    //   col 1: project summary (description + key fields)
-    //   col 2: drops grid 4-wide x 5-tall
-    //   col 3: actions stacked vertically
-    //   col 4: extraction meta + scrape stats + footer
+    // Expanded sub-panel layout (clean 2-tier):
+    //   - top strip: at-a-glance meta as inline chips (GC, location, due,
+    //     pages, confidence, cost, files/msgs, badges, BC + Manage links)
+    //   - body row 1 col 1: description (left, wide); col 2: actions (right)
+    //   - body row 2: full-width drops grid (4 × 5 of LV scope counts)
     html.push(`<tr class="counts${open ? ' open' : ''}" data-counts-for="${r.bcBidId}" data-stop><td colspan="${COLS.length}" data-stop>
       <div class="expand-pane">
-        ${expandSummaryCol(r)}
-        <div class="expand-col">
-          <h4>Drops · 4 × 5</h4>
+        ${expandTopStrip(r)}
+        <div class="expand-body">
+          ${expandDescriptionCol(r)}
+          ${expandActionsCol(r)}
+        </div>
+        <div class="expand-drops">
+          <h4>Low-voltage scope · 4 × 5</h4>
           ${countsGrid(r.counts, r.extraction?.confidencePct)}
         </div>
-        ${expandActionsCol(r)}
-        ${expandMetaCol(r)}
       </div>
     </td></tr>`);
   }
@@ -959,6 +1016,15 @@ function render() {
     });
   });
   $('rows').querySelectorAll('a[data-act="open-bc"]').forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault(); e.stopPropagation();
+      const href = a.dataset.href;
+      if (href) window.open(href, '_blank', 'noopener,noreferrer');
+    });
+  });
+  // Project-name click -> Manage Job. Opens in a new tab so the
+  // operator's place in the BC Leads list isn't lost.
+  $('rows').querySelectorAll('a[data-act="open-manage"]').forEach(a => {
     a.addEventListener('click', (e) => {
       e.preventDefault(); e.stopPropagation();
       const href = a.dataset.href;
