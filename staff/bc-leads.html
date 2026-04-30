@@ -762,8 +762,17 @@ function render() {
     } else {
       if (!activeStatuses.has(status)) return false;
     }
-    if (intake.gc    && (r.gc || '') !== intake.gc)                                       return false;
-    if (intake.trade && !(Array.isArray(r.trades) && r.trades.includes(intake.trade)))    return false;
+    if (intake.gc) {
+      const rgc = (r.gc || '').trim();
+      if (rgc !== intake.gc) return false;
+    }
+    if (intake.trade) {
+      // Normalize the row's trades through the same synonym map the dropdown
+      // populator used so "Data" matches when the user picked "Data &
+      // Telecommunications".
+      const rTrades = Array.isArray(r.trades) ? r.trades.map(normalizeTrade).filter(Boolean) : [];
+      if (!rTrades.includes(intake.trade)) return false;
+    }
     if (intake.state && locState(r.location) !== intake.state)                            return false;
     if (intake.source) {
       const src = (r.intakeSource || r.source || 'scrape').toLowerCase();
@@ -955,13 +964,56 @@ function render() {
 // ===== Intake filters (GC / Trade / State / Source) =====
 // Populates the dropdowns from the visible dataset and wires the change
 // handlers. Selection is persisted across reloads.
+//
+// Two cleanup layers:
+//   1. isPlaceholder() drops em-dash / "--" / "(none)" style markers BC
+//      (or the scraper) emits when a field is blank.
+//   2. normalizeTrade() collapses BC's short codes onto their long forms
+//      so "Data" + "Data & Telecommunications" don't both show in the
+//      dropdown as two distinct options.
+const PLACEHOLDER_RX = /^[\s\-–—.()\/_]*(none|n\/a|na|null|tbd|unknown)?[\s\-–—.()\/_]*$/i;
+function isPlaceholder(v) {
+  if (v == null) return true;
+  const s = String(v).trim();
+  if (!s) return true;
+  return PLACEHOLDER_RX.test(s);
+}
+const TRADE_SYNONYMS = {
+  // BC short code -> long form. Add new entries when scraper produces a
+  // synonym pair (showing up in the dropdown is the smoke test).
+  'data':                       'Data & Telecommunications',
+  'data & telecom':             'Data & Telecommunications',
+  'data and telecommunications':'Data & Telecommunications',
+  'telecommunications':         'Data & Telecommunications',
+  'telecom':                    'Data & Telecommunications',
+  'low-voltage':                'Low Voltage',
+  'lowvoltage':                 'Low Voltage',
+  'low voltage':                'Low Voltage',
+  'av':                         'Audio Visual',
+  'a/v':                        'Audio Visual',
+  'audio/visual':               'Audio Visual',
+  'audio-visual':               'Audio Visual',
+  'audio visual':               'Audio Visual',
+  'visual display board':       'Visual Display Boards',
+  'visual display':             'Visual Display Boards',
+};
+function normalizeTrade(t) {
+  if (isPlaceholder(t)) return null;
+  const key = String(t).trim().toLowerCase();
+  return TRADE_SYNONYMS[key] || String(t).trim();
+}
 function populateIntakeFilters(items) {
   const gcs = new Set(); const trades = new Set(); const states = new Set();
   for (const r of items) {
-    if (r.gc)        gcs.add(r.gc);
-    if (Array.isArray(r.trades)) for (const t of r.trades) if (t) trades.add(t);
+    if (!isPlaceholder(r.gc)) gcs.add(r.gc.trim());
+    if (Array.isArray(r.trades)) {
+      for (const t of r.trades) {
+        const nt = normalizeTrade(t);
+        if (nt) trades.add(nt);
+      }
+    }
     const st = locState(r.location);
-    if (st) states.add(st);
+    if (st && !isPlaceholder(st)) states.add(st);
   }
   fillIntakeSelect('if-gc',    Array.from(gcs).sort(),    STATE.intake.gc);
   fillIntakeSelect('if-trade', Array.from(trades).sort(), STATE.intake.trade);
