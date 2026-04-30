@@ -375,31 +375,22 @@ const COLS = [
     sort:(a,b) => (parseDue(a.dueAt) || 0) - (parseDue(b.dueAt) || 0),
     cell:(r) => renderDue(r.dueAt) },
 
-  // Extraction: "##% (X of Y pages)" when we have pages_total, else just
-  // a file count, else "—". The previous version computed a percentage
-  // from filesProcessed/filesTotal which was unreliable (BQ counts include
-  // re-extractions, attachment counts include unprocessed files), producing
-  // misleading values like "50% (1 of 2 files)". Pages-only for the %.
+  // Extraction: "##% (X of Y pages)" -- ONLY when both pages_processed
+  // and pages_total are populated. Anything else displays as "—" so the
+  // operator never sees a number that isn't an honest page-completion %.
+  // No file-count fallback ("X files processed", "X pages extracted") --
+  // those proved misleading because BQ row counts inflate from
+  // re-extractions and attachment counts include unprocessed files.
   { id:'extraction', label:'Extraction',
     sort:(a,b) => (extractionPct(a) ?? -1) - (extractionPct(b) ?? -1),
     cell:(r) => {
-      const pct  = extractionPct(r);
+      const pct = extractionPct(r);
+      if (pct == null) return '<span class="pad">—</span>';
       const pp   = r.extraction?.pagesProcessed || 0;
       const pt   = r.extraction?.pagesTotal     || 0;
-      const proc = r.extraction?.filesProcessed || 0;
-      // Confidence on hover for context (no longer the headline).
       const conf = r.extraction?.confidencePct;
       const titleAttr = conf == null ? '' : ` title="Agent confidence: ${Math.round(conf)}%"`;
-      if (pct != null) {
-        return `<strong${titleAttr}>${pct}%</strong> <span class="small">(${pp} of ${pt} pages)</span>`;
-      }
-      // No pages denominator -- show count without a percent rather than
-      // a fake number. The "in progress" wording reads more accurately
-      // than "0%" when the agent is mid-extract and pages_total isn't
-      // populated yet.
-      if (pp > 0)   return `<span class="small"${titleAttr}>${pp} pages extracted</span>`;
-      if (proc > 0) return `<span class="small"${titleAttr}>${proc} file${proc === 1 ? '' : 's'} processed</span>`;
-      return '<span class="pad">—</span>';
+      return `<strong${titleAttr}>${pct}%</strong> <span class="small">(${pp} of ${pt} pages)</span>`;
     } },
 
   // AI cost -- shows "—" when the row has no real cost yet. Previously
@@ -522,11 +513,7 @@ function expandMetaCol(r) {
   const acceptedBadge = r.extraction?.accepted
     ? '<span class="status status-Accepted">✓ Accepted</span>' : '';
   const pct = extractionPct(r);
-  const progressVal = pct != null
-      ? `${pct}% (${pp} of ${pt} pages)`
-      : (pp > 0   ? `${pp} pages extracted`
-       : proc > 0 ? `${proc} file${proc === 1 ? '' : 's'} processed`
-       : '—');
+  const progressVal = pct != null ? `${pct}% (${pp} of ${pt} pages)` : '—';
   return `<div class="expand-col">
     <h4>Extraction & scrape</h4>
     <div class="field"><span class="lbl">Progress</span><span class="val">${progressVal}</span></div>
