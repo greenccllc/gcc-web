@@ -660,6 +660,47 @@
     .ws-age.fresh { background:#1A5490; color:white; }
     .ws-age.stale { background:#C9A158; color:#3a2400; }
 
+    /* Live activity feed (Queue tab). 2s-polled rolling stream of
+       extraction events parsed from the worker log: starts, local-hits,
+       DONEs, ACKs, orphans. Most-recent at top; newer events flash green
+       briefly so the operator can see "something just happened" without
+       staring at the screen. */
+    .ws-activity { background:#FFFFFF; border:1px solid var(--line);
+                    border-radius:6px; padding:8px 12px;
+                    display:flex; flex-direction:column; gap:6px; }
+    .ws-activity-header { display:flex; align-items:center; gap:8px;
+                           font-weight:600; color:var(--slate); }
+    .ws-activity-header .ws-activity-meta { color:var(--muted); font-weight:400; }
+    .ws-activity-feed { list-style:none; padding:0; margin:0;
+                         max-height:240px; overflow:auto;
+                         display:flex; flex-direction:column; gap:3px;
+                         font-family:ui-monospace, Consolas, Menlo, monospace;
+                         font-size:11px; line-height:1.45; }
+    .ws-activity-feed li { padding:3px 8px; border-radius:4px;
+                            border-left:3px solid transparent;
+                            display:grid; gap:6px;
+                            grid-template-columns: 60px auto 1fr auto;
+                            align-items:baseline; }
+    .ws-activity-feed li .ts { color:var(--muted); }
+    .ws-activity-feed li .id { color:var(--slate); }
+    .ws-activity-feed li .body { color:var(--ink); white-space:nowrap;
+                                  overflow:hidden; text-overflow:ellipsis; }
+    .ws-activity-feed li .meta { color:var(--muted); white-space:nowrap; }
+    .ws-activity-feed li.k-start     { background:#F0F4FA; border-left-color:#1A5490; }
+    .ws-activity-feed li.k-local-hit { background:#EAF7E8; border-left-color:#3A8C2E; }
+    .ws-activity-feed li.k-done      { background:#FFFFFF; border-left-color:#0E7C66;
+                                        font-weight:600; }
+    .ws-activity-feed li.k-ack       { background:#F7F7F7; border-left-color:#888; }
+    .ws-activity-feed li.k-orphan    { background:#F7F1E5; border-left-color:#C9A158;
+                                        color:var(--muted); }
+    .ws-activity-feed li.k-error     { background:#FBEAEA; border-left-color:#A52A2A;
+                                        color:#7E1F1F; }
+    .ws-activity-feed li.flash-new   { animation: wsFlash 1.4s ease-out; }
+    @keyframes wsFlash {
+      0%   { background:#FFFAA0; }
+      100% { background:transparent; }
+    }
+
     .ws-log-details { background:#FFFFFF; border:1px solid var(--line);
                        border-radius:6px; padding:6px 12px; font-size:11px; }
     .ws-log-details > summary { cursor:pointer; color:var(--slate);

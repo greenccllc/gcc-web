@@ -117,6 +117,16 @@
       <div class="ws-inflight" id="ws-inflight">
         <div class="ws-inflight-empty small pad">No active extractions in the last 10 min.</div>
       </div>
+      <!-- Real-time activity feed: parses the worker log every 2s and
+           shows starts / local-hits / DONEs / ACKs / orphans as they
+           land. Replaces the need to tail the log file in a console. -->
+      <div class="ws-activity" id="ws-activity">
+        <div class="ws-activity-header">
+          <strong>Live activity</strong>
+          <span class="small ws-activity-meta"></span>
+        </div>
+        <ol class="ws-activity-feed" id="ws-activity-feed"></ol>
+      </div>
       <details class="ws-log-details" id="ws-log-details">
         <summary>Worker log (last 30 lines)</summary>
         <pre class="ws-log-tail" id="ws-log-tail"></pre>
@@ -1487,7 +1497,11 @@ $('tabs').addEventListener('click', (e) => {
   if (which === 'processes') { loadProcesses(); loadHealthBoard(); }
   if (which === 'outcomes')  { loadOutcomes(); }
   if (which === 'queue')     { loadQueue(); scheduleQueueRefresh(); }
-  else                       { clearInterval(_queueTimer); }
+  else {
+    clearInterval(_queueTimer);
+    clearInterval(_watchdogTimer);
+    clearInterval(_activityTimer);
+  }
 });
 
 // ===== Queue tab =====
@@ -1513,6 +1527,16 @@ function scheduleQueueRefresh() {
   loadWatchdog().catch(()=>{});
   clearInterval(_watchdogTimer);
   _watchdogTimer = setInterval(() => loadWatchdog().catch(()=>{}), 60000);
+  // Live activity feed: 2s tick. Every poll asks for events newer
+  // than _activityLastSeen, so the bandwidth scales with throughput
+  // (an idle worker returns count=0). Reset _activityLastSeen on
+  // each open so we don't leave a stale cursor lingering across
+  // tab switches that would hide events emitted while the tab was
+  // hidden -- but keep last 80 in DOM as a "scrollback" buffer.
+  _activityLastSeen = null;
+  loadActivity().catch(()=>{});
+  clearInterval(_activityTimer);
+  _activityTimer = setInterval(() => loadActivity().catch(()=>{}), 2000);
 }
 async function loadQueue() {
   if ($('tab-queue').hidden) return;
@@ -1635,6 +1659,136 @@ async function loadWatchdog() {
       </li>`;
     }).join('');
   }
+}
+
+// ----- Live activity feed (above the Queue table) -----
+// Polls /api/bc/worker-status/activity every 2s while the Queue tab is
+// visible. The endpoint tails the bid-extractor.log file and parses
+// events into structured records (start / local-hit / done / ack /
+// orphan / error). Replaces the need to tail the log in a console.
+let _activityTimer = null;
+let _activityLastSeen = null; // ISO of the newest event we've already rendered
+
+async function loadActivity() {
+  if ($('tab-queue').hidden) return;
+  const feed = $('ws-activity-feed');
+  if (!feed) return;
+  let r;
+  try {
+    const params = new URLSearchParams();
+    if (_activityLastSeen) params.set('since', _activityLastSeen);
+    params.set('limit', '80');
+    r = await api('GET', '/api/bc/worker-status/activity?' + params.toString());
+  } catch { return; }
+  if (!r || !r.ok) return;
+
+  const meta = document.querySelector('.ws-activity-meta');
+  if (meta) meta.textContent = r.count
+    ? `${r.count} new event${r.count === 1 ? '' : 's'}`
+    : (_activityLastSeen ? 'idle' : 'waiting for activity…');
+
+  const events = r.events || [];
+  if (!events.length) return;
+
+  // Bump _activityLastSeen to the newest event we just received so
+  // the next poll only fetches deltas. Events come back most-recent
+  // first so events[0].at is the max.
+  if (events[0] && events[0].at) {
+    if (!_activityLastSeen || events[0].at > _activityLastSeen) {
+      _activityLastSeen = events[0].at;
+    }
+  }
+
+  // Build new <li>s and prepend them in chronological order so the
+  // most-recent ends up at the top of the visible list. Existing
+  // entries (already keyed by at+kind+shortId) are de-duped.
+  const seen = new Set();
+  for (const li of feed.querySelectorAll('li[data-key]')) seen.add(li.dataset.key);
+
+  // Iterate oldest -> newest so that prepending each in turn yields
+  // newest-on-top order.
+  const fresh = [];
+  for (let i = events.length - 1; i >= 0; i--) {
+    const ev = events[i];
+    const key = `${ev.at}|${ev.kind}|${ev.shortId || ev.msgId || ev.jobId || ''}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    fresh.push(_renderActivityEvent(ev, key));
+  }
+  if (!fresh.length) return;
+
+  for (const node of fresh) feed.insertBefore(node, feed.firstChild);
+
+  // Trim to last 80 entries (oldest at the bottom)
+  while (feed.children.length > 80) feed.removeChild(feed.lastChild);
+
+  // Briefly flash the newly-added rows. Animation runs once then ends
+  // on its own via CSS keyframes; remove the class after to avoid
+  // re-running if anything triggers a layout change.
+  for (const node of fresh) {
+    node.classList.add('flash-new');
+    setTimeout(() => node.classList.remove('flash-new'), 1500);
+  }
+}
+
+function _renderActivityEvent(ev, key) {
+  const li = document.createElement('li');
+  li.className = 'k-' + ev.kind;
+  li.dataset.key = key;
+  const ts = new Date(ev.at);
+  const hh = String(ts.getHours()).padStart(2, '0');
+  const mm = String(ts.getMinutes()).padStart(2, '0');
+  const ss = String(ts.getSeconds()).padStart(2, '0');
+  const tsStr = `${hh}:${mm}:${ss}`;
+
+  const idStr = ev.shortId ? ev.shortId.substring(0, 8)
+              : ev.msgId   ? '#' + ev.msgId.substring(ev.msgId.length - 6)
+              : ev.jobId   ? ev.jobId
+              : '';
+
+  let body = '', meta = '';
+  switch (ev.kind) {
+    case 'start':
+      body = `▶ ${ev.fileName || '(file)'}`;
+      meta = `job=${ev.jobId || ''}`;
+      break;
+    case 'local-hit':
+      body = `📁 LOCAL hit (${ev.pages || 0}p, ${ev.textKb || 0}KB)`;
+      meta = 'skip Drive';
+      break;
+    case 'done':
+      body = `✓ DONE rows=${ev.rows || 0}`;
+      meta = `${ev.method || ''} · $${(ev.costUsd || 0).toFixed(4)} · ${(ev.elapsedS || 0).toFixed(1)}s`;
+      break;
+    case 'ack':
+      body = `✓ ACK msg`;
+      meta = `${ev.method || ''} · $${(ev.costUsd || 0).toFixed(4)}`;
+      break;
+    case 'orphan':
+      body = `⊘ orphan`;
+      meta = `job=${ev.jobId || ''} · ACK+skip`;
+      break;
+    case 'error':
+      body = `✗ ${(ev.raw || '').slice(0, 120)}`;
+      meta = '';
+      break;
+    default:
+      body = ev.kind;
+  }
+
+  // We escape via textContent on each span; safer than building a
+  // template string and innerHTML-ing it because file names can
+  // contain HTML-meta chars (& < >).
+  const tsEl = document.createElement('span'); tsEl.className = 'ts';   tsEl.textContent = tsStr;
+  const idEl = document.createElement('span'); idEl.className = 'id';   idEl.textContent = idStr;
+  const bdEl = document.createElement('span'); bdEl.className = 'body'; bdEl.textContent = body;
+  const mtEl = document.createElement('span'); mtEl.className = 'meta'; mtEl.textContent = meta;
+  if (body) bdEl.title = body;
+  li.appendChild(tsEl);
+  li.appendChild(idEl);
+  li.appendChild(bdEl);
+  li.appendChild(mtEl);
+  return li;
 }
 
 // ----- Worker status panel (above the Queue table) -----
