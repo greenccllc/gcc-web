@@ -458,9 +458,24 @@
     #q-table thead th { background:var(--cream); border-bottom:2px solid var(--forest);
                         padding:8px 12px; font-size:11px; font-weight:600;
                         letter-spacing:.04em; text-transform:uppercase;
-                        color:var(--slate); text-align:left; white-space:nowrap; }
+                        color:var(--slate); text-align:left; white-space:nowrap;
+                        user-select:none; }
+    #q-table thead th[data-sort]:hover { background:#EFE8D2; color:var(--forest); }
+    #q-table thead th .sort-ind { display:inline-block; min-width:10px;
+                                   margin-left:3px; color:var(--gold); font-weight:700; }
     #q-table tbody td { border-bottom:1px solid var(--line); padding:8px 12px; vertical-align:middle; font-size:12px; }
     #q-table tbody tr:hover { background:var(--green-tint); }
+    /* Surface processing rows visually so the operator sees live work
+       distinct from the idle queue. Subtle blue-tint background plus a
+       3px left accent strip in the same blue used by the chip. */
+    #q-table tbody tr.q-row.state-processing {
+      background:#F2F8FF;
+      box-shadow: inset 3px 0 0 0 #1A5490;
+    }
+    #q-table tbody tr.q-row.state-processing:hover { background:#E5F1FB; }
+    #q-table tbody tr.q-row.state-completed { opacity:.85; }
+    #q-table tbody tr.q-row.state-skipped,
+    #q-table tbody tr.q-row.state-cancelled { opacity:.55; }
     #q-table .q-file { font-family:ui-monospace, Consolas, Menlo, monospace; font-size:11px; }
     #q-table .q-status {
       display:inline-block; padding:2px 8px; border-radius:10px;
@@ -475,9 +490,36 @@
     @keyframes pulseBlue { 0%,100% { box-shadow:0 0 0 0 rgba(26,84,144,.0); }
                             50%     { box-shadow:0 0 0 4px rgba(26,84,144,.18); } }
     .q-progress-bar { display:inline-block; width:90px; height:6px; background:var(--line);
-                       border-radius:3px; overflow:hidden; vertical-align:middle; margin-right:5px; }
+                       border-radius:3px; overflow:hidden; vertical-align:middle; margin-right:5px;
+                       position:relative; }
     .q-progress-bar > span { display:block; height:100%;
-                              background:linear-gradient(90deg, var(--forest), var(--gold)); }
+                              background:linear-gradient(90deg, var(--forest), var(--gold));
+                              transition:width .4s ease; }
+    /* Indeterminate variant -- used while the agent is starting and we
+       haven't yet received a per-page progress update. Slides a 30%-wide
+       chip back and forth so the operator sees motion. */
+    .q-progress-bar.indeterminate { background:var(--line); }
+    .q-progress-bar.indeterminate > span {
+      width:30%;
+      background:linear-gradient(90deg, transparent, #1A5490 40%, #1A5490 60%, transparent);
+      animation: qIndet 1.4s ease-in-out infinite;
+    }
+    @keyframes qIndet {
+      0%   { transform: translateX(-30%); }
+      100% { transform: translateX(330%); }
+    }
+    /* "processing" summary chip variant: pulsing dot to match the row strip. */
+    .summary .chip.processing { background:#E8F1FB; color:#1A5490; border-color:#9EBFE0; }
+    .summary .chip.processing .dot.pulse {
+      display:inline-block; width:7px; height:7px; border-radius:50%;
+      background:#1A5490; margin-right:4px;
+      animation: qDot 1.2s ease-in-out infinite;
+      vertical-align:baseline;
+    }
+    @keyframes qDot {
+      0%,100% { opacity: 1; transform:scale(1); }
+      50%     { opacity:.45; transform:scale(.78); }
+    }
     #q-table .q-actions button {
       background:transparent; border:1px solid var(--line); color:var(--slate);
       padding:3px 8px; font-size:10.5px; border-radius:5px; cursor:pointer;

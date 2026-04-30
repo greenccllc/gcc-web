@@ -84,12 +84,12 @@
     </div>
     <table id="q-table">
       <thead><tr>
-        <th>Project</th>
-        <th>File</th>
-        <th>Status</th>
-        <th>Progress</th>
-        <th>Cost</th>
-        <th>Updated</th>
+        <th data-sort="project">Project <span class="sort-ind"></span></th>
+        <th data-sort="file">File <span class="sort-ind"></span></th>
+        <th data-sort="state">Status <span class="sort-ind"></span></th>
+        <th data-sort="progress">Progress <span class="sort-ind"></span></th>
+        <th data-sort="cost">Cost <span class="sort-ind"></span></th>
+        <th data-sort="updated">Updated <span class="sort-ind"></span></th>
         <th>Actions</th>
       </tr></thead>
       <tbody id="q-rows"></tbody>
@@ -1303,34 +1303,96 @@ $('tabs').addEventListener('click', (e) => {
 
 // ===== Queue tab =====
 let _queueTimer = null;
-const QSTATE = { state: '', scope: 'accepted' };
+// State priority order: processing > queued > pending-approval > completed > skipped > cancelled
+// (used by the "auto" sort so live work surfaces at the top, idle stuff below).
+const Q_STATE_RANK = { processing:0, queued:1, pending:2, completed:3, skipped:4, cancelled:5 };
+const QSTATE = {
+  state: '',
+  scope: 'accepted',
+  // Default sort: state-rank asc (processing on top), then updated desc.
+  sortKey: 'auto',
+  sortDir: 'asc',
+  lastData: null,
+};
 function scheduleQueueRefresh() {
   clearInterval(_queueTimer);
   _queueTimer = setInterval(loadQueue, 7000);
 }
 async function loadQueue() {
   if ($('tab-queue').hidden) return;
+  // Visual cue on the refresh button so the user can tell a click registered.
+  const btn = $('q-refresh');
+  if (btn) { btn.disabled = true; btn.dataset.origText = btn.dataset.origText || btn.textContent; btn.textContent = '… refreshing'; }
   try {
     const params = new URLSearchParams();
     if (QSTATE.state) params.set('status', QSTATE.state);
     params.set('scope', QSTATE.scope || 'accepted');
     const data = await api('GET', '/api/bc/extraction-queue?' + params.toString());
+    QSTATE.lastData = data;
     renderQueue(data);
   } catch (e) {
     $('q-rows').innerHTML = `<tr><td colspan="7" style="padding:20px;color:var(--danger)">${safeHtml(e.message)}</td></tr>`;
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = btn.dataset.origText || '↻ Refresh'; }
   }
+}
+// Stable sort by current (sortKey, sortDir). 'auto' = state-rank then updated-desc.
+function _sortQueueItems(items) {
+  const key = QSTATE.sortKey || 'auto';
+  const dir = (QSTATE.sortDir === 'desc') ? -1 : 1;
+  const updatedAt = (it) => Date.parse(it.liveUpdatedAt || it.costPatchedAt || it.uploadedAt || 0) || 0;
+  const progressPct = (it) => {
+    const pp = it.pagesProcessed || 0;
+    const pt = it.pagesTotal || it.pageCount || 0;
+    return pt > 0 ? (pp / pt) : (pp > 0 ? 0.001 : 0);
+  };
+  const accessor = {
+    auto:     (it) => [Q_STATE_RANK[it.state] ?? 9, -updatedAt(it)],
+    project:  (it) => (it.projectName || '').toLowerCase(),
+    file:     (it) => (it.fileName    || '').toLowerCase(),
+    state:    (it) => Q_STATE_RANK[it.state] ?? 9,
+    progress: (it) => progressPct(it),
+    cost:     (it) => it.costUsd ?? -1,
+    updated:  (it) => updatedAt(it),
+  }[key] || ((it) => 0);
+  // Decorate with original index for stable sort.
+  return items.map((it, i) => ({ it, i, k: accessor(it) }))
+              .sort((a, b) => {
+                const ka = a.k, kb = b.k;
+                // 'auto' returns a tuple; compare element-by-element.
+                if (Array.isArray(ka)) {
+                  for (let j = 0; j < ka.length; j++) {
+                    if (ka[j] < kb[j]) return -1 * dir;
+                    if (ka[j] > kb[j]) return  1 * dir;
+                  }
+                  return a.i - b.i;
+                }
+                if (ka < kb) return -1 * dir;
+                if (ka > kb) return  1 * dir;
+                return a.i - b.i;
+              })
+              .map(x => x.it);
+}
+function _updateSortIndicators() {
+  const arrow = QSTATE.sortDir === 'desc' ? '▾' : '▴';
+  document.querySelectorAll('#q-table thead th[data-sort]').forEach(th => {
+    const ind = th.querySelector('.sort-ind');
+    if (!ind) return;
+    ind.textContent = (th.dataset.sort === QSTATE.sortKey) ? arrow : '';
+  });
 }
 function renderQueue(data) {
   const s = data.summary || {};
   $('q-summary').innerHTML = [
     `<span class="chip"><strong>${s.total || 0}</strong> total</span>`,
+    s.processing ? `<span class="chip processing"><span class="dot pulse"></span> <strong>${s.processing}</strong> processing</span>` : '',
     s.queued     ? `<span class="chip">⏳ <strong>${s.queued}</strong> queued</span>` : '',
-    s.processing ? `<span class="chip">⚙️ <strong>${s.processing}</strong> processing</span>` : '',
     s.completed  ? `<span class="chip">✓ <strong>${s.completed}</strong> completed</span>` : '',
     s.skipped    ? `<span class="chip">⏭ <strong>${s.skipped}</strong> skipped</span>` : '',
     s.cancelled  ? `<span class="chip">✕ <strong>${s.cancelled}</strong> cancelled</span>` : '',
   ].filter(Boolean).join('');
-  const items = data.items || [];
+  const items = _sortQueueItems(data.items || []);
+  _updateSortIndicators();
   $('q-count').textContent = `${items.length} shown`;
   if (items.length === 0) {
     $('q-empty').hidden = false;
@@ -1342,24 +1404,35 @@ function renderQueue(data) {
     const pp = it.pagesProcessed || 0;
     const pt = it.pagesTotal || it.pageCount || 0;
     const pct = pt > 0 ? Math.min(100, Math.round(100 * pp / pt)) : null;
-    const progressCell = it.state === 'completed'
-      ? `<span class="small ok">✓ done</span>`
-      : it.state === 'skipped'
-        ? `<span class="small pad">—</span>`
-        : it.state === 'cancelled'
-          ? `<span class="small">cancelled</span>`
-          : (pct != null
-              ? `<span class="q-progress-bar"><span style="width:${pct}%"></span></span><strong>${pp}</strong><span class="small"> of ${pt}</span>`
-              : (pp > 0 ? `<strong>${pp}</strong><span class="small"> pages</span>` : '<span class="pad">—</span>'));
+    // Always show a progress bar for processing rows -- even at pp=0
+    // we surface the indeterminate animation so the operator can see
+    // motion. This matches the "active processing should be at the top
+    // with a progress bar" requirement.
+    let progressCell;
+    if (it.state === 'completed') {
+      progressCell = `<span class="small ok">✓ done</span>`;
+    } else if (it.state === 'skipped') {
+      progressCell = `<span class="small pad">— skipped</span>`;
+    } else if (it.state === 'cancelled') {
+      progressCell = `<span class="small">cancelled</span>`;
+    } else if (it.state === 'processing') {
+      progressCell = pct != null
+        ? `<span class="q-progress-bar"><span style="width:${Math.max(pct, 4)}%"></span></span><strong>${pp}</strong><span class="small"> of ${pt}</span>`
+        : `<span class="q-progress-bar indeterminate"><span></span></span><span class="small">starting…</span>`;
+    } else { // queued
+      progressCell = pt > 0
+        ? `<span class="small">${pt} pages queued</span>`
+        : `<span class="small pad">— queued</span>`;
+    }
     const costCell = it.costUsd != null
       ? `$${Number(it.costUsd).toFixed(4)}`
       : '<span class="pad">—</span>';
     const updatedCell = fmt(it.liveUpdatedAt || it.costPatchedAt || it.uploadedAt);
     const canCancel = it.state === 'queued' || it.state === 'processing';
     const action = canCancel
-      ? `<button data-act="cancel" data-bid="${safeHtml(it.bcBidId)}" data-fid="${safeHtml(it.driveFileId)}" title="Mark this file as cancelled — worker will skip on next pull">✕ Cancel</button>`
+      ? `<button data-act="cancel" data-bid="${safeHtml(it.bcBidId)}" data-fid="${safeHtml(it.driveFileId)}" title="Mark this file as cancelled — worker will skip on next pull (or break out of a mid-run agent within 10s)">✕ Cancel</button>`
       : `<button disabled>—</button>`;
-    return `<tr>
+    return `<tr class="q-row state-${it.state}">
       <td><a href="#" data-act="goto-rfp" data-id="${safeHtml(it.bcBidId)}">${safeHtml(it.projectName || it.bcBidId)}</a></td>
       <td class="q-file" title="${safeHtml(it.classification)}">${safeHtml(it.fileName)}</td>
       <td><span class="q-status ${it.state}">${it.state}</span></td>
@@ -1400,7 +1473,30 @@ function renderQueue(data) {
 }
 $('q-state')?.addEventListener('change',  () => { QSTATE.state = $('q-state').value; loadQueue(); });
 $('q-scope')?.addEventListener('change',  () => { QSTATE.scope = $('q-scope').value; loadQueue(); });
-$('q-refresh')?.addEventListener('click', () => loadQueue());
+$('q-refresh')?.addEventListener('click', (e) => { e.preventDefault(); loadQueue(); });
+// Column header sorting. Click toggles asc/desc; first click on a new
+// column also clears the implicit 'auto' (state-rank then updated) sort.
+document.querySelectorAll('#q-table thead th[data-sort]').forEach(th => {
+  th.style.cursor = 'pointer';
+  th.addEventListener('click', () => {
+    const k = th.dataset.sort;
+    if (QSTATE.sortKey === k) {
+      QSTATE.sortDir = (QSTATE.sortDir === 'asc') ? 'desc' : 'asc';
+    } else {
+      QSTATE.sortKey = k;
+      // Sensible default direction per column: text=asc, numeric/time=desc
+      QSTATE.sortDir = (k === 'project' || k === 'file' || k === 'state') ? 'asc' : 'desc';
+    }
+    if (QSTATE.lastData) renderQueue(QSTATE.lastData);
+  });
+});
+// Belt-and-suspenders: catch the refresh click via delegation too. The
+// direct listener above assumes the element exists at script-load; this
+// guard keeps the button working even if Queue tab markup was injected.
+document.addEventListener('click', (e) => {
+  const t = e.target?.closest?.('#q-refresh');
+  if (t && !t.disabled) { e.preventDefault(); loadQueue(); }
+});
 
 // ===== Outcomes tab =====
 // State for the active proposal selection. The detail panel mirrors STATE.oc.selected.
