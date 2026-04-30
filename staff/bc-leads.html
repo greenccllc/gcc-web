@@ -375,41 +375,20 @@ const COLS = [
     sort:(a,b) => (parseDue(a.dueAt) || 0) - (parseDue(b.dueAt) || 0),
     cell:(r) => renderDue(r.dueAt) },
 
-  // Extraction:
-  //   "##% (X of Y pages)"          -- ALL attachments extracted, real %
-  //   "(N pages from M of T files)" -- partial: M of T files extracted,
-  //                                    pages count is from those M files
-  //                                    only -- the rest haven't been
-  //                                    processed yet, so a "%" of pages
-  //                                    is dishonest because the
-  //                                    denominator is incomplete.
-  //   "—"                            -- no extraction at all yet
-  // The previous "100% (5 of 5 pages)" was misleading on rows like
-  // Stoney River where 4 of the 5 attachments hadn't been extracted yet.
+  // Extraction: ALWAYS "X pages of Y" where
+  //   X = pages_processed (sum of pages across files the agent has finished)
+  //   Y = pages_total      (sum of PageCount across every attachment in
+  //                         the RFP's Intake folder -- the truth)
+  // Shows "—" only when Y is unknown (attachments not yet counted).
   { id:'extraction', label:'Extraction',
-    sort:(a,b) => (extractionPct(a) ?? -1) - (extractionPct(b) ?? -1),
+    sort:(a,b) => (a.extraction?.pagesProcessed || 0) - (b.extraction?.pagesProcessed || 0),
     cell:(r) => {
-      const pct  = extractionPct(r);
-      const pp   = r.extraction?.pagesProcessed || 0;
-      const pt   = r.extraction?.pagesTotal     || 0;
-      const proc = r.extraction?.filesProcessed || 0;
-      // Total attachments in the RFP's Intake folder (truth source).
-      const tot  = r.scrape?.attachmentsCount || r.filesTotal || 0;
+      const pp = r.extraction?.pagesProcessed || 0;
+      const pt = r.extraction?.pagesTotal     || 0;
+      if (pt === 0) return '<span class="pad">—</span>';
       const conf = r.extraction?.confidencePct;
       const titleAttr = conf == null ? '' : ` title="Agent confidence: ${Math.round(conf)}%"`;
-      // Nothing extracted at all.
-      if (pct == null && proc === 0) return '<span class="pad">—</span>';
-      // Partial: at least one file extracted but more attachments remain.
-      // We don't know what those unextracted files' page counts are, so
-      // showing a % would be a lie -- be explicit about "from M of T".
-      if (tot > 0 && proc < tot) {
-        return `<span class="small"${titleAttr}>${pp} pages from ${proc} of ${tot} files</span>`;
-      }
-      // Full: every attachment extracted -- real %.
-      if (pct != null) {
-        return `<strong${titleAttr}>${pct}%</strong> <span class="small">(${pp} of ${pt} pages)</span>`;
-      }
-      return '<span class="pad">—</span>';
+      return `<strong${titleAttr}>${pp}</strong> <span class="small">pages of ${pt}</span>`;
     } },
 
   // AI cost -- shows "—" when the row has no real cost yet. Previously
@@ -531,13 +510,7 @@ function expandMetaCol(r) {
     ? '<span class="status status-Archived" title="Extraction is paused for this RFP.">⏸ Paused</span>' : '';
   const acceptedBadge = r.extraction?.accepted
     ? '<span class="status status-Accepted">✓ Accepted</span>' : '';
-  const pct = extractionPct(r);
-  const totAtt = r.scrape?.attachmentsCount || r.filesTotal || 0;
-  let progressVal;
-  if (pct == null && proc === 0)            progressVal = '—';
-  else if (totAtt > 0 && proc < totAtt)     progressVal = `${pp} pages from ${proc} of ${totAtt} files extracted`;
-  else if (pct != null)                     progressVal = `${pct}% (${pp} of ${pt} pages)`;
-  else                                      progressVal = '—';
+  const progressVal = pt > 0 ? `${pp} pages of ${pt}` : '—';
   return `<div class="expand-col">
     <h4>Extraction & scrape</h4>
     <div class="field"><span class="lbl">Progress</span><span class="val">${progressVal}</span></div>
