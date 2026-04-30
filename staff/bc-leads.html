@@ -1592,16 +1592,13 @@ function scheduleRefresh() {
   $('auto').textContent = 'auto-refresh every 30s';
 }
 
-// Sticky-offset sync: the page header height changes with viewport width
-// (the meta line wraps to 2 lines on narrower screens), so the filter band
-// and table head can't use a fixed `top:` value. Measure on load + resize
-// and write to CSS variables that the stylesheet already references.
+// Header height varies with viewport width (the meta line wraps to two
+// lines on narrower screens). The table head is sticky and needs to clear
+// the header by exactly that height, so we publish the live value as a
+// CSS variable on :root and re-measure on resize / fonts-ready / refetch.
 function syncStickyOffsets() {
-  const root   = document.documentElement;
   const header = document.querySelector('header');
-  const filter = document.querySelector('.intake-filters');
-  if (header) root.style.setProperty('--header-h', header.offsetHeight + 'px');
-  if (filter) root.style.setProperty('--filter-h', filter.offsetHeight + 'px');
+  if (header) document.documentElement.style.setProperty('--header-h', header.offsetHeight + 'px');
 }
 window.addEventListener('resize',          syncStickyOffsets);
 window.addEventListener('DOMContentLoaded', syncStickyOffsets);
@@ -1610,10 +1607,7 @@ syncStickyOffsets();
 wireIntakeFilters();
 load();
 scheduleRefresh();
-// Re-measure after fonts load -- font-swap can shift line-heights and bump
-// the header by a few pixels, leaving a hairline gap below the filter band.
 if (document.fonts?.ready) document.fonts.ready.then(syncStickyOffsets);
-// Also re-measure after the first render fills the meta line.
 setTimeout(syncStickyOffsets, 200);
 </script>
 </body>

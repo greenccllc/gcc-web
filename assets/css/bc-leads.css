@@ -42,14 +42,14 @@
     .row-actions button.accepted { background:var(--green-tint); border-color:var(--forest); color:var(--forest); }
     .row-actions button:disabled { opacity:.5; cursor:wait; transform:none; }
 
-    /* Sticky stack under the header. Filter band sits at --header-h (set by
-       JS at load), the table head at --header-h + filter-band-height. The
-       page header wraps at narrower widths (the meta line goes to 2 lines)
-       so a fixed offset would clip the band; --header-h is recomputed on
-       every resize. */
-    :root { --header-h:46px; --filter-h:42px; }
+    /* Layout: the page header is sticky at top:0 (always visible). The
+       filter band and table head are NORMAL flow -- they scroll with the
+       content. Earlier versions stacked everything as sticky, which left
+       fragile gaps when the header wrapped to two lines on narrower
+       viewports. Sticky just the header is simpler and visually cleaner. */
+    :root { --header-h:46px; }
     .summary { display:flex; gap:10px; padding:10px 16px; background:white;
-               border-bottom:1px solid var(--line); flex-wrap:wrap; position:sticky; top:var(--header-h); z-index:5;
+               border-bottom:1px solid var(--line); flex-wrap:wrap;
                min-height:36px; align-items:center; }
     .chip { display:inline-flex; align-items:center; gap:6px; padding:5px 12px;
             background:var(--green-tint); border:1px solid var(--line); border-radius:8px; font-size:12px;
@@ -72,7 +72,7 @@
        used to set position:relative for the resize-handle anchor, which
        silently clobbered this sticky and parked the header mid-table.
        Fold the resize-handle layout into this rule so there's only one. */
-    thead th { position:sticky; top:calc(var(--header-h) + var(--filter-h)); background:var(--cream); border-bottom:2px solid var(--forest);
+    thead th { position:sticky; top:var(--header-h); background:var(--cream); border-bottom:2px solid var(--forest);
                padding:8px 14px 8px 10px; font-size:11px; font-weight:600; letter-spacing:.04em; text-transform:uppercase;
                color:var(--slate); text-align:left; z-index:4; cursor:pointer; user-select:none; white-space:nowrap; }
     thead th:hover { background:#f5f1e1; }
@@ -221,7 +221,7 @@
        Sticks directly under the page header now that the summary chip band
        and status-pill row have been retired. */
     .intake-filters { display:flex; gap:8px; padding:6px 16px 8px; background:#FAFCF9;
-                      border-bottom:1px solid var(--line); position:sticky; top:var(--header-h); z-index:5;
+                      border-bottom:1px solid var(--line);
                       flex-wrap:wrap; min-height:42px; align-items:center; }
     .intake-filters .if-label { font-size:10.5px; font-weight:700; text-transform:uppercase;
                                  letter-spacing:.06em; color:var(--slate); margin-right:4px; }
