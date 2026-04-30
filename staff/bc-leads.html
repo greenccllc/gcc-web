@@ -7,7 +7,7 @@
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <meta name="theme-color" content="#1E4D2B" />
-  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-0945" />
+  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-1100" />
 </head>
 <body>
   <header>
@@ -458,6 +458,31 @@ const COLS = [
       const conf = r.extraction?.confidencePct;
       const titleAttr = conf == null ? '' : ` title="Agent confidence: ${Math.round(conf)}%"`;
       return `<strong${titleAttr}>${pp}</strong> <span class="small">pages of ${pt}</span>`;
+    } },
+
+  // Syn Conf -- the synthesis pass's self-reported confidence in the
+  // canonical scope numbers ("our AI's confidence that the LV scope it
+  // synthesized for this project is accurate enough to bid against").
+  // After /api/admin/jobs/{jobId}/scope-synthesize runs, the picker
+  // (ai-synthesis score = 2.00) makes those numbers the displayed
+  // counts; this column is the operator's go/no-go signal that those
+  // numbers are trustworthy. The 🔄 button next to each value re-runs
+  // synthesis for that JobId (POST /api/admin/jobs/.../scope-synthesize).
+  { id:'synconf', label:'Syn Conf',
+    sort:(a,b) => (a.extraction?.confidencePct || -1) - (b.extraction?.confidencePct || -1),
+    cell:(r) => {
+      const conf = r.extraction?.confidencePct;
+      const id   = r.jobId;
+      const txt  = conf == null ? '<span class="pad">—</span>' : `<strong>${Math.round(conf)}%</strong>`;
+      // Color tier: 0 = no synth (red dot), <70 spot-check (amber), >=85 bid-ready (green).
+      const tier = conf == null ? 'none' : (conf < 70 ? 'low' : (conf >= 85 ? 'good' : 'mid'));
+      const tip  = conf == null
+        ? 'No synthesis run yet. Click 🔄 to synthesize the canonical LV-scope numbers from this RFP\'s extraction rows.'
+        : `Synthesis confidence: AI's self-rated trust in the canonical LV-scope numbers (go/no-go signal for bidding). Click 🔄 to re-run.`;
+      return `<span class="synconf-cell synconf-${tier}" data-stop title="${tip}">
+        <span class="synconf-dot"></span>${txt}
+        <button class="synconf-refresh" data-act="syn-refresh" data-id="${id}" title="Re-run scope synthesis for this RFP">🔄</button>
+      </span>`;
     } },
 
   // AI cost -- shows "—" when the row has no real cost yet. Previously
@@ -1069,6 +1094,17 @@ function render() {
           await api('POST', '/api/bc/extraction/extract-more', { jobId: id });
           toast(`Deeper extraction queued for ${id.slice(0,8)}…`);
           setTimeout(load, 1200);
+        } else if (act === 'syn-refresh') {
+          // Re-run scope synthesis for this RFP (button in the Syn Conf
+          // column). Toasts the new confidence + count and refreshes the
+          // table so the column updates in place.
+          const r = await api('POST', `/api/admin/jobs/${encodeURIComponent(id)}/scope-synthesize`, {});
+          if (r?.ok) {
+            toast(`Synthesized ${r.rowsWritten || 0} counts at ${r.confidencePct ?? '?'}% conf`, 4500);
+          } else {
+            toast(`Synthesis: ${r?.error || 'failed'}`, 5000);
+          }
+          setTimeout(load, 800);
         } else if (act === 'accept') {
           await api('POST', '/api/bc/extraction/accept', { jobId: id });
           toast(`Extraction accepted for ${id.slice(0,8)}…`);

@@ -78,6 +78,26 @@
     thead th:hover { background:#f5f1e1; }
     thead th .sort-ind { display:inline-block; width:10px; opacity:.55; margin-left:3px; }
     tbody td { border-bottom:1px solid var(--line); padding:7px 10px; vertical-align:middle; }
+
+    /* Syn Conf column: confidence pill with a small refresh button. The
+       dot on the left is colored by tier (good / mid / low / none) so
+       the operator can scan the column for ready-to-bid rows at a
+       glance without reading the percent. */
+    .synconf-cell { display:inline-flex; align-items:center; gap:6px; }
+    .synconf-dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--slate); flex:0 0 8px; }
+    .synconf-good .synconf-dot { background:var(--forest); }
+    .synconf-mid  .synconf-dot { background:#C9A158; }   /* gold = spot-check */
+    .synconf-low  .synconf-dot { background:var(--danger); }
+    .synconf-none .synconf-dot { background:#bbb; }
+    .synconf-good strong { color:var(--forest); }
+    .synconf-low  strong { color:var(--danger); }
+    .synconf-refresh {
+      background:transparent; border:0; padding:1px 5px; margin-left:2px;
+      font-size:11px; cursor:pointer; opacity:.55; transition:opacity .12s ease;
+      border-radius:4px;
+    }
+    .synconf-refresh:hover  { opacity:1; background:var(--green-tint); }
+    .synconf-refresh:disabled { opacity:.4; cursor:wait; }
     tbody tr.row { cursor:pointer; height:38px; }
     tbody tr.row > td {
       /* Force uniform single-line rows: every cell truncates with
