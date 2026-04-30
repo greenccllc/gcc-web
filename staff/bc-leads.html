@@ -7,7 +7,7 @@
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <meta name="theme-color" content="#1E4D2B" />
-  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-0500" />
+  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-0408" />
 </head>
 <body>
   <header>
@@ -1509,8 +1509,19 @@ function renderCostApprovals(r) {
 }
 function _wsSinceText(iso) {
   if (!iso) return '—';
-  const t = new Date(iso); if (isNaN(t)) return '—';
+  // Server emits ISO timestamps without a 'Z' suffix on values that are
+  // actually UTC -- new Date(iso) treats those as local time and the
+  // delta vs Date.now() comes back negative (e.g. 5h on a CDT box) which
+  // clamps to 0 and renders as "0s ago" on every stale row. Patch by
+  // pretending the string is UTC if it lacks a tz marker.
+  const isoUtc = (typeof iso === 'string' && !/[zZ]|[+-]\d{2}:?\d{2}$/.test(iso))
+    ? iso + 'Z' : iso;
+  const t = new Date(isoUtc); if (isNaN(t)) return '—';
   const s = Math.max(0, (Date.now() - t.getTime()) / 1000);
+  return _wsAgoFromSeconds(s);
+}
+function _wsAgoFromSeconds(s) {
+  s = Math.max(0, s);
   if (s < 60)   return Math.round(s) + 's ago';
   if (s < 3600) return Math.round(s / 60) + 'm ago';
   if (s < 86400) return Math.round(s / 3600) + 'h ago';
@@ -1605,9 +1616,14 @@ function renderWorkerStatus(w) {
           : `<span class="q-progress-bar indeterminate"><span></span></span>`;
         const counts = pt > 0 ? `<strong>${pp}</strong><span class="small"> of ${pt}</span>`
                               : `<strong>${pp}</strong><span class="small"> pages so far</span>`;
+        // Use the API-computed ageS (server-side UTC math) rather than
+        // reparsing it.updatedAt -- the API serializes DateTime without
+        // a 'Z' suffix, so new Date(iso) treats it as local time and
+        // computes a negative delta that clamps to 0 ("0s ago" on every
+        // stale row). ageS is always non-negative seconds.
         const ageBadge = it.fresh
           ? `<span class="ws-age fresh">${it.ageS != null ? it.ageS + 's' : ''}</span>`
-          : `<span class="ws-age stale">${_wsSinceText(it.updatedAt)}</span>`;
+          : `<span class="ws-age stale">${it.ageS != null ? _wsAgoFromSeconds(it.ageS) : '—'}</span>`;
         const stuckClass = it.fresh ? '' : ' stuck';
         return `<div class="ws-inflight-row${stuckClass}">
           <div class="ws-if-proj" title="${safeHtml(it.fileName || '')}">${safeHtml(it.fileName || '(file pending)')}</div>
