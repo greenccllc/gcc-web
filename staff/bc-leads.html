@@ -7,7 +7,7 @@
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <meta name="theme-color" content="#1E4D2B" />
-  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-0330" />
+  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-0400" />
 </head>
 <body>
   <header>
@@ -104,24 +104,12 @@
       <div class="ca-rows" id="ca-rows"></div>
     </div>
 
-    <div class="summary" id="q-summary"></div>
-    <div class="q-controls">
-      <span class="if-label" style="text-transform:none;font-weight:500">Filter</span>
-      <select id="q-state">
-        <option value="">All</option>
-        <option value="queued">Queued</option>
-        <option value="processing">Processing</option>
-        <option value="completed">Completed</option>
-        <option value="skipped">Skipped</option>
-        <option value="cancelled">Cancelled</option>
-      </select>
-      <select id="q-scope">
-        <option value="accepted" selected>Accepted RFPs only</option>
-        <option value="all">All RFPs</option>
-      </select>
-      <button class="if-clear" id="q-refresh" type="button">↻ Refresh</button>
-      <span id="q-count" class="small" style="margin-left:auto"></span>
-    </div>
+    <!-- (Queue summary chips + Filter / Scope / Refresh band removed --
+         the queue table only shows actively-queued + processing rows
+         in the default 'accepted, status=' query. Header's global
+         Refresh button covers the manual-poke case.) -->
+    <span id="q-summary" hidden></span>
+    <span id="q-count"   hidden></span>
     <table id="q-table">
       <thead><tr>
         <th data-sort="project">Project <span class="sort-ind"></span></th>
@@ -421,27 +409,24 @@ const COLS = [
         ? `<span class="proj-folder-icon" data-act="open-folder" data-folder-id="${r.driveJobFolderId}" title="${safeHtml(r.driveJobFolderName || '')}">📂</span>`
         : '<span class="proj-folder-icon missing" title="No Drive folder linked">📂</span>';
       const tip = projTip(r);
-      const trades = rowTrades(r);
-      const scopeChips = trades.length
-        ? `<span class="proj-scope">${trades.map(t => `<span class="scope-chip"><span class="ico">${tradeIcon(t)}</span>${safeHtml(t)}</span>`).join('')}</span>`
-        : '';
-      // Sibling indicator: same project / GC / state with another bcBidId.
+      // Scope chips moved to the expand pane (top strip) so the
+      // project-name cell can give the title room. Sibling badge +
+      // file/msg subscript still ride here.
       const sibBadge = (r._siblingBcBidIds && r._siblingBcBidIds.length)
         ? `<span class="sib-badge" title="${r._siblingBcBidIds.length} sibling RFP${r._siblingBcBidIds.length === 1 ? '' : 's'} for the same physical job (different trade scopes)">🔗 +${r._siblingBcBidIds.length}</span>`
         : '';
-      // File / message summary as a subscript right after the project name.
       const att = r.scrape?.attachmentsCount || 0;
       const msg = r.scrape?.messagesCount    || 0;
       const subscript = (att || msg)
         ? `<sub class="proj-subscript">${att ? att + ' att' : ''}${att && msg ? '<span class="dot">·</span>' : ''}${msg ? msg + ' msg' : ''}</sub>`
         : '';
-      // Project name -> Manage Job (was BC opportunity URL). Opens in
-      // a new tab; the BC link is preserved in the expand pane footer.
+      // Project name -> Manage Job. BC link is preserved in the
+      // expand pane footer.
       const mjQs = new URLSearchParams({ bcBidId: r.bcBidId });
       if (URL_PARAMS.get('secret')) mjQs.set('secret', URL_PARAMS.get('secret'));
       if (URL_PARAMS.get('api'))    mjQs.set('api',    URL_PARAMS.get('api'));
       const mjHref = `/staff/manage-job.html?${mjQs.toString()}`;
-      return `<span class="toggle">▶</span> ${fIcon}<span class="proj-link"><a href="${mjHref}" data-act="open-manage" data-href="${mjHref}">${safeHtml(projectLabel(r))}</a>${tip}</span>${sibBadge}${subscript}${scopeChips}`;
+      return `<span class="toggle">▶</span> ${fIcon}<span class="proj-link"><a href="${mjHref}" data-act="open-manage" data-href="${mjHref}" title="${safeHtml(projectLabel(r))}">${safeHtml(projectLabel(r))}</a>${tip}</span>${sibBadge}${subscript}`;
     } },
 
   { id:'location', label:'Location',
@@ -482,7 +467,7 @@ const COLS = [
       const c = Number(r.ai?.costUsd || 0);
       const t = Number(r.ai?.tokensUsed || 0);
       if (!c && !t) return '<span class="pad">—</span>';
-      const costPart = c > 0 ? `$${c.toFixed(4)}` : '<span class="pad">—</span>';
+      const costPart = c > 0 ? `$${c.toFixed(2)}` : '<span class="pad">—</span>';
       const tokPart  = t > 0 ? ` <span class="small">(${(t/1000).toFixed(1)}k tok)</span>` : '';
       return `${costPart}${tokPart}`;
     } },
@@ -545,7 +530,7 @@ function expandTopStrip(r) {
   const confVal     = c == null ? '—' : `${Math.round(c)}% confidence`;
   const costVal     = cost == null
     ? '—'
-    : `$${Number(cost).toFixed(4)}${tok ? ` <span class="small">(${(tok/1000).toFixed(1)}k tok)</span>` : ''}`;
+    : `$${Number(cost).toFixed(2)}${tok ? ` <span class="small">(${(tok/1000).toFixed(1)}k tok)</span>` : ''}`;
 
   // Manage / BC / Drive links + Extraction details deep-link
   const mjQs = new URLSearchParams({ bcBidId: r.bcBidId });
@@ -646,7 +631,7 @@ function expandMetaCol(r) {
     <h4>Extraction & scrape</h4>
     <div class="field"><span class="lbl">Progress</span><span class="val">${progressVal}</span></div>
     <div class="field"><span class="lbl">Agent confidence</span><span class="val">${c == null ? '—' : Math.round(c) + '%'}</span></div>
-    <div class="field"><span class="lbl">AI cost</span><span class="val">${cost == null ? '—' : '$' + Number(cost).toFixed(4)}${tok ? ` <span class="small">(${(tok/1000).toFixed(1)}k tok)</span>` : ''}</span></div>
+    <div class="field"><span class="lbl">AI cost</span><span class="val">${cost == null ? '—' : '$' + Number(cost).toFixed(2)}${tok ? ` <span class="small">(${(tok/1000).toFixed(1)}k tok)</span>` : ''}</span></div>
     <div class="field"><span class="lbl">Attachments</span><span class="val">${att} att · ${msg} msg</span></div>
     <div class="field"><span class="lbl">First seen</span><span class="val">${fmt(r.firstSeenAt)}</span></div>
     <div class="field"><span class="lbl">Last list scrape</span><span class="val">${fmt(r.lastSeenAt)}</span></div>
@@ -1739,7 +1724,7 @@ function _fileRowHtml(it) {
       : `<span class="small pad">— queued</span>`;
   }
   const costCell = it.costUsd != null
-    ? `$${Number(it.costUsd).toFixed(4)}`
+    ? `$${Number(it.costUsd).toFixed(2)}`
     : '<span class="pad">—</span>';
   const updatedCell = fmt(it.liveUpdatedAt || it.costPatchedAt || it.uploadedAt);
   const canCancel = it.state === 'queued' || it.state === 'processing';
@@ -1789,7 +1774,7 @@ function _groupRowHtml(g, expanded) {
     g.counts.cancelled  ? `<span class="q-tally tally-cancelled"  title="cancelled">✕ ${g.counts.cancelled}</span>` : '',
   ].filter(Boolean).join(' ');
   const fileTally = `<span class="small q-file-tally">${g.totalFiles} ${g.totalFiles === 1 ? 'file' : 'files'}${tallies ? ' · ' + tallies : ''}</span>`;
-  const totalCost = g.totalCostUsd > 0 ? `$${g.totalCostUsd.toFixed(4)}` : '<span class="pad">—</span>';
+  const totalCost = g.totalCostUsd > 0 ? `$${g.totalCostUsd.toFixed(2)}` : '<span class="pad">—</span>';
   const updated = g.latestUpdated > 0 ? fmt(new Date(g.latestUpdated).toISOString()) : '<span class="pad">—</span>';
   const arrow = expanded ? '▾' : '▸';
   const groupCancellable = (g.counts.queued + g.counts.processing) > 0;
@@ -1811,24 +1796,18 @@ function _groupRowHtml(g, expanded) {
 }
 
 function renderQueue(data) {
-  const s = data.summary || {};
-  $('q-summary').innerHTML = [
-    `<span class="chip"><strong>${s.total || 0}</strong> files total</span>`,
-    s.processing ? `<span class="chip processing"><span class="dot pulse"></span> <strong>${s.processing}</strong> processing</span>` : '',
-    s.queued     ? `<span class="chip">⏳ <strong>${s.queued}</strong> queued</span>` : '',
-    s.completed  ? `<span class="chip">✓ <strong>${s.completed}</strong> completed</span>` : '',
-    s.skipped    ? `<span class="chip">⏭ <strong>${s.skipped}</strong> skipped</span>` : '',
-    s.cancelled  ? `<span class="chip">✕ <strong>${s.cancelled}</strong> cancelled</span>` : '',
-  ].filter(Boolean).join('');
-  const groups = _sortQueueGroups(_groupQueueItems(data.items || []));
+  // Filter to ACTIVE files only -- queued + processing. Completed,
+  // skipped, and cancelled hidden so the queue panel only shows work
+  // that's still pending. (Was a UI filter dropdown above the table;
+  // now hard-coded since the panel is single-purpose.)
+  const items = (data.items || []).filter(it =>
+    it.state === 'queued' || it.state === 'processing'
+  );
+  const groups = _sortQueueGroups(_groupQueueItems(items));
   _updateSortIndicators();
-  // Auto-expand any group that has live (processing) work, plus every
-  // group the operator has explicitly toggled. Keeps the eye drawn to
-  // motion without forcing all groups open.
   for (const g of groups) {
     if ((g.counts.processing || 0) > 0 && g.bcBidId) Q_EXPANDED.add(g.bcBidId);
   }
-  $('q-count').textContent = `${groups.length} ${groups.length === 1 ? 'project' : 'projects'} · ${data.items?.length || 0} files`;
   if (groups.length === 0) {
     $('q-empty').hidden = false;
     $('q-rows').innerHTML = '';
