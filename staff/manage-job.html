@@ -44,8 +44,12 @@
         <div class="mj-scope-toolbar">
           <span class="small" id="mj-scope-summary">—</span>
           <span class="small mj-scope-conf" id="mj-scope-conf"></span>
+          <button id="mj-scope-synth" class="mj-btn-sm" type="button"
+                  title="Run a single Gemini pass over every per-file extraction for this job and emit one canonical count per LV category. The synthesized values become the displayed numbers."
+                  style="margin-left:auto">Synthesize scope</button>
         </div>
         <div class="mj-counts-grid" id="mj-counts-grid"></div>
+        <div class="small mj-scope-reasoning" id="mj-scope-reasoning"></div>
       </div>
 
       <div class="mj-card" style="margin-top:14px" id="mj-extract-card">
@@ -388,8 +392,8 @@ function renderDescription(r) {
 // ===== Low-voltage scope grid =====
 const COUNT_KEYS = [
   ['data','DATA'],     ['fiber','FIBER'],   ['fiberEnc','FIBER ENC'], ['fiberPp','FIBER PP'], ['coax','COAX'],
-  ['hdmi','HDMI'],     ['tv','TV'],         ['iot','IOT'],            ['aps','APS'],          ['intercom','INTERCOM'],
-  ['camInt','CAM INT'],['camExt','CAM EXT'],['doors','DOORS'],        ['elevator','ELEVATOR'],['ups','UPS'],
+  ['hdmi','HDMI'],     ['tv','TV'],         ['iot','IOT'],            ['aps','WAP'],          ['intercom','INTERCOM'],
+  ['camInt','CAM INT'],['camExt','CAM EXT'],['doors','ACS DOORS'],    ['elevator','ELEVATOR'],['ups','UPS'],
   ['mdf','MDF'],       ['idf','IDF'],       ['switch','SWITCH'],      ['patch','PATCH'],      ['ladder','LADDER'],
 ];
 function renderScope(r) {
@@ -430,6 +434,34 @@ function renderScope(r) {
     : '';
   $('mj-scope-conf').innerHTML = safeHtml(confText) + legend;
 }
+
+// ===== Synthesize scope (Gemini pass) =====
+$('mj-scope-synth').addEventListener('click', async () => {
+  if (!LEAD?.jobId) { toast('Job not loaded yet.', 3000); return; }
+  const btn = $('mj-scope-synth');
+  btn.disabled = true;
+  const orig = btn.textContent;
+  btn.textContent = 'Synthesizing…';
+  $('mj-scope-reasoning').textContent = '';
+  try {
+    const r = await api('POST', `/api/admin/jobs/${encodeURIComponent(LEAD.jobId)}/scope-synthesize`, {});
+    if (!r?.ok) throw new Error(r?.error || 'synthesis failed');
+    toast(`Synthesized ${r.rowsWritten || 0} counts (${r.confidencePct ?? '?'}% conf) from ${r.rowsConsidered || 0} extraction rows.`, 5000);
+    if (r.reasoning) {
+      $('mj-scope-reasoning').innerHTML =
+        `<details style="margin-top:10px"><summary style="cursor:pointer;color:#1E4D2B">Synthesis reasoning</summary>` +
+        `<div style="margin-top:6px;white-space:pre-wrap">${safeHtml(r.reasoning)}</div></details>`;
+    }
+    // Re-render the grid by re-fetching the lead.
+    if (typeof load === 'function') await load();
+    if (typeof loadExtractions === 'function') await loadExtractions();
+  } catch (e) {
+    toast(e.message || 'synthesis failed', 6000);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = orig;
+  }
+});
 
 // ===== Project meta =====
 function renderMeta(r) {
