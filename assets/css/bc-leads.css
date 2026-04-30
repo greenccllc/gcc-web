@@ -286,6 +286,15 @@
     .action-menu .menu-list select { width:100%; margin:2px 0; padding:5px; font-size:12px;
                                       border:1px solid var(--line); border-radius:4px; }
 
+    /* Sibling-RFP badge -- shown next to the project name when BC invited
+       us on multiple trade scopes for the same physical job. */
+    .sib-badge {
+      display:inline-flex; align-items:center; gap:2px;
+      padding:1px 7px; margin-left:6px; font-size:10.5px; font-weight:600;
+      color:var(--gold); background:#FFF7E5; border:1px solid #F0DEA0;
+      border-radius:11px; cursor:help; vertical-align:1px;
+    }
+
     /* Folder icon prefix on Project name. */
     .proj-folder-icon { color:var(--slate); margin-right:6px; font-size:13px; vertical-align:-1px; cursor:pointer; }
     .proj-folder-icon:hover { color:var(--forest); }
