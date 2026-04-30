@@ -7,7 +7,7 @@
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <meta name="theme-color" content="#1E4D2B" />
-  <link rel="stylesheet" href="/assets/css/bc-leads.css" />
+  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260429-2330" />
 </head>
 <body>
   <header>
@@ -1025,6 +1025,10 @@ function showProjectDetails(r) {
 }
 
 // ===== Processes tab =====
+// While any task is in Running state, also poll /api/bc/scrape-progress
+// for live X/Y progress against the BC scrape logs and render an inline
+// progress bar in that task's "Last result" cell.
+let _procProgressTimer = null;
 async function loadProcesses() {
   try {
     const data = await api('GET', '/api/admin/scheduled-tasks');
@@ -1033,6 +1037,20 @@ async function loadProcesses() {
     const running = tasks.filter(t => (t.state || '').toLowerCase() === 'running').length;
     if (running > 0) { $('proc-running').textContent = running; $('proc-running-chip').style.display = ''; }
     else             { $('proc-running-chip').style.display = 'none'; }
+
+    // Pull progress whenever any task is running. Quietly tolerates 4xx/5xx --
+    // missing log files just leave progress empty for that task.
+    let progress = {};
+    if (running > 0) {
+      try { progress = await api('GET', '/api/bc/scrape-progress'); } catch {}
+    }
+    function progressFor(taskName) {
+      const n = (taskName || '').toLowerCase();
+      if (n.includes('scrape-detail')) return progress.detail;
+      if (n.includes('scrape'))        return progress.list;
+      return null;
+    }
+
     const stateBadge = (s) => {
       const v = (s || '').toLowerCase();
       if (v === 'ready')    return '<span class="status status-Accepted">Ready</span>';
@@ -1043,12 +1061,34 @@ async function loadProcesses() {
     const html = tasks.map(t => {
       const isPaused  = (t.state || '').toLowerCase() === 'disabled';
       const isRunning = (t.state || '').toLowerCase() === 'running';
+      // Build the "Last result" / progress cell.
+      const p = isRunning ? progressFor(t.name) : null;
+      let resultCell;
+      if (p && p.running && p.total) {
+        const pct = p.pctComplete ?? 0;
+        const sub = [
+          `${p.processed} of ${p.total}`,
+          p.currentBcBidId ? `${p.currentBcBidId.slice(0,8)}… ${p.currentStep || ''}` : '',
+        ].filter(Boolean).join(' · ');
+        resultCell = `<div class="proc-progress">
+          <div class="proc-progress-bar"><span style="width:${pct}%"></span></div>
+          <div class="proc-progress-meta"><strong>${pct}%</strong> <span class="small">${safeHtml(sub)}</span></div>
+        </div>`;
+      } else if (isRunning) {
+        // Running but no parsed progress yet (just kicked off, log not flushed).
+        resultCell = `<div class="proc-progress">
+          <div class="proc-progress-bar indeterminate"><span></span></div>
+          <div class="proc-progress-meta small">starting…</div>
+        </div>`;
+      } else {
+        resultCell = `<span class="small">${t.lastResultText || `<code>${t.lastResultCode ?? ''}</code>`}</span>`;
+      }
       return `<tr>
         <td><strong>${t.name}</strong>${t.description ? `<div class="small">${t.description}</div>` : ''}</td>
         <td>${stateBadge(t.state)}</td>
         <td class="small">${t.lastRunAt ? fmt(t.lastRunAt) : '<span class="pad">—</span>'}</td>
         <td class="small">${t.nextRunAt ? fmt(t.nextRunAt) : '<span class="pad">—</span>'}</td>
-        <td class="small">${t.lastResultText || `<code>${t.lastResultCode ?? ''}</code>`}</td>
+        <td>${resultCell}</td>
         <td>
           <div class="row-actions">
             <button data-task="${t.name}" data-act="run"     ${isRunning ? 'disabled' : ''}>${isRunning ? 'running' : 'Start'}</button>
@@ -1075,6 +1115,12 @@ async function loadProcesses() {
         finally    { btn.disabled = false; btn.textContent = orig; loadProcesses(); }
       });
     });
+
+    // Keep the progress bars live: poll every 5s while anything's running.
+    clearInterval(_procProgressTimer);
+    if (running > 0 && !$('tab-processes').hidden) {
+      _procProgressTimer = setInterval(loadProcesses, 5000);
+    }
   } catch (e) {
     $('proc-rows').innerHTML = `<tr><td colspan="6" style="padding:20px;color:var(--danger)">${e.message}</td></tr>`;
   }

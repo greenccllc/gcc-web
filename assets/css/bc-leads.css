@@ -438,6 +438,29 @@
     }
     .hb-copy:hover { background:var(--green-tint); border-color:var(--forest); color:var(--forest); }
 
+    /* Process progress bar -- shown in the "Last result" column for tasks
+       that are currently in Running state. The indeterminate variant is the
+       fallback when the log hasn't yielded a "Queue: N RFPs" line yet. */
+    .proc-progress { display:flex; flex-direction:column; gap:3px; min-width:160px; }
+    .proc-progress-bar {
+      position:relative; height:8px; background:var(--line); border-radius:4px;
+      overflow:hidden; box-shadow:inset 0 1px 2px rgba(0,0,0,.05);
+    }
+    .proc-progress-bar > span {
+      display:block; height:100%; background:linear-gradient(90deg, var(--forest), var(--gold));
+      transition:width .4s ease; min-width:2px;
+    }
+    .proc-progress-bar.indeterminate { background:var(--green-tint); }
+    .proc-progress-bar.indeterminate > span {
+      width:30%; background:var(--forest); animation:procIndet 1.2s ease-in-out infinite;
+    }
+    @keyframes procIndet {
+      0%   { transform:translateX(-100%); }
+      100% { transform:translateX(330%); }
+    }
+    .proc-progress-meta { display:flex; gap:6px; align-items:baseline; font-size:11px; color:var(--slate); font-feature-settings:"tnum" 1; }
+    .proc-progress-meta strong { color:var(--forest); font-size:12px; }
+
     .proc-section-title { padding:14px 16px 4px; margin:0; color:var(--forest);
                           font-size:13px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; }
     @media (max-width:900px) { .hb-grid { grid-template-columns:1fr; } }
