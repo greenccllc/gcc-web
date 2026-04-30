@@ -7,7 +7,7 @@
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <meta name="theme-color" content="#1E4D2B" />
-  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-0700" />
+  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260430-0710" />
 </head>
 <body>
   <header>
@@ -1453,14 +1453,28 @@ async function loadWorkerStatus() {
 
 // Reset button on the Heartbeat pill: clears the processing strip
 // (DELETE FROM AiExtractionProgress) and marks any current lastError
-// dismissed. Useful after a worker kill / interruption when the panel
-// is showing stale ghosts. Active workers will write fresh rows on
-// their next heartbeat tick (~30s).
+// dismissed (with a 30s server-side snooze on new errors so the panel
+// stays clean even if a persistent issue is firing every few seconds).
+// Active workers will write fresh rows on their next heartbeat tick (~30s).
 document.addEventListener('click', async (e) => {
   const btn = e.target.closest('[data-act="ws-reset"]'); if (!btn) return;
   e.preventDefault(); e.stopPropagation();
   if (!confirm('Reset Heartbeat panel? This clears the processing strip and dismisses any logged error.')) return;
   btn.disabled = true; const orig = btn.textContent; btn.textContent = '…';
+
+  // Immediate visual feedback: hide the lastError pill + clear strip
+  // BEFORE waiting on the API. The next loadWorkerStatus() will
+  // re-render based on real state (the 30s server snooze keeps it
+  // clean unless something legitimately new fires later).
+  const errEl = $('ws-error');
+  if (errEl) errEl.hidden = true;
+  const ifEl = $('ws-inflight');
+  if (ifEl) ifEl.innerHTML = `<div class="ws-inflight-empty small pad">No active extractions.</div>`;
+  // Force the heartbeat pill out of err state too -- otherwise the
+  // ".err" class lingers (red dot) until the next poll redraws.
+  const hbEl = $('ws-heartbeat');
+  if (hbEl) { hbEl.classList.remove('err'); hbEl.classList.add('ok'); }
+
   try {
     const r = await api('POST', '/api/bc/worker-status/reset', {});
     toast(`Reset (${r.progressRowsCleared || 0} rows cleared)`);
