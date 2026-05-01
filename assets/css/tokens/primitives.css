@@ -1,0 +1,54 @@
+:root {
+  /* Raw color primitives */
+  --color-forest-700: #143821;
+  --color-forest-600: #1E4D2B;
+  --color-forest-500: #2B6A3D;
+  --color-forest-50: #E8F0EA;
+  --color-slate-600: #4F5B57;
+  --color-slate-500: #7C8884;
+  --color-gold-500: #C9A158;
+  --color-gold-600: #A8842F;
+  --color-cream-100: #FBFAF5;
+  --color-paper-200: #F4F4EE;
+  --color-ink-900: #15201A;
+  --color-white: #FFFFFF;
+
+  --color-amber-700: #B45309;
+  --color-amber-100: #FEF3C7;
+  --color-rose-700: #B91C1C;
+  --color-rose-100: #FEE2E2;
+  --color-sky-800: #075985;
+  --color-sky-100: #E0F2FE;
+  --color-stone-700: #57534E;
+  --color-stone-100: #F5F5F4;
+
+  --color-hairline: rgba(21, 32, 26, 0.09);
+  --color-hairline-strong: rgba(21, 32, 26, 0.16);
+
+  /* Typography primitives */
+  --font-family-ui: 'Source Sans 3', 'Source Sans Pro', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-family-display: 'Source Sans 3', 'Source Sans Pro', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-family-mono: 'JetBrains Mono', ui-monospace, Consolas, Menlo, 'Courier New', monospace;
+  --font-size-body: clamp(15px, 0.5vw + 13px, 17px);
+  --font-size-h1: clamp(32px, 4vw + 16px, 56px);
+  --font-size-h2: clamp(24px, 2vw + 14px, 38px);
+  --font-size-h3: clamp(18px, 1vw + 14px, 24px);
+  --font-size-h4: clamp(16px, 0.5vw + 14px, 19px);
+
+  /* Spacing primitives */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+
+  --layout-container-max: 1180px;
+  --layout-gutter: 24px;
+}

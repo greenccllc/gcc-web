@@ -1,0 +1,63 @@
+:root {
+  --motion-ease-standard: cubic-bezier(.2, .7, .3, 1);
+
+  --elevation-xs: 0 1px 2px rgba(15, 26, 18, 0.04);
+  --elevation-sm: 0 1px 2px rgba(15, 26, 18, 0.05), 0 2px 4px rgba(15, 26, 18, 0.03);
+  --elevation-md: 0 4px 12px rgba(15, 26, 18, 0.06), 0 2px 6px rgba(15, 26, 18, 0.04);
+  --elevation-lg: 0 16px 40px rgba(15, 26, 18, 0.10), 0 6px 14px rgba(15, 26, 18, 0.06);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+  --radius-pill: 999px;
+
+  --component-nav-link-text: var(--color-text-secondary);
+  --component-nav-link-hover-bg: color-mix(in srgb, var(--color-accent-primary) 7%, transparent);
+  --component-nav-link-active-bg: color-mix(in srgb, var(--color-accent-primary) 10%, transparent);
+
+  --component-button-primary-bg: var(--color-accent-primary);
+  --component-button-primary-hover-bg: var(--color-accent-strong);
+  --component-button-primary-text: var(--color-text-inverse);
+
+  --component-card-bg: var(--color-surface-elevated);
+  --component-card-border: var(--color-border-subtle);
+  --component-card-shadow: var(--elevation-sm);
+
+  --component-badge-radius: var(--radius-pill);
+
+  --component-input-bg: var(--color-surface-elevated);
+  --component-input-border: var(--color-border-default);
+  --component-input-focus-ring: var(--focus-ring-color);
+
+  /* Legacy aliases (phase 1 compatibility) */
+  --font-ui: var(--font-family-ui);
+  --font-display: var(--font-family-display);
+  --font-mono: var(--font-family-mono);
+  --container: var(--layout-container-max);
+  --gutter: var(--layout-gutter);
+  --ease: var(--motion-ease-standard);
+  --shadow-xs: var(--elevation-xs);
+  --shadow-sm: var(--elevation-sm);
+  --shadow-md: var(--elevation-md);
+  --shadow-lg: var(--elevation-lg);
+  --shadow-ring: 0 0 0 4px var(--focus-ring-color);
+  --r-sm: var(--radius-sm);
+  --r-md: var(--radius-md);
+  --r-lg: var(--radius-lg);
+  --r-xl: var(--radius-xl);
+  --r-pill: var(--radius-pill);
+
+  --s-1: var(--space-1);
+  --s-2: var(--space-2);
+  --s-3: var(--space-3);
+  --s-4: var(--space-4);
+  --s-5: var(--space-5);
+  --s-6: var(--space-6);
+  --s-8: var(--space-8);
+  --s-10: var(--space-10);
+  --s-12: var(--space-12);
+  --s-16: var(--space-16);
+  --s-20: var(--space-20);
+  --s-24: var(--space-24);
+}
