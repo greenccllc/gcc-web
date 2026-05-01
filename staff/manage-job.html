@@ -8,7 +8,7 @@
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <meta name="theme-color" content="#1E4D2B" />
   <link rel="stylesheet" href="/assets/css/site.css?v=20260501-redesign" />
-  <link rel="stylesheet" href="/assets/css/staff-manage-job.css?v=20260501-aibadge" />
+  <link rel="stylesheet" href="/assets/css/staff-manage-job.css?v=20260501-tabs-themes" />
 </head>
 <body>
   <header>
@@ -43,6 +43,16 @@
        [workflow group] · [maintenance group] · [link group]. -->
   <section class="mj-action-bar" id="mj-action-bar" hidden></section>
 
+  <!-- Tab navigation: splits the page into Overview (job state, scope,
+       latest proposal) and Proposal Builder (preview + theme picker +
+       build-all). Tabs persist the workflow action bar above so the
+       operator always has Synthesize/Accept/Generate within reach. -->
+  <nav class="mj-tabs" id="mj-tabs" role="tablist" aria-label="Manage Job tabs">
+    <button class="mj-tab active" type="button" role="tab" aria-selected="true" aria-controls="mj-tab-overview" data-tab="overview">📋 Overview</button>
+    <button class="mj-tab" type="button" role="tab" aria-selected="false" aria-controls="mj-tab-proposal" data-tab="proposal">📄 Proposal Builder</button>
+  </nav>
+
+  <div class="mj-tab-panel active" id="mj-tab-overview" role="tabpanel" aria-labelledby="overview">
   <div class="mj-grid">
     <!-- Left: description + LV scope + LV-only requirements -->
     <div>
@@ -75,26 +85,26 @@
 
     <!-- Right: latest proposal PDF (top) + LV requirements + collapsed calendar -->
     <div>
-      <!-- Top-right pane: ONE visual card showing the latest 03 Bid
-           Proposal PDF from the most recent build-all run. Click to
-           open the PDF in Drive's preview. Build-all + drafts archive
-           live inside the popout now -- this surface stays single-
-           purpose so the operator's eye lands on "is the latest
-           proposal ready?" in one glance. -->
+      <!-- Top-right pane: per-doc icon grid for the LATEST Proposals/v#/
+           folder. Replaces the single-PDF card so all 8 output files
+           are reachable at a glance. Header shows v#, click count, and
+           dual links to Drive folder + local Filestore path. Empty
+           state prompts the operator to open the Proposal Builder tab
+           and pick a theme. -->
       <div class="mj-card mj-proposal-latest" id="mj-proposal-latest">
         <h2>Latest proposal
           <span class="mj-card-sub" id="mj-proposal-latest-sub">· loading…</span>
         </h2>
-        <a class="mj-proposal-pdf-card" id="mj-proposal-pdf-link" target="_blank" rel="noopener" hidden>
-          <div class="mj-proposal-pdf-icon">📕</div>
-          <div class="mj-proposal-pdf-body">
-            <div class="mj-proposal-pdf-name" id="mj-proposal-pdf-name">—</div>
-            <div class="mj-proposal-pdf-meta small" id="mj-proposal-pdf-meta"></div>
-          </div>
-          <div class="mj-proposal-pdf-cta">Open PDF ↗</div>
-        </a>
+        <div class="mj-prop-version-bar" id="mj-prop-version-bar" hidden>
+          <span class="mj-prop-version-tag" id="mj-prop-version-tag">v—</span>
+          <span class="small mj-prop-version-time" id="mj-prop-version-time"></span>
+          <span class="mj-prop-version-spacer"></span>
+          <a id="mj-prop-version-drive" class="mj-prop-version-link" target="_blank" rel="noopener" hidden>📂 Drive ↗</a>
+          <button id="mj-prop-version-local" class="mj-prop-version-link" type="button" hidden title="Copy local Filestore path">📁 Local</button>
+        </div>
+        <div class="mj-prop-doc-grid" id="mj-prop-doc-grid" hidden></div>
         <div class="mj-proposal-empty small pad" id="mj-proposal-empty" hidden>
-          No proposal generated yet. Run <em>Generate proposal → Build all sections</em> above.
+          No proposal generated yet. Open <em>📄 Proposal Builder</em> tab above and click <em>🎨 Build sections…</em> to choose a theme.
         </div>
         <div class="small mj-proposal-error" id="mj-proposal-error" hidden></div>
       </div>
@@ -128,27 +138,63 @@
     </div>
   </div>
 
-  <!-- Proposal preview popout (overlay modal). Opened by "Generate
-       proposal" on the LV scope toolbar; closed by X / outside-click /
-       Escape. Renders the structured preview returned by
-       /api/admin/jobs/{jobId}/proposal-preview. The operator can edit
-       inline or click "Save to Drive" to drop a Google Doc into the
-       job's Output Docs/ folder + register a dbo.ProposalDrafts row.
-       Synchronous from the click — no proposal-worker, no Pub/Sub. -->
-  <div class="pp-overlay" id="pp-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="pp-title">
-    <div class="pp-modal" id="pp-modal">
+  <details class="mj-card mj-audit" id="mj-extract-card" style="margin:14px 16px">
+    <summary style="cursor:pointer;font-weight:600;color:#1E4D2B;font-size:15px">
+      Audit <span class="mj-card-sub" style="font-weight:400">· per-file extraction sources</span>
+    </summary>
+    <div class="sub" style="margin-top:8px">Every count, note, spec, and proposal-required field the bid-extractor pulled from this RFP's intake files. The picker chooses the highest-authority source per (count type) — expand a row to see all candidates and pick a different one if needed.</div>
+    <div class="mj-ext-controls">
+      <span class="if-label" style="text-transform:none;font-weight:500">Show</span>
+      <select id="mj-ext-filter">
+        <option value="all" selected>All</option>
+        <option value="counts">Counts only</option>
+        <option value="note">Notes</option>
+        <option value="spec">Specs</option>
+        <option value="prop_req">Proposal requirements</option>
+      </select>
+      <button id="mj-ext-refresh" class="if-clear" type="button">↻ Refresh</button>
+      <span id="mj-ext-count" class="small" style="margin-left:auto"></span>
+    </div>
+    <div id="mj-ext-body" class="mj-ext-body">
+      <div class="small pad">click to load…</div>
+    </div>
+  </details>
+  </div><!-- /mj-tab-overview -->
+
+  <!-- Proposal Builder tab: was an overlay modal; now first-class
+       view inside the page. Contains the preview rendering, the
+       theme picker (3 cards w/ live HTML preview of "03 Bid
+       Proposal"), and the "Build & Save as v#" action that fires
+       generate-all + save-version + returns to Overview. -->
+  <div class="mj-tab-panel" id="mj-tab-proposal" role="tabpanel" aria-labelledby="proposal" hidden>
+    <div class="pp-tab" id="pp-tab">
       <div class="pp-header">
         <h2 id="pp-title">📄 Proposal preview</h2>
         <span class="pp-meta small" id="pp-meta"></span>
-        <button class="pp-close" id="pp-close" type="button" aria-label="Close">✕</button>
       </div>
       <div class="pp-toolbar">
         <button class="pp-btn" id="pp-mode-view"  type="button" aria-pressed="true">📋 Preview</button>
         <button class="pp-btn" id="pp-mode-edit"  type="button">✏️ Edit text</button>
         <button class="pp-btn" id="pp-regenerate" type="button" title="Re-fetch the synthesized scope + requirements and rebuild the preview.">↻ Regenerate</button>
         <span class="pp-spacer"></span>
-        <button class="pp-btn" id="pp-save" type="button" title="Save just the rendered preview as a single Google Doc in Output Docs/. For the full output set use 'Build all sections'.">💾 Save preview only</button>
-        <button class="pp-btn primary" id="pp-build-all" type="button" title="Build the full output set (8 files) in Output Docs/: 03 Bid Proposal, 02 Bid Overview, Master Extraction, Job Brief, Drop Counts, BTQ Pricing, Labor Plan, Finance Summary. Each is a Google Doc or Sheet. Synchronous from your click; ~3-5 sec wall-time.">🚀 Build all sections</button>
+        <button class="pp-btn" id="pp-save" type="button" title="Save just the rendered preview as a single Google Doc in Output Docs/. For the full output set use 'Build & Save as v#' below.">💾 Save preview only</button>
+        <button class="pp-btn primary" id="pp-build-all" type="button" title="Open the theme picker — choose 1 of 3 themes and the build-all output set (8 files) is generated and saved as Proposals/v#/.">🎨 Build sections…</button>
+      </div>
+
+      <!-- Theme picker: 3 cards, each shows a live HTML preview of
+           "03 Bid Proposal" with that theme's palette + fonts applied.
+           Hidden until the operator clicks "🎨 Build sections…". On
+           Accept, fires proposal-generate-all with theme=<chosen>,
+           then proposals/save-version, then redirects back to the
+           Overview tab with a toast confirming the new V#. -->
+      <div class="pp-theme-picker" id="pp-theme-picker" hidden>
+        <div class="pp-theme-hd">
+          <strong>🎨 Choose a theme</strong>
+          <span class="small">Each card shows the rendered "03 Bid Proposal" with that theme. Pick one — it bakes into all 8 output files.</span>
+          <button class="pp-btn pp-theme-cancel" id="pp-theme-cancel" type="button" title="Back to preview without building">✕ Cancel</button>
+        </div>
+        <div class="pp-theme-grid" id="pp-theme-grid"></div>
+        <div class="pp-theme-footer small" id="pp-theme-footer"></div>
       </div>
       <div class="pp-body">
         <!-- View mode: structured render with sections/pills -->
@@ -241,28 +287,6 @@
       </div>
     </div>
   </div>
-
-  <details class="mj-card mj-audit" id="mj-extract-card" style="margin:14px 0">
-    <summary style="cursor:pointer;font-weight:600;color:#1E4D2B;font-size:15px">
-      Audit <span class="mj-card-sub" style="font-weight:400">· per-file extraction sources</span>
-    </summary>
-    <div class="sub" style="margin-top:8px">Every count, note, spec, and proposal-required field the bid-extractor pulled from this RFP's intake files. The picker chooses the highest-authority source per (count type) — expand a row to see all candidates and pick a different one if needed.</div>
-    <div class="mj-ext-controls">
-      <span class="if-label" style="text-transform:none;font-weight:500">Show</span>
-      <select id="mj-ext-filter">
-        <option value="all" selected>All</option>
-        <option value="counts">Counts only</option>
-        <option value="note">Notes</option>
-        <option value="spec">Specs</option>
-        <option value="prop_req">Proposal requirements</option>
-      </select>
-      <button id="mj-ext-refresh" class="if-clear" type="button">↻ Refresh</button>
-      <span id="mj-ext-count" class="small" style="margin-left:auto"></span>
-    </div>
-    <div id="mj-ext-body" class="mj-ext-body">
-      <div class="small pad">click to load…</div>
-    </div>
-  </details>
 
   <div id="status-bar"></div>
 
@@ -486,88 +510,127 @@ function tooltipForKey(uiKey) {
 // drafts are decided.
 let _propPollTimer = null;
 let _propPollAttempts = 0;
+// Doc-icon mapping for the V# grid: each output file gets a recognizable
+// glyph so the operator can scan the row and click directly into the
+// section they care about. Order = canonical display order (mirrors
+// templates_cache/Standard/ + Internal-Only/ output sequence).
+const PROP_DOC_ICONS = [
+  { match: /01.*cover/i,        icon: '📨', label: 'Cover' },
+  { match: /02.*overview/i,     icon: '📋', label: 'Overview' },
+  { match: /03.*bid.*proposal/i,icon: '📕', label: 'Bid Proposal' },
+  { match: /04.*statement/i,    icon: '📑', label: 'Statement of Work' },
+  { match: /05.*qualif/i,       icon: '🏗', label: 'Qualifications' },
+  { match: /06.*standards/i,    icon: '📐', label: 'Standards' },
+  { match: /finance.*summary/i, icon: '💰', label: 'Finance Summary' },
+  { match: /labor.*plan/i,      icon: '👷', label: 'Labor Plan' },
+  { match: /drop.*counts/i,     icon: '🔢', label: 'Drop Counts' },
+  { match: /btq.*pricing/i,     icon: '💵', label: 'BTQ Pricing' },
+  { match: /master.*extract/i,  icon: '🧾', label: 'Master Extraction' },
+  { match: /job.*brief/i,       icon: '📝', label: 'Job Brief' },
+  { match: /cable.*schedule/i,  icon: '🔌', label: 'Cable Schedule' },
+  { match: /project.*schedule/i,icon: '🗓', label: 'Project Schedule' },
+];
+function _propDocMeta(name) {
+  for (const m of PROP_DOC_ICONS) if (m.match.test(name)) return m;
+  return { icon: '📄', label: name };
+}
+
 async function loadProposalFiles() {
   if (!JOB_ID) return;
-  const sub   = $('mj-proposal-latest-sub');
-  const err   = $('mj-proposal-error');
-  const empty = $('mj-proposal-empty');
-  const link  = $('mj-proposal-pdf-link');
+  const sub      = $('mj-proposal-latest-sub');
+  const err      = $('mj-proposal-error');
+  const empty    = $('mj-proposal-empty');
+  const grid     = $('mj-prop-doc-grid');
+  const verBar   = $('mj-prop-version-bar');
+  const verTag   = $('mj-prop-version-tag');
+  const verTime  = $('mj-prop-version-time');
+  const verDrive = $('mj-prop-version-drive');
+  const verLocal = $('mj-prop-version-local');
   if (err) { err.hidden = true; err.textContent = ''; }
+
   let r;
   try {
-    r = await api('GET', `/api/admin/jobs/${encodeURIComponent(JOB_ID)}/proposal-files`);
+    r = await api('GET', `/api/admin/jobs/${encodeURIComponent(JOB_ID)}/proposals/latest`)
+        .catch(async () => api('GET', `/api/admin/jobs/${encodeURIComponent(JOB_ID)}/proposal-files`));
   } catch (e) {
     if (sub) sub.textContent = '· error';
     if (err) { err.hidden = false; err.textContent = e.message || 'load failed'; }
     return;
   }
-  const drafts = r.internalDrafts || [];
-  const versions = r.clientVersions || [];
 
-  // Pick the most recent "03 Bid Proposal" PDF across drafts + promoted
-  // versions. Drafts have draftDocxFileId + draftDocxName; promoted
-  // versions have a files[] array with mimeType. We surface the
-  // latest no matter which bucket it landed in.
-  let latest = null;
-  for (const d of drafts) {
-    if (!d.draftDocxFileId || !d.draftDocxName) continue;
-    if (!d.draftDocxName.toLowerCase().includes('bid proposal')) continue;
-    const ts = d.updatedAt || d.createdAt;
-    if (!latest || (ts && ts > latest.ts)) {
-      latest = {
-        ts,
-        name:  d.draftDocxName,
-        url:   d.fileUrl || `https://drive.google.com/file/d/${d.draftDocxFileId}/view`,
-        size:  d.draftSizeBytes,
-        kind:  'draft',
-      };
-    }
-  }
-  for (const v of versions) {
-    for (const f of (v.files || [])) {
-      const isPdf = (f.mimeType || '').includes('pdf') || (f.name || '').toLowerCase().endsWith('.pdf');
-      if (!isPdf) continue;
-      if (!(f.name || '').toLowerCase().includes('bid proposal')) continue;
-      const ts = f.modifiedTime;
-      if (!latest || (ts && ts > latest.ts)) {
-        latest = {
-          ts,
-          name:  f.name,
-          url:   f.fileUrl,
-          size:  f.sizeBytes,
-          kind:  'promoted ' + v.folderName,
-        };
-      }
+  // Prefer the new Proposals/v#/ shape; fall back to legacy proposal-files.
+  let version = r.version, files = r.files, folderUrl = r.folderUrl, localPath = r.localFolderPath, generatedAt = r.generatedAt, themeName = r.themeName;
+  if (!files) {
+    // Legacy fallback: synthesize from internalDrafts + clientVersions
+    const drafts   = r.internalDrafts   || [];
+    const versions = r.clientVersions   || [];
+    const last = versions[0] || null;
+    if (last) {
+      version     = last.version || (last.folderName?.match(/v(\d+)/i)?.[1]) || null;
+      files       = last.files   || [];
+      folderUrl   = last.folderUrl;
+      localPath   = last.localFolderPath;
+      generatedAt = last.modifiedTime;
+    } else {
+      // No promoted version yet — surface drafts as v0 so the operator
+      // sees something while the worker is still in flight.
+      const docDrafts = drafts.map(d => ({
+        name: d.draftDocxName, fileId: d.draftDocxFileId, fileUrl: d.fileUrl,
+        sizeBytes: d.draftSizeBytes, mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      })).filter(f => f.fileId);
+      if (docDrafts.length) { version = 0; files = docDrafts; generatedAt = drafts[0]?.updatedAt; }
     }
   }
 
-  if (!latest) {
-    if (link) link.hidden = true;
-    if (empty) empty.hidden = false;
+  if (!files || !files.length) {
+    grid.hidden = true; verBar.hidden = true; empty.hidden = false;
     if (sub) sub.textContent = '· none yet';
-    if (r.driveListError && err) {
-      err.hidden = false;
-      err.textContent = `Drive listing error: ${r.driveListError}`;
-    }
-  } else {
-    if (empty) empty.hidden = true;
-    if (link) {
-      link.hidden = false;
-      link.href = latest.url || '#';
-      $('mj-proposal-pdf-name').textContent = latest.name;
-      const sizeKb = latest.size ? `${Math.round(latest.size / 1024)} KB · ` : '';
-      $('mj-proposal-pdf-meta').textContent = `${sizeKb}${latest.kind} · ${fmt(latest.ts)}`;
-    }
-    if (sub) {
-      const totals = [];
-      if (drafts.length)   totals.push(`${drafts.length} draft${drafts.length === 1 ? '' : 's'}`);
-      if (versions.length) totals.push(`${versions.length} promoted`);
-      sub.textContent = totals.length ? '· ' + totals.join(' · ') : '· latest';
-    }
+    if (r.driveListError && err) { err.hidden = false; err.textContent = `Drive listing error: ${r.driveListError}`; }
+    return;
   }
 
-  // Auto-poll while any draft is pending (worker hasn't landed the PDF
-  // yet). The button stays available; the card just refreshes inline.
+  empty.hidden = true;
+  // Version bar
+  verTag.textContent = version != null ? `v${version}` : 'draft';
+  if (themeName) verTag.title = `Theme: ${themeName}`;
+  if (generatedAt) verTime.textContent = `· generated ${fmt(generatedAt)}`;
+  else verTime.textContent = '';
+  if (folderUrl) { verDrive.href = folderUrl; verDrive.hidden = false; } else { verDrive.hidden = true; }
+  if (localPath) {
+    verLocal.hidden = false;
+    verLocal.onclick = () => {
+      navigator.clipboard.writeText(localPath).then(() => {
+        const orig = verLocal.textContent;
+        verLocal.textContent = '📋 Copied';
+        setTimeout(() => verLocal.textContent = orig, 1400);
+      });
+    };
+    verLocal.title = `Copy local Filestore path: ${localPath}`;
+  } else { verLocal.hidden = true; }
+  verBar.hidden = false;
+
+  // Doc-icon grid
+  grid.innerHTML = files.map(f => {
+    const meta = _propDocMeta(f.name || '');
+    const href = f.fileUrl || (f.fileId ? `https://drive.google.com/file/d/${f.fileId}/view` : '#');
+    const sizeKb = f.sizeBytes ? `${Math.round(f.sizeBytes / 1024)} KB` : '';
+    const isPdf  = (f.mimeType || '').includes('pdf')   || (f.name || '').endsWith('.pdf');
+    const ext    = isPdf ? 'PDF' : (f.mimeType || '').includes('spreadsheet') ? 'Sheet' : 'Doc';
+    return `<a class="mj-prop-doc" href="${safeHtml(href)}" target="_blank" rel="noopener" title="${safeHtml(f.name)}">
+      <div class="mj-prop-doc-ico">${meta.icon}</div>
+      <div class="mj-prop-doc-name">${safeHtml(meta.label)}</div>
+      <div class="mj-prop-doc-meta small">${ext}${sizeKb ? ' · ' + sizeKb : ''}</div>
+    </a>`;
+  }).join('');
+  grid.hidden = false;
+
+  if (sub) {
+    const total = files.length;
+    sub.textContent = `· v${version ?? '?'} · ${total} file${total === 1 ? '' : 's'}`;
+  }
+
+  // Auto-poll while any draft is still pending (legacy path only)
+  const drafts = r.internalDrafts || [];
   const pending = drafts.filter(d => d.status === 'pending').length;
   clearInterval(_propPollTimer);
   if (pending > 0 && _propPollAttempts < 45) {
@@ -1222,14 +1285,34 @@ let _ppData = null;          // last preview payload (not derivable from DOM)
 function _ppMode() { return $('pp-mode-edit')?.getAttribute('aria-pressed') === 'true' ? 'edit' : 'view'; }
 function _ppText() { return $('pp-edit')?.value || ''; }
 
-function _ppCloseOverlay() {
-  $('pp-overlay').hidden = true;
-  document.removeEventListener('keydown', _ppEscapeHandler);
-  _ppData = null;  // clear stale buffer; next open re-fetches
+// ===== Tab switching =====
+// Two tabs: Overview (default) and Proposal Builder. Switching is
+// pure DOM toggle — no route change. The Overview tab is always
+// rendered eagerly on page load; the Proposal Builder tab fetches
+// the preview lazily on first activation (or on Generate-proposal
+// click) so we don't pay the synthesis round-trip until needed.
+let _propTabFetched = false;
+function switchTab(tabName) {
+  document.querySelectorAll('.mj-tab').forEach(t => {
+    const active = t.dataset.tab === tabName;
+    t.classList.toggle('active', active);
+    t.setAttribute('aria-selected', active ? 'true' : 'false');
+  });
+  document.querySelectorAll('.mj-tab-panel').forEach(p => {
+    const active = p.id === 'mj-tab-' + tabName;
+    p.classList.toggle('active', active);
+    p.hidden = !active;
+  });
+  if (tabName === 'proposal' && !_propTabFetched) {
+    _propTabFetched = true;
+    openProposalPreview();
+  }
 }
-function _ppEscapeHandler(e) {
-  if (e.key === 'Escape') _ppCloseOverlay();
-}
+document.addEventListener('click', (e) => {
+  const tab = e.target.closest('.mj-tab[data-tab]');
+  if (tab) { switchTab(tab.dataset.tab); }
+});
+function _ppEscapeHandler(_e) { /* no-op kept so older bindings don't error */ }
 function _ppFmtNum(n) {
   return (n == null) ? '—' : n.toLocaleString();
 }
@@ -1321,6 +1404,12 @@ function renderProposalView(d) {
 
 async function openProposalPreview() {
   if (!LEAD?.jobId) { toast('Job not loaded yet.', 3000); return; }
+  // Switch to the Proposal Builder tab if we're not already there
+  // (called from the Generate-proposal action-bar button).
+  if (!document.querySelector('#mj-tab-proposal.active')) {
+    switchTab('proposal');
+    _propTabFetched = true;  // prevent double-fetch on tab activation
+  }
   _ppData = null;
   $('pp-mode-view').setAttribute('aria-pressed', 'true');
   $('pp-mode-edit').setAttribute('aria-pressed', 'false');
@@ -1333,8 +1422,7 @@ async function openProposalPreview() {
   $('pp-meta').textContent = '';
   $('pp-results').hidden = true;
   $('pp-templates').hidden = true;
-  $('pp-overlay').hidden = false;
-  document.addEventListener('keydown', _ppEscapeHandler);
+  $('pp-theme-picker').hidden = true;
   try {
     const [previewR, tmplR] = await Promise.all([
       api('GET', `/api/admin/jobs/${encodeURIComponent(LEAD.jobId)}/proposal-preview`),
@@ -1422,12 +1510,6 @@ $('pp-bootstrap')?.addEventListener('click', async () => {
   }
 });
 
-$('pp-overlay')?.addEventListener('click', (e) => {
-  // Click outside the modal closes
-  if (e.target.id === 'pp-overlay') _ppCloseOverlay();
-});
-$('pp-close')?.addEventListener('click', _ppCloseOverlay);
-
 $('pp-mode-view')?.addEventListener('click', () => {
   if (_ppMode() === 'view') return;
   $('pp-mode-view').setAttribute('aria-pressed', 'true');
@@ -1476,55 +1558,159 @@ $('pp-save')?.addEventListener('click', async () => {
   }
 });
 
-$('pp-build-all')?.addEventListener('click', async () => {
+// ===== Theme picker =====
+// 3 themes — palette + fonts + best-for. Sourced from the Anthropic
+// theme-factory skill; curated for B2B bid evaluators (brand-aligned
+// default, conservative public-bid choice, bold premium-private).
+// Each card renders a live HTML preview of the "03 Bid Proposal"
+// using the selected theme's colors/fonts. On Accept, fires
+// proposal-generate-all with theme=<id>, then proposals/save-version,
+// then switches back to Overview.
+const PROPOSAL_THEMES = [
+  {
+    id: 'forest-canopy',
+    name: 'Forest Canopy',
+    sub: 'Brand-aligned default',
+    bestFor: 'Most jobs · matches GCC identity',
+    colors: { primary:'#2d4a2b', accent:'#7d8471', tint:'#a4ac86', bg:'#faf9f6', ink:'#1c2a23' },
+    fonts:  { header:'"Source Serif Pro", Georgia, serif', body:'"Source Sans 3", system-ui, sans-serif' },
+  },
+  {
+    id: 'modern-minimalist',
+    name: 'Modern Minimalist',
+    sub: 'Conservative · public-bid safe',
+    bestFor: 'K12 / public-sector evaluators',
+    colors: { primary:'#36454f', accent:'#708090', tint:'#d3d3d3', bg:'#ffffff', ink:'#1a1a1a' },
+    fonts:  { header:'"Inter", "Helvetica Neue", Arial, sans-serif', body:'"Inter", "Helvetica Neue", Arial, sans-serif' },
+  },
+  {
+    id: 'tech-innovation',
+    name: 'Tech Innovation',
+    sub: 'Bold · premium private-sector',
+    bestFor: 'High-tech / data-center pursuits',
+    colors: { primary:'#0066ff', accent:'#00b8d4', tint:'#1e1e1e', bg:'#ffffff', ink:'#0a0a0a' },
+    fonts:  { header:'"Space Grotesk", "Inter", sans-serif', body:'"Inter", system-ui, sans-serif' },
+  },
+];
+
+function _themePreviewHtml(theme, d) {
+  // Build a small, scrollable HTML render of the bid proposal using
+  // the chosen theme. Stays lightweight (no iframe, just a styled div)
+  // so all 3 cards render in <100ms total.
+  const t = theme;
+  const C = t.colors;
+  const F = t.fonts;
+  const projectName = safeHtml(d?.projectName || '(unnamed project)');
+  const gc          = safeHtml(d?.gc || '—');
+  const loc         = safeHtml(d?.location || '—');
+  const dueAt       = safeHtml(d?.dueAt || '—');
+  const groups = (d?.scopeGroups || []).map(g => {
+    const items = (g.items || []).filter(i => i.count != null).slice(0, 5);
+    if (!items.length) return '';
+    const rows = items.map(it => `<div class="ptp-row"><span>${safeHtml(it.label || it.countType)}</span><strong>${it.count}</strong></div>`).join('');
+    return `<div class="ptp-group"><div class="ptp-group-hd">${safeHtml(g.title)}</div>${rows}</div>`;
+  }).join('');
+  return `
+    <div class="ptp-render" style="
+      --ptp-primary:${C.primary}; --ptp-accent:${C.accent}; --ptp-tint:${C.tint};
+      --ptp-bg:${C.bg}; --ptp-ink:${C.ink};
+      --ptp-h-font:${F.header}; --ptp-b-font:${F.body};
+      background:${C.bg}; color:${C.ink}; font-family:${F.body};
+    ">
+      <div class="ptp-h1" style="font-family:${F.header};color:${C.primary};border-bottom:2px solid ${C.primary}">03 Bid Proposal</div>
+      <div class="ptp-meta">
+        <span><strong>Project:</strong> ${projectName}</span>
+        <span><strong>GC:</strong> ${gc}</span>
+        <span><strong>Location:</strong> ${loc}</span>
+        <span><strong>Due:</strong> ${dueAt}</span>
+      </div>
+      <div class="ptp-h2" style="font-family:${F.header};color:${C.primary}">1. Base Bid</div>
+      <div class="ptp-p">Green Communications Contracting LLC submits this bid for the low-voltage scope per drawings &amp; specifications. Pricing reflects the synthesized count detail below; alternates and unit rates are itemized in §3-4.</div>
+      <div class="ptp-h2" style="font-family:${F.header};color:${C.primary}">2. Scope Counts</div>
+      ${groups || '<div class="ptp-p" style="color:#888">— no synthesized counts yet —</div>'}
+    </div>`;
+}
+
+function renderThemePicker() {
+  if (!_ppData) {
+    toast('Run "↻ Regenerate" first — preview data needed for theme samples.', 4000);
+    return;
+  }
+  const grid = $('pp-theme-grid');
+  grid.innerHTML = PROPOSAL_THEMES.map((t, idx) => `
+    <div class="pp-theme-card" data-theme="${t.id}">
+      <div class="pp-theme-card-hd">
+        <div>
+          <strong>${safeHtml(t.name)}</strong>
+          <div class="small">${safeHtml(t.sub)}</div>
+        </div>
+        <div class="pp-theme-swatches">
+          <span style="background:${t.colors.primary}" title="Primary ${t.colors.primary}"></span>
+          <span style="background:${t.colors.accent}"  title="Accent ${t.colors.accent}"></span>
+          <span style="background:${t.colors.tint}"    title="Tint ${t.colors.tint}"></span>
+        </div>
+      </div>
+      <div class="pp-theme-preview">${_themePreviewHtml(t, _ppData)}</div>
+      <div class="pp-theme-card-ft">
+        <span class="small">${safeHtml(t.bestFor)}</span>
+        <button class="pp-btn primary" data-act="use-theme" data-theme="${t.id}" type="button">✓ Use this theme</button>
+      </div>
+    </div>
+  `).join('');
+  $('pp-theme-footer').textContent = 'Accept saves the full proposal package (8 files, themed) to Proposals/v#/ in Drive AND your local Filestore. The Overview tab will refresh with the new V#.';
+  $('pp-theme-picker').hidden = false;
+  // Scroll the picker into view
+  $('pp-theme-picker').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+$('pp-theme-cancel')?.addEventListener('click', () => { $('pp-theme-picker').hidden = true; });
+
+$('pp-build-all')?.addEventListener('click', renderThemePicker);
+
+// Theme card delegation: "Use this theme" → fire build → save-version → return to Overview
+$('pp-theme-grid')?.addEventListener('click', async (e) => {
+  const btn = e.target.closest('button[data-act="use-theme"]');
+  if (!btn) return;
+  const themeId = btn.dataset.theme;
+  const theme = PROPOSAL_THEMES.find(t => t.id === themeId);
+  if (!theme) return;
   if (!LEAD?.jobId) return;
-  const btn = $('pp-build-all');
+  // Mark all cards but the chosen one as dimmed; lock the chosen one
+  document.querySelectorAll('.pp-theme-card').forEach(c => {
+    if (c.dataset.theme !== themeId) c.classList.add('dim');
+  });
   btn.disabled = true;
   const orig = btn.textContent;
   btn.textContent = 'Building 8 files…';
-  // Hide previous results, hide preview view, show "building" message
-  $('pp-results').hidden = true;
-  $('pp-saved-link').hidden = true;
   try {
-    const r = await api('POST', `/api/admin/jobs/${encodeURIComponent(LEAD.jobId)}/proposal-generate-all`, {});
+    // 1. Generate the full output set with theme tokens injected
+    const r = await api('POST', `/api/admin/jobs/${encodeURIComponent(LEAD.jobId)}/proposal-generate-all`, {
+      theme: { id: theme.id, name: theme.name, colors: theme.colors, fonts: theme.fonts },
+    });
     if (!r?.ok) throw new Error(r?.error || 'build failed');
-    // Render the file list with click-through links
-    const items = (r.files || []).map(f => {
-      const isErr = !!f.error;
-      const isSheet = (f.mimeType || '').includes('spreadsheet');
-      const icon = isErr ? '✗' : isSheet ? '📊' : '📄';
-      const name = safeHtml(f.name);
-      const href = f.fileUrl || (f.fileId ? `https://drive.google.com/file/d/${f.fileId}/view` : '#');
-      const meta = isErr
-        ? `<span class="pp-result-err small" title="${safeHtml(f.error)}">⚠ ${safeHtml(String(f.error).slice(0,80))}</span>`
-        : `<span class="small">${Math.round((f.sizeBytes || 0) / 1024)} KB</span>`;
-      const link = isErr
-        ? `<span class="small">— failed —</span>`
-        : `<a href="${href}" target="_blank" rel="noopener" class="pp-result-link">open ↗</a>`;
-      return `<li class="pp-result-row${isErr ? ' err' : ''}">
-        <span class="pp-result-icon">${icon}</span>
-        <span class="pp-result-name">${name}</span>
-        ${meta}${link}
-      </li>`;
-    }).join('');
-    const ok    = (r.files || []).filter(f => !f.error).length;
-    const total = (r.files || []).length;
-    $('pp-results-count').textContent = `· ${ok} of ${total} files in Output Docs/`;
-    $('pp-results-list').innerHTML = items;
-    $('pp-results').hidden = false;
-    if (r.folderUrl) {
-      $('pp-saved-href').href = r.folderUrl;
-      $('pp-saved-href').textContent = 'Open Output Docs/ ↗';
-      $('pp-saved-link').hidden = false;
-    }
-    toast(`✓ Built ${ok}/${total} files in Output Docs/`, 6000);
-    if (typeof _propPollAttempts !== 'undefined') _propPollAttempts = 0;
-    if (typeof loadProposalFiles === 'function') loadProposalFiles();
-  } catch (e) {
-    toast(e.message || 'build failed', 6000);
-  } finally {
+    btn.textContent = 'Saving as v#…';
+    // 2. Promote Output Docs/ contents into Proposals/v{N+1}/. Pass
+    //    the file-name timestamp returned by generate-all so save-
+    //    version filters out stale artifacts from prior runs.
+    const v = await api('POST', `/api/admin/jobs/${encodeURIComponent(LEAD.jobId)}/proposals/save-version`, {
+      themeId: theme.id,
+      themeName: theme.name,
+      sourceFolderId: r.folderId,
+      generatedAt: r.generatedAt,
+      fileNameTimestamp: r.fileNameTimestamp,
+    });
+    if (!v?.ok) throw new Error(v?.error || 'save-version failed');
+    toast(`✓ Saved as v${v.version} (${theme.name}). Returning to Overview…`, 5000);
+    // 3. Switch back to Overview + refresh latest-proposal pane
+    setTimeout(() => {
+      switchTab('overview');
+      if (typeof loadProposalFiles === 'function') loadProposalFiles();
+    }, 400);
+  } catch (err) {
+    toast(err.message || 'build failed', 7000);
     btn.disabled = false;
     btn.textContent = orig;
+    document.querySelectorAll('.pp-theme-card').forEach(c => c.classList.remove('dim'));
   }
 });
 
