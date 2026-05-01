@@ -461,7 +461,43 @@
    rules override the UA hidden default. */
 .pp-overlay[hidden],
 .pp-view[hidden],
-.pp-edit[hidden] { display:none !important; }
+.pp-edit[hidden],
+.pp-results[hidden] { display:none !important; }
+
+/* Build-all results panel: shows the 8-file list after a successful
+   "Build all sections" click. Each row has an icon, name, size, and
+   open-in-Drive link. Errored uploads render in red with the trimmed
+   error text in the meta column. */
+.pp-results {
+  margin-top:14px; padding:14px 16px;
+  background:#FFFFFF; border:1px solid var(--forest); border-left:4px solid var(--forest);
+  border-radius:8px;
+  animation:ppFade 0.18s ease-out;
+}
+.pp-results-hd {
+  display:flex; align-items:baseline; gap:8px;
+  font-size:13px; color:var(--forest); margin-bottom:8px;
+  padding-bottom:6px; border-bottom:1px solid var(--line);
+}
+.pp-results-hd .small { color:var(--slate); font-weight:400; }
+.pp-results-list { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:5px; }
+.pp-result-row {
+  display:grid; grid-template-columns:24px 1fr auto auto; gap:10px;
+  align-items:center; padding:6px 8px;
+  background:#FAFCF9; border:1px solid var(--line); border-radius:6px;
+  font-size:12.5px;
+}
+.pp-result-row.err { background:#FBEAEA; border-color:#E89292; color:#7E1F1F; }
+.pp-result-icon { font-size:15px; line-height:1; text-align:center; }
+.pp-result-name { color:var(--ink); font-weight:600; word-break:break-word; }
+.pp-result-row.err .pp-result-name { color:#7E1F1F; }
+.pp-result-link {
+  color:var(--forest); text-decoration:none; font-weight:600;
+  padding:3px 10px; border:1px solid var(--forest); border-radius:5px;
+  background:var(--green-tint); white-space:nowrap;
+}
+.pp-result-link:hover { background:var(--forest); color:#fff !important; }
+.pp-result-err { color:#A52A2A; }
 @keyframes ppFade { from { opacity:0; } to { opacity:1; } }
 .pp-modal {
   width:100%; max-width:920px; max-height:calc(100vh - 48px);

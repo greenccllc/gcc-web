@@ -7,7 +7,7 @@
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <meta name="theme-color" content="#1E4D2B" />
-  <link rel="stylesheet" href="/assets/css/staff-manage-job.css?v=20260501-0210" />
+  <link rel="stylesheet" href="/assets/css/staff-manage-job.css?v=20260501-0220" />
 </head>
 <body>
   <header>
@@ -204,7 +204,8 @@
         <button class="pp-btn" id="pp-mode-edit"  type="button">✏️ Edit text</button>
         <button class="pp-btn" id="pp-regenerate" type="button" title="Re-fetch the synthesized scope + requirements and rebuild the preview.">↻ Regenerate</button>
         <span class="pp-spacer"></span>
-        <button class="pp-btn primary" id="pp-save" type="button" title="Save the proposal text as a Google Doc in this job's Output Docs/ folder. Drive auto-converts the plain text on upload.">💾 Save to Drive</button>
+        <button class="pp-btn" id="pp-save" type="button" title="Save just the rendered preview as a single Google Doc in Output Docs/. For the full output set use 'Build all sections'.">💾 Save preview only</button>
+        <button class="pp-btn primary" id="pp-build-all" type="button" title="Build the full output set (8 files) in Output Docs/: 03 Bid Proposal, 02 Bid Overview, Master Extraction, Job Brief, Drop Counts, BTQ Pricing, Labor Plan, Finance Summary. Each is a Google Doc or Sheet. Synchronous from your click; ~3-5 sec wall-time.">🚀 Build all sections</button>
       </div>
       <div class="pp-body">
         <!-- View mode: structured render with sections/pills -->
@@ -214,9 +215,18 @@
         </div>
         <!-- Edit mode: textarea with the same content as plain text -->
         <textarea class="pp-edit" id="pp-edit" hidden spellcheck="false"></textarea>
+        <!-- Build-all results panel (appears below view after a successful
+             build-all run; lists every file with a click-to-open link). -->
+        <div class="pp-results" id="pp-results" hidden>
+          <div class="pp-results-hd">
+            <strong>✓ Build complete</strong>
+            <span class="small" id="pp-results-count"></span>
+          </div>
+          <ul class="pp-results-list" id="pp-results-list"></ul>
+        </div>
       </div>
       <div class="pp-footer">
-        <span class="small" id="pp-footer-msg">Synchronous build from synthesized scope. Save creates a Google Doc in Output Docs/.</span>
+        <span class="small" id="pp-footer-msg">Synchronous build from synthesized scope. "Build all" creates 8 files in Output Docs/.</span>
         <span class="small" id="pp-saved-link" hidden>
           ✓ Saved · <a id="pp-saved-href" target="_blank" rel="noopener">open in Drive ↗</a>
         </span>
@@ -1248,6 +1258,58 @@ $('pp-save')?.addEventListener('click', async () => {
     if (typeof loadProposalFiles === 'function') loadProposalFiles();
   } catch (e) {
     toast(e.message || 'save failed', 6000);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = orig;
+  }
+});
+
+$('pp-build-all')?.addEventListener('click', async () => {
+  if (!LEAD?.jobId) return;
+  const btn = $('pp-build-all');
+  btn.disabled = true;
+  const orig = btn.textContent;
+  btn.textContent = 'Building 8 files…';
+  // Hide previous results, hide preview view, show "building" message
+  $('pp-results').hidden = true;
+  $('pp-saved-link').hidden = true;
+  try {
+    const r = await api('POST', `/api/admin/jobs/${encodeURIComponent(LEAD.jobId)}/proposal-generate-all`, {});
+    if (!r?.ok) throw new Error(r?.error || 'build failed');
+    // Render the file list with click-through links
+    const items = (r.files || []).map(f => {
+      const isErr = !!f.error;
+      const isSheet = (f.mimeType || '').includes('spreadsheet');
+      const icon = isErr ? '✗' : isSheet ? '📊' : '📄';
+      const name = safeHtml(f.name);
+      const href = f.fileUrl || (f.fileId ? `https://drive.google.com/file/d/${f.fileId}/view` : '#');
+      const meta = isErr
+        ? `<span class="pp-result-err small" title="${safeHtml(f.error)}">⚠ ${safeHtml(String(f.error).slice(0,80))}</span>`
+        : `<span class="small">${Math.round((f.sizeBytes || 0) / 1024)} KB</span>`;
+      const link = isErr
+        ? `<span class="small">— failed —</span>`
+        : `<a href="${href}" target="_blank" rel="noopener" class="pp-result-link">open ↗</a>`;
+      return `<li class="pp-result-row${isErr ? ' err' : ''}">
+        <span class="pp-result-icon">${icon}</span>
+        <span class="pp-result-name">${name}</span>
+        ${meta}${link}
+      </li>`;
+    }).join('');
+    const ok    = (r.files || []).filter(f => !f.error).length;
+    const total = (r.files || []).length;
+    $('pp-results-count').textContent = `· ${ok} of ${total} files in Output Docs/`;
+    $('pp-results-list').innerHTML = items;
+    $('pp-results').hidden = false;
+    if (r.folderUrl) {
+      $('pp-saved-href').href = r.folderUrl;
+      $('pp-saved-href').textContent = 'Open Output Docs/ ↗';
+      $('pp-saved-link').hidden = false;
+    }
+    toast(`✓ Built ${ok}/${total} files in Output Docs/`, 6000);
+    if (typeof _propPollAttempts !== 'undefined') _propPollAttempts = 0;
+    if (typeof loadProposalFiles === 'function') loadProposalFiles();
+  } catch (e) {
+    toast(e.message || 'build failed', 6000);
   } finally {
     btn.disabled = false;
     btn.textContent = orig;
