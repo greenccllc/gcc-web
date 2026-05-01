@@ -1,0 +1,67 @@
+/* Shared component layer: header/nav, buttons, cards, forms, tables, alerts, pills, modals */
+
+/* theme scopes */
+.theme-marketing {
+  --cmp-radius: var(--r-md);
+  --cmp-card-shadow: var(--shadow-sm);
+}
+.theme-dashboard, .dash {
+  --cmp-radius: var(--r-mgr-md, 6px);
+  --cmp-card-shadow: var(--shadow-xs);
+}
+
+/* Header / nav mapping */
+.c-header, .site-header { position: sticky; top: 0; z-index: 50; }
+.c-nav, .site-nav ul { display: flex; align-items: center; gap: 4px; list-style: none; margin: 0; padding: 0; }
+.c-nav-link, .site-nav a, .doc-link {
+  display: block; padding: 8px 14px; border-radius: var(--cmp-radius, var(--r-md));
+  font-size: 14px; font-weight: 600;
+}
+.c-nav-link.is-active, .site-nav a.active, .doc-link.active { background: rgba(30,77,43,.1); color: var(--forest); }
+
+/* Button variants */
+.c-btn, .btn { display: inline-flex; align-items: center; gap: 6px; border: 1px solid transparent; border-radius: var(--cmp-radius, var(--r-md)); cursor: pointer; }
+.c-btn--sm, .btn-sm { padding: 6px 14px; font-size: 13px; }
+.c-btn--primary, .btn-primary { background: var(--forest); color: #fff; }
+.c-btn--primary:hover, .btn-primary:hover { background: var(--forest-dark); }
+.c-btn--ghost, .btn-ghost { background: transparent; border-color: var(--hairline-strong); color: var(--slate); }
+.c-btn--danger { background: var(--rose-tint); color: var(--rose); border-color: #E89999; }
+
+/* Cards */
+.c-card, .card, .panel, .invite-card, .mk-side, .mk-content, .cest-form {
+  background: #fff; border: 1px solid var(--hairline); border-radius: var(--cmp-radius, var(--r-md));
+  box-shadow: var(--cmp-card-shadow, var(--shadow-xs));
+}
+
+/* Forms */
+.c-input, .search-box, .inline-select, .field-grid select, .field-grid input, .cat-pill .cp-num {
+  padding: 9px 12px; border: 1px solid var(--hairline-strong); border-radius: var(--r-sm); font: inherit; background: #fff;
+}
+.c-input:focus, .search-box:focus, .inline-select:focus, .field-grid select:focus, .field-grid input:focus, .cat-pill .cp-num:focus {
+  outline: none; border-color: var(--forest); box-shadow: 0 0 0 3px rgba(30,77,43,.15);
+}
+
+/* Tables */
+.c-table, .tbl {
+  width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--hairline);
+  border-radius: var(--cmp-radius, var(--r-md)); overflow: hidden;
+}
+.c-table th, .tbl th { text-align: left; padding: 10px 12px; background: var(--paper); font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--slate); }
+.c-table td, .tbl td { padding: 10px 12px; border-top: 1px solid var(--hairline); }
+.c-table tr:hover td, .tbl tr:hover td { background: rgba(30,77,43,.03); }
+
+/* Alerts */
+.c-alert, .banner-warn, .flash { padding: 11px 14px; border-radius: var(--cmp-radius, var(--r-md)); font-size: 13px; }
+.c-alert--warn, .banner-warn { background: var(--amber-tint); border: 1px solid #E8C679; color: var(--amber); }
+.c-alert--error, .flash.error { background: var(--rose); color: #fff; }
+
+/* Pills */
+.c-pill, .role-pill, .status-pill, .coming-soon, .conn-pill, .public-pill, .secret-pill, .disc-pill {
+  display: inline-block; padding: 2px 10px; border-radius: var(--r-pill);
+  font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+}
+
+/* Modal */
+.c-modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(21,32,26,.5); z-index: 1000; }
+.c-modal.is-open { display: flex; }
+.c-modal__panel { width: min(640px, 92vw); background: #fff; border-radius: var(--cmp-radius, var(--r-md)); border: 1px solid var(--hairline); box-shadow: var(--shadow-lg); padding: 24px; }

@@ -7,6 +7,7 @@
    JetBrains Mono: tabular numerics for the manager — file IDs, counts,
    confidence scores, timestamps. */
 @import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('/assets/css/components.css');
 
 :root {
   /* Brand */
