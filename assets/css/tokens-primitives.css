@@ -1,0 +1,27 @@
+:root {
+  --color-forest-700: #143821;
+  --color-forest-600: #1E4D2B;
+  --color-forest-500: #2B6A3D;
+  --color-forest-50: #E8F0EA;
+
+  --color-slate-600: #4F5B57;
+  --color-slate-400: #7C8884;
+
+  --color-gold-500: #C9A158;
+  --color-gold-600: #A8842F;
+
+  --color-cream-100: #FBFAF5;
+  --color-paper-200: #F4F4EE;
+  --color-ink-900: #15201A;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+}

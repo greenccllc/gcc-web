@@ -159,7 +159,7 @@
     ];
     if (isAdmin) {
       items.push({ label: 'Admin', group: [
-          { href: '/admin/console/',        label: 'Console (beta)' },
+          { href: '/admin/console/',        label: 'GCC Manager' },
           { divider: true },
           { href: '/admin/users.html',      label: 'Users' },
           { href: '/admin/financials.html', label: 'Financials' },
