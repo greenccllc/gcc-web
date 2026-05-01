@@ -3,7 +3,10 @@
    Brand: Forest #1E4D2B, refined gold #C9A158, warm neutrals
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+/* Source Sans 3: contractor-feel body font, NOT Inter (overused = AI slop).
+   JetBrains Mono: tabular numerics for the manager — file IDs, counts,
+   confidence scores, timestamps. */
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
   /* Brand */
@@ -21,9 +24,20 @@
   --hairline: rgba(21, 32, 26, 0.09);
   --hairline-strong: rgba(21, 32, 26, 0.16);
 
-  /* Type */
-  --font-ui: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-display: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* Status accents — used by the manager (pills, activity feed, banners) */
+  --amber: #B45309;
+  --amber-tint: #FEF3C7;
+  --rose: #B91C1C;
+  --rose-tint: #FEE2E2;
+  --sky: #075985;
+  --sky-tint: #E0F2FE;
+  --stone: #57534E;
+  --stone-tint: #F5F5F4;
+
+  /* Type — Source Sans 3 (workmanlike, not AI slop) */
+  --font-ui: 'Source Sans 3', 'Source Sans Pro', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Source Sans 3', 'Source Sans Pro', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, Consolas, Menlo, 'Courier New', monospace;
 
   /* Spacing */
   --container: 1180px;
@@ -39,12 +53,20 @@
   --shadow-lg: 0 16px 40px rgba(15, 26, 18, 0.10), 0 6px 14px rgba(15, 26, 18, 0.06);
   --shadow-ring: 0 0 0 4px rgba(30, 77, 43, 0.12);
 
-  /* Radius */
+  /* Radius — marketing pages stay generous, manager pages override these */
   --r-sm: 8px;
   --r-md: 12px;
   --r-lg: 16px;
   --r-xl: 22px;
   --r-pill: 999px;
+
+  /* Manager-page radii — contractors aren't selling SaaS, so the operator
+     screens drop pill rounding and use sharper corners. Pages opt in by
+     scoping under body.dash / body.bc-mgr / .mgr-scope. */
+  --r-mgr-sm: 3px;
+  --r-mgr-md: 6px;
+  --r-mgr-lg: 8px;
+  --r-mgr-tag: 3px;
 
   /* Spacing scale (4-based) */
   --s-1: 4px;  --s-2: 8px;   --s-3: 12px;  --s-4: 16px;
@@ -93,6 +115,12 @@ body.menu-open { overflow: hidden; touch-action: none; }
 img, svg, video { max-width: 100%; height: auto; display: block; }
 a { color: var(--forest); text-decoration: none; transition: color .15s var(--ease); }
 a:hover { color: var(--forest-light); }
+
+/* Manager utilities — tabular numerics for counts/timestamps, mono font
+   for file IDs and timestamps. Used liberally inside the manager pages. */
+.tabular  { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+.mono     { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.mono-sm  { font-family: var(--font-mono); font-size: 11px; font-variant-numeric: tabular-nums; }
 
 h1, h2, h3, h4 {
   font-family: var(--font-display); color: var(--ink); margin: 0 0 .6em; line-height: 1.2;
