@@ -452,6 +452,16 @@
   padding:24px;
   animation:ppFade 0.18s ease-out;
 }
+/* The HTML `hidden` attribute would normally apply `display:none` via
+   the user-agent stylesheet, but our `.pp-overlay { display:flex }`
+   rule above wins on specificity, leaving the modal visible after
+   _ppCloseOverlay() sets pp-overlay.hidden = true. Restore the hidden
+   contract with !important so JS-driven open/close works. Same fix
+   applies to inner elements (.pp-view, .pp-edit) where author display
+   rules override the UA hidden default. */
+.pp-overlay[hidden],
+.pp-view[hidden],
+.pp-edit[hidden] { display:none !important; }
 @keyframes ppFade { from { opacity:0; } to { opacity:1; } }
 .pp-modal {
   width:100%; max-width:920px; max-height:calc(100vh - 48px);
