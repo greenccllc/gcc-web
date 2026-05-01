@@ -1173,8 +1173,11 @@ function render() {
           }
           setTimeout(load, 800);
         } else if (act === 'accept') {
-          await api('POST', '/api/bc/extraction/accept', { jobId: id });
-          toast(`Extraction accepted for ${id.slice(0,8)}…`);
+          const r = await api('POST', '/api/bc/extraction/accept', { jobId: id });
+          const tail = r?.proposalPublished
+            ? '· Proposal queued (draft in ~2-5 min)'
+            : `· proposal publish failed: ${r?.publishError || 'unknown'}`;
+          toast(`✓ Accepted ${id.slice(0,8)}… ${tail}`, 5000);
           setTimeout(load, 1500); return;
         } else if (act === 'pause-toggle') {
           const willBePaused = btn.dataset.paused !== '1';
@@ -1212,7 +1215,11 @@ function render() {
           const r = (STATE.data.items || []).find(x => x.jobId === id);
           if (real === 'extract-more')        { await api('POST', '/api/bc/extraction/extract-more', { jobId: id });  toast('Deeper extraction queued.'); setTimeout(load, 1200); }
           else if (real === 'rescan-details') { await api('POST', '/api/bc/extraction/rescan-details', { jobId: id }); toast('Rescan queued.'); }
-          else if (real === 'accept')         { await api('POST', '/api/bc/extraction/accept', { jobId: id });          toast('Extraction accepted.'); setTimeout(load, 1500); }
+          else if (real === 'accept')         {
+            const acc = await api('POST', '/api/bc/extraction/accept', { jobId: id });
+            const tail = acc?.proposalPublished ? '· Proposal queued (draft in ~2-5 min)' : `· publish failed: ${acc?.publishError || 'unknown'}`;
+            toast(`✓ Accepted ${tail}`, 5000); setTimeout(load, 1500);
+          }
           else if (real === 'pause-toggle')   { await api('POST', '/api/bc/extraction/pause', { jobId: id, paused: false }); toast('Resumed.'); setTimeout(load, 800); }
           else { toast(`Unknown next-step action: ${real}`, 4000); }
         }

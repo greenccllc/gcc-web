@@ -118,6 +118,50 @@
     /* ── Low-voltage scope grid (grouped: Data + Telecomm + Other) ──── */
     .mj-scope-toolbar { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:8px; flex-wrap:wrap; }
     .mj-scope-conf { color:var(--slate); }
+
+    /* ── Handoff strip: Synthesize -> Accept -> Re-send -> Draft ──────
+       Persistent banner inside the LV scope card that fires on Accept
+       and stays visible until the next render (or page reload), so the
+       operator's eye lands on "yes, the proposal is in flight" and the
+       quick-link to the Drive folder where the draft will land.       */
+    .mj-handoff {
+      display:flex; align-items:center; gap:12px;
+      margin:8px 0 12px; padding:10px 14px;
+      background:linear-gradient(90deg, var(--green-tint) 0%, #FAFCF9 100%);
+      border:1px solid var(--forest); border-left:4px solid var(--forest);
+      border-radius:7px;
+      animation: mjHandoffSlide 0.35s ease-out;
+    }
+    @keyframes mjHandoffSlide {
+      from { opacity:0; transform:translateY(-4px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .mj-handoff-icon { font-size:22px; line-height:1; }
+    .mj-handoff-body { flex:1; display:flex; flex-direction:column; gap:2px; }
+    .mj-handoff-body strong { color:var(--forest); font-size:13px; }
+    .mj-handoff-body .small { color:var(--slate); font-size:11.5px; }
+    .mj-handoff-cta {
+      display:inline-flex; align-items:center; gap:4px;
+      padding:6px 12px; border-radius:5px;
+      background:var(--forest); color:#fff !important; text-decoration:none;
+      font-size:12px; font-weight:600; white-space:nowrap;
+      transition:background .15s;
+    }
+    .mj-handoff-cta:hover { background:#1A3F25; }
+    @media (max-width:600px) {
+      .mj-handoff { flex-wrap:wrap; }
+      .mj-handoff-cta { width:100%; justify-content:center; }
+    }
+
+    /* Step-numbered toolbar buttons: subtle visual progression so the
+       operator's eye flows left-to-right. The disabled state still
+       reads but dims to ~40% so a glance shows what's gated. */
+    .mj-scope-toolbar .mj-btn-sm[disabled] {
+      opacity:.42; cursor:not-allowed;
+    }
+    .mj-scope-toolbar .mj-btn-sm:not([disabled]):hover {
+      background:var(--green-tint); border-color:var(--forest);
+    }
     .mj-counts-grid { display:flex; flex-direction:column; gap:14px; }
     .mj-counts-children {
       display:grid; grid-template-columns:repeat(4, 1fr); gap:6px;
