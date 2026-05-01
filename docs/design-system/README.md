@@ -16,3 +16,21 @@ This folder defines governance standards for the GCC site design system and impl
 - Update token and component docs before shipping new UI patterns.
 - Run Visual QA checklist on every page-level release.
 - Keep migration tracker statuses current in each PR that touches HTML/CSS.
+
+## Phase 1 (delivered)
+
+- Primitive design tokens in `assets/css/tokens-primitives.css`.
+- Semantic token mappings in `assets/css/tokens-semantic.css`.
+- Site stylesheet import wiring in `assets/css/site.css`.
+
+## Migration rules
+
+1. New styles should consume semantic tokens (`--forest`, `--ink`, `--paper`) instead of hardcoded hex values.
+2. Additional colors must be added to primitives first, then mapped semantically.
+3. Legacy variables remain valid during transition to avoid regressions.
+
+## Next phases
+
+- Component tokens (buttons/cards/forms/tables).
+- Shared component stylesheet for marketing + dashboard surfaces.
+- Inline style cleanup in marketing HTML templates.
