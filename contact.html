@@ -49,11 +49,11 @@
 </div>
 <main id="main">
 
-<section class="hero" style="padding: 88px 0 56px;">
+<section class="hero hero-tight">
   <div class="container">
     <span class="eyebrow">Contact</span>
     <h1>Get a real quote, not a sales call. <span class="highlight">Promise.</span></h1>
-    <p class="lead" style="max-width: 720px;">Tell us what you're working on. We'll come back with itemized pricing, a realistic timeline, and zero TBD line items — usually within 48 hours.</p>
+    <p class="lead measure-lg">Tell us what you're working on. We'll come back with itemized pricing, a realistic timeline, and zero TBD line items — usually within 48 hours.</p>
   </div>
 </section>
 
@@ -68,8 +68,8 @@
         <div class="ci-block">
           <h4><svg class="icon" aria-hidden="true"><use href="/assets/svg/icons.svg#icon-mail"/></svg>️ Email</h4>
           <p><a href="mailto:info@greencommllc.com"><strong>info@greencommllc.com</strong></a><br/>Quotes, plans, scope questions</p>
-          <p style="margin-top: 8px;"><a href="mailto:corporate@greencommllc.com"><strong>corporate@greencommllc.com</strong></a><br/>Insurance, COI requests, billing</p>
-          <p style="margin-top: 8px;"><a href="mailto:support@greencommllc.com"><strong>support@greencommllc.com</strong></a><br/>Active-customer support &amp; trouble tickets</p>
+          <p class="mt-xs"><a href="mailto:corporate@greencommllc.com"><strong>corporate@greencommllc.com</strong></a><br/>Insurance, COI requests, billing</p>
+          <p class="mt-xs"><a href="mailto:support@greencommllc.com"><strong>support@greencommllc.com</strong></a><br/>Active-customer support &amp; trouble tickets</p>
         </div>
         <div class="ci-block">
           <h4><svg class="icon" aria-hidden="true"><use href="/assets/svg/icons.svg#icon-pin"/></svg> Office</h4>
@@ -78,14 +78,14 @@
         <div class="ci-block">
           <h4><svg class="icon" aria-hidden="true"><use href="/assets/svg/icons.svg#icon-truck"/></svg> Service Areas</h4>
           <p><strong>Kansas City Metro:</strong> KCMO, Independence, Lee's Summit, Overland Park, Lenexa, Olathe</p>
-          <p style="margin-top: 8px;"><strong>St. Louis Metro:</strong> STL City + County, Wentzville, Florissant, Arnold, O'Fallon</p>
-          <p style="margin-top: 8px; font-size: 0.9em; color: var(--slate-light);">Outside those areas? We'll bid it with a small mobilization line.</p>
+          <p class="mt-xs"><strong>St. Louis Metro:</strong> STL City + County, Wentzville, Florissant, Arnold, O'Fallon</p>
+          <p class="mt-xs text-sm text-slate-light">Outside those areas? We'll bid it with a small mobilization line.</p>
         </div>
       </div>
 
       <form class="contact-form" method="POST">
-        <h3 style="margin-bottom: 4px;">Tell us about the project</h3>
-        <p style="color: var(--slate); margin-bottom: 24px; font-size: 0.95em;">All fields optional except a way to reach you. We'll follow up within one business day.</p>
+        <h3 class="mb-2xs">Tell us about the project</h3>
+        <p class="text-slate mb-lg text-md">All fields optional except a way to reach you. We'll follow up within one business day.</p>
 
         <div class="field-row">
           <div class="field">
@@ -138,7 +138,7 @@
         </div>
 
         <div class="field">
-          <label for="address">Project site address <span style="font-weight: 400; color: var(--slate-light);">(optional)</span></label>
+          <label for="address">Project site address <span class="text-regular text-slate-light">(optional)</span></label>
           <input type="text" id="address" name="address"
                  class="addr-autocomplete"
                  autocomplete="street-address"
@@ -149,7 +149,7 @@
                  data-target-formatted="addr-formatted"
                  data-target-lat="addr-lat"
                  data-target-lng="addr-lng" />
-          <small style="display: block; margin-top: 6px; color: var(--slate-light); font-size: 0.85em;">Helps us check service-area + estimate mobilization. Leave blank if undecided.</small>
+          <small class="help-text">Helps us check service-area + estimate mobilization. Leave blank if undecided.</small>
           <input type="hidden" id="addr-city"      name="addr_city"      />
           <input type="hidden" id="addr-state"     name="addr_state"     />
           <input type="hidden" id="addr-zip"       name="addr_zip"       />
@@ -163,13 +163,13 @@
           <textarea id="message" name="message" placeholder="Number of drops, building size, deadline, what you've already gotten quoted, links to plans, anything that helps us scope it..."></textarea>
         </div>
 
-        <div class="field" style="margin-bottom: 8px; font-size: 0.85em; color: var(--slate-light);">
-          <p style="margin: 0;">By submitting you agree that we may contact you about this inquiry. We don't sell leads, run remarketing, or send a newsletter you didn't ask for.</p>
+        <div class="field form-disclaimer">
+          <p class="mb-0">By submitting you agree that we may contact you about this inquiry. We don't sell leads, run remarketing, or send a newsletter you didn't ask for.</p>
         </div>
 
-        <button type="submit" class="btn btn-primary" style="width: 100%;">Send →</button>
+        <button type="submit" class="btn btn-primary btn-block">Send →</button>
 
-        <p style="margin-top: 16px; font-size: 0.9em; color: var(--slate);">
+        <p class="mt-md text-sm text-slate">
           <strong>Or just call:</strong> <a href="tel:+16362248192">636-224-8192</a>. Kaitlyn or Nathan will pick up.
         </p>
       </form>
@@ -201,15 +201,15 @@
         <li><a href="tel:+16362248192">636-224-8192</a></li>
         <li><a href="mailto:info@greencommllc.com">info@greencommllc.com</a></li>
         <li><a href="https://maps.google.com/?q=603+Seib+Dr+O%27Fallon+MO+63366" target="_blank" rel="noopener">603 Seib Dr<br/>O'Fallon, MO 63366</a></li>
-        <li style="padding-top:6px; border-top:1px solid rgba(255,255,255,0.10); margin-top:6px;"><a href="/clients/">Client login</a> &middot; <a href="/staff/">Staff login</a></li>
+        <li class="footer-login-item"><a href="/clients/">Client login</a> &middot; <a href="/staff/">Staff login</a></li>
       </ul></div>
     </div>
     <div class="footer-bottom">
       <div>© 2026 Green Communications Contracting LLC · Licensed &amp; Insured · Missouri LLC</div>
       <div>Non-Union Div 27/28 · BICSI/TIA-568 · TIA-606-B</div>
     </div>
-    <div class="footer-bottom" style="margin-top:6px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.06);">
-      <div style="font-size:12px;">
+    <div class="footer-bottom footer-bottom-tight">
+      <div class="text-2xs">
         <a href="/privacy.html">Privacy Policy</a> &middot;
         <a href="/terms.html">Terms of Service</a> &middot;
         <a href="/support.html">Support</a> &middot;
@@ -252,7 +252,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     try {
       await gccApi.submitLead(data);
-      form.innerHTML = '<div style="text-align:center; padding: 32px 16px;"><div style="font-size:48px; margin-bottom:12px;">✓</div><h3 style="color: var(--forest); margin-bottom: 8px;">Got it. We will be in touch within one business day.</h3><p style="color: var(--slate); margin: 0;">Or call <a href="tel:+16362248192">636-224-8192</a> if you need a faster response.</p></div>';
+      form.innerHTML = '<div class="text-center success-pane"><div class="success-mark">✓</div><h3 class="text-forest mb-xs">Got it. We will be in touch within one business day.</h3><p class="text-slate mb-0">Or call <a href="tel:+16362248192">636-224-8192</a> if you need a faster response.</p></div>';
     } catch (err) {
       console.error('API submit failed', err);
       // Mailto fallback

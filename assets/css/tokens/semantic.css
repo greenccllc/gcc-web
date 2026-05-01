@@ -1,0 +1,54 @@
+:root {
+  /* Semantic surfaces/text */
+  --color-surface-page: var(--color-cream-100);
+  --color-surface-canvas: var(--color-paper-200);
+  --color-surface-elevated: var(--color-white);
+  --color-surface-header: rgba(253, 251, 244, 0.92);
+
+  --color-text-primary: var(--color-ink-900);
+  --color-text-secondary: var(--color-slate-600);
+  --color-text-muted: var(--color-slate-500);
+  --color-text-inverse: var(--color-white);
+
+  --color-border-subtle: var(--color-hairline);
+  --color-border-default: var(--color-hairline-strong);
+
+  --color-accent-primary: var(--color-forest-600);
+  --color-accent-primary-hover: var(--color-forest-500);
+  --color-accent-strong: var(--color-forest-700);
+  --color-accent-secondary: var(--color-gold-500);
+
+  --color-status-warning: var(--color-amber-700);
+  --color-status-warning-bg: var(--color-amber-100);
+  --color-status-danger: var(--color-rose-700);
+  --color-status-danger-bg: var(--color-rose-100);
+  --color-status-info: var(--color-sky-800);
+  --color-status-info-bg: var(--color-sky-100);
+  --color-status-neutral: var(--color-stone-700);
+  --color-status-neutral-bg: var(--color-stone-100);
+
+  --focus-ring-color: rgba(30, 77, 43, 0.12);
+
+  /* Legacy aliases (phase 1 compatibility) */
+  --forest: var(--color-accent-primary);
+  --forest-dark: var(--color-accent-strong);
+  --forest-light: var(--color-accent-primary-hover);
+  --forest-tint: var(--color-forest-50);
+  --slate: var(--color-text-secondary);
+  --slate-light: var(--color-text-muted);
+  --gold: var(--color-accent-secondary);
+  --gold-dark: var(--color-gold-600);
+  --cream: var(--color-surface-page);
+  --paper: var(--color-surface-canvas);
+  --ink: var(--color-text-primary);
+  --hairline: var(--color-border-subtle);
+  --hairline-strong: var(--color-border-default);
+  --amber: var(--color-status-warning);
+  --amber-tint: var(--color-status-warning-bg);
+  --rose: var(--color-status-danger);
+  --rose-tint: var(--color-status-danger-bg);
+  --sky: var(--color-status-info);
+  --sky-tint: var(--color-status-info-bg);
+  --stone: var(--color-status-neutral);
+  --stone-tint: var(--color-status-neutral-bg);
+}
