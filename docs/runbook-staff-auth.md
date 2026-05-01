@@ -1,108 +1,106 @@
 # Staff sign-in setup runbook
 
-`/staff/*` pages are gated behind a Google sign-in restricted to
-`@greencommllc.com`. The gate has two layers — pick the one matching
-your security posture:
+**Status (2026-05-01): both layers are live.** Anyone hitting
+`https://greencommllc.com/staff/*` is bounced to a Google Workspace
+sign-in restricted to `@greencommllc.com`.
 
-| Layer | What it blocks | Setup effort | Where it runs |
-|-------|----------------|--------------|---------------|
-| **Layer 1 (shipped)** | Casual visitors + crawlers | 5 min Google Cloud Console | Browser (client-side JS) |
-| **Layer 2 (recommended)** | Anyone — true edge gate | 5 min Cloudflare dashboard | Cloudflare edge |
-
-The gcc-api side is already protected via `X-Gcc-Admin-Secret`, so
-Layer 1 alone is sufficient to keep the staff UI off the public
-internet. Layer 2 adds defense-in-depth at the edge so even the page
-HTML never reaches a non-employee browser.
+| Layer | What it blocks | Status | Where it runs |
+|-------|----------------|--------|---------------|
+| **Layer 1** | Casual visitors + crawlers | ✅ live (`assets/js/staff-auth.js`) | Browser (client-side JS) |
+| **Layer 2** | Anyone — edge gate before HTML serves | ✅ live (Cloudflare Access app `GCC Staff`) | Cloudflare edge |
+| **gcc-api** | API calls without secret | ✅ live (X-Gcc-Admin-Secret) | gcc-api .NET middleware |
 
 ---
 
-## Layer 1: Google OAuth Client ID (REQUIRED)
+## Layer 1: Google OAuth Client ID (LIVE)
 
-The shipped `/staff/login.html` page renders a "Sign in with Google"
-button that picks the user's Google Workspace account, validates its
-`hd` (hosted domain) claim is `greencommllc.com`, and stamps a 12-hour
-sessionStorage cookie. Without a client ID the page surfaces a clear
-error.
+**Provisioned 2026-05-01.** The `/staff/login.html` page renders a
+"Sign in with Google" button that picks the user's Google Workspace
+account, validates its `hd` (hosted domain) claim is
+`greencommllc.com`, and stamps a 12-hour sessionStorage cookie.
 
-### Steps
+### What was provisioned
 
-1. Open <https://console.cloud.google.com/apis/credentials> and pick
-   the GCC project (`micro-enigma-494403-d0`).
-2. Click **+ Create credentials → OAuth client ID**.
-   - **Application type**: Web application
-   - **Name**: `GCC Staff Sign-in`
-   - **Authorized JavaScript origins**:
-     - `https://greencommllc.com`
-     - `https://www.greencommllc.com`
-     - (optional dev) `http://localhost:5173`
-   - **Authorized redirect URIs**: leave empty (we use the GIS
-     credential flow, not redirect)
-3. Click **Create**. Copy the **Client ID** (`xxxxxx.apps.googleusercontent.com`).
-4. Drop it into `assets/js/config.js` on the deployed site:
+- **OAuth client**: created via IAP API under brand
+  `projects/699304045834/brands/699304045834` (orgInternalOnly=true,
+  so only `@greencommllc.com` Workspace users can complete the flow
+  even without further restriction).
+- **Client ID** (public, in `assets/js/config.js`):
+  `699304045834-e3mr7uusj76kimo5hum5etnjcgokll4c.apps.googleusercontent.com`
+- **Client Secret**: stored in Secret Manager as
+  `admin-staff-google-client-secret` (used by Cloudflare Access).
+- **Display name**: `GCC Staff Sign-in (Cloudflare Access + /staff/login.html)`
 
-   ```js
-   window.GCC_AUTH_CONFIG = {
-     googleClientId: 'xxxxxxxxxxxxxxxx.apps.googleusercontent.com',
-     allowedDomain: 'greencommllc.com',
-   };
-   ```
+### Rotating
 
-   Or store the value in Secret Manager as
-   `infra-gcc-staff-google-client-id` and let `publish.ps1` (gcc-site
-   deploy script) write `assets/js/config.js` from the secret. See
-   `assets/js/config.example.js` for the shape.
-5. Publish gcc-site (auto-syncs to IIS via the GCC-Site-Sync task).
-6. Open <https://greencommllc.com/staff/bc-leads.html> in incognito —
-   you should bounce to `/staff/login.html`. Sign in with your
-   greencommllc.com account; you land back on bc-leads.html.
+To rotate the Client Secret:
+1. Open <https://console.cloud.google.com/apis/credentials> in the GCC
+   project (`micro-enigma-494403-d0`) and find the IAP-Owned client
+   `GCC Staff Sign-in (...)`.
+2. Reset the secret. Update Secret Manager:
+   - `admin-staff-google-client-secret` ← new secret
+3. Update the Cloudflare Access IDP `Google Workspace (greencommllc.com)`
+   with the new secret (PATCH on
+   `accounts/{acct}/access/identity_providers/56c481b1-d923-4702-a760-b34c42a6ab8c`).
 
 ### Tray-launcher bypass
 
-The auth gate honors `?secret=<api-secret>` on the URL — when present
-it stamps the same 12-hour sessionStorage entry without requiring
-Google sign-in. The tray launcher's "Open Manager" link already
-appends `?secret=…`, so operator workflows are unaffected.
+The Layer 1 gate honors `?secret=<api-secret>` on the URL — when
+present it stamps the 12-hour sessionStorage entry without Google
+sign-in. **However Cloudflare Access (Layer 2) does NOT honor query
+strings**, so tray-launcher operators must complete Google sign-in
+once per 12-hour CF Access session. After that, all `/staff/*`
+navigation flows through normally.
 
 ---
 
-## Layer 2: Cloudflare Access (RECOMMENDED, DASHBOARD-ONLY)
+## Layer 2: Cloudflare Access (LIVE)
 
-Adds an edge-level gate so the HTML never reaches non-employees, even
-if they bypass the client-side script. Five minutes via the dashboard.
-The current gcc-site Cloudflare API token does not have Access:Edit
-permissions, so this step is manual.
+**Provisioned 2026-05-01.** Edge gate on `greencommllc.com/staff`
+returning a 302 to `greencomm.cloudflareaccess.com` for any visitor
+without a valid Access JWT.
 
-### Steps
+### What was provisioned
 
-1. Open <https://one.dash.cloudflare.com/5d5385be79ab1dfa09def1fe76e04d73/access/apps>.
-2. Click **Add an application → Self-hosted**.
-3. Configure:
-   - **Application name**: `GCC Staff`
-   - **Session duration**: 12 hours
-   - **Application domain**:
-     - subdomain: (blank)
-     - domain: `greencommllc.com`
-     - path: `/staff`
-   - Toggle **Enable AppLauncher** off (operator-only app)
-4. Click **Next**, then add a policy:
-   - **Policy name**: `greencommllc.com employees`
-   - **Action**: Allow
-   - **Configure rules → Selector**: Emails ending in
-     `@greencommllc.com`
-5. Click **Next → Add an Identity provider → Google**:
-   - If no Google IDP exists yet: **+ Add new** → Google → paste the
-     same OAuth Client ID + secret from Layer 1.
-6. Click **Add application**.
-7. Test in incognito: <https://greencommllc.com/staff/bc-leads.html>
-   should now show the Cloudflare Access login page. After signing
-   in with a `@greencommllc.com` email, you land on the staff page
-   AND clear the client-side gate (since you're already authenticated
-   at the edge).
+- **Account**: `5d5385be79ab1dfa09def1fe76e04d73` (greencomm)
+- **Identity Provider**:
+  - Name: `Google Workspace (greencommllc.com)`
+  - Type: `google-apps` with `apps_domain=greencommllc.com`
+  - ID: `56c481b1-d923-4702-a760-b34c42a6ab8c`
+- **Access App**:
+  - Name: `GCC Staff`
+  - Domain: `greencommllc.com/staff`
+  - Type: `self_hosted`
+  - Session duration: 12 hours
+  - ID: `fdcf2fa1-6eda-4d95-b446-675e35a0f0c4`
+- **Policy**:
+  - Name: `Allow greencommllc.com employees`
+  - Decision: `allow`
+  - Match: emails matching `*@greencommllc.com`
+  - ID: `8b279efb-dea1-4f88-87d4-a3f3b7b7e09d`
+
+### Verifying
+
+```pwsh
+$ Invoke-WebRequest https://greencommllc.com/staff/bc-leads.html -MaximumRedirection 0
+# expect: 302 → https://greencomm.cloudflareaccess.com/cdn-cgi/access/login/...
+```
+
+### Editing via API
+
+```pwsh
+$cfHdr = @{ Authorization = "Bearer $(secret 'admin-cloudflare-api-token')" }
+$acct = '5d5385be79ab1dfa09def1fe76e04d73'
+# List apps
+Invoke-RestMethod "https://api.cloudflare.com/client/v4/accounts/$acct/access/apps" -Headers $cfHdr
+# List policies for our app
+Invoke-RestMethod "https://api.cloudflare.com/client/v4/accounts/$acct/access/apps/fdcf2fa1-6eda-4d95-b446-675e35a0f0c4/policies" -Headers $cfHdr
+```
 
 ### What survives both layers
 
-- Tray launcher with `?secret=` URL param — still works (Cloudflare
-  Access doesn't filter the query string; the staff-auth.js gate
-  honors `secret` first).
 - gcc-api endpoints — unaffected by either layer; they continue to
   enforce `X-Gcc-Admin-Secret` independently.
+- Layer 1 still runs after Layer 2 — useful for jobs that load the
+  page with `?secret=…` from outside the CF zone (e.g. a localhost
+  dev preview), since CF Access only protects the live domain.
