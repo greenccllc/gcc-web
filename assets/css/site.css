@@ -7,12 +7,20 @@
    JetBrains Mono: tabular numerics for the manager — file IDs, counts,
    confidence scores, timestamps. */
 @import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* Layered design tokens — primitives → semantic → components.
+   The flat tokens-*.css files are the Phase 1 deliverable; the
+   tokens/ subfolder is Phase 2 (component-aware). Both coexist
+   during the migration; later imports win for any duplicate vars. */
 @import url('/assets/css/tokens-primitives.css');
 @import url('/assets/css/tokens-semantic.css');
-
 @import url('./tokens/primitives.css');
 @import url('./tokens/semantic.css');
 @import url('./tokens/components.css');
+
+/* Shared component layer (PR #2). Buttons, cards, form fields,
+   tables, pills — consumed by both marketing + manager surfaces. */
+@import url('/assets/css/components.css');
 
 
 * { box-sizing: border-box; }
