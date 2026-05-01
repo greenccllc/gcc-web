@@ -5,9 +5,6 @@
   <title>GCC Manager</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="robots" content="noindex" />
-  <!-- Auth gate: must be first script so a non-staff visitor never
-       sees the page chrome before redirect to /staff/login.html. -->
-  <script src="/assets/js/staff-auth.js"></script>
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <meta name="theme-color" content="#1E4D2B" />
@@ -25,7 +22,7 @@
       <button class="tab" data-tab="queue">Queue</button>
       <button class="tab" data-tab="outcomes">Outcomes</button>
       <button class="tab" data-tab="processes">Processes</button>
-      <a class="tab tab-link" href="/admin/console/" title="Operations, pipeline, users, and reporting console">Admin Console ↗</a>
+      <a class="tab tab-link" href="/admin/console/" title="Operations, pipeline, users, and reporting console (Google Workspace SSO required)">Admin Console</a>
     </div>
     <div style="display:flex;gap:10px;align-items:center">
       <span class="small" id="auto" style="color:rgba(255,255,255,.7)"></span>

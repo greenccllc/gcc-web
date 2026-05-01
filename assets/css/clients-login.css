@@ -52,6 +52,44 @@
 /* Wider login card for multi-step */
 body.login-page .login-card { max-width: 560px; padding: 36px 32px; }
 body.login-page .login-card.compact { max-width: 460px; padding: 40px 36px; }
+
+/* Audience picker — Client | Staff. Sits above the sign-in/sign-up
+   tabs so a visitor first identifies their role; clients fall through
+   to the existing tabs, staff get punted to /admin/ which triggers
+   Cloudflare Access (Google Workspace SSO). */
+body.login-page .audience-picker {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  margin: 4px 0 18px;
+}
+body.login-page .audience-pick {
+  display: flex; flex-direction: column; align-items: flex-start;
+  padding: 12px 14px; gap: 4px;
+  border: 1px solid var(--line, rgba(21,32,26,.12));
+  background: var(--paper, #F4F4EE);
+  border-radius: 10px;
+  text-decoration: none;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: border-color .12s ease, background .12s ease, transform .12s ease;
+}
+body.login-page .audience-pick:hover {
+  border-color: var(--forest, #1E4D2B);
+  background: var(--green-tint, #EEF5EC);
+  transform: translateY(-1px);
+}
+body.login-page .audience-pick.active {
+  border-color: var(--forest, #1E4D2B);
+  background: white;
+  box-shadow: 0 0 0 3px rgba(30,77,43,.08);
+}
+body.login-page .audience-icon { font-size: 22px; line-height: 1; }
+body.login-page .audience-label {
+  font-size: 14px; font-weight: 700; color: var(--ink, #15201A);
+}
+body.login-page .audience-sub {
+  font-size: 11px; color: var(--slate, #4F5B57); line-height: 1.35;
+}
 body.login-page .login-card h1 { font-size: 24px; }
 
 /* Teaser steppers reuse num-stepper from site.css, scoped lighter here */

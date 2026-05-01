@@ -15,10 +15,27 @@
 <div class="login-card" style="max-width: 480px;">
   <a href="/" class="brand-mark">
     <span class="monogram">GC</span>
-    <span class="brand-stack"><span class="brand-name">GCC LLC</span><span class="brand-tag">Client Portal</span></span>
+    <span class="brand-stack"><span class="brand-name">GCC LLC</span><span class="brand-tag">Sign in</span></span>
   </a>
 
-  <!-- Sign in / Sign up tabs -->
+  <!-- Audience picker: Client | Staff. Clients land in the existing
+       portal flow below; staff are bounced through Cloudflare Access
+       (Google Workspace SSO restricted to @greencommllc.com) at the
+       /admin/ path. -->
+  <div class="audience-picker" role="tablist" aria-label="I am a">
+    <button type="button" class="audience-pick active" id="aud-client" aria-pressed="true">
+      <span class="audience-icon">🏢</span>
+      <span class="audience-label">Client</span>
+      <span class="audience-sub">Portal access · estimates · projects</span>
+    </button>
+    <a class="audience-pick audience-staff" id="aud-staff" href="/admin/console/">
+      <span class="audience-icon">🔧</span>
+      <span class="audience-label">Staff</span>
+      <span class="audience-sub">@greencommllc.com · SSO sign-in</span>
+    </a>
+  </div>
+
+  <!-- Sign in / Sign up tabs (client only) -->
   <div class="tab-switch" role="tablist" aria-label="Sign in or sign up">
     <button type="button" class="active" id="tab-signin">Sign in</button>
     <button type="button" id="tab-signup">New account</button>
