@@ -200,6 +200,16 @@
     }
     .mj-descr em { color:var(--slate-2); }
 
+    /* AI-generated project description badge */
+    .mj-ai-badge {
+      display:inline-flex; align-items:center; gap:4px;
+      padding:2px 8px; border-radius:var(--r-tag);
+      font-size:10px; font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+      background:linear-gradient(135deg, #6366f1, #8b5cf6);
+      color:white;
+      box-shadow:0 1px 3px rgba(99,102,241,.30);
+    }
+
     /* ── Low-voltage scope grid (grouped: Data + Telecomm + Other) ──── */
     .mj-scope-toolbar { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:8px; flex-wrap:wrap; }
     .mj-scope-conf { color:var(--slate); }

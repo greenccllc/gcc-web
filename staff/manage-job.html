@@ -8,7 +8,7 @@
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <meta name="theme-color" content="#1E4D2B" />
   <link rel="stylesheet" href="/assets/css/site.css?v=20260501-redesign" />
-  <link rel="stylesheet" href="/assets/css/staff-manage-job.css?v=20260501-restructure" />
+  <link rel="stylesheet" href="/assets/css/staff-manage-job.css?v=20260501-aibadge" />
 </head>
 <body>
   <header>
@@ -71,17 +71,9 @@
         <div class="small mj-scope-reasoning" id="mj-scope-reasoning"></div>
       </div>
 
-      <div class="mj-card" style="margin-top:14px" id="mj-reqs-card">
-        <h2>LV job requirements <span class="mj-card-sub" id="mj-reqs-sub">· loading…</span></h2>
-        <div class="sub">Filtered to low-voltage subcontractor scope only — Cat6A / fiber / structured cabling specs, IT-room buildout, AV, security, telecom labels, IT closeout. General-construction / non-LV items hide here but stay in <em>Audit</em> below.</div>
-        <ul class="mj-reqs-list" id="mj-reqs-list"></ul>
-        <div class="small pad" id="mj-reqs-empty" hidden>
-          No LV-relevant requirements synthesized yet. Click <em>Synthesize scope</em> above to populate this list.
-        </div>
-      </div>
     </div>
 
-    <!-- Right: latest proposal PDF (top) + collapsed calendar -->
+    <!-- Right: latest proposal PDF (top) + LV requirements + collapsed calendar -->
     <div>
       <!-- Top-right pane: ONE visual card showing the latest 03 Bid
            Proposal PDF from the most recent build-all run. Click to
@@ -105,6 +97,20 @@
           No proposal generated yet. Run <em>Generate proposal → Build all sections</em> above.
         </div>
         <div class="small mj-proposal-error" id="mj-proposal-error" hidden></div>
+      </div>
+
+      <!-- LV job requirements pane — moved here from the left column on
+           operator request. Sits directly below the Latest Proposal pane
+           because both surfaces are "what to know before clicking
+           Generate proposal again". Filtered to low-voltage scope only;
+           full unfiltered list still lives in the Audit details below. -->
+      <div class="mj-card" style="margin-top:14px" id="mj-reqs-card">
+        <h2>LV job requirements <span class="mj-card-sub" id="mj-reqs-sub">· loading…</span></h2>
+        <div class="sub">Filtered to low-voltage subcontractor scope only — Cat6A / fiber / structured cabling specs, IT-room buildout, AV, security, telecom labels, IT closeout. General-construction / non-LV items hide here but stay in <em>Audit</em> below.</div>
+        <ul class="mj-reqs-list" id="mj-reqs-list"></ul>
+        <div class="small pad" id="mj-reqs-empty" hidden>
+          No LV-relevant requirements synthesized yet. Click <em>Synthesize scope</em> above to populate this list.
+        </div>
       </div>
 
       <!-- GCC Calendar: collapsed by default. iframe only loads when
@@ -861,11 +867,34 @@ async function onAction(e, btn) {
 }
 
 // ===== Project description =====
+// When BC ships a populated description we render it directly. When
+// it's blank (older RFPs, paid uploads, hand-entered invitations),
+// the manage-job page asks the gcc-api `/describe-ai` endpoint to
+// synthesize one from the BidExtractions notes/specs the bid
+// extractor already pulled. Result renders inline with an "AI"
+// badge so the operator knows the source.
 function renderDescription(r) {
-  const desc = r.description && r.description.trim()
-    ? safeHtml(r.description)
-    : '<em>No description from BC yet. Use Rescan details to refresh.</em>';
-  $('mj-descr').innerHTML = desc;
+  const hasReal = r.description && r.description.trim();
+  if (hasReal) {
+    $('mj-descr').innerHTML = safeHtml(r.description);
+    return;
+  }
+  // Blank — kick the AI describe endpoint and render the result.
+  $('mj-descr').innerHTML = '<em class="small pad">No description from BC. Asking AI to synthesize from extracted content…</em>';
+  api('POST', `/api/admin/jobs/${encodeURIComponent(r.jobId)}/describe-ai`)
+    .then(resp => {
+      if (!resp || !resp.description) {
+        $('mj-descr').innerHTML = `<em>No description available. ${safeHtml(resp?.error || "Run synthesize-scope first to populate extraction content.")}</em>`;
+        return;
+      }
+      const aiBadge = '<span class="mj-ai-badge" title="AI-generated from extracted notes/specs (Gemini 2.5 Flash). Operator-editable.">✨ AI-generated</span>';
+      $('mj-descr').innerHTML =
+        aiBadge + '<div style="margin-top:8px; white-space:pre-wrap">' + safeHtml(resp.description) + '</div>'
+        + `<div class="small" style="margin-top:8px; color:var(--slate-2)">Synthesized from ${resp.sourceRowCount} extraction rows.</div>`;
+    })
+    .catch(e => {
+      $('mj-descr').innerHTML = `<em style="color:var(--danger)">AI describe failed: ${safeHtml(e.message)}</em>`;
+    });
 }
 
 // ===== Low-voltage scope grid =====
