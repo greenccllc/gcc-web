@@ -7,7 +7,7 @@
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <meta name="theme-color" content="#1E4D2B" />
-  <link rel="stylesheet" href="/assets/css/staff-manage-job.css?v=20260501-0235" />
+  <link rel="stylesheet" href="/assets/css/staff-manage-job.css?v=20260501-0300" />
 </head>
 <body>
   <header>
@@ -496,6 +496,15 @@ function tooltipForKey(uiKey) {
 // drafts are decided.
 let _propPollTimer = null;
 let _propPollAttempts = 0;
+let _propLastSig = '';   // last rendered payload signature; skips DOM rewrite when unchanged
+function _propSignature(drafts, versions) {
+  // Compact signature of the fields the row renderers actually consume.
+  // Stable on identical payloads -> skip the innerHTML rewrites that
+  // were stomping operator selection/scroll position every 8s.
+  const d = drafts.map(x => `${x.id}:${x.status}:${x.draftDocxFileId || ''}:${x.updatedAt || ''}`).join('|');
+  const v = versions.map(x => `${x.folderId}:${(x.files||[]).length}:${x.modifiedTime || ''}`).join('|');
+  return `${d}#${v}`;
+}
 async function loadProposalFiles() {
   if (!JOB_ID) return;
   const sub  = $('mj-proposal-sub');
@@ -503,7 +512,6 @@ async function loadProposalFiles() {
   const empty = $('mj-proposal-empty');
   const intSec = $('mj-proposal-internal');
   const cliSec = $('mj-proposal-client');
-  if (sub) sub.textContent = '· loading…';
   if (err) { err.hidden = true; err.textContent = ''; }
   let r;
   try {
@@ -515,6 +523,9 @@ async function loadProposalFiles() {
   }
   const drafts = r.internalDrafts || [];
   const versions = r.clientVersions || [];
+  const sig = _propSignature(drafts, versions);
+  const changed = sig !== _propLastSig;
+  _propLastSig = sig;
 
   // Empty state
   if (drafts.length === 0 && versions.length === 0) {
@@ -526,34 +537,29 @@ async function loadProposalFiles() {
       err.hidden = false;
       err.textContent = `Drive listing error: ${r.driveListError}`;
     }
-    return;
-  }
-  if (empty) empty.hidden = true;
-
-  // ---- Drafts (Output Docs/) ----
-  const intCount = $('mj-proposal-internal-count');
-  const intList  = $('mj-proposal-internal-list');
-  if (drafts.length > 0) {
-    if (intSec) intSec.hidden = false;
-    if (intCount) intCount.textContent = `· ${drafts.length} ${drafts.length === 1 ? 'draft' : 'drafts'}`;
-    if (intList) {
-      intList.innerHTML = drafts.map(renderDraftRow).join('');
-    }
   } else {
-    if (intSec) intSec.hidden = true;
-  }
+    if (empty) empty.hidden = true;
 
-  // ---- Versions (Proposals/v#/) ----
-  const cliCount = $('mj-proposal-client-count');
-  const cliList  = $('mj-proposal-client-list');
-  if (versions.length > 0) {
-    if (cliSec) cliSec.hidden = false;
-    if (cliCount) cliCount.textContent = `· ${versions.length} ${versions.length === 1 ? 'version' : 'versions'}`;
-    if (cliList) {
-      cliList.innerHTML = versions.map(renderClientVersionRow).join('');
+    // Only rewrite innerHTML when the payload changed -- the 8s poll
+    // hits this 90% of the time with identical data, and stomping the
+    // DOM kills any operator scroll/selection state.
+    if (changed) {
+      const intCount = $('mj-proposal-internal-count');
+      const intList  = $('mj-proposal-internal-list');
+      if (drafts.length > 0) {
+        if (intSec) intSec.hidden = false;
+        if (intCount) intCount.textContent = `· ${drafts.length} ${drafts.length === 1 ? 'draft' : 'drafts'}`;
+        if (intList) intList.innerHTML = drafts.map(renderDraftRow).join('');
+      } else if (intSec) intSec.hidden = true;
+
+      const cliCount = $('mj-proposal-client-count');
+      const cliList  = $('mj-proposal-client-list');
+      if (versions.length > 0) {
+        if (cliSec) cliSec.hidden = false;
+        if (cliCount) cliCount.textContent = `· ${versions.length} ${versions.length === 1 ? 'version' : 'versions'}`;
+        if (cliList) cliList.innerHTML = versions.map(renderClientVersionRow).join('');
+      } else if (cliSec) cliSec.hidden = true;
     }
-  } else {
-    if (cliSec) cliSec.hidden = true;
   }
 
   // Update the sub badge with a quick rollup.
@@ -1089,13 +1095,18 @@ $('mj-accept-extraction')?.addEventListener('click', async () => {
 // "Save to Drive" which uploads the assembled text as a Google Doc to
 // Output Docs/ (and writes a dbo.ProposalDrafts row so the Proposal
 // output card refreshes). Synchronous from click; no Pub/Sub.
-let _ppData = null;          // last preview payload
-let _ppPlainText = '';       // assembled text (live from view OR edit textarea)
-let _ppMode = 'view';        // 'view' | 'edit'
+let _ppData = null;          // last preview payload (not derivable from DOM)
+
+// View/edit mode and the text body live in the DOM:
+//   * mode  = $('pp-mode-edit').getAttribute('aria-pressed') === 'true' ? 'edit' : 'view'
+//   * text  = $('pp-edit').value
+function _ppMode() { return $('pp-mode-edit')?.getAttribute('aria-pressed') === 'true' ? 'edit' : 'view'; }
+function _ppText() { return $('pp-edit')?.value || ''; }
 
 function _ppCloseOverlay() {
   $('pp-overlay').hidden = true;
   document.removeEventListener('keydown', _ppEscapeHandler);
+  _ppData = null;  // clear stale buffer; next open re-fetches
 }
 function _ppEscapeHandler(e) {
   if (e.key === 'Escape') _ppCloseOverlay();
@@ -1191,10 +1202,7 @@ function renderProposalView(d) {
 
 async function openProposalPreview() {
   if (!LEAD?.jobId) { toast('Job not loaded yet.', 3000); return; }
-  // Reset modal state
   _ppData = null;
-  _ppPlainText = '';
-  _ppMode = 'view';
   $('pp-mode-view').setAttribute('aria-pressed', 'true');
   $('pp-mode-edit').setAttribute('aria-pressed', 'false');
   $('pp-view').hidden = false;
@@ -1206,10 +1214,8 @@ async function openProposalPreview() {
   $('pp-meta').textContent = '';
   $('pp-results').hidden = true;
   $('pp-templates').hidden = true;
-  // Show overlay + set up close handlers
   $('pp-overlay').hidden = false;
   document.addEventListener('keydown', _ppEscapeHandler);
-  // Fetch preview + templates manifest in parallel
   try {
     const [previewR, tmplR] = await Promise.all([
       api('GET', `/api/admin/jobs/${encodeURIComponent(LEAD.jobId)}/proposal-preview`),
@@ -1218,9 +1224,8 @@ async function openProposalPreview() {
     ]);
     if (!previewR?.ok) throw new Error(previewR?.error || 'preview failed');
     _ppData = previewR;
-    _ppPlainText = buildProposalText(previewR);
     renderProposalView(previewR);
-    $('pp-edit').value = _ppPlainText;
+    $('pp-edit').value = buildProposalText(previewR);
     $('pp-meta').textContent = `· built ${new Date().toLocaleTimeString()}`;
     renderTemplateManifest(tmplR || { templates: [] });
   } catch (e) {
@@ -1305,18 +1310,14 @@ $('pp-overlay')?.addEventListener('click', (e) => {
 $('pp-close')?.addEventListener('click', _ppCloseOverlay);
 
 $('pp-mode-view')?.addEventListener('click', () => {
-  if (_ppMode === 'view') return;
-  // Pull edits back from the textarea so a re-Save uses them
-  _ppPlainText = $('pp-edit').value;
-  _ppMode = 'view';
+  if (_ppMode() === 'view') return;
   $('pp-mode-view').setAttribute('aria-pressed', 'true');
   $('pp-mode-edit').setAttribute('aria-pressed', 'false');
   $('pp-view').hidden = false;
   $('pp-edit').hidden = true;
 });
 $('pp-mode-edit')?.addEventListener('click', () => {
-  if (_ppMode === 'edit') return;
-  _ppMode = 'edit';
+  if (_ppMode() === 'edit') return;
   $('pp-mode-view').setAttribute('aria-pressed', 'false');
   $('pp-mode-edit').setAttribute('aria-pressed', 'true');
   $('pp-view').hidden = true;
@@ -1329,7 +1330,7 @@ $('pp-regenerate')?.addEventListener('click', openProposalPreview);
 $('pp-save')?.addEventListener('click', async () => {
   if (!LEAD?.jobId) return;
   // Always grab the latest text (in case the operator was editing)
-  const content = (_ppMode === 'edit') ? $('pp-edit').value : _ppPlainText;
+  const content = _ppText();
   if (!content.trim()) { toast('Nothing to save.', 3000); return; }
   const btn = $('pp-save');
   btn.disabled = true;
