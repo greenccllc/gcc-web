@@ -462,7 +462,56 @@
 .pp-overlay[hidden],
 .pp-view[hidden],
 .pp-edit[hidden],
-.pp-results[hidden] { display:none !important; }
+.pp-results[hidden],
+.pp-templates[hidden],
+.pp-templates-empty[hidden] { display:none !important; }
+
+/* ── Template manifest panel ──────────────────────────────────────
+   Lists every registered template (Standard / Conditional / Internal-
+   Only) with a state pill showing whether it'll fire for THIS job.
+   Conditional rows that won't fire dim to ~50% so the "what's
+   actually in this proposal" picture is one glance away. */
+.pp-templates {
+  margin-top:14px; padding:12px 14px;
+  background:#FFFFFF; border:1px solid var(--line); border-radius:8px;
+}
+.pp-templates-hd {
+  display:flex; align-items:baseline; gap:8px;
+  font-size:12.5px; color:var(--forest); margin-bottom:8px;
+  padding-bottom:6px; border-bottom:1px solid var(--line);
+}
+.pp-templates-hd .small { color:var(--slate); font-weight:400; }
+.pp-templates-list { list-style:none; padding:0; margin:0; }
+.pp-tmpl-cat-hd {
+  font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--slate); padding:8px 0 3px; margin-top:4px;
+  border-top:1px dashed var(--line);
+}
+.pp-tmpl-cat-hd:first-child { border-top:none; padding-top:0; }
+.pp-tmpl {
+  display:grid; grid-template-columns:1fr auto auto auto; gap:8px;
+  align-items:baseline; padding:4px 8px; font-size:12px;
+  border-radius:5px; margin-bottom:2px;
+}
+.pp-tmpl.fires { background:#ecf6e8; }
+.pp-tmpl.skip  { opacity:.45; }
+.pp-tmpl-name  { color:var(--ink); font-weight:500; }
+.pp-tmpl.fires .pp-tmpl-name { color:var(--forest); font-weight:600; }
+.pp-trig {
+  background:#fffaec; color:var(--gold-dark);
+  padding:1px 8px; border-radius:9px; font-size:10px;
+}
+.pp-tmpl.fires .pp-trig { background:#1E4D2B; color:#fff; }
+.pp-tmpl-state { color:var(--slate); white-space:nowrap; }
+.pp-tmpl.fires .pp-tmpl-state { color:var(--forest); font-weight:600; }
+.pp-tmpl-link { color:var(--forest); text-decoration:none; }
+.pp-tmpl-link:hover { text-decoration:underline; }
+.pp-btn-link {
+  background:transparent; border:none; color:var(--forest);
+  cursor:pointer; padding:0; text-decoration:underline;
+  font-weight:600; font-size:inherit; font-family:inherit;
+}
+.pp-btn-link:hover { color:#1A3F25; }
 
 /* Build-all results panel: shows the 8-file list after a successful
    "Build all sections" click. Each row has an icon, name, size, and

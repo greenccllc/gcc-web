@@ -7,7 +7,7 @@
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <meta name="theme-color" content="#1E4D2B" />
-  <link rel="stylesheet" href="/assets/css/staff-manage-job.css?v=20260501-0220" />
+  <link rel="stylesheet" href="/assets/css/staff-manage-job.css?v=20260501-0235" />
 </head>
 <body>
   <header>
@@ -215,6 +215,22 @@
         </div>
         <!-- Edit mode: textarea with the same content as plain text -->
         <textarea class="pp-edit" id="pp-edit" hidden spellcheck="false"></textarea>
+        <!-- Templates manifest -- shows which registered .docx templates
+             from dbo.ProposalTemplates will be cloned + token-replaced
+             when "Build all sections" fires. Conditional templates show
+             a green badge when their trigger evaluates true for THIS
+             job, gray when off. Bootstrap link surfaces if registry
+             is empty. -->
+        <div class="pp-templates" id="pp-templates" hidden>
+          <div class="pp-templates-hd">
+            <strong>📚 Template manifest</strong>
+            <span class="small pp-templates-meta" id="pp-templates-meta"></span>
+          </div>
+          <div class="pp-templates-empty small pad" id="pp-templates-empty" hidden>
+            No templates registered. Run <button class="pp-btn-link" id="pp-bootstrap" type="button">📥 Bootstrap from repo</button> to upload <code>proposal-worker/templates_cache/</code> to Drive and register the .docx files here. One-time setup.
+          </div>
+          <ul class="pp-templates-list" id="pp-templates-list"></ul>
+        </div>
         <!-- Build-all results panel (appears below view after a successful
              build-all run; lists every file with a click-to-open link). -->
         <div class="pp-results" id="pp-results" hidden>
@@ -1188,23 +1204,99 @@ async function openProposalPreview() {
   $('pp-loading').textContent = 'Building from synthesized scope…';
   $('pp-saved-link').hidden = true;
   $('pp-meta').textContent = '';
+  $('pp-results').hidden = true;
+  $('pp-templates').hidden = true;
   // Show overlay + set up close handlers
   $('pp-overlay').hidden = false;
   document.addEventListener('keydown', _ppEscapeHandler);
-  // Fetch
+  // Fetch preview + templates manifest in parallel
   try {
-    const r = await api('GET', `/api/admin/jobs/${encodeURIComponent(LEAD.jobId)}/proposal-preview`);
-    if (!r?.ok) throw new Error(r?.error || 'preview failed');
-    _ppData = r;
-    _ppPlainText = buildProposalText(r);
-    renderProposalView(r);
+    const [previewR, tmplR] = await Promise.all([
+      api('GET', `/api/admin/jobs/${encodeURIComponent(LEAD.jobId)}/proposal-preview`),
+      api('GET', `/api/admin/proposals/templates?jobId=${encodeURIComponent(LEAD.jobId)}`)
+        .catch(() => ({ ok: false, templates: [] })),
+    ]);
+    if (!previewR?.ok) throw new Error(previewR?.error || 'preview failed');
+    _ppData = previewR;
+    _ppPlainText = buildProposalText(previewR);
+    renderProposalView(previewR);
     $('pp-edit').value = _ppPlainText;
     $('pp-meta').textContent = `· built ${new Date().toLocaleTimeString()}`;
+    renderTemplateManifest(tmplR || { templates: [] });
   } catch (e) {
     $('pp-loading').textContent = `Preview failed: ${e.message || e}`;
     toast(e.message || 'preview failed', 6000);
   }
 }
+
+function renderTemplateManifest(r) {
+  const wrap = $('pp-templates');
+  const empty = $('pp-templates-empty');
+  const list  = $('pp-templates-list');
+  const meta  = $('pp-templates-meta');
+  if (!wrap) return;
+  wrap.hidden = false;
+  const tmpls = (r?.templates || []);
+  if (tmpls.length === 0) {
+    empty.hidden = false;
+    list.innerHTML = '';
+    meta.textContent = '· not bootstrapped';
+    return;
+  }
+  empty.hidden = true;
+  // Group by category
+  const byCat = {};
+  for (const t of tmpls) {
+    if (!byCat[t.category]) byCat[t.category] = [];
+    byCat[t.category].push(t);
+  }
+  const sections = [];
+  for (const cat of ['Standard', 'Conditional', 'Internal-Only']) {
+    const items = byCat[cat] || [];
+    if (!items.length) continue;
+    items.sort((a, b) => (a.displayOrder - b.displayOrder) || a.name.localeCompare(b.name));
+    const rows = items.map(t => {
+      const willFire = t.willInclude === true;
+      const stateClass = willFire ? 'fires' : (t.willInclude === false ? 'skip' : 'unknown');
+      const stateLabel = willFire ? '✓ included' : (t.willInclude === false ? '— skipped' : '?');
+      const trigBadge = t.triggerKey
+        ? `<span class="pp-trig small" title="Trigger: ${safeHtml(t.triggerKey)}">${safeHtml(t.triggerKey)}</span>`
+        : '';
+      return `<li class="pp-tmpl ${stateClass}">
+        <span class="pp-tmpl-name">${safeHtml(t.name)}</span>
+        ${trigBadge}
+        <span class="pp-tmpl-state small">${stateLabel}</span>
+        <a class="pp-tmpl-link small" href="${safeHtml(t.driveUrl)}" target="_blank" rel="noopener" title="Open template in Drive">↗</a>
+      </li>`;
+    }).join('');
+    sections.push(`<li class="pp-tmpl-cat-hd">${safeHtml(cat)}</li>${rows}`);
+  }
+  list.innerHTML = sections.join('');
+
+  // Manifest meta: count of "will fire" + active trigger flags
+  const fires = tmpls.filter(t => t.willInclude === true).length;
+  const trigs = r.triggers || {};
+  const activeFlags = Object.entries(trigs).filter(([k, v]) => v && !k.includes('_or_')).map(([k]) => k);
+  meta.textContent = `· ${fires}/${tmpls.length} will fire` + (activeFlags.length ? ` · flags: ${activeFlags.join(', ')}` : '');
+}
+
+$('pp-bootstrap')?.addEventListener('click', async () => {
+  if (!confirm('Upload all .docx files in proposal-worker/templates_cache/ to Drive and register them?\n\nThis is a one-time setup. Idempotent: existing rows skip.')) return;
+  const btn = $('pp-bootstrap');
+  btn.disabled = true; const orig = btn.textContent; btn.textContent = 'Uploading…';
+  try {
+    const r = await api('POST', '/api/admin/proposals/templates-bootstrap', {});
+    if (!r?.ok) throw new Error(r?.error || 'bootstrap failed');
+    toast(`✓ Bootstrap: ${r.registered?.length || 0} registered, ${r.skipped?.length || 0} skipped, ${r.failed?.length || 0} failed`, 6000);
+    // Re-load the manifest
+    const tmplR = await api('GET', `/api/admin/proposals/templates?jobId=${encodeURIComponent(LEAD.jobId)}`);
+    renderTemplateManifest(tmplR);
+  } catch (e) {
+    toast(e.message || 'bootstrap failed', 6000);
+  } finally {
+    btn.disabled = false; btn.textContent = orig;
+  }
+});
 
 $('pp-overlay')?.addEventListener('click', (e) => {
   // Click outside the modal closes
