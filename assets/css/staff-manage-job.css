@@ -49,7 +49,11 @@
     .mj-chip-warn { background:var(--rose-tint); border-color:#E89999; color:var(--danger); font-weight:600; }
     .mj-chip-mute { background:#EFEFEC; color:var(--slate); }
 
-    /* ── Hero (project name + identity chips) ───────────────────────── */
+    /* ── Hero (project name + identity chips + subline) ─────────────── */
+    /* Banner is the single source of truth for project meta. Top row
+       carries the chips operators scan most (GC/Location/Due/Status/$);
+       subline below is the lower-priority deep-meta the right pane
+       used to duplicate (Job ID, dates, file counts, AI cost). */
     .mj-hero { padding:16px 16px 12px; background:white;
                border-bottom:1px solid var(--line); }
     .mj-hero-title {
@@ -57,11 +61,40 @@
       color:var(--ink);
     }
     .mj-hero-chips { display:flex; flex-wrap:wrap; gap:6px; }
+    .mj-hero-subline {
+      margin-top:10px; padding-top:10px; border-top:1px dashed var(--line);
+      color:var(--slate); font-size:11.5px;
+      font-family:var(--mono); font-variant-numeric:tabular-nums;
+      line-height:1.6;
+    }
+    .mj-hero-subline .lbl {
+      color:var(--slate-2); font-size:10px; text-transform:uppercase;
+      letter-spacing:.06em; font-weight:700; margin-right:4px;
+      font-family:'Source Sans 3', sans-serif;
+    }
+    .mj-hero-subline code {
+      background:var(--paper); padding:1px 5px; border-radius:var(--r-tag);
+      font-size:11px; color:var(--ink);
+    }
 
-    /* ── Action bar (workflow + maintenance buttons, always visible) ── */
+    /* ── Central action bar ─────────────────────────────────────────
+       Three groups: [Workflow 1-2-3] [Maintenance + Status] [Links].
+       Subtle dividers between groups so the eye sees them as logically
+       separate without the bar fragmenting visually. */
     .mj-action-bar {
-      display:flex; flex-wrap:wrap; gap:6px; padding:11px 16px; background:var(--paper);
+      display:flex; flex-wrap:wrap; gap:10px; padding:11px 16px; background:var(--paper);
       border-bottom:1px solid var(--line); align-items:center;
+    }
+    .mj-action-bar .mj-act-group {
+      display:inline-flex; flex-wrap:wrap; gap:6px; align-items:center;
+      padding:0 10px;
+    }
+    .mj-action-bar .mj-act-group + .mj-act-group {
+      border-left:1px solid var(--line);
+    }
+    .mj-act-workflow > button { font-weight:600; }
+    .mj-act-links {
+      margin-left:auto;
     }
     .mj-action-bar button, .mj-action-bar select {
       padding:6px 12px; font-size:12px; font-weight:600;
@@ -77,6 +110,29 @@
     .mj-action-bar button.warn { background:var(--rose-tint); color:var(--danger); border-color:#E89999; font-weight:700; }
     .mj-action-bar button:disabled { opacity:.55; cursor:wait; }
     .mj-action-bar select { min-width:170px; }
+    /* Link buttons (BC, Drive, Local, Siblings) — visually distinct
+       from action buttons; smaller, lighter so they read as navigation
+       rather than commands. */
+    .mj-action-bar .mj-act-link {
+      display:inline-flex; align-items:center; gap:4px;
+      padding:5px 10px; font-size:11.5px; font-weight:600;
+      color:var(--forest); background:white;
+      border:1px solid var(--line); border-radius:var(--r-md);
+      text-decoration:none; cursor:pointer;
+      transition:background .12s ease, border-color .12s ease;
+    }
+    .mj-action-bar .mj-act-link:hover {
+      background:var(--green-tint); border-color:var(--forest); text-decoration:none;
+    }
+    .mj-action-bar .mj-act-sib-group {
+      display:inline-flex; align-items:center; gap:4px;
+      font-size:10.5px; color:var(--slate-2); font-weight:600;
+      letter-spacing:.04em; text-transform:uppercase;
+    }
+    .mj-action-bar .mj-act-sib {
+      font-family:var(--mono); font-size:10.5px;
+      padding:3px 7px;
+    }
 
     /* ── Status pill inside hero / meta ─────────────────────────────── */
     .mj-status {
@@ -334,26 +390,111 @@
     .mj-ql-grouplbl { color:var(--slate); font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; padding:0 0 2px; }
     .mj-ql-sib { font-family:ui-monospace, Consolas, Menlo, monospace; font-size:11.5px; }
 
-    .mj-doc-grid { display:grid; grid-template-columns:repeat(2, 1fr); gap:10px; margin-top:8px; }
-    @media (max-width:700px) { .mj-doc-grid { grid-template-columns:1fr; } }
+    /* Doc-generator grid (now lives inside the proposal popout) -- 3
+       columns at popout width, 2 below 700px. Tighter than the old
+       right-pane layout because the popout has more horizontal space. */
+    .mj-doc-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-top:8px; }
+    @media (max-width:900px) { .mj-doc-grid { grid-template-columns:repeat(2, 1fr); } }
+    @media (max-width:600px) { .mj-doc-grid { grid-template-columns:1fr; } }
     .mj-doc {
       display:flex; flex-direction:column; gap:5px; padding:12px;
-      border:1px solid var(--line); border-radius:9px; background:#FAFCF9;
-      transition:all .12s ease;
+      border:1px solid var(--line); border-radius:var(--r-md); background:var(--paper);
+      transition:background .12s ease, border-color .12s ease;
     }
-    .mj-doc:hover { border-color:var(--forest); transform:translateY(-1px); box-shadow:0 3px 8px rgba(30,77,43,.08); }
+    .mj-doc:hover { border-color:var(--forest); background:white; }
     .mj-doc .ico  { font-size:20px; }
     .mj-doc .name { font-size:13px; font-weight:600; color:var(--ink); }
-    .mj-doc .desc { font-size:11px; color:var(--slate); }
+    .mj-doc .desc { font-size:11px; color:var(--slate); line-height:1.45; }
     .mj-doc button {
       margin-top:6px; background:white; color:var(--forest); border:1px solid var(--forest);
-      padding:6px 10px; font-size:12px; font-weight:600; border-radius:7px; cursor:pointer;
-      transition:all .12s ease;
+      padding:6px 10px; font-size:12px; font-weight:600; border-radius:var(--r-sm); cursor:pointer;
+      transition:background .12s ease, color .12s ease;
     }
     .mj-doc button:hover { background:var(--forest); color:white; }
     .mj-doc button:disabled { opacity:.6; cursor:wait; }
     .mj-doc.done { border-color:var(--forest); background:var(--green-tint); }
     .mj-doc.done .name::after { content:' ✓'; color:var(--forest); }
+    /* Doc grid wrapper inside the popout */
+    .pp-docs {
+      margin-top:14px; padding:14px 14px 12px;
+      background:white; border:1px solid var(--line); border-radius:var(--r-md);
+    }
+
+    /* ── Latest-proposal card (top-right pane) ─────────────────────
+       Single visual: open the most recent 03 Bid Proposal PDF in
+       Drive's preview. No drafts list, no version history -- those
+       live inside the popout's results panel. The card stays single-
+       purpose so the operator's eye lands on "ready or not" in one
+       glance. */
+    .mj-proposal-latest h2 {
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .mj-proposal-pdf-card {
+      display:grid; grid-template-columns:auto 1fr auto; gap:14px;
+      align-items:center; padding:16px 18px;
+      background:linear-gradient(135deg, var(--green-tint), white 70%);
+      border:1px solid var(--forest); border-left:4px solid var(--forest);
+      border-radius:var(--r-md);
+      text-decoration:none; color:var(--ink);
+      transition:background .12s ease, transform .12s ease;
+    }
+    .mj-proposal-pdf-card:hover {
+      background:linear-gradient(135deg, var(--green-tint), var(--green-tint));
+      text-decoration:none;
+      transform:translateY(-1px);
+      box-shadow:0 4px 14px rgba(30,77,43,.12);
+    }
+    .mj-proposal-pdf-icon {
+      font-size:36px; line-height:1; opacity:.92;
+    }
+    .mj-proposal-pdf-body { min-width:0; }
+    .mj-proposal-pdf-name {
+      font-size:13.5px; font-weight:700; color:var(--ink);
+      font-family:var(--mono); font-variant-numeric:tabular-nums;
+      word-break:break-word; line-height:1.3;
+    }
+    .mj-proposal-pdf-meta {
+      margin-top:4px; color:var(--slate);
+      font-family:var(--mono); font-size:10.5px;
+    }
+    .mj-proposal-pdf-cta {
+      font-size:11.5px; font-weight:700; color:var(--forest);
+      letter-spacing:.04em; text-transform:uppercase;
+      padding:6px 12px; border:1px solid var(--forest); border-radius:var(--r-md);
+      background:white; white-space:nowrap;
+    }
+    .mj-proposal-pdf-card:hover .mj-proposal-pdf-cta {
+      background:var(--forest); color:white;
+    }
+
+    /* ── Calendar card collapsed by default ────────────────────────
+       <details> wrapper around the whole calendar so the iframe + 520
+       px height only render after the operator opens it. */
+    .mj-cal-card > summary {
+      list-style:none; cursor:pointer;
+      padding:14px 16px;
+      font-size:11px; font-weight:700; letter-spacing:.07em;
+      text-transform:uppercase; color:var(--slate);
+      display:flex; align-items:center; gap:8px;
+      border-bottom:1px solid var(--line);
+    }
+    .mj-cal-card > summary::-webkit-details-marker { display:none; }
+    .mj-cal-card > summary::before {
+      content:"▸"; color:var(--slate); font-size:12px;
+      transition:transform .12s ease;
+    }
+    .mj-cal-card[open] > summary::before { transform:rotate(90deg); }
+    .mj-cal-card[open] > summary { color:var(--forest); }
+    .mj-cal-card .mj-cal-title {
+      font-family:'Source Sans 3', sans-serif;
+      letter-spacing:.07em; text-transform:uppercase;
+    }
+    .mj-cal-card > .sub,
+    .mj-cal-card > .mj-cal-actions,
+    .mj-cal-card > .mj-cal-frame {
+      margin-left:16px; margin-right:16px;
+    }
+    .mj-cal-card > .mj-cal-frame { margin-bottom:14px; }
 
     .mj-cal-actions { display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
     .mj-cal-actions button {

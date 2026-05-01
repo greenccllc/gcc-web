@@ -8,7 +8,7 @@
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <meta name="theme-color" content="#1E4D2B" />
   <link rel="stylesheet" href="/assets/css/site.css?v=20260501-redesign" />
-  <link rel="stylesheet" href="/assets/css/staff-manage-job.css?v=20260501-redesign" />
+  <link rel="stylesheet" href="/assets/css/staff-manage-job.css?v=20260501-restructure" />
 </head>
 <body>
   <header>
@@ -21,10 +21,14 @@
     </div>
   </header>
 
-  <!-- Hero: project name + identity chips + status badges -->
+  <!-- Hero banner: ALL project meta lives here. Right-pane "Project meta"
+       card was retired so chips don't render twice. Top row = primary
+       identity (GC/Location/Due/Status/$/Confidence). Subline = the
+       lower-priority fields (Job ID, dates, AI cost, files). -->
   <section class="mj-hero" id="mj-hero" hidden>
     <h2 class="mj-hero-title" id="mj-hero-title">…</h2>
     <div class="mj-hero-chips" id="mj-hero-chips"></div>
+    <div class="mj-hero-subline small" id="mj-hero-subline"></div>
   </section>
 
   <!-- Live extraction-readiness strip: shows queued / processing /
@@ -33,13 +37,14 @@
        follow progress without flipping back to the Projects table. -->
   <section class="mj-extract-strip" id="mj-extract-strip" hidden></section>
 
-  <!-- Action bar: every workflow + maintenance action that used to live in
-       the bc-leads row drawer's "Actions" column. Always visible at the
-       top so the operator never scrolls hunting for the Accept button. -->
+  <!-- Central control bar: every workflow action, every maintenance
+       action, every external link in one row. Replaces the prior
+       split between "action bar" + right-pane "Quick links". Layout:
+       [workflow group] · [maintenance group] · [link group]. -->
   <section class="mj-action-bar" id="mj-action-bar" hidden></section>
 
   <div class="mj-grid">
-    <!-- Left: description + LV scope + extraction details -->
+    <!-- Left: description + LV scope + LV-only requirements -->
     <div>
       <div class="mj-card" id="mj-desc-card">
         <h2>Project description</h2>
@@ -51,15 +56,6 @@
         <div class="mj-scope-toolbar">
           <span class="small" id="mj-scope-summary">—</span>
           <span class="small mj-scope-conf" id="mj-scope-conf"></span>
-          <button id="mj-scope-synth" class="mj-btn-sm" type="button"
-                  title="Run a single Gemini pass over every per-file extraction for this job and emit one canonical count per LV category. The synthesized values become the displayed numbers."
-                  style="margin-left:auto">1️⃣ Synthesize scope</button>
-          <button id="mj-accept-extraction" class="mj-btn-sm" type="button"
-                  title="Accept these counts as bid-ready. Marks dbo.BcRfps.Accepted=1."
-                  disabled>2️⃣ Accept extraction</button>
-          <button id="mj-generate-proposal" class="mj-btn-sm primary" type="button"
-                  title="Build a proposal preview from the synthesized scope + requirements right now. Opens a popout window where you can review and save the result as a Google Doc in Output Docs/. No worker, no Pub/Sub -- synchronous from your click."
-                  disabled>3️⃣ 📄 Generate proposal</button>
         </div>
         <!-- Post-accept handoff strip: appears once Accept fires and shows
              where the draft will land + a direct link. Hidden by default. -->
@@ -76,113 +72,53 @@
       </div>
 
       <div class="mj-card" style="margin-top:14px" id="mj-reqs-card">
-        <h2>Job requirements <span class="mj-card-sub" id="mj-reqs-sub">· loading…</span></h2>
-        <div class="sub">Material specs (jacks, plates, fiber), operational rules (background checks, working hours), compliance (prevailing wage, MBE/WBE), and closeout items pulled from every intake file. Refreshes when you re-synthesize the scope.</div>
+        <h2>LV job requirements <span class="mj-card-sub" id="mj-reqs-sub">· loading…</span></h2>
+        <div class="sub">Filtered to low-voltage subcontractor scope only — Cat6A / fiber / structured cabling specs, IT-room buildout, AV, security, telecom labels, IT closeout. General-construction / non-LV items hide here but stay in <em>Audit</em> below.</div>
         <ul class="mj-reqs-list" id="mj-reqs-list"></ul>
         <div class="small pad" id="mj-reqs-empty" hidden>
-          No requirements synthesized yet. Click <em>Synthesize scope</em> above to populate this list from the agent's spec / note / prop_req rows.
+          No LV-relevant requirements synthesized yet. Click <em>Synthesize scope</em> above to populate this list.
         </div>
       </div>
+    </div>
 
-      <!-- Proposal output: drafts the proposal-worker generates land in
-           Output Docs/ and show as "pending" rows with status pills. Once
-           the operator promotes a draft via the GCC Manager tray, the
-           v#/ folder appears under Client/Proposal/ with the cleaned
-           client-facing docx. Both stacks render here so the operator
-           never has to round-trip to Drive to confirm "did it work?". -->
-      <div class="mj-card" style="margin-top:14px" id="mj-proposal-card">
-        <h2>Proposal output
-          <span class="mj-card-sub" id="mj-proposal-sub">· loading…</span>
-          <button id="mj-proposal-refresh" class="mj-btn-sm" type="button"
-                  title="Re-fetch proposal drafts and accepted versions from SQL + Drive."
-                  style="margin-left:auto; font-size:11px">↻ Refresh</button>
+    <!-- Right: latest proposal PDF (top) + collapsed calendar -->
+    <div>
+      <!-- Top-right pane: ONE visual card showing the latest 03 Bid
+           Proposal PDF from the most recent build-all run. Click to
+           open the PDF in Drive's preview. Build-all + drafts archive
+           live inside the popout now -- this surface stays single-
+           purpose so the operator's eye lands on "is the latest
+           proposal ready?" in one glance. -->
+      <div class="mj-card mj-proposal-latest" id="mj-proposal-latest">
+        <h2>Latest proposal
+          <span class="mj-card-sub" id="mj-proposal-latest-sub">· loading…</span>
         </h2>
-        <div class="sub">
-          The proposal-worker drops each draft into <code>Output Docs/</code>; once you accept a draft in the GCC Manager tray it gets promoted to <code>Proposals/v#/</code> with a clean client-facing name.
-        </div>
+        <a class="mj-proposal-pdf-card" id="mj-proposal-pdf-link" target="_blank" rel="noopener" hidden>
+          <div class="mj-proposal-pdf-icon">📕</div>
+          <div class="mj-proposal-pdf-body">
+            <div class="mj-proposal-pdf-name" id="mj-proposal-pdf-name">—</div>
+            <div class="mj-proposal-pdf-meta small" id="mj-proposal-pdf-meta"></div>
+          </div>
+          <div class="mj-proposal-pdf-cta">Open PDF ↗</div>
+        </a>
         <div class="mj-proposal-empty small pad" id="mj-proposal-empty" hidden>
-          No proposal drafts yet. Click <em>2️⃣ Accept &amp; queue proposal</em> above to fire the proposal-worker. Drafts land here within ~2-5 minutes.
-        </div>
-        <div class="mj-proposal-section" id="mj-proposal-internal" hidden>
-          <div class="mj-proposal-section-hd"><span>📝 Drafts (Output Docs/)</span><span class="small mj-proposal-count" id="mj-proposal-internal-count"></span></div>
-          <ul class="mj-proposal-list" id="mj-proposal-internal-list"></ul>
-        </div>
-        <div class="mj-proposal-section" id="mj-proposal-client" hidden>
-          <div class="mj-proposal-section-hd"><span>🚀 Promoted versions (Proposals/)</span><span class="small mj-proposal-count" id="mj-proposal-client-count"></span></div>
-          <div class="mj-proposal-versions" id="mj-proposal-client-list"></div>
+          No proposal generated yet. Run <em>Generate proposal → Build all sections</em> above.
         </div>
         <div class="small mj-proposal-error" id="mj-proposal-error" hidden></div>
       </div>
 
-    </div>
-
-    <!-- Right: meta + quick-links + docs + calendar -->
-    <div>
-      <div class="mj-card">
-        <h2>Project meta</h2>
-        <div class="sub">Pulled from the BC RFP record + saved outcome.</div>
-        <div class="mj-meta" id="mj-meta"></div>
-      </div>
-
-      <div class="mj-card" style="margin-top:14px" id="mj-quick-card">
-        <h2>Quick links</h2>
-        <div class="mj-quick-list" id="mj-quick-list"></div>
-      </div>
-
-      <div class="mj-card" style="margin-top:14px">
-        <h2>Documents to generate</h2>
-        <div class="sub">Each generator drops a templated Google Doc into the project's Drive folder under <code>05-Documents/</code>. Re-running creates a new versioned copy (no overwrites).</div>
-        <div class="mj-doc-grid" id="mj-docs">
-          <div class="mj-doc" data-kind="submittals">
-            <div class="ico">📑</div>
-            <div class="name">Additional submittals</div>
-            <div class="desc">Per-spec-section submittal package: product data, sign-offs, RFI cover.</div>
-            <button data-kind="submittals">Generate</button>
-          </div>
-          <div class="mj-doc" data-kind="as-builts">
-            <div class="ico">📐</div>
-            <div class="name">As-built drawings</div>
-            <div class="desc">Markup template per drawing sheet, with red/blue line guidance and revision block.</div>
-            <button data-kind="as-builts">Generate</button>
-          </div>
-          <div class="mj-doc" data-kind="payroll">
-            <div class="ico">💰</div>
-            <div class="name">Payroll report</div>
-            <div class="desc">Certified-payroll WH-347 template, weekly. Pre-filled with project &amp; classification.</div>
-            <button data-kind="payroll">Generate</button>
-          </div>
-          <div class="mj-doc" data-kind="closeout">
-            <div class="ico">📦</div>
-            <div class="name">Closeout package</div>
-            <div class="desc">O&amp;M, warranty, attic stock, spare-parts, training acknowledgement, lien waivers.</div>
-            <button data-kind="closeout">Generate</button>
-          </div>
-          <div class="mj-doc" data-kind="rfi">
-            <div class="ico">❓</div>
-            <div class="name">RFI log</div>
-            <div class="desc">RFI tracker spreadsheet with status / answer / impact columns.</div>
-            <button data-kind="rfi">Generate</button>
-          </div>
-          <div class="mj-doc" data-kind="schedule">
-            <div class="ico">🗓️</div>
-            <div class="name">Schedule of values</div>
-            <div class="desc">SOV spreadsheet broken out by spec section, with monthly billing columns.</div>
-            <button data-kind="schedule">Generate</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="mj-card" style="margin-top:14px">
-        <h2>GCC Staff Calendar</h2>
-        <div class="sub">Project events live on the GCC primary calendar. The Outcome's project start / end dates seed the kickoff &amp; closeout events.</div>
+      <!-- GCC Calendar: collapsed by default. iframe only loads when
+           expanded (lazy src) so the page doesn't pay 520px of layout
+           shift on every load. -->
+      <details class="mj-card mj-cal-card" id="mj-cal-card" style="margin-top:14px">
+        <summary><span class="mj-cal-title">📅 GCC Staff Calendar</span></summary>
+        <div class="sub" style="margin-top:8px">Project events live on the GCC primary calendar. The Outcome's project start / end dates seed the kickoff &amp; closeout events.</div>
         <div class="mj-cal-actions">
           <button id="mj-cal-add" disabled>📅 Add project to calendar</button>
           <button id="mj-cal-open" class="secondary">↗ Open Google Calendar</button>
         </div>
-        <iframe id="mj-cal-frame" class="mj-cal-frame"
-                src="about:blank"
-                title="GCC Staff Calendar"></iframe>
-      </div>
+        <iframe id="mj-cal-frame" class="mj-cal-frame" src="about:blank" title="GCC Staff Calendar"></iframe>
+      </details>
     </div>
   </div>
 
@@ -240,6 +176,55 @@
             <span class="small" id="pp-results-count"></span>
           </div>
           <ul class="pp-results-list" id="pp-results-list"></ul>
+        </div>
+        <!-- Additional documents to generate (moved from right pane).
+             These are the supporting docs that aren't part of the core
+             8-file proposal output set: submittals, as-builts, payroll,
+             closeout, RFI log, SOV. Each generator drops a templated
+             Google Doc into the project's Drive folder. -->
+        <div class="pp-docs">
+          <div class="pp-templates-hd">
+            <strong>📂 Additional documents to generate</strong>
+            <span class="small">independent of the 03 Bid Proposal output set</span>
+          </div>
+          <div class="mj-doc-grid" id="mj-docs">
+            <div class="mj-doc" data-kind="submittals">
+              <div class="ico">📑</div>
+              <div class="name">Additional submittals</div>
+              <div class="desc">Per-spec-section submittal package: product data, sign-offs, RFI cover.</div>
+              <button data-kind="submittals">Generate</button>
+            </div>
+            <div class="mj-doc" data-kind="as-builts">
+              <div class="ico">📐</div>
+              <div class="name">As-built drawings</div>
+              <div class="desc">Markup template per drawing sheet, with red/blue line guidance and revision block.</div>
+              <button data-kind="as-builts">Generate</button>
+            </div>
+            <div class="mj-doc" data-kind="payroll">
+              <div class="ico">💰</div>
+              <div class="name">Payroll report</div>
+              <div class="desc">Certified-payroll WH-347 template, weekly. Pre-filled with project &amp; classification.</div>
+              <button data-kind="payroll">Generate</button>
+            </div>
+            <div class="mj-doc" data-kind="closeout">
+              <div class="ico">📦</div>
+              <div class="name">Closeout package</div>
+              <div class="desc">O&amp;M, warranty, attic stock, spare-parts, training acknowledgement, lien waivers.</div>
+              <button data-kind="closeout">Generate</button>
+            </div>
+            <div class="mj-doc" data-kind="rfi">
+              <div class="ico">❓</div>
+              <div class="name">RFI log</div>
+              <div class="desc">RFI tracker spreadsheet with status / answer / impact columns.</div>
+              <button data-kind="rfi">Generate</button>
+            </div>
+            <div class="mj-doc" data-kind="schedule">
+              <div class="ico">🗓️</div>
+              <div class="name">Schedule of values</div>
+              <div class="desc">SOV spreadsheet broken out by spec section, with monthly billing columns.</div>
+              <button data-kind="schedule">Generate</button>
+            </div>
+          </div>
         </div>
       </div>
       <div class="pp-footer">
@@ -369,12 +354,10 @@ function renderAll() {
   renderActionBar(r);
   renderDescription(r);
   renderScope(r);
-  renderMeta(r);
-  renderQuickLinks(r);
   renderCalendar();
   loadRequirements();
   loadLocations();
-  loadProposalFiles();   // Drafts + promoted versions for "Proposal output" card
+  loadProposalFiles();   // Powers the "Latest proposal" card on the top-right pane
   // Kick the readiness poll. It self-stops when ready (queue==0,
   // processing==0) and the strip hides itself when there's nothing
   // to report.
@@ -497,22 +480,12 @@ function tooltipForKey(uiKey) {
 // drafts are decided.
 let _propPollTimer = null;
 let _propPollAttempts = 0;
-let _propLastSig = '';   // last rendered payload signature; skips DOM rewrite when unchanged
-function _propSignature(drafts, versions) {
-  // Compact signature of the fields the row renderers actually consume.
-  // Stable on identical payloads -> skip the innerHTML rewrites that
-  // were stomping operator selection/scroll position every 8s.
-  const d = drafts.map(x => `${x.id}:${x.status}:${x.draftDocxFileId || ''}:${x.updatedAt || ''}`).join('|');
-  const v = versions.map(x => `${x.folderId}:${(x.files||[]).length}:${x.modifiedTime || ''}`).join('|');
-  return `${d}#${v}`;
-}
 async function loadProposalFiles() {
   if (!JOB_ID) return;
-  const sub  = $('mj-proposal-sub');
-  const err  = $('mj-proposal-error');
+  const sub   = $('mj-proposal-latest-sub');
+  const err   = $('mj-proposal-error');
   const empty = $('mj-proposal-empty');
-  const intSec = $('mj-proposal-internal');
-  const cliSec = $('mj-proposal-client');
+  const link  = $('mj-proposal-pdf-link');
   if (err) { err.hidden = true; err.textContent = ''; }
   let r;
   try {
@@ -524,15 +497,47 @@ async function loadProposalFiles() {
   }
   const drafts = r.internalDrafts || [];
   const versions = r.clientVersions || [];
-  const sig = _propSignature(drafts, versions);
-  const changed = sig !== _propLastSig;
-  _propLastSig = sig;
 
-  // Empty state
-  if (drafts.length === 0 && versions.length === 0) {
+  // Pick the most recent "03 Bid Proposal" PDF across drafts + promoted
+  // versions. Drafts have draftDocxFileId + draftDocxName; promoted
+  // versions have a files[] array with mimeType. We surface the
+  // latest no matter which bucket it landed in.
+  let latest = null;
+  for (const d of drafts) {
+    if (!d.draftDocxFileId || !d.draftDocxName) continue;
+    if (!d.draftDocxName.toLowerCase().includes('bid proposal')) continue;
+    const ts = d.updatedAt || d.createdAt;
+    if (!latest || (ts && ts > latest.ts)) {
+      latest = {
+        ts,
+        name:  d.draftDocxName,
+        url:   d.fileUrl || `https://drive.google.com/file/d/${d.draftDocxFileId}/view`,
+        size:  d.draftSizeBytes,
+        kind:  'draft',
+      };
+    }
+  }
+  for (const v of versions) {
+    for (const f of (v.files || [])) {
+      const isPdf = (f.mimeType || '').includes('pdf') || (f.name || '').toLowerCase().endsWith('.pdf');
+      if (!isPdf) continue;
+      if (!(f.name || '').toLowerCase().includes('bid proposal')) continue;
+      const ts = f.modifiedTime;
+      if (!latest || (ts && ts > latest.ts)) {
+        latest = {
+          ts,
+          name:  f.name,
+          url:   f.fileUrl,
+          size:  f.sizeBytes,
+          kind:  'promoted ' + v.folderName,
+        };
+      }
+    }
+  }
+
+  if (!latest) {
+    if (link) link.hidden = true;
     if (empty) empty.hidden = false;
-    if (intSec) intSec.hidden = true;
-    if (cliSec) cliSec.hidden = true;
     if (sub) sub.textContent = '· none yet';
     if (r.driveListError && err) {
       err.hidden = false;
@@ -540,44 +545,24 @@ async function loadProposalFiles() {
     }
   } else {
     if (empty) empty.hidden = true;
-
-    // Only rewrite innerHTML when the payload changed -- the 8s poll
-    // hits this 90% of the time with identical data, and stomping the
-    // DOM kills any operator scroll/selection state.
-    if (changed) {
-      const intCount = $('mj-proposal-internal-count');
-      const intList  = $('mj-proposal-internal-list');
-      if (drafts.length > 0) {
-        if (intSec) intSec.hidden = false;
-        if (intCount) intCount.textContent = `· ${drafts.length} ${drafts.length === 1 ? 'draft' : 'drafts'}`;
-        if (intList) intList.innerHTML = drafts.map(renderDraftRow).join('');
-      } else if (intSec) intSec.hidden = true;
-
-      const cliCount = $('mj-proposal-client-count');
-      const cliList  = $('mj-proposal-client-list');
-      if (versions.length > 0) {
-        if (cliSec) cliSec.hidden = false;
-        if (cliCount) cliCount.textContent = `· ${versions.length} ${versions.length === 1 ? 'version' : 'versions'}`;
-        if (cliList) cliList.innerHTML = versions.map(renderClientVersionRow).join('');
-      } else if (cliSec) cliSec.hidden = true;
+    if (link) {
+      link.hidden = false;
+      link.href = latest.url || '#';
+      $('mj-proposal-pdf-name').textContent = latest.name;
+      const sizeKb = latest.size ? `${Math.round(latest.size / 1024)} KB · ` : '';
+      $('mj-proposal-pdf-meta').textContent = `${sizeKb}${latest.kind} · ${fmt(latest.ts)}`;
+    }
+    if (sub) {
+      const totals = [];
+      if (drafts.length)   totals.push(`${drafts.length} draft${drafts.length === 1 ? '' : 's'}`);
+      if (versions.length) totals.push(`${versions.length} promoted`);
+      sub.textContent = totals.length ? '· ' + totals.join(' · ') : '· latest';
     }
   }
 
-  // Update the sub badge with a quick rollup.
+  // Auto-poll while any draft is pending (worker hasn't landed the PDF
+  // yet). The button stays available; the card just refreshes inline.
   const pending = drafts.filter(d => d.status === 'pending').length;
-  const accepted = drafts.filter(d => d.status === 'accepted').length;
-  if (sub) {
-    const parts = [];
-    if (pending > 0) parts.push(`${pending} pending`);
-    if (versions.length > 0) parts.push(`${versions.length} promoted`);
-    if (accepted > 0 && parts.length === 0) parts.push(`${accepted} accepted`);
-    sub.textContent = parts.length ? '· ' + parts.join(' · ') : '· ' + drafts.length + ' total';
-  }
-
-  // ---- Auto-poll while any draft is pending ----
-  // The proposal-worker takes ~2-5 min to land a draft; poll every 8s
-  // for up to 6 minutes (45 attempts) so the operator sees the docx
-  // pop in without manually refreshing.
   clearInterval(_propPollTimer);
   if (pending > 0 && _propPollAttempts < 45) {
     _propPollTimer = setInterval(async () => {
@@ -589,68 +574,52 @@ async function loadProposalFiles() {
   }
 }
 
-function renderDraftRow(d) {
-  const status = d.status || 'pending';
-  const statusClass = `mj-prop-status-${status}`;
-  const statusLabel = {
-    pending:  '⏳ pending',
-    accepted: '✓ accepted',
-    rejected: '✗ rejected',
-    error:    '⚠ error',
-  }[status] || status;
+// (renderDraftRow + renderClientVersionRow + mj-proposal-refresh
+// retired -- the proposal output card now shows a single visual link
+// to the latest 03 Bid Proposal PDF, with auto-poll while pending.
+// The full drafts list lives in the popout's results panel.)
 
-  const docxName = d.draftDocxName ? safeHtml(d.draftDocxName) : '<em class="small">draft generating…</em>';
-  const sizeKb   = d.draftSizeBytes ? `${Math.round(d.draftSizeBytes / 1024)} KB` : '';
-  const created  = d.createdAt ? fmt(d.createdAt) : '—';
-  const decided  = d.decidedAt ? ` · decided ${fmt(d.decidedAt)}` : '';
-  const reason   = d.decisionReason ? `<div class="mj-prop-reason small" title="${safeHtml(d.decisionReason)}">📝 ${safeHtml(d.decisionReason.slice(0, 80))}${d.decisionReason.length > 80 ? '…' : ''}</div>` : '';
-  const errMsg   = d.errorMessage ? `<div class="mj-prop-reason small" style="color:var(--danger)" title="${safeHtml(d.errorMessage)}">⚠ ${safeHtml(d.errorMessage.slice(0, 100))}${d.errorMessage.length > 100 ? '…' : ''}</div>` : '';
-
-  const draftLink = d.fileUrl
-    ? `<a href="${d.fileUrl}" target="_blank" rel="noopener" class="mj-prop-link" title="Open draft docx in Drive">📄 Open draft ↗</a>`
-    : `<span class="small" style="color:var(--slate)">— no docx yet —</span>`;
-  const promotedLink = d.clientFileUrl && d.clientFolderName
-    ? ` · <a href="${d.clientFileUrl}" target="_blank" rel="noopener" class="mj-prop-link mj-prop-link-promoted" title="Open promoted ${safeHtml(d.clientFolderName)} client version">🚀 ${safeHtml(d.clientFolderName)} ↗</a>`
-    : '';
-
-  return `<li class="mj-prop-row">
-    <div class="mj-prop-row-main">
-      <span class="mj-prop-status ${statusClass}">${statusLabel}</span>
-      <span class="mj-prop-name">${docxName}</span>
-      <span class="small mj-prop-meta">${sizeKb ? sizeKb + ' · ' : ''}created ${created}${decided}</span>
-    </div>
-    <div class="mj-prop-row-actions">
-      ${draftLink}${promotedLink}
-    </div>
-    ${reason}${errMsg}
-  </li>`;
+// ===== Job requirements (LV-filtered) =====
+// Show only requirements that mention low-voltage / Div 27 / 28 scope
+// keywords. The synth returns a flat bullet list pulled from spec /
+// note / prop_req rows across every intake file, so it includes a lot
+// of general-construction noise (concrete, paint, ADA, HVAC, etc.).
+// We strip those out client-side -- the full list is still in the
+// Audit details section at the bottom of the page if the operator
+// needs it.
+const LV_KEYWORDS = [
+  // cabling
+  'cat6', 'cat 6', 'cat6a', 'cat 6a', 'cat5', 'cat 5', 'cable', 'cabling',
+  'plenum', 'riser', 'pull', 'patch', 'jack', 'plate', 'faceplate', 'outlet', 'drop',
+  'horizontal', 'backbone', 'service loop', 'firestop', 'penetration',
+  // fiber
+  'fiber', 'om3', 'om4', 'os1', 'os2', 'lc', 'sc', 'fusion', 'splice', 'strand',
+  // network / IT room
+  'rack', 'mdf', 'idf', 'closet', 'patch panel', 'switch', 'router', 'ups',
+  'ladder rack', 'cable tray', 'grounding', 'bonding', 'tgb',
+  // wireless
+  'wap', 'wi-fi', 'wifi', 'wireless', 'access point',
+  // av / video / displays
+  'a/v', 'audio', 'video', 'speaker', 'display', 'projector', 'hdmi', 'coax',
+  'tv', 'monitor', 'paging',
+  // security
+  'camera', 'cctv', 'surveillance', 'access control', 'reader', 'card reader',
+  'door contact', 'rex', 'dps', 'intercom', 'door access',
+  // standards / labels
+  'tia', 'eia', 'bicsi', 'class 3', 'label', 'labeling', 'fluke', 'linkware',
+  'certif', 'test',
+  // div / scope keywords
+  'low voltage', 'low-voltage', 'lv', 'division 27', 'division 28', 'div 27', 'div 28',
+  'communications', 'electronic safety', 'structured cabling',
+  // closeout
+  'as-built', 'as built', 'closeout', 'warranty',
+  // workforce / wage flags worth keeping
+  'prevailing wage', 'davis-bacon', 'mbe', 'wbe', 'background check',
+];
+function isLvRelevant(text) {
+  const low = (text || '').toLowerCase();
+  return LV_KEYWORDS.some(k => low.includes(k));
 }
-
-function renderClientVersionRow(v) {
-  const files = (v.files || []).map(f => {
-    const sizeKb = f.sizeBytes ? `${Math.round(f.sizeBytes / 1024)} KB` : '';
-    const isDocx = (f.mimeType || '').includes('wordprocessingml') || (f.name || '').toLowerCase().endsWith('.docx');
-    const icon = isDocx ? '📄' : (f.mimeType || '').includes('pdf') ? '📕' : '📎';
-    return `<li class="mj-prop-version-file">
-      <span>${icon} <a href="${f.fileUrl}" target="_blank" rel="noopener">${safeHtml(f.name)}</a></span>
-      <span class="small mj-prop-meta">${sizeKb}${f.modifiedTime ? ' · ' + fmt(f.modifiedTime) : ''}</span>
-    </li>`;
-  }).join('');
-  return `<div class="mj-prop-version">
-    <div class="mj-prop-version-hd">
-      <a href="${v.folderUrl}" target="_blank" rel="noopener" class="mj-prop-version-name" title="Open ${safeHtml(v.folderName)} folder in Drive">📁 ${safeHtml(v.folderName)} ↗</a>
-      <span class="small mj-prop-meta">${(v.files || []).length} ${(v.files || []).length === 1 ? 'file' : 'files'}</span>
-    </div>
-    ${files ? `<ul class="mj-prop-version-files">${files}</ul>` : '<div class="small pad">empty folder</div>'}
-  </div>`;
-}
-
-$('mj-proposal-refresh')?.addEventListener('click', () => {
-  _propPollAttempts = 0; // user action -> reset the poll budget
-  loadProposalFiles();
-});
-
-// ===== Job requirements (synthesized bullet list) =====
 async function loadRequirements() {
   if (!JOB_ID) return;
   $('mj-reqs-sub').textContent = '· loading…';
@@ -658,13 +627,16 @@ async function loadRequirements() {
   $('mj-reqs-empty').hidden = true;
   try {
     const r = await api('GET', `/api/admin/jobs/${encodeURIComponent(JOB_ID)}/requirements`);
-    const bullets = Array.isArray(r?.requirements) ? r.requirements : [];
+    const all = Array.isArray(r?.requirements) ? r.requirements : [];
+    const bullets = all.filter(isLvRelevant);
     if (bullets.length === 0) {
-      $('mj-reqs-sub').textContent = '· none yet';
+      $('mj-reqs-sub').textContent = all.length ? `· 0 LV items (${all.length} non-LV filtered)` : '· none yet';
       $('mj-reqs-empty').hidden = false;
       return;
     }
-    $('mj-reqs-sub').textContent = `· ${bullets.length} item${bullets.length === 1 ? '' : 's'}`
+    const filteredOut = all.length - bullets.length;
+    $('mj-reqs-sub').textContent = `· ${bullets.length} LV item${bullets.length === 1 ? '' : 's'}`
+                                  + (filteredOut > 0 ? ` · ${filteredOut} non-LV hidden` : '')
                                   + (r.synthesizedAt ? ` · synthesized ${fmt(r.synthesizedAt)}` : '');
     $('mj-reqs-list').innerHTML = bullets.map(b => `<li>${safeHtml(b)}</li>`).join('');
   } catch (e) {
@@ -675,6 +647,11 @@ async function loadRequirements() {
 }
 
 // ===== Hero =====
+// Single source of truth for project meta. Top row = primary chips
+// the operator scans (GC/Location/Due/Status/Money/Confidence/State).
+// Subline below = the lower-priority "deep meta" that used to live in
+// the right-pane "Project meta" card (Job ID, dates, file counts, AI
+// cost). One render path, no duplication.
 function renderHero(r) {
   $('mj-hero').hidden = false;
   $('mj-hero-title').textContent = r.projectName || r.driveJobFolderName || '(no name)';
@@ -696,21 +673,32 @@ function renderHero(r) {
     `<span class="mj-chip"><span class="lbl">Status</span> ${statusBadge(status)}</span>`,
     pt > 0 ? `<span class="mj-chip"><span class="lbl">Pages</span> ${pp} of ${pt}</span>` : '',
     conf != null ? `<span class="mj-chip"><span class="lbl">Confidence</span> ${Math.round(conf)}%</span>` : '',
-    cost != null ? `<span class="mj-chip"><span class="lbl">AI cost</span> $${Number(cost).toFixed(2)}</span>` : '',
-    (att || msg) ? `<span class="mj-chip"><span class="lbl">Files</span> ${att} att · ${msg} msg</span>` : '',
     accepted ? '<span class="mj-chip mj-chip-good">✓ Accepted</span>' : '',
     flagged  ? '<span class="mj-chip mj-chip-warn">⚠ Addendum</span>' : '',
     paused   ? '<span class="mj-chip mj-chip-mute">⏸ Paused</span>' : '',
     JOB?.calendarEventId ? '<span class="mj-chip">📅 On calendar</span>' : '',
   ].filter(Boolean).join('');
   $('mj-hero-chips').innerHTML = chips;
+  // Subline: lower-priority deep-meta. Renders inline as small text.
+  const sublineParts = [
+    r.jobId        ? `<span class="lbl">Job ID</span> <code>${safeHtml(r.jobId.slice(0, 12))}…</code>` : '',
+    JOB?.projectStartAt ? `<span class="lbl">Start</span> ${fmt(JOB.projectStartAt)}` : '',
+    JOB?.projectEndAt   ? `<span class="lbl">End</span> ${fmt(JOB.projectEndAt)}` : '',
+    r.firstSeenAt  ? `<span class="lbl">First seen</span> ${fmt(r.firstSeenAt)}` : '',
+    r.lastFileAt || r.lastSeenAt ? `<span class="lbl">Last file</span> ${fmt(r.lastFileAt || r.lastSeenAt)}` : '',
+    (att || msg) ? `<span class="lbl">Files</span> ${att} att · ${msg} msg` : '',
+    cost != null ? `<span class="lbl">AI cost</span> $${Number(cost).toFixed(2)}` : '',
+    JOB?.outcomeStatus ? `<span class="lbl">Outcome</span> ${safeHtml(JOB.outcomeStatus)}` : '',
+  ].filter(Boolean).join(' · ');
+  $('mj-hero-subline').innerHTML = sublineParts;
 }
 
-// ===== Action bar =====
-// Workflow + maintenance buttons. Mirrors the row-drawer Actions column from
-// bc-leads (now stripped) but lives at the page top so it's always reachable.
-// Buttons appear/disappear based on the row's current Status — same logic as
-// the prior expandActionsCol().
+// ===== Central action bar =====
+// One row, three groups: [Workflow] · [Maintenance + Status] · [Links].
+// Replaces the prior split between top action bar + right-pane Quick
+// Links card. Workflow buttons own the proposal pipeline (Synthesize ->
+// Accept -> Generate). Maintenance covers per-status state changes.
+// Links go to BC, Drive, local Filestore, sibling RFPs.
 function renderActionBar(r) {
   $('mj-action-bar').hidden = false;
   const id       = r.jobId;
@@ -718,37 +706,84 @@ function renderActionBar(r) {
   const paused   = r.extractionPaused;
   const status   = r.status || 'Unknown';
   const flagged  = !!r.addendaSeen;
-  const items = [];
-  // Per-status primary actions
+  const sibs     = Array.isArray(r._siblingJobIds) ? r._siblingJobIds : [];
+
+  // ── Workflow group: Synthesize → Accept → Generate proposal ──
+  const workflow = `
+    <div class="mj-act-group mj-act-workflow" title="Proposal pipeline -- left to right">
+      <button id="mj-scope-synth" class="mj-btn-sm" type="button"
+              title="Run a single Gemini pass over every per-file extraction for this job and emit one canonical count per LV category.">1️⃣ Synthesize scope</button>
+      <button id="mj-accept-extraction" class="mj-btn-sm" type="button"
+              title="Accept these counts as bid-ready. Marks dbo.BcRfps.Accepted=1." disabled>2️⃣ Accept extraction</button>
+      <button id="mj-generate-proposal" class="mj-btn-sm primary" type="button"
+              title="Build proposal preview + popout for review. Synchronous from your click." disabled>3️⃣ 📄 Generate proposal</button>
+    </div>`;
+
+  // ── Maintenance + status group: per-status actions + Move-to ──
+  const maintItems = [];
   if (status === 'Undecided') {
-    items.push(`<button class="primary" data-act="project-details" data-id="${id}">📋 Project details</button>`);
+    maintItems.push(`<button data-act="project-details" data-id="${id}">📋 Project details</button>`);
   }
   if (status === 'Accepted') {
-    items.push(`<button class="primary" data-act="extract-more"  data-id="${id}">🔬 Extract more</button>`);
-    items.push(`<button class="${accepted ? 'primary' : ''}" data-act="accept" data-id="${id}">${accepted ? '✓ Accepted' : '✓ Accept extraction'}</button>`);
-    items.push(`<button data-act="pause-toggle" data-id="${id}" data-paused="${paused ? '1' : '0'}">${paused ? '▶ Resume' : '⏸ Pause'}</button>`);
+    maintItems.push(`<button data-act="extract-more"  data-id="${id}">🔬 Extract more</button>`);
+    maintItems.push(`<button class="${accepted ? '' : ''}" data-act="accept" data-id="${id}">${accepted ? '✓ Accepted' : '✓ Accept extraction'}</button>`);
+    maintItems.push(`<button data-act="pause-toggle" data-id="${id}" data-paused="${paused ? '1' : '0'}">${paused ? '▶ Resume' : '⏸ Pause'}</button>`);
   }
   if (status === 'Submitted') {
-    items.push(`<button class="primary" data-act="view-prop" data-id="${id}">📤 View latest proposal</button>`);
-    items.push(`<button class="${flagged ? 'warn' : ''}" data-act="scan-addenda" data-id="${id}">${flagged ? '⚠ Scan addenda (NEW)' : '🔍 Scan addenda'}</button>`);
+    maintItems.push(`<button data-act="view-prop" data-id="${id}">📤 View latest proposal</button>`);
+    maintItems.push(`<button class="${flagged ? 'warn' : ''}" data-act="scan-addenda" data-id="${id}">${flagged ? '⚠ Scan addenda (NEW)' : '🔍 Scan addenda'}</button>`);
   }
   if (status === 'Won' || status === 'Lost' || status === 'Archived') {
-    items.push(`<button data-act="view-prop" data-id="${id}">📤 View latest proposal</button>`);
+    maintItems.push(`<button data-act="view-prop" data-id="${id}">📤 View latest proposal</button>`);
   }
-  // Move-to-status select
-  items.push(`<select data-act="move-status" data-id="${id}">
+  maintItems.push(`<select data-act="move-status" data-id="${id}">
     <option value="">— Move to status —</option>
     ${STATUS_OPTIONS.map(s => `<option value="${s}" ${s === status ? 'disabled' : ''}>${s}${s === status ? ' (current)' : ''}</option>`).join('')}
   </select>`);
-  // Maintenance
-  items.push(`<button data-act="rescan-details" data-id="${id}">🔄 Rescan details</button>`);
-  items.push(`<button class="danger" data-act="delete" data-id="${id}">🗑 Delete RFP</button>`);
-  $('mj-action-bar').innerHTML = items.join('');
-  // Wire up
-  $('mj-action-bar').querySelectorAll('button[data-act]').forEach(btn => {
+  maintItems.push(`<button data-act="rescan-details" data-id="${id}">🔄 Rescan details</button>`);
+  maintItems.push(`<button class="danger" data-act="delete" data-id="${id}">🗑 Delete</button>`);
+  const maintenance = `<div class="mj-act-group mj-act-maint">${maintItems.join('')}</div>`;
+
+  // ── Links group: BC, Drive, Local, Siblings ──
+  const linkParts = [];
+  if (r.href) linkParts.push(`<a class="mj-act-link" target="_blank" rel="noopener noreferrer" href="${safeHtml(r.href)}">🔗 BC ↗</a>`);
+  if (r.driveJobFolderId) linkParts.push(`<a class="mj-act-link" target="_blank" rel="noopener noreferrer" href="https://drive.google.com/drive/folders/${safeHtml(r.driveJobFolderId)}">📂 Drive ↗</a>`);
+  if (r.localJobFolderPath) {
+    linkParts.push(`<button class="mj-act-link" data-act="copy-local" data-path="${safeHtml(r.localJobFolderPath)}" type="button" title="Copy local Filestore path to clipboard">📁 Local</button>`);
+  }
+  if (sibs.length) {
+    const sibLinks = sibs.map(sid => {
+      const qs = new URLSearchParams({ jobId: sid });
+      if (URL_PARAMS.get('secret')) qs.set('secret', URL_PARAMS.get('secret'));
+      if (URL_PARAMS.get('api'))    qs.set('api',    URL_PARAMS.get('api'));
+      return `<a class="mj-act-link mj-act-sib" href="/staff/manage-job.html?${qs.toString()}" title="Sibling RFP ${safeHtml(sid)}">🔗 ${safeHtml(sid.slice(0,8))}…</a>`;
+    }).join('');
+    linkParts.push(`<span class="mj-act-sib-group" title="Sibling RFPs (same physical project)">Siblings ${sibLinks}</span>`);
+  }
+  const links = linkParts.length
+    ? `<div class="mj-act-group mj-act-links">${linkParts.join('')}</div>`
+    : '';
+
+  $('mj-action-bar').innerHTML = workflow + maintenance + links;
+  // Wire workflow buttons (Synthesize / Accept / Generate proposal)
+  $('mj-scope-synth')?.addEventListener('click', onSynthesizeScopeClick);
+  $('mj-accept-extraction')?.addEventListener('click', onAcceptExtractionClick);
+  $('mj-generate-proposal')?.addEventListener('click', openProposalPreview);
+  // Wire maintenance buttons
+  $('mj-action-bar').querySelectorAll('button[data-act]:not([data-act="copy-local"])').forEach(btn => {
     btn.addEventListener('click', (e) => onAction(e, btn));
   });
   $('mj-action-bar').querySelector('select[data-act="move-status"]')?.addEventListener('change', onMoveStatus);
+  // Local-folder copy button: copy to clipboard, swap label briefly
+  $('mj-action-bar').querySelector('button[data-act="copy-local"]')?.addEventListener('click', (e) => {
+    const btn = e.currentTarget;
+    const path = btn.dataset.path;
+    navigator.clipboard.writeText(path).then(() => {
+      const orig = btn.textContent;
+      btn.textContent = '📋 Copied';
+      setTimeout(() => btn.textContent = orig, 1400);
+    }).catch(() => prompt('Local Filestore path (Ctrl+C):', path));
+  });
 }
 async function onMoveStatus(e) {
   const sel = e.currentTarget;
@@ -1053,7 +1088,11 @@ function showHandoffStrip({ jobId, acceptedAt, jobFolderUrl, message } = {}) {
 }
 
 // ===== Accept extraction & queue proposal =====
-$('mj-accept-extraction')?.addEventListener('click', async () => {
+// Named handler: bound by renderActionBar() after the action-bar HTML
+// is materialized. Don't bind via top-level $('id').addEventListener --
+// the buttons live inside the dynamically-rendered action bar, not in
+// the static HTML, so script-load-time binding would no-op.
+async function onAcceptExtractionClick() {
   if (!LEAD?.jobId) { toast('Job not loaded yet.', 3000); return; }
   const conf = LEAD?.extraction?.confidencePct;
   // Low-confidence guardrail: ask before accepting if synth says <50%
@@ -1087,7 +1126,7 @@ $('mj-accept-extraction')?.addEventListener('click', async () => {
     btn.disabled = false;
     btn.textContent = orig;
   }
-});
+}
 
 // ===== Inline proposal-preview popout =====
 // Replaces the old async proposal-worker handoff. Click "📄 Generate
@@ -1410,10 +1449,8 @@ $('pp-build-all')?.addEventListener('click', async () => {
   }
 });
 
-$('mj-generate-proposal')?.addEventListener('click', openProposalPreview);
-
 // ===== Synthesize scope (Gemini pass) =====
-$('mj-scope-synth').addEventListener('click', async () => {
+async function onSynthesizeScopeClick() {
   if (!LEAD?.jobId) { toast('Job not loaded yet.', 3000); return; }
   const btn = $('mj-scope-synth');
   btn.disabled = true;
@@ -1438,61 +1475,30 @@ $('mj-scope-synth').addEventListener('click', async () => {
     btn.disabled = false;
     btn.textContent = orig;
   }
-});
-
-// ===== Project meta =====
-function renderMeta(r) {
-  const fields = [
-    ['Job ID',        (r.jobId || '').slice(0,12) + '…'],
-    ['GC / Client',   r.gc || '—'],
-    ['Location',      r.location || '—'],
-    ['Due',           r.dueAt || '—'],
-    ['Bid total',     JOB?.bidAmountUsd ? '$' + Number(JOB.bidAmountUsd).toLocaleString() : '—'],
-    ['Project start', fmt(JOB?.projectStartAt)],
-    ['Project end',   fmt(JOB?.projectEndAt)],
-    ['First seen',    fmt(r.firstSeenAt)],
-    ['Last list',     fmt(r.lastSeenAt)],
-    ['Last file',     fmt(r.lastFileAt || r.lastSeenAt)],
-    ['BC status',     r.status || 'Unknown'],
-    ['Outcome',       JOB?.outcomeStatus || (r.status === 'Won' ? 'won' : r.status === 'Lost' ? 'lost' : 'unknown')],
-  ];
-  $('mj-meta').innerHTML = fields.map(([k,v]) =>
-    `<div class="field"><span class="lbl">${k}</span><span class="val">${safeHtml(v)}</span></div>`).join('');
 }
 
-// ===== Quick links (BC, Drive, sibling RFPs) =====
-function renderQuickLinks(r) {
-  const items = [];
-  if (r.href) items.push(`<a class="mj-ql" target="_blank" rel="noopener noreferrer" href="${safeHtml(r.href)}">🔗 BC opportunity ↗</a>`);
-  if (r.localJobFolderPath) items.push(
-    `<a class="mj-ql" data-local-path="${safeHtml(r.localJobFolderPath)}" title="Copy local Filestore path to clipboard" onclick="event.preventDefault(); navigator.clipboard.writeText(this.dataset.localPath).then(() => { const orig = this.textContent; this.textContent = '📋 Copied: paste into Explorer'; setTimeout(() => this.textContent = orig, 1400); }).catch(() => prompt('Local Filestore path (Ctrl+C to copy):', this.dataset.localPath));">📁 Local folder</a>`
-  );
-  if (r.driveJobFolderId) items.push(
-    `<a class="mj-ql" target="_blank" rel="noopener noreferrer" href="https://drive.google.com/drive/folders/${safeHtml(r.driveJobFolderId)}">📂 Drive folder ↗</a>`
-  );
-  // Sibling RFPs (same physical project, different trade scopes)
-  const sibs = Array.isArray(r._siblingJobIds) ? r._siblingJobIds : [];
-  if (sibs.length) {
-    items.push(`<div class="mj-ql-group"><span class="mj-ql-grouplbl">Sibling RFPs</span>${sibs.map(sid => {
-      const qs = new URLSearchParams({ jobId: sid });
-      if (URL_PARAMS.get('secret')) qs.set('secret', URL_PARAMS.get('secret'));
-      if (URL_PARAMS.get('api'))    qs.set('api',    URL_PARAMS.get('api'));
-      return `<a class="mj-ql mj-ql-sib" href="/staff/manage-job.html?${qs.toString()}">🔗 ${safeHtml(sid.slice(0,12))}…</a>`;
-    }).join('')}</div>`);
-  }
-  if (!items.length) items.push('<span class="small pad">No links yet — Drive folder is created on Accept.</span>');
-  $('mj-quick-list').innerHTML = items.join('');
-}
+// (renderMeta + renderQuickLinks removed; their content moved into
+// renderHero subline + renderActionBar links group respectively.)
 
 // ===== Calendar =====
+// Wrapped in <details>; iframe src is set lazily on first expand so
+// the page doesn't pay 520px of layout shift + a Google iframe load
+// on every page view.
 function renderCalendar() {
   const addBtn = $('mj-cal-add');
-  const status = JOB?.outcomeStatus || (LEAD?.status === 'Won' ? 'won' : 'unknown');
-  addBtn.disabled = !(status === 'won' && !JOB?.calendarEventId);
-  if (JOB?.calendarEventId) addBtn.textContent = '✓ On calendar';
-  const calSrc = 'https://calendar.google.com/calendar/embed?src=primary&ctz=America%2FChicago&mode=AGENDA';
-  $('mj-cal-frame').src = calSrc;
+  if (addBtn) {
+    const status = JOB?.outcomeStatus || (LEAD?.status === 'Won' ? 'won' : 'unknown');
+    addBtn.disabled = !(status === 'won' && !JOB?.calendarEventId);
+    if (JOB?.calendarEventId) addBtn.textContent = '✓ On calendar';
+  }
 }
+let _calLoaded = false;
+$('mj-cal-card')?.addEventListener('toggle', () => {
+  if ($('mj-cal-card').open && !_calLoaded) {
+    _calLoaded = true;
+    $('mj-cal-frame').src = 'https://calendar.google.com/calendar/embed?src=primary&ctz=America%2FChicago&mode=AGENDA';
+  }
+});
 $('mj-cal-add').addEventListener('click', async () => {
   if (!JOB) { toast('No outcome record yet — Accept the RFP first.', 4000); return; }
   const btn = $('mj-cal-add');
