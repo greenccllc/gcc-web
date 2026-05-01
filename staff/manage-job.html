@@ -83,6 +83,36 @@
         </div>
       </div>
 
+      <!-- Proposal output: drafts the proposal-worker generates land in
+           Internal/ and show as "pending" rows with status pills. Once
+           the operator promotes a draft via the GCC Manager tray, the
+           v#/ folder appears under Client/Proposal/ with the cleaned
+           client-facing docx. Both stacks render here so the operator
+           never has to round-trip to Drive to confirm "did it work?". -->
+      <div class="mj-card" style="margin-top:14px" id="mj-proposal-card">
+        <h2>Proposal output
+          <span class="mj-card-sub" id="mj-proposal-sub">· loading…</span>
+          <button id="mj-proposal-refresh" class="mj-btn-sm" type="button"
+                  title="Re-fetch proposal drafts and accepted versions from SQL + Drive."
+                  style="margin-left:auto; font-size:11px">↻ Refresh</button>
+        </h2>
+        <div class="sub">
+          The proposal-worker drops each draft into <code>Internal/</code>; once you accept a draft in the GCC Manager tray it gets promoted to <code>Proposals/v#/</code> with a clean client-facing name.
+        </div>
+        <div class="mj-proposal-empty small pad" id="mj-proposal-empty" hidden>
+          No proposal drafts yet. Click <em>2️⃣ Accept &amp; queue proposal</em> above to fire the proposal-worker. Drafts land here within ~2-5 minutes.
+        </div>
+        <div class="mj-proposal-section" id="mj-proposal-internal" hidden>
+          <div class="mj-proposal-section-hd"><span>📝 Drafts (Internal/)</span><span class="small mj-proposal-count" id="mj-proposal-internal-count"></span></div>
+          <ul class="mj-proposal-list" id="mj-proposal-internal-list"></ul>
+        </div>
+        <div class="mj-proposal-section" id="mj-proposal-client" hidden>
+          <div class="mj-proposal-section-hd"><span>🚀 Promoted versions (Proposals/)</span><span class="small mj-proposal-count" id="mj-proposal-client-count"></span></div>
+          <div class="mj-proposal-versions" id="mj-proposal-client-list"></div>
+        </div>
+        <div class="small mj-proposal-error" id="mj-proposal-error" hidden></div>
+      </div>
+
     </div>
 
     <!-- Right: meta + quick-links + docs + calendar -->
@@ -278,6 +308,7 @@ function renderAll() {
   renderCalendar();
   loadRequirements();
   loadLocations();
+  loadProposalFiles();   // Drafts + promoted versions for "Proposal output" card
   // Kick the readiness poll. It self-stops when ready (queue==0,
   // processing==0) and the strip hides itself when there's nothing
   // to report.
@@ -386,6 +417,166 @@ function tooltipForKey(uiKey) {
   for (const [floor, rooms] of byFloor) lines.push(`${floor}: ${rooms.join(', ')}`);
   return lines.join('\n');
 }
+
+// ===== Proposal output (drafts + promoted versions) =====
+// Fetches /api/admin/jobs/{jobId}/proposal-files and renders two stacks:
+//   * Drafts in Internal/ (each row is a dbo.ProposalDrafts entry with
+//     status pending/accepted/rejected, link to the docx in Drive,
+//     decision metadata if decided)
+//   * Promoted versions under Proposals/v#/ (the client-facing copies
+//     the operator created via the GCC Manager tray accept flow)
+//
+// Auto-polls every 8s while a pending draft exists so the operator can
+// watch the proposal-worker drop the docx in. Stops polling once all
+// drafts are decided.
+let _propPollTimer = null;
+let _propPollAttempts = 0;
+async function loadProposalFiles() {
+  if (!JOB_ID) return;
+  const sub  = $('mj-proposal-sub');
+  const err  = $('mj-proposal-error');
+  const empty = $('mj-proposal-empty');
+  const intSec = $('mj-proposal-internal');
+  const cliSec = $('mj-proposal-client');
+  if (sub) sub.textContent = '· loading…';
+  if (err) { err.hidden = true; err.textContent = ''; }
+  let r;
+  try {
+    r = await api('GET', `/api/admin/jobs/${encodeURIComponent(JOB_ID)}/proposal-files`);
+  } catch (e) {
+    if (sub) sub.textContent = '· error';
+    if (err) { err.hidden = false; err.textContent = e.message || 'load failed'; }
+    return;
+  }
+  const drafts = r.internalDrafts || [];
+  const versions = r.clientVersions || [];
+
+  // Empty state
+  if (drafts.length === 0 && versions.length === 0) {
+    if (empty) empty.hidden = false;
+    if (intSec) intSec.hidden = true;
+    if (cliSec) cliSec.hidden = true;
+    if (sub) sub.textContent = '· none yet';
+    if (r.driveListError && err) {
+      err.hidden = false;
+      err.textContent = `Drive listing error: ${r.driveListError}`;
+    }
+    return;
+  }
+  if (empty) empty.hidden = true;
+
+  // ---- Drafts (Internal/) ----
+  const intCount = $('mj-proposal-internal-count');
+  const intList  = $('mj-proposal-internal-list');
+  if (drafts.length > 0) {
+    if (intSec) intSec.hidden = false;
+    if (intCount) intCount.textContent = `· ${drafts.length} ${drafts.length === 1 ? 'draft' : 'drafts'}`;
+    if (intList) {
+      intList.innerHTML = drafts.map(renderDraftRow).join('');
+    }
+  } else {
+    if (intSec) intSec.hidden = true;
+  }
+
+  // ---- Versions (Proposals/v#/) ----
+  const cliCount = $('mj-proposal-client-count');
+  const cliList  = $('mj-proposal-client-list');
+  if (versions.length > 0) {
+    if (cliSec) cliSec.hidden = false;
+    if (cliCount) cliCount.textContent = `· ${versions.length} ${versions.length === 1 ? 'version' : 'versions'}`;
+    if (cliList) {
+      cliList.innerHTML = versions.map(renderClientVersionRow).join('');
+    }
+  } else {
+    if (cliSec) cliSec.hidden = true;
+  }
+
+  // Update the sub badge with a quick rollup.
+  const pending = drafts.filter(d => d.status === 'pending').length;
+  const accepted = drafts.filter(d => d.status === 'accepted').length;
+  if (sub) {
+    const parts = [];
+    if (pending > 0) parts.push(`${pending} pending`);
+    if (versions.length > 0) parts.push(`${versions.length} promoted`);
+    if (accepted > 0 && parts.length === 0) parts.push(`${accepted} accepted`);
+    sub.textContent = parts.length ? '· ' + parts.join(' · ') : '· ' + drafts.length + ' total';
+  }
+
+  // ---- Auto-poll while any draft is pending ----
+  // The proposal-worker takes ~2-5 min to land a draft; poll every 8s
+  // for up to 6 minutes (45 attempts) so the operator sees the docx
+  // pop in without manually refreshing.
+  clearInterval(_propPollTimer);
+  if (pending > 0 && _propPollAttempts < 45) {
+    _propPollTimer = setInterval(async () => {
+      _propPollAttempts++;
+      await loadProposalFiles();
+    }, 8000);
+  } else {
+    _propPollAttempts = 0;
+  }
+}
+
+function renderDraftRow(d) {
+  const status = d.status || 'pending';
+  const statusClass = `mj-prop-status-${status}`;
+  const statusLabel = {
+    pending:  '⏳ pending',
+    accepted: '✓ accepted',
+    rejected: '✗ rejected',
+    error:    '⚠ error',
+  }[status] || status;
+
+  const docxName = d.draftDocxName ? safeHtml(d.draftDocxName) : '<em class="small">draft generating…</em>';
+  const sizeKb   = d.draftSizeBytes ? `${Math.round(d.draftSizeBytes / 1024)} KB` : '';
+  const created  = d.createdAt ? fmt(d.createdAt) : '—';
+  const decided  = d.decidedAt ? ` · decided ${fmt(d.decidedAt)}` : '';
+  const reason   = d.decisionReason ? `<div class="mj-prop-reason small" title="${safeHtml(d.decisionReason)}">📝 ${safeHtml(d.decisionReason.slice(0, 80))}${d.decisionReason.length > 80 ? '…' : ''}</div>` : '';
+  const errMsg   = d.errorMessage ? `<div class="mj-prop-reason small" style="color:var(--danger)" title="${safeHtml(d.errorMessage)}">⚠ ${safeHtml(d.errorMessage.slice(0, 100))}${d.errorMessage.length > 100 ? '…' : ''}</div>` : '';
+
+  const draftLink = d.fileUrl
+    ? `<a href="${d.fileUrl}" target="_blank" rel="noopener" class="mj-prop-link" title="Open draft docx in Drive">📄 Open draft ↗</a>`
+    : `<span class="small" style="color:var(--slate)">— no docx yet —</span>`;
+  const promotedLink = d.clientFileUrl && d.clientFolderName
+    ? ` · <a href="${d.clientFileUrl}" target="_blank" rel="noopener" class="mj-prop-link mj-prop-link-promoted" title="Open promoted ${safeHtml(d.clientFolderName)} client version">🚀 ${safeHtml(d.clientFolderName)} ↗</a>`
+    : '';
+
+  return `<li class="mj-prop-row">
+    <div class="mj-prop-row-main">
+      <span class="mj-prop-status ${statusClass}">${statusLabel}</span>
+      <span class="mj-prop-name">${docxName}</span>
+      <span class="small mj-prop-meta">${sizeKb ? sizeKb + ' · ' : ''}created ${created}${decided}</span>
+    </div>
+    <div class="mj-prop-row-actions">
+      ${draftLink}${promotedLink}
+    </div>
+    ${reason}${errMsg}
+  </li>`;
+}
+
+function renderClientVersionRow(v) {
+  const files = (v.files || []).map(f => {
+    const sizeKb = f.sizeBytes ? `${Math.round(f.sizeBytes / 1024)} KB` : '';
+    const isDocx = (f.mimeType || '').includes('wordprocessingml') || (f.name || '').toLowerCase().endsWith('.docx');
+    const icon = isDocx ? '📄' : (f.mimeType || '').includes('pdf') ? '📕' : '📎';
+    return `<li class="mj-prop-version-file">
+      <span>${icon} <a href="${f.fileUrl}" target="_blank" rel="noopener">${safeHtml(f.name)}</a></span>
+      <span class="small mj-prop-meta">${sizeKb}${f.modifiedTime ? ' · ' + fmt(f.modifiedTime) : ''}</span>
+    </li>`;
+  }).join('');
+  return `<div class="mj-prop-version">
+    <div class="mj-prop-version-hd">
+      <a href="${v.folderUrl}" target="_blank" rel="noopener" class="mj-prop-version-name" title="Open ${safeHtml(v.folderName)} folder in Drive">📁 ${safeHtml(v.folderName)} ↗</a>
+      <span class="small mj-prop-meta">${(v.files || []).length} ${(v.files || []).length === 1 ? 'file' : 'files'}</span>
+    </div>
+    ${files ? `<ul class="mj-prop-version-files">${files}</ul>` : '<div class="small pad">empty folder</div>'}
+  </div>`;
+}
+
+$('mj-proposal-refresh')?.addEventListener('click', () => {
+  _propPollAttempts = 0; // user action -> reset the poll budget
+  loadProposalFiles();
+});
 
 // ===== Job requirements (synthesized bullet list) =====
 async function loadRequirements() {
@@ -810,6 +1001,10 @@ $('mj-accept-extraction')?.addEventListener('click', async () => {
     });
     toast(`✓ Accepted. ${proposalLine}`, 6000);
     if (typeof load === 'function') await load();
+    // Reset the proposal-files polling budget so the operator
+    // sees the new draft drop in without waiting for the next tick.
+    if (typeof _propPollAttempts !== 'undefined') _propPollAttempts = 0;
+    if (typeof loadProposalFiles === 'function') loadProposalFiles();
   } catch (e) {
     toast(e.message || 'accept failed', 6000);
     btn.disabled = false;
@@ -852,6 +1047,9 @@ $('mj-send-proposal').addEventListener('click', async () => {
       message:      `Re-sent to proposal-worker${note ? ' with new operator note' : ''}. Refreshed draft lands in Internal/ in ~2-5 min.`,
     });
     toast(`🔄 Re-sent · extractionId ${String(r.extractionId).slice(0,12)}…${fn}`, 6000);
+    // Reset proposal-files poll so the refreshed draft pops in promptly.
+    if (typeof _propPollAttempts !== 'undefined') _propPollAttempts = 0;
+    if (typeof loadProposalFiles === 'function') loadProposalFiles();
   } catch (e) {
     toast(e.message || 'publish failed', 6000);
   } finally {
