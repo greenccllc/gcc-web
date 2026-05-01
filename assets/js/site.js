@@ -2,64 +2,127 @@
 (function () {
   'use strict';
 
-  // Mobile menu toggle (works on the static anonymous header that ships in HTML).
-  // header.js will call setupMobileMenu() again after a role-aware re-render.
-  function setupMobileMenu(root) {
-    root = root || document;
-    var toggle = root.querySelector('.menu-toggle');
-    var nav    = root.querySelector('.site-nav');
-    if (!toggle || !nav || toggle.dataset.bound === '1') return;
-    toggle.dataset.bound = '1';
+  var DEFAULTS = {
+    menuToggleSelector: '[data-nav-toggle], .menu-toggle',
+    navContainerSelector: '[data-nav-container], .site-nav',
+    navGroupSelector: '[data-nav-group], .nav-group',
+    navTriggerSelector: '[data-nav-trigger], .nav-trigger',
+    utilityNavSelector: '[data-nav-utility]',
+    closeOnLinkClick: true,
+    desktopBreakpoint: '(min-width: 861px)',
+    anchorOffset: 72
+  };
 
-    function open()  { nav.classList.add('is-open');    toggle.setAttribute('aria-expanded', 'true');  document.body.classList.add('menu-open'); }
-    function close() { nav.classList.remove('is-open'); toggle.setAttribute('aria-expanded', 'false'); document.body.classList.remove('menu-open'); }
+  function merge(a, b) {
+    var out = {};
+    Object.keys(a).forEach(function (k) { out[k] = a[k]; });
+    Object.keys(b || {}).forEach(function (k) { out[k] = b[k]; });
+    return out;
+  }
+
+  function setupMenuState(root, opts) {
+    var toggle = root.querySelector(opts.menuToggleSelector);
+    var nav = root.querySelector(opts.navContainerSelector);
+    if (!toggle || !nav || toggle.dataset.navBound === '1') return null;
+    toggle.dataset.navBound = '1';
+
+    var lastFocus = null;
+
+    function openMenu() {
+      nav.classList.add('is-open');
+      toggle.setAttribute('aria-expanded', 'true');
+      document.body.classList.add('menu-open');
+    }
+
+    function closeMenu(focusToggle) {
+      nav.classList.remove('is-open');
+      toggle.setAttribute('aria-expanded', 'false');
+      document.body.classList.remove('menu-open');
+      if (focusToggle) toggle.focus();
+    }
+
+    function closeAllGroups() {
+      root.querySelectorAll(opts.navGroupSelector + '.is-open').forEach(function (group) {
+        group.classList.remove('is-open');
+        var trigger = group.querySelector(opts.navTriggerSelector);
+        if (trigger) trigger.setAttribute('aria-expanded', 'false');
+      });
+    }
+
+    function toggleGroup(group, trigger) {
+      var isOpen = group.classList.contains('is-open');
+      root.querySelectorAll(opts.navGroupSelector + '.is-open').forEach(function (other) {
+        if (other === group) return;
+        other.classList.remove('is-open');
+        var otherTrigger = other.querySelector(opts.navTriggerSelector);
+        if (otherTrigger) otherTrigger.setAttribute('aria-expanded', 'false');
+      });
+      group.classList.toggle('is-open', !isOpen);
+      trigger.setAttribute('aria-expanded', String(!isOpen));
+    }
 
     toggle.addEventListener('click', function (e) {
       e.stopPropagation();
-      if (nav.classList.contains('is-open')) close(); else open();
+      if (nav.classList.contains('is-open')) closeMenu(false); else openMenu();
     });
 
-    // Close when a nav link is tapped (mobile flow)
-    nav.addEventListener('click', function (e) {
-      var a = e.target.closest('a');
-      if (a && !a.classList.contains('nav-trigger')) close();
+    if (opts.closeOnLinkClick) {
+      nav.addEventListener('click', function (e) {
+        var a = e.target.closest('a');
+        if (!a) return;
+        if (a.matches(opts.navTriggerSelector)) return;
+        closeMenu(false);
+      });
+    }
+
+    root.querySelectorAll(opts.navGroupSelector).forEach(function (group) {
+      var trigger = group.querySelector(opts.navTriggerSelector);
+      if (!trigger || trigger.dataset.navBound === '1') return;
+      trigger.dataset.navBound = '1';
+      trigger.setAttribute('aria-expanded', trigger.getAttribute('aria-expanded') || 'false');
+      trigger.addEventListener('click', function (e) {
+        e.stopPropagation();
+        lastFocus = document.activeElement;
+        toggleGroup(group, trigger);
+      });
     });
 
-    // Close on outside tap
     document.addEventListener('click', function (e) {
-      if (!nav.classList.contains('is-open')) return;
-      if (nav.contains(e.target) || toggle.contains(e.target)) return;
-      close();
+      if (nav.classList.contains('is-open') && !nav.contains(e.target) && !toggle.contains(e.target)) closeMenu(false);
+      if (!root.contains(e.target)) closeAllGroups();
     });
 
-    // Close on Escape
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && nav.classList.contains('is-open')) {
-        close();
-        toggle.focus();
+      if (e.key !== 'Escape') return;
+      var hadOpenGroup = !!root.querySelector(opts.navGroupSelector + '.is-open');
+      if (hadOpenGroup) {
+        closeAllGroups();
+        if (lastFocus && lastFocus.focus) lastFocus.focus();
       }
+      if (nav.classList.contains('is-open')) closeMenu(true);
     });
 
-    // Reset state if the user crosses the desktop breakpoint
-    var mq = window.matchMedia('(min-width: 861px)');
-    var onChange = function () { if (mq.matches) close(); };
+    var mq = window.matchMedia(opts.desktopBreakpoint);
+    var onChange = function () { if (mq.matches) closeMenu(false); };
     if (mq.addEventListener) mq.addEventListener('change', onChange); else mq.addListener(onChange);
+
+    return { openMenu: openMenu, closeMenu: closeMenu, closeAllGroups: closeAllGroups };
   }
 
-  // Highlight current nav link (for the static-rendered anonymous nav)
-  function markActive() {
+  function markActiveLinks(root, opts) {
     var path = location.pathname.replace(/\/$/, '') || '/';
-    document.querySelectorAll('.site-nav a').forEach(function (a) {
-      var href = (a.getAttribute('href') || '').replace(/\/$/, '');
+    var sel = opts.navContainerSelector + ' a, ' + opts.utilityNavSelector + ' a';
+    root.querySelectorAll(sel).forEach(function (a) {
+      var href = (a.getAttribute('href') || '').split('#')[0].split('?')[0].replace(/\/$/, '');
       if (!href) return;
       if (href === path || (href === '/' && path === '/')) a.classList.add('active');
     });
   }
 
-  // Smooth-scroll for in-page anchors (offsets sticky header). CSS scroll-behavior
-  // covers most cases; this handler only intercepts to add the offset.
-  function setupAnchors() {
-    document.addEventListener('click', function (e) {
+  function setupAnchorScrolling(root, opts) {
+    if (document.body.dataset.anchorBound === '1') return;
+    document.body.dataset.anchorBound = '1';
+    root.addEventListener('click', function (e) {
       var a = e.target.closest('a[href^="#"]');
       if (!a) return;
       var id = a.getAttribute('href').slice(1);
@@ -67,26 +130,30 @@
       var t = document.getElementById(id);
       if (!t) return;
       e.preventDefault();
-      var rect = t.getBoundingClientRect();
-      var y = window.pageYOffset + rect.top - 72; // header height
+      var y = window.pageYOffset + t.getBoundingClientRect().top - opts.anchorOffset;
       window.scrollTo({ top: y, behavior: 'smooth' });
-      // Update URL without jumping
       if (history.replaceState) history.replaceState(null, '', '#' + id);
     });
   }
 
-  function init() {
-    setupMobileMenu();
-    markActive();
-    setupAnchors();
+  function initNavigation(root, options) {
+    var scope = root || document;
+    var opts = merge(DEFAULTS, options || {});
+    var menu = setupMenuState(scope, opts);
+    markActiveLinks(scope, opts);
+    setupAnchorScrolling(document, opts);
+    return menu;
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
+  function init() { initNavigation(document); }
 
-  // Expose for header.js to re-attach after re-render
-  window.gccSite = { setupMobileMenu: setupMobileMenu };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+
+  window.gccSite = {
+    initNavigation: initNavigation,
+    setupMenuState: setupMenuState,
+    markActiveLinks: markActiveLinks,
+    setupAnchorScrolling: setupAnchorScrolling
+  };
 })();
