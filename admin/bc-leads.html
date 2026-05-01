@@ -9,6 +9,7 @@
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <meta name="theme-color" content="#1E4D2B" />
   <link rel="stylesheet" href="/assets/css/site.css?v=20260501-redesign" />
+  <link rel="stylesheet" href="/assets/css/chrome.css?v=20260501-restructure" />
   <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260501-admin-tab" />
 </head>
 <body>
@@ -714,7 +715,7 @@ function expandMetaCol(r) {
     <div class="field"><span class="lbl">Last file</span><span class="val">${fmt(r.lastFileAt || r.lastSeenAt)}</span></div>
     <div class="field" style="display:flex;flex-direction:row;gap:6px;flex-wrap:wrap;margin-top:6px">${[acceptedBadge, addBadge, pausedBadge].filter(Boolean).join('')}</div>
     <div class="field" style="margin-top:8px">
-      <a class="ext-detail-link" href="/staff/manage-job.html?jobId=${safeHtml(r.jobId)}${URL_PARAMS.get('secret') ? '&secret=' + encodeURIComponent(URL_PARAMS.get('secret')) : ''}${URL_PARAMS.get('api') ? '&api=' + encodeURIComponent(URL_PARAMS.get('api')) : ''}">
+      <a class="ext-detail-link" href="/admin/manage-job.html?jobId=${safeHtml(r.jobId)}${URL_PARAMS.get('secret') ? '&secret=' + encodeURIComponent(URL_PARAMS.get('secret')) : ''}${URL_PARAMS.get('api') ? '&api=' + encodeURIComponent(URL_PARAMS.get('api')) : ''}">
         🔍 Extraction details
       </a>
       <span class="small pad" style="margin-left:6px">notes, specs, prop reqs, per-source counts</span>
@@ -2713,7 +2714,7 @@ async function saveOutcome(_unused, manageAfter) {
       const params = new URLSearchParams({ jobId: it.jobId });
       if (URL_PARAMS.get('secret')) params.set('secret', URL_PARAMS.get('secret'));
       if (URL_PARAMS.get('api'))    params.set('api',    URL_PARAMS.get('api'));
-      window.location.href = '/staff/manage-job.html?' + params.toString();
+      window.location.href = '/admin/manage-job.html?' + params.toString();
       return;
     }
     await loadOutcomes();
@@ -2883,5 +2884,7 @@ scheduleRefresh();
 if (document.fonts?.ready) document.fonts.ready.then(syncStickyOffsets);
 setTimeout(syncStickyOffsets, 200);
 </script>
+  <div id="gcc-footer"></div>
+  <script src="/assets/js/footer.js"></script>
 </body>
 </html>

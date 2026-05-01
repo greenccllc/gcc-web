@@ -4,11 +4,12 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="robots" content="noindex" />
-<title>Staff · Files · GCC LLC</title>
+<title>Staff · Prospects · GCC LLC</title>
 <meta name="theme-color" content="#1E4D2B" />
 <meta name="robots" content="noindex" />
 <link rel="icon" href="/assets/favicon.ico" sizes="any" /><link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
 <link rel="stylesheet" href="/assets/css/site.css?v=20260501-redesign" />
+  <link rel="stylesheet" href="/assets/css/chrome.css?v=20260501-restructure" />
 <style>
 .dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 28px; }
 .kpi { background: white; border: 1px solid var(--hairline); border-radius: var(--r-md); padding: 18px; box-shadow: var(--shadow-xs); }
@@ -44,8 +45,8 @@
 
 <section style="padding: 28px 0; background: var(--paper); border-bottom: 1px solid var(--hairline);">
   <div class="container">
-    <h1 style="margin-bottom: 4px;">Files</h1>
-    <p style="color: var(--slate); margin: 0;">Project files. Upload, browse, download.</p>
+    <h1 style="margin-bottom: 4px;">Prospects</h1>
+    <p style="color: var(--slate); margin: 0;">Qualified leads under active proposal/quote conversation.</p>
   </div>
 </section>
 
@@ -53,65 +54,35 @@
   <div class="container">
     <div id="page-loading" style="text-align:center; padding: 40px; color: var(--slate-light);">Loading...</div>
     <div id="page-content" hidden>
-<div style="background: white; border: 1px solid var(--hairline); border-radius: var(--r-md); padding: 20px; margin-bottom: 16px;">
-    <h3 style="margin-bottom: 8px;">Upload</h3>
-    <form id="upload-form" enctype="multipart/form-data" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-      <input type="file" id="file-input" required style="font-size: 14px;" />
-      <input type="text" id="tag-input" placeholder="tag (plan, spec, photo...)" style="padding: 8px 10px; border: 1px solid var(--hairline-strong); border-radius: 6px; font-size: 14px;" />
-      <button type="submit" class="btn btn-primary" style="padding: 8px 16px; font-size: 14px;">Upload</button>
-      <span id="upload-msg" style="font-size: 13px; color: var(--slate);"></span>
-    </form>
-    <div style="font-size: 12px; color: var(--slate-light); margin-top: 8px;">Max 50 MB per file. Stored at C:\GCC_LLC\IIS\gcc-files\&lt;clientId&gt;\</div>
-  </div>
-  <div id="files-table">Loading...</div>
+<div id="prospects-table">Loading...</div>
     </div>
   </div>
 </section>
 
 <script src="/assets/js/api.js"></script>
 <script src="/assets/js/header.js"></script>
+  <script src="/assets/js/footer.js"></script>
 <script src="/assets/js/page.js"></script>
 <script>
 gccPage.requireRole(["staff","admin"]).then(async (me) => {
   document.getElementById('page-loading').hidden = true;
   document.getElementById('page-content').hidden = false;
-  async function load() {
-    try {
-      const files = await fetch(gccApi.base + '/api/files', {credentials:'include'}).then(r => r.json());
-      const target = document.getElementById('files-table');
-      if (!files.length) {
-        target.innerHTML = '<div class="empty-state"><div class="es-icon">📎</div><div>No files yet.</div></div>';
-      } else {
-        const rows = files.map(f => '<tr><td>' + gccPage.datetime(f.createdAt) + '</td><td><strong>' + f.fileName + '</strong></td><td>' + (f.tag || '--') + '</td><td>' + (f.contentType || '') + '</td><td>' + Math.round(f.sizeBytes/1024) + ' KB</td><td class="actions"><a href="' + gccApi.base + '/api/files/' + f.id + '" target="_blank">Download</a><button data-del="' + f.id + '">Delete</button></td></tr>').join('');
-        target.innerHTML = '<table class="tbl"><thead><tr><th>Uploaded</th><th>Name</th><th>Tag</th><th>Type</th><th>Size</th><th></th></tr></thead><tbody>' + rows + '</tbody></table>';
-        target.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', async () => {
-          if (!confirm('Delete this file?')) return;
-          await fetch(gccApi.base + '/api/files/' + b.dataset.del, {method:'DELETE', credentials:'include'});
-          load();
-        }));
-      }
-    } catch(e) { document.getElementById('files-table').innerHTML = '<div class="empty-state">Failed to load.</div>'; }
-  }
-  document.getElementById('upload-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const file = document.getElementById('file-input').files[0];
-    if (!file) return;
-    const fd = new FormData();
-    fd.append('file', file);
-    const tag = document.getElementById('tag-input').value.trim();
-    if (tag) fd.append('tag', tag);
-    const msg = document.getElementById('upload-msg');
-    msg.textContent = 'Uploading...';
-    try {
-      const r = await fetch(gccApi.base + '/api/files', { method:'POST', credentials:'include', body: fd });
-      if (!r.ok) { const err = await r.json().catch(()=>({})); throw new Error(err.error || 'Upload failed'); }
-      msg.textContent = '✓ Uploaded';
-      e.target.reset();
-      load();
-    } catch(err) { msg.textContent = '✗ ' + err.message; }
-  });
-  await load();
+  try {
+    const all = await Promise.all([
+      fetch(gccApi.base + '/api/admin/leads?status=contacted', {credentials:'include'}).then(r => r.json()),
+      fetch(gccApi.base + '/api/admin/leads?status=quoted', {credentials:'include'}).then(r => r.json())
+    ]);
+    const merged = [...all[0], ...all[1]].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const target = document.getElementById('prospects-table');
+    if (!merged.length) {
+      target.innerHTML = '<div class="empty-state"><div class="es-icon">🎯</div><div>No active prospects.</div></div>';
+    } else {
+      const rows = merged.map(l => '<tr><td>' + gccPage.datetime(l.createdAt) + '</td><td><strong>' + (l.name || '--') + '</strong></td><td>' + (l.email || '') + '</td><td>' + (l.source || '') + '</td><td>' + (l.estimateMid ? gccPage.money(l.estimateMid) : '--') + '</td><td><span class="status-pill status-' + l.status + '">' + l.status + '</span></td></tr>').join('');
+      target.innerHTML = '<table class="tbl"><thead><tr><th>Date</th><th>Contact</th><th>Email</th><th>Source</th><th>Estimate</th><th>Status</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    }
+  } catch(e) { document.getElementById('prospects-table').innerHTML = '<div class="empty-state">Failed to load.</div>'; }
 }).catch(() => { /* redirected */ });
 </script>
+  <div id="gcc-footer"></div>
 </body>
 </html>

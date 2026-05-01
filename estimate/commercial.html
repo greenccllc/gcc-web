@@ -8,6 +8,7 @@
 <meta name="theme-color" content="#1E4D2B" />
 <link rel="icon" href="/assets/favicon.ico" sizes="any" /><link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
 <link rel="stylesheet" href="/assets/css/site.css" />
+  <link rel="stylesheet" href="/assets/css/chrome.css?v=20260501-restructure" />
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://greencommllc.com/"},{"@type":"ListItem","position":2,"name":"Estimator","item":"https://greencommllc.com/estimator.html"}]}</script>
 <link rel="stylesheet" href="/assets/css/estimator.css" />
 <link rel="canonical" href="https://greencommllc.com/estimator.html" />
@@ -39,7 +40,7 @@
       <nav class="site-nav" aria-label="Primary"><ul>
         <li><a href="/">Home</a></li>
         <li><a href="/services.html">Services</a></li>
-        <li><a href="/estimator.html" class="active">Estimator</a></li>
+        <li><a href="/estimate/commercial.html" class="active">Estimator</a></li>
         <li><a href="/about.html">About</a></li>
         <li><a href="/contact.html">Contact</a></li>
         <li class="spacer" aria-hidden="true"></li>
@@ -54,8 +55,8 @@
   <div class="container">
     
     <div class="est-mode-toggle">
-      <a href="/estimator.html" class="active"><svg class="icon" aria-hidden="true"><use href="/assets/svg/icons.svg#icon-building"/></svg> Commercial</a>
-      <a href="/estimator-residential.html"><svg class="icon" aria-hidden="true"><use href="/assets/svg/icons.svg#icon-home"/></svg> Residential</a>
+      <a href="/estimate/commercial.html" class="active"><svg class="icon" aria-hidden="true"><use href="/assets/svg/icons.svg#icon-building"/></svg> Commercial</a>
+      <a href="/estimate/residential.html"><svg class="icon" aria-hidden="true"><use href="/assets/svg/icons.svg#icon-home"/></svg> Residential</a>
     </div>
     <span class="eyebrow">Instant Estimate · Public</span>
     <h1>30 seconds. <span class="highlight">Real ballpark.</span></h1>
@@ -197,7 +198,7 @@
         <li><a href="/services.html#div27">Division 27 (Telecom)</a></li>
         <li><a href="/services.html#div28">Division 28 (Security)</a></li>
         <li><a href="/services.html#residential">Residential</a></li>
-        <li><a href="/estimator.html">Instant Estimator</a></li>
+        <li><a href="/estimate/commercial.html">Instant Estimator</a></li>
       </ul></div>
       <div class="footer-col"><h4>Company</h4><ul>
         <li><a href="/about.html">About</a></li>
@@ -209,7 +210,7 @@
         <li><a href="tel:+16362248192">636-224-8192</a></li>
         <li><a href="mailto:info@greencommllc.com">info@greencommllc.com</a></li>
         <li><a href="https://maps.google.com/?q=603+Seib+Dr+O%27Fallon+MO+63366" target="_blank" rel="noopener">603 Seib Dr<br/>O'Fallon, MO 63366</a></li>
-        <li style="padding-top:6px; border-top:1px solid rgba(255,255,255,0.10); margin-top:6px;"><a href="/clients/">Client login</a> &middot; <a href="/staff/">Staff login</a></li>
+        <li style="padding-top:6px; border-top:1px solid rgba(255,255,255,0.10); margin-top:6px;"><a href="/clients/">Client login</a> &middot; <a href="/admin/">Staff login</a></li>
       </ul></div>
     </div>
     <div class="footer-bottom">
@@ -220,8 +221,11 @@
 </footer>
 
 <script src="/assets/js/site.js"></script>
+<div id="gcc-footer"></div>
+
 <script src="/assets/js/api.js"></script>
 <script src="/assets/js/header.js"></script>
+  <script src="/assets/js/footer.js"></script>
 <script src="/assets/js/estimator-save.js"></script>
 <script src="/assets/js/estimator.js"></script>
 </body>

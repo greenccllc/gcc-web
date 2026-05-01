@@ -8,6 +8,7 @@
 <meta name="robots" content="noindex" />
 <link rel="icon" href="/assets/favicon.ico" sizes="any" /><link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
 <link rel="stylesheet" href="/assets/css/site.css" />
+  <link rel="stylesheet" href="/assets/css/chrome.css?v=20260501-restructure" />
 <link rel="stylesheet" href="/assets/css/admin-users.css" />
 </head>
 <body>
@@ -62,6 +63,7 @@
 
 <script src="/assets/js/api.js"></script>
 <script src="/assets/js/header.js"></script>
+  <script src="/assets/js/footer.js"></script>
 <script src="/assets/js/page.js"></script>
 <script>
 gccPage.requireRole(["admin"]).then(async (me) => {
@@ -213,5 +215,6 @@ gccPage.requireRole(["admin"]).then(async (me) => {
   await loadUsers();
 }).catch(() => { /* requireRole redirects on its own */ });
 </script>
+  <div id="gcc-footer"></div>
 </body>
 </html>

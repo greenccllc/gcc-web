@@ -111,15 +111,18 @@
     </style>`;
 
   // ── Nav definitions ───────────────────────────────────────
+  // Public marketing nav: Services / Projects / About / Estimate / Contact.
+  // No admin link in the top nav -- the only entry is the tiny "Admin" link
+  // in the footer (gated by Cloudflare Access greencommllc.com SSO).
   function navAnonymous() {
     return [
-      { href: '/',                 label: 'Home' },
-      { href: '/services.html',    label: 'Services' },
-      { href: '/estimator.html',   label: 'Estimator' },
-      { href: '/about.html',       label: 'About' },
-      { href: '/contact.html',     label: 'Contact' },
+      { href: '/services.html',                 label: 'Services' },
+      { href: '/projects.html',                 label: 'Projects' },
+      { href: '/about.html',                    label: 'About' },
+      { href: '/estimate/',                     label: 'Estimate' },
+      { href: '/contact.html',                  label: 'Contact' },
       { spacer: true },
-      { href: '/clients/#signup',  label: 'Register Account', cta: true }
+      { href: '/clients/',                      label: 'Sign in', cta: true }
     ];
   }
 
@@ -142,33 +145,26 @@
     ];
   }
 
+  // Staff nav (when greencommllc.com SSO user lands on /admin/*). Shows
+  // direct links to operator surfaces; CF Access already authenticated
+  // them so we can surface every page they have access to.
   function navStaff(me, isAdmin) {
     const items = [
-      { href: '/staff/', label: 'Dashboard' },
-      { label: 'Sales', group: [
-          { href: '/staff/leads.html',     label: 'Leads' },
-          { href: '/staff/prospects.html', label: 'Prospects' },
-          { href: '/staff/proposals.html', label: 'Proposals' },
-          { href: '/staff/clients.html',   label: 'Clients' }
-      ]},
+      { href: '/admin/console/',         label: 'Dashboard' },
+      { href: '/admin/bc-leads.html',    label: 'Projects' },
       { label: 'Tools', group: [
-          { href: '/staff/proposalgen.html', label: 'Proposal Generator' },
-          { href: '/staff/calendar.html',    label: 'Calendar' },
-          { href: '/staff/files.html',       label: 'Files' }
+          { href: '/admin/proposalgen.html', label: 'Proposal Generator' },
+          { href: '/admin/calendar.html',    label: 'Calendar' },
+          { href: '/admin/files.html',       label: 'Files' },
+      ]},
+      { label: 'Manage', group: [
+          { href: '/admin/users.html',       label: 'Users' },
+          { href: '/admin/financials.html',  label: 'Financials' },
+          { href: '/admin/pipeline.html',    label: 'Pipeline' },
+          { href: '/admin/marketing.html',   label: 'Marketing' },
+          { href: '/admin/compliance.html',  label: 'Compliance' },
       ]}
     ];
-    if (isAdmin) {
-      items.push({ label: 'Admin', group: [
-          { href: '/admin/console/',        label: 'GCC Manager' },
-          { divider: true },
-          { href: '/admin/users.html',      label: 'Users' },
-          { href: '/admin/financials.html', label: 'Financials' },
-          { href: '/admin/pipeline.html',   label: 'Pipeline' },
-          { href: '/admin/marketing.html',  label: 'Marketing' },
-          { divider: true },
-          { href: '/admin/settings.html',   label: 'Admin Settings' }
-      ]});
-    }
     items.push({ spacer: true });
     items.push({ label: (me.name || me.email || 'Account').split('@')[0].split(' ')[0], anchor: 'right', group: [
         { groupLabel: me.email || '' },
@@ -263,7 +259,7 @@
     const brandLink = host.querySelector('.brand-mark');
     if (brandLink) {
       if (badgeText === 'Client Portal') brandLink.setAttribute('href', '/clients/dashboard.html');
-      else if (badgeText === 'Staff Portal' || badgeText === 'Admin') brandLink.setAttribute('href', '/staff/');
+      else if (badgeText === 'Staff Portal' || badgeText === 'Admin') brandLink.setAttribute('href', '/admin/');
     }
   }
 

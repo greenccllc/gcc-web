@@ -9,6 +9,7 @@
 <meta name="robots" content="noindex" />
 <link rel="icon" href="/assets/favicon.ico" sizes="any" /><link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
 <link rel="stylesheet" href="/assets/css/site.css?v=20260501-redesign" />
+  <link rel="stylesheet" href="/assets/css/chrome.css?v=20260501-restructure" />
 <style>
 .cal-wrap { display: grid; grid-template-columns: 280px 1fr; gap: 24px; }
 @media (max-width: 860px) { .cal-wrap { grid-template-columns: 1fr; } }
@@ -145,6 +146,7 @@
 
 <script src="/assets/js/api.js"></script>
 <script src="/assets/js/header.js"></script>
+  <script src="/assets/js/footer.js"></script>
 <script src="/assets/js/page.js"></script>
 <script>
 let allEvents = [];
@@ -303,5 +305,6 @@ gccPage.requireRole(["staff","admin"]).then(async (me) => {
 
 }).catch(() => { /* redirected */ });
 </script>
+  <div id="gcc-footer"></div>
 </body>
 </html>

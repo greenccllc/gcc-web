@@ -1,268 +1,202 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Contact — Get a quote in 48 hours · GCC LLC</title>
-<meta name="description" content="Request a low-voltage quote, send plans for review, or schedule a site walk. Direct phone, email, and form — all answered by ownership." />
-<meta name="theme-color" content="#1E4D2B" />
-<link rel="icon" href="/assets/favicon.ico" sizes="any" /><link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
-<link rel="stylesheet" href="/assets/css/site.css" />
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://greencommllc.com/"},{"@type":"ListItem","position":2,"name":"Contact","item":"https://greencommllc.com/contact.html"}]}</script>
-<link rel="canonical" href="https://greencommllc.com/contact.html" />
-<meta property="og:type" content="website" />
-<meta property="og:site_name" content="GCC LLC" />
-<meta property="og:locale" content="en_US" />
-<meta property="og:title" content="Contact — Get a quote in 48 hours · GCC LLC" />
-<meta property="og:description" content="Request a low-voltage quote, send plans for review, or schedule a site walk. Direct phone, email, and form — all answered by ownership." />
-<meta property="og:url" content="https://greencommllc.com/contact.html" />
-<meta property="og:image" content="https://greencommllc.com/assets/og/og-default.png" />
-<meta property="og:image:width" content="1200" />
-<meta property="og:image:height" content="630" />
-<meta name="twitter:card" content="summary_large_image" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Contact — 48-hour quote turnaround · GCC LLC</title>
+  <meta name="description" content="Request a quote, send plans for review, or schedule a site walk. Direct phone, email, and form — answered by ownership. 48-hour proposal turnaround. Same-day COI and W9." />
+  <meta name="theme-color" content="#1E4D2B" />
+  <link rel="canonical" href="https://greencommllc.com/contact.html" />
+  <link rel="icon" href="/assets/favicon.ico" sizes="any" />
+  <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
+  <link rel="stylesheet" href="/assets/css/site.css?v=20260501-restructure" />
+  <link rel="stylesheet" href="/assets/css/chrome.css?v=20260501-restructure" />
+  <style>
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 48px;
+      align-items: start;
+    }
+    @media (max-width: 880px) { .contact-grid { grid-template-columns: 1fr; gap: 32px; } }
+    .contact-form {
+      background: white;
+      border: 1px solid var(--hairline, rgba(21,32,26,.09));
+      border-radius: 12px;
+      padding: 28px;
+    }
+    .contact-form .field { margin-bottom: 16px; }
+    .contact-form label {
+      display: block; font-size: 12px; font-weight: 600; color: var(--ink);
+      text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px;
+    }
+    .contact-form input, .contact-form textarea, .contact-form select {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: 14px;
+      font-family: inherit;
+      border: 1px solid var(--hairline, rgba(21,32,26,.12));
+      border-radius: 8px;
+      background: var(--paper, #F4F4EE);
+      transition: border-color .12s ease;
+    }
+    .contact-form input:focus, .contact-form textarea:focus, .contact-form select:focus {
+      outline: none;
+      border-color: var(--forest, #1E4D2B);
+      background: white;
+    }
+    .contact-form textarea { min-height: 120px; resize: vertical; }
+    .contact-form button {
+      width: 100%;
+      padding: 14px;
+      background: var(--forest, #1E4D2B);
+      color: white;
+      border: 0;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      transition: background .12s ease;
+    }
+    .contact-form button:hover { background: var(--forest-dark, #143821); }
+    .contact-side .info-block {
+      padding: 20px 0;
+      border-bottom: 1px solid var(--hairline);
+    }
+    .contact-side .info-block:last-child { border-bottom: 0; }
+    .contact-side h3 {
+      font-size: 12px; font-weight: 700; color: var(--forest);
+      text-transform: uppercase; letter-spacing: .08em; margin: 0 0 8px;
+    }
+    .contact-side .info-block strong, .contact-side .info-block a {
+      display: block;
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 16px;
+      color: var(--ink);
+      text-decoration: none;
+      margin-bottom: 4px;
+    }
+    .contact-side .info-block a:hover { color: var(--forest); }
+    .contact-side .info-block p { font-size: 13px; color: var(--slate); margin: 4px 0 0; }
+  </style>
 </head>
 <body>
+  <a href="#main" class="skip-link">Skip to content</a>
+  <div id="gcc-header"></div>
 
-<a href="#main" class="skip-link">Skip to content</a>
-<div id="gcc-header">
-  <header class="site-header">
-    <div class="container">
-      <a href="/" class="brand-mark" aria-label="GCC LLC home">
-        <span class="monogram" aria-hidden="true">GC</span>
-        <span class="brand-stack">
-          <span class="brand-name">GCC LLC</span>
-          <span class="brand-tag" id="hdr-tag">Div 27 / 28 Contractor</span>
-        </span>
-      </a>
-      <button class="menu-toggle" aria-label="Toggle menu" aria-expanded="false">&#9776;</button>
-      <nav class="site-nav" aria-label="Primary"><ul>
-        <li><a href="/">Home</a></li>
-        <li><a href="/services.html">Services</a></li>
-        <li><a href="/estimator.html">Estimator</a></li>
-        <li><a href="/about.html">About</a></li>
-        <li><a href="/contact.html" class="active">Contact</a></li>
-        <li class="spacer" aria-hidden="true"></li>
-        <li><a href="/clients/#signup" class="cta">Register Account</a></li>
-      </ul></nav>
-    </div>
-  </header>
-</div>
-<main id="main">
-
-<section class="hero hero-tight">
-  <div class="container">
-    <span class="eyebrow">Contact</span>
-    <h1>Get a real quote, not a sales call. <span class="highlight">Promise.</span></h1>
-    <p class="lead measure-lg">Tell us what you're working on. We'll come back with itemized pricing, a realistic timeline, and zero TBD line items — usually within 48 hours.</p>
-  </div>
-</section>
-
-<section>
-  <div class="container">
-    <div class="contact-grid">
-      <div class="contact-info">
-        <div class="ci-block">
-          <h4><svg class="icon" aria-hidden="true"><use href="/assets/svg/icons.svg#icon-phone"/></svg> Phone</h4>
-          <p><a href="tel:+16362248192"><strong>636-224-8192</strong></a><br/>Monday–Friday, 8a–6p Central</p>
-        </div>
-        <div class="ci-block">
-          <h4><svg class="icon" aria-hidden="true"><use href="/assets/svg/icons.svg#icon-mail"/></svg>️ Email</h4>
-          <p><a href="mailto:info@greencommllc.com"><strong>info@greencommllc.com</strong></a><br/>Quotes, plans, scope questions</p>
-          <p class="mt-xs"><a href="mailto:corporate@greencommllc.com"><strong>corporate@greencommllc.com</strong></a><br/>Insurance, COI requests, billing</p>
-          <p class="mt-xs"><a href="mailto:support@greencommllc.com"><strong>support@greencommllc.com</strong></a><br/>Active-customer support &amp; trouble tickets</p>
-        </div>
-        <div class="ci-block">
-          <h4><svg class="icon" aria-hidden="true"><use href="/assets/svg/icons.svg#icon-pin"/></svg> Office</h4>
-          <p>603 Seib Dr<br/>O'Fallon, MO 63366</p>
-        </div>
-        <div class="ci-block">
-          <h4><svg class="icon" aria-hidden="true"><use href="/assets/svg/icons.svg#icon-truck"/></svg> Service Areas</h4>
-          <p><strong>Kansas City Metro:</strong> KCMO, Independence, Lee's Summit, Overland Park, Lenexa, Olathe</p>
-          <p class="mt-xs"><strong>St. Louis Metro:</strong> STL City + County, Wentzville, Florissant, Arnold, O'Fallon</p>
-          <p class="mt-xs text-sm text-slate-light">Outside those areas? We'll bid it with a small mobilization line.</p>
-        </div>
-      </div>
-
-      <form class="contact-form" method="POST">
-        <h3 class="mb-2xs">Tell us about the project</h3>
-        <p class="text-slate mb-lg text-md">All fields optional except a way to reach you. We'll follow up within one business day.</p>
-
-        <div class="field-row">
-          <div class="field">
-            <label for="name">Your name</label>
-            <input type="text" id="name" name="name" required />
-          </div>
-          <div class="field">
-            <label for="company">Company / GC (if any)</label>
-            <input type="text" id="company" name="company" />
-          </div>
-        </div>
-
-        <div class="field-row">
-          <div class="field">
-            <label for="email">Email</label>
-            <input type="email" id="email" name="email" required />
-          </div>
-          <div class="field">
-            <label for="phone">Phone</label>
-            <input type="tel" id="phone" name="phone" />
-          </div>
-        </div>
-
-        <div class="field-row">
-          <div class="field">
-            <label for="vertical">Project type</label>
-            <select id="vertical" name="vertical">
-              <option value="">— select —</option>
-              <option>Senior Living</option>
-              <option>Education (K-12 / Higher Ed)</option>
-              <option>Government / Military</option>
-              <option>Healthcare</option>
-              <option>Hospitality</option>
-              <option>Commercial Office</option>
-              <option>Residential</option>
-              <option>Service / Maintenance Only</option>
-              <option>Other / Unsure</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="metro">Metro</label>
-            <select id="metro" name="metro">
-              <option value="">— select —</option>
-              <option>KCMO</option>
-              <option>STL</option>
-              <option>Both</option>
-              <option>Outside MO/KS/IL</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="field">
-          <label for="address">Project site address <span class="text-regular text-slate-light">(optional)</span></label>
-          <input type="text" id="address" name="address"
-                 class="addr-autocomplete"
-                 autocomplete="street-address"
-                 placeholder="Start typing — Google will autocomplete"
-                 data-target-city="addr-city"
-                 data-target-state="addr-state"
-                 data-target-zip="addr-zip"
-                 data-target-formatted="addr-formatted"
-                 data-target-lat="addr-lat"
-                 data-target-lng="addr-lng" />
-          <small class="help-text">Helps us check service-area + estimate mobilization. Leave blank if undecided.</small>
-          <input type="hidden" id="addr-city"      name="addr_city"      />
-          <input type="hidden" id="addr-state"     name="addr_state"     />
-          <input type="hidden" id="addr-zip"       name="addr_zip"       />
-          <input type="hidden" id="addr-formatted" name="addr_formatted" />
-          <input type="hidden" id="addr-lat"       name="addr_lat"       />
-          <input type="hidden" id="addr-lng"       name="addr_lng"       />
-        </div>
-
-        <div class="field">
-          <label for="message">Project details</label>
-          <textarea id="message" name="message" placeholder="Number of drops, building size, deadline, what you've already gotten quoted, links to plans, anything that helps us scope it..."></textarea>
-        </div>
-
-        <div class="field form-disclaimer">
-          <p class="mb-0">By submitting you agree that we may contact you about this inquiry. We don't sell leads, run remarketing, or send a newsletter you didn't ask for.</p>
-        </div>
-
-        <button type="submit" class="btn btn-primary btn-block">Send →</button>
-
-        <p class="mt-md text-sm text-slate">
-          <strong>Or just call:</strong> <a href="tel:+16362248192">636-224-8192</a>. Kaitlyn or Nathan will pick up.
+  <main id="main">
+    <section class="page-hero">
+      <div class="container">
+        <span class="eyebrow">Contact</span>
+        <h1>Send us a plan set. Get a real range back in 48 hours.</h1>
+        <p class="lead">
+          Pricing benchmarks come from the estimator. Hard numbers come from the proposal.
+          Either way, the email goes to ownership and the answer comes back the same day.
         </p>
-      </form>
-    </div>
-  </div>
-</section>
-
-</main>
-<footer class="site-footer">
-  <div class="container">
-    <div class="footer-grid">
-      <div class="footer-brand">
-        <a href="/" class="brand-mark"><span class="monogram">GC</span><span class="brand-stack"><span class="brand-name">GCC LLC</span><span class="brand-tag">Div 27 / 28 Contractor</span></span></a>
-        <p>Green Communications Contracting LLC — licensed, insured, and bonded.</p>
       </div>
-      <div class="footer-col"><h4>Services</h4><ul>
-        <li><a href="/services.html#div27">Division 27 (Telecom)</a></li>
-        <li><a href="/services.html#div28">Division 28 (Security)</a></li>
-        <li><a href="/services.html#residential">Residential</a></li>
-        <li><a href="/services.html#support">Service Contracts</a></li>
-        <li><a href="/estimator.html">Instant Estimator</a></li>
-      </ul></div>
-      <div class="footer-col"><h4>Company</h4><ul>
-        <li><a href="/about.html">About</a></li>
-          <li><a href="/projects.html">Projects</a></li>
-          <li><a href="/contact.html">Contact</a></li>
-      </ul></div>
-      <div class="footer-col"><h4>Reach Us</h4><ul>
-        <li><a href="tel:+16362248192">636-224-8192</a></li>
-        <li><a href="mailto:info@greencommllc.com">info@greencommllc.com</a></li>
-        <li><a href="https://maps.google.com/?q=603+Seib+Dr+O%27Fallon+MO+63366" target="_blank" rel="noopener">603 Seib Dr<br/>O'Fallon, MO 63366</a></li>
-        <li class="footer-login-item"><a href="/clients/">Client login</a> &middot; <a href="/staff/">Staff login</a></li>
-      </ul></div>
-    </div>
-    <div class="footer-bottom">
-      <div>© 2026 Green Communications Contracting LLC · Licensed &amp; Insured · Missouri LLC</div>
-      <div>Non-Union Div 27/28 · BICSI/TIA-568 · TIA-606-B</div>
-    </div>
-    <div class="footer-bottom footer-bottom-tight">
-      <div class="text-2xs">
-        <a href="/privacy.html">Privacy Policy</a> &middot;
-        <a href="/terms.html">Terms of Service</a> &middot;
-        <a href="/support.html">Support</a> &middot;
-        <a href="/quickbooks.html">QuickBooks integration</a>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="contact-grid">
+          <form class="contact-form" id="contact-form" novalidate>
+            <div class="field">
+              <label for="c-name">Name</label>
+              <input type="text" id="c-name" name="name" required autocomplete="name" />
+            </div>
+            <div class="field">
+              <label for="c-email">Email</label>
+              <input type="email" id="c-email" name="email" required autocomplete="email" />
+            </div>
+            <div class="field">
+              <label for="c-company">Company / property name</label>
+              <input type="text" id="c-company" name="company" autocomplete="organization" />
+            </div>
+            <div class="field">
+              <label for="c-phone">Phone</label>
+              <input type="tel" id="c-phone" name="phone" autocomplete="tel" />
+            </div>
+            <div class="field">
+              <label for="c-kind">What's the project?</label>
+              <select id="c-kind" name="kind">
+                <option value="commercial-bid">Commercial — RFP / GC-direct bid</option>
+                <option value="commercial-direct">Commercial — owner-direct quote</option>
+                <option value="residential">Residential</option>
+                <option value="service">Service contract / takeover audit</option>
+                <option value="other">Something else</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="c-msg">Project notes</label>
+              <textarea id="c-msg" name="message" placeholder="Drop count, timeline, anything you want us to know."></textarea>
+            </div>
+            <button type="submit">Send →</button>
+            <p style="font-size:11px; color:var(--slate); margin: 12px 0 0;">
+              Plans? Email <a href="mailto:info@greencommllc.com" style="color:var(--forest);">info@greencommllc.com</a> directly. We accept attachments up to 50 MB; for larger sets, send a link.
+            </p>
+          </form>
+
+          <aside class="contact-side">
+            <div class="info-block">
+              <h3>Phone</h3>
+              <a href="tel:+16362248192">636-224-8192</a>
+              <p>Direct line to ownership. We answer or call back the same day.</p>
+            </div>
+            <div class="info-block">
+              <h3>Email</h3>
+              <a href="mailto:info@greencommllc.com">info@greencommllc.com</a>
+              <p>Plans, RFPs, and questions. 48-hour turnaround on proposals.</p>
+            </div>
+            <div class="info-block">
+              <h3>HQ</h3>
+              <strong>603 Seib Dr, O'Fallon, MO 63366</strong>
+              <p>STL metro. Site walks anywhere in KCMO + STL — schedule via call or email.</p>
+            </div>
+            <div class="info-block">
+              <h3>Quote SLA</h3>
+              <strong>48 hours</strong>
+              <p>Same-day COI, W9, and bondability letter on request.</p>
+            </div>
+            <div class="info-block">
+              <h3>Coverage</h3>
+              <strong>KCMO + STL</strong>
+              <p>Plus anywhere in MO / KS / IL with a mobilization line item.</p>
+            </div>
+          </aside>
+        </div>
       </div>
-    </div>
-  </div>
-</footer>
+    </section>
 
-<script src="/assets/js/site.js"></script>
+    <section class="section section-tinted">
+      <div class="container" style="text-align: center; max-width: 720px;">
+        <h2>Want a number before you talk to us?</h2>
+        <p class="lead" style="margin: 12px auto 24px;">Free instant ballpark. 30 seconds. No sign-up.</p>
+        <a class="hero-cta" href="/estimate/">Open the estimator →</a>
+      </div>
+    </section>
+  </main>
 
-<script src="/assets/js/api.js"></script>
-<script src="/assets/js/header.js"></script>
-<script src="/assets/js/address-autocomplete.js"></script>
-<script>
-// Wire contact form to API. Falls back to mailto if API unreachable.
-document.addEventListener('DOMContentLoaded', function () {
-  var form = document.querySelector('.contact-form');
-  if (!form) return;
+  <div id="gcc-footer"></div>
 
-  // Make the action a no-op for default form submit so JS handler runs.
-  form.removeAttribute('action');
-
-  form.addEventListener('submit', async function (e) {
-    e.preventDefault();
-    var btn = form.querySelector('button[type="submit"]');
-    var orig = btn ? btn.textContent : '';
-    if (btn) { btn.disabled = true; btn.textContent = 'Sending...'; }
-
-    var data = {
-      Source:  'contact',
-      Name:    form.name.value.trim(),
-      Email:   form.email.value.trim(),
-      Phone:   (form.phone && form.phone.value || '').trim(),
-      Company: (form.company && form.company.value || '').trim(),
-      Vertical: (form.vertical && form.vertical.value || '').trim(),
-      Metro:    (form.metro && form.metro.value || '').trim(),
-      Message:  (form.message && form.message.value || '').trim()
-    };
-
-    try {
-      await gccApi.submitLead(data);
-      form.innerHTML = '<div class="text-center success-pane"><div class="success-mark">✓</div><h3 class="text-forest mb-xs">Got it. We will be in touch within one business day.</h3><p class="text-slate mb-0">Or call <a href="tel:+16362248192">636-224-8192</a> if you need a faster response.</p></div>';
-    } catch (err) {
-      console.error('API submit failed', err);
-      // Mailto fallback
-      var subject = 'Quote request from ' + (data.Name || 'website');
-      var body = Object.entries(data).filter(function (kv) { return kv[1]; }).map(function (kv) { return kv[0] + ': ' + kv[1]; }).join('\n');
-      window.location.href = 'mailto:info@greencommllc.com?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
-      if (btn) { btn.disabled = false; btn.textContent = orig; }
-    }
-  });
-});
-</script>
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/header.js"></script>
+  <script src="/assets/js/footer.js"></script>
+  <script>
+    document.getElementById('contact-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(e.target));
+      const subject = encodeURIComponent(`[GCC contact] ${data.kind} — ${data.company || data.name}`);
+      const body = encodeURIComponent([
+        `Name: ${data.name}`,
+        `Email: ${data.email}`,
+        `Company: ${data.company || ''}`,
+        `Phone: ${data.phone || ''}`,
+        `Project: ${data.kind}`,
+        '',
+        data.message || ''
+      ].join('\n'));
+      window.location.href = `mailto:info@greencommllc.com?subject=${subject}&body=${body}`;
+    });
+  </script>
 </body>
 </html>

@@ -8,6 +8,7 @@
 <meta name="robots" content="noindex" />
 <link rel="icon" href="/assets/favicon.ico" sizes="any" /><link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
 <link rel="stylesheet" href="/assets/css/site.css" />
+  <link rel="stylesheet" href="/assets/css/chrome.css?v=20260501-restructure" />
 <link rel="stylesheet" href="/assets/css/clients-settings.css" />
 </head>
 <body>
@@ -141,7 +142,7 @@
                 <h3 style="margin:0 0 4px;">GCC Prop Manager</h3>
                 <p class="lede" style="margin:0 0 8px;">BuildingConnected leads, AI-cost rollup, drop-count grid per RFP, and a Processes tab for pausing/resuming the GCC scheduled tasks (BC scrape, AI Drive sync, bid extractor, etc.).</p>
                 <p class="small" style="color:var(--slate-light); margin:0 0 12px;">Also available as a tray icon — install <code>gcc-app/scripts/install.ps1</code> from the <a href="https://github.com/greenccllc/gcc-app" target="_blank">greenccllc/gcc-app</a> repo.</p>
-                <a href="/staff/bc-leads.html" class="btn btn-primary btn-sm" target="_blank">Open Prop Manager &rarr;</a>
+                <a href="/admin/bc-leads.html" class="btn btn-primary btn-sm" target="_blank">Open Prop Manager &rarr;</a>
               </div>
             </div>
           </div>
@@ -163,6 +164,7 @@
 
 <script src="/assets/js/api.js"></script>
 <script src="/assets/js/header.js"></script>
+  <script src="/assets/js/footer.js"></script>
 <script src="/assets/js/page.js"></script>
 <script>
 // Well-known bundler keys with rich metadata (label, hint, placeholder).
@@ -648,5 +650,6 @@ gccPage.requireRole(["client","staff","admin"]).then(async (me) => {
   wireDigest();
 }).catch(() => { /* requireRole handles redirect */ });
 </script>
+  <div id="gcc-footer"></div>
 </body>
 </html>

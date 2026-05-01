@@ -8,6 +8,7 @@
 <meta name="robots" content="noindex" />
 <link rel="icon" href="/assets/favicon.ico" sizes="any" /><link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
 <link rel="stylesheet" href="/assets/css/site.css" />
+  <link rel="stylesheet" href="/assets/css/chrome.css?v=20260501-restructure" />
 <style>
 .cest-wrap { display: grid; grid-template-columns: 1.5fr 1fr; gap: 32px; align-items: start; }
 @media (max-width: 1100px) { .cest-wrap { grid-template-columns: 1fr; } }
@@ -241,6 +242,7 @@
 <script src="/assets/js/site.js"></script>
 <script src="/assets/js/api.js"></script>
 <script src="/assets/js/header.js"></script>
+  <script src="/assets/js/footer.js"></script>
 <script src="/assets/js/page.js"></script>
 <script>
 // Auth gate — redirect anonymous users to sign in before showing the estimator.
@@ -252,5 +254,6 @@ gccPage.requireRole(["client","staff","admin"]).then((me) => {
 <script src="/assets/js/estimator-save.js"></script>
 <script src="/assets/js/estimator-pdf.js"></script>
 <script src="/assets/js/client-estimator-residential.js"></script>
+  <div id="gcc-footer"></div>
 </body>
 </html>

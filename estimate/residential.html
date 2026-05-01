@@ -8,6 +8,7 @@
 <meta name="theme-color" content="#1E4D2B" />
 <link rel="icon" href="/assets/favicon.ico" sizes="any" /><link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
 <link rel="stylesheet" href="/assets/css/site.css" />
+  <link rel="stylesheet" href="/assets/css/chrome.css?v=20260501-restructure" />
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://greencommllc.com/"},{"@type":"ListItem","position":2,"name":"Estimator","item":"https://greencommllc.com/estimator.html"},{"@type":"ListItem","position":3,"name":"Residential","item":"https://greencommllc.com/estimator-residential.html"}]}</script>
 <link rel="stylesheet" href="/assets/css/estimator-residential.css" />
 <link rel="canonical" href="https://greencommllc.com/estimator-residential.html" />
@@ -39,7 +40,7 @@
       <nav class="site-nav" aria-label="Primary"><ul>
         <li><a href="/">Home</a></li>
         <li><a href="/services.html">Services</a></li>
-        <li><a href="/estimator.html" class="active">Estimator</a></li>
+        <li><a href="/estimate/commercial.html" class="active">Estimator</a></li>
         <li><a href="/about.html">About</a></li>
         <li><a href="/contact.html">Contact</a></li>
         <li class="spacer" aria-hidden="true"></li>
@@ -53,8 +54,8 @@
 <section class="hero" style="padding: 80px 0 24px;">
   <div class="container">
     <div class="est-mode-toggle">
-      <a href="/estimator.html"><svg class="icon" aria-hidden="true"><use href="/assets/svg/icons.svg#icon-building"/></svg> Commercial</a>
-      <a href="/estimator-residential.html" class="active"><svg class="icon" aria-hidden="true"><use href="/assets/svg/icons.svg#icon-home"/></svg> Residential</a>
+      <a href="/estimate/commercial.html"><svg class="icon" aria-hidden="true"><use href="/assets/svg/icons.svg#icon-building"/></svg> Commercial</a>
+      <a href="/estimate/residential.html" class="active"><svg class="icon" aria-hidden="true"><use href="/assets/svg/icons.svg#icon-home"/></svg> Residential</a>
     </div>
     <span class="eyebrow">Home Estimate</span>
     <h1>Smart home, security, networking — and the renovations <span class="highlight">the last guy didn't finish.</span></h1>
@@ -238,8 +239,8 @@
         <p>Green Communications Contracting LLC — licensed, insured, and bonded.</p>
       </div>
       <div class="footer-col"><h4>Estimators</h4><ul>
-        <li><a href="/estimator.html">Commercial Estimator</a></li>
-        <li><a href="/estimator-residential.html">Home Estimator</a></li>
+        <li><a href="/estimate/commercial.html">Commercial Estimator</a></li>
+        <li><a href="/estimate/residential.html">Home Estimator</a></li>
         <li><a href="/clients/">Client Portal (full)</a></li>
       </ul></div>
       <div class="footer-col"><h4>Company</h4><ul>
@@ -252,7 +253,7 @@
         <li><a href="tel:+16362248192">636-224-8192</a></li>
         <li><a href="mailto:info@greencommllc.com">info@greencommllc.com</a></li>
         <li><a href="https://maps.google.com/?q=603+Seib+Dr+O%27Fallon+MO+63366" target="_blank" rel="noopener">603 Seib Dr<br/>O'Fallon, MO 63366</a></li>
-        <li style="padding-top:6px; border-top:1px solid rgba(255,255,255,0.10); margin-top:6px;"><a href="/clients/">Client login</a> &middot; <a href="/staff/">Staff login</a></li>
+        <li style="padding-top:6px; border-top:1px solid rgba(255,255,255,0.10); margin-top:6px;"><a href="/clients/">Client login</a> &middot; <a href="/admin/">Staff login</a></li>
       </ul></div>
     </div>
     <div class="footer-bottom">
@@ -263,8 +264,11 @@
 </footer>
 
 <script src="/assets/js/site.js"></script>
+<div id="gcc-footer"></div>
+
 <script src="/assets/js/api.js"></script>
 <script src="/assets/js/header.js"></script>
+  <script src="/assets/js/footer.js"></script>
 <script src="/assets/js/estimator-save.js"></script>
 <script src="/assets/js/estimator-residential.js"></script>
 </body>

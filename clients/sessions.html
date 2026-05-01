@@ -8,6 +8,7 @@
 <meta name="robots" content="noindex" />
 <link rel="icon" href="/assets/favicon.ico" sizes="any" /><link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
 <link rel="stylesheet" href="/assets/css/site.css" />
+  <link rel="stylesheet" href="/assets/css/chrome.css?v=20260501-restructure" />
 <style>
 .dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 28px; }
 .kpi { background: white; border: 1px solid var(--hairline); border-radius: var(--r-md); padding: 18px; box-shadow: var(--shadow-xs); }
@@ -53,14 +54,15 @@
 
 <script src="/assets/js/api.js"></script>
 <script src="/assets/js/header.js"></script>
+  <script src="/assets/js/footer.js"></script>
 <script src="/assets/js/page.js"></script>
 <script>
 gccPage.requireRole(["client","staff","admin"]).then(async (me) => {
   document.getElementById('page-loading').hidden = true;
   document.getElementById('page-content').hidden = false;
   function estimatorUrl(source, clientType) {
-    if (source === 'public-commercial')     return '/estimator.html';
-    if (source === 'public-residential')    return '/estimator-residential.html';
+    if (source === 'public-commercial')     return '/estimate/commercial.html';
+    if (source === 'public-residential')    return '/estimate/residential.html';
     if (source === 'client-commercial')     return '/clients/estimator.html';
     if (source === 'client-residential')    return '/clients/estimator-residential.html';
     // fallback by clientType
@@ -82,5 +84,6 @@ gccPage.requireRole(["client","staff","admin"]).then(async (me) => {
   } catch(e) { document.getElementById('sessions-list').innerHTML = '<div class="empty-state">Failed to load.</div>'; }
 }).catch(() => { /* redirected */ });
 </script>
+  <div id="gcc-footer"></div>
 </body>
 </html>

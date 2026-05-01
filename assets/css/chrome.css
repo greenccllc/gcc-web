@@ -1,0 +1,289 @@
+/* ===========================================================
+   GCC unified chrome — banner, footer, page-frame helpers.
+   Loaded on every public + client + admin page after site.css.
+   Keeps the visual language consistent across the whole site.
+   =========================================================== */
+
+/* ── Footer ─────────────────────────────────────────────── */
+.gcc-footer {
+  margin-top: 64px;
+  padding: 48px 0 0;
+  background:
+    linear-gradient(180deg, var(--paper, #F4F4EE) 0%, white 100%);
+  border-top: 1px solid var(--hairline, rgba(21,32,26,.09));
+  color: var(--ink, #15201A);
+  font-family: 'Source Sans 3', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.gcc-footer-inner {
+  max-width: var(--container, 1180px);
+  margin: 0 auto;
+  padding: 0 var(--gutter, 24px);
+  display: grid;
+  grid-template-columns: 1.2fr 3fr;
+  gap: 48px;
+}
+
+@media (max-width: 880px) {
+  .gcc-footer-inner { grid-template-columns: 1fr; gap: 32px; }
+}
+
+.gcc-footer-brand { display: flex; flex-direction: column; gap: 12px; }
+.gcc-footer-mark {
+  display: flex; align-items: center; gap: 12px;
+}
+.gcc-footer-mark img {
+  width: 38px; height: 38px;
+  border-radius: 8px;
+  background: white;
+  border: 1px solid var(--hairline, rgba(21,32,26,.09));
+  padding: 4px;
+}
+.gcc-footer-mark strong {
+  display: block;
+  font-size: 16px; font-weight: 700;
+  color: var(--forest, #1E4D2B);
+  letter-spacing: -.01em;
+}
+.gcc-footer-mark span {
+  font-size: 11px; color: var(--slate, #4F5B57);
+  text-transform: uppercase; letter-spacing: .08em;
+}
+.gcc-footer-tag {
+  margin: 8px 0 0;
+  font-size: 18px; font-weight: 600;
+  color: var(--forest, #1E4D2B);
+  letter-spacing: -.01em;
+}
+.gcc-footer-meta {
+  margin: 0;
+  font-size: 12px;
+  color: var(--slate, #4F5B57);
+  line-height: 1.6;
+}
+
+.gcc-footer-nav {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+@media (max-width: 720px) {
+  .gcc-footer-nav { grid-template-columns: repeat(2, 1fr); }
+}
+
+.gcc-footer-col h3 {
+  margin: 0 0 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--ink, #15201A);
+}
+.gcc-footer-col ul {
+  list-style: none; margin: 0; padding: 0;
+}
+.gcc-footer-col li { margin-bottom: 6px; }
+.gcc-footer-col a {
+  color: var(--slate, #4F5B57);
+  text-decoration: none;
+  font-size: 13px;
+  transition: color .12s ease;
+}
+.gcc-footer-col a:hover {
+  color: var(--forest, #1E4D2B);
+}
+
+.gcc-footer-base {
+  margin-top: 40px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--hairline, rgba(21,32,26,.09));
+  background: white;
+  font-size: 11.5px;
+  color: var(--slate, #4F5B57);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.gcc-footer-base-left {
+  display: flex; flex-wrap: wrap; gap: 6px;
+}
+.gcc-footer-base-sep { color: var(--slate-light, #7C8884); }
+.gcc-footer-base-right { display: flex; gap: 12px; }
+.gcc-footer-admin {
+  color: var(--slate-light, #7C8884);
+  text-decoration: none;
+  font-size: 11px;
+  letter-spacing: .04em;
+  padding: 2px 6px;
+  border-radius: 3px;
+  transition: color .12s ease, background .12s ease;
+}
+.gcc-footer-admin:hover {
+  color: var(--forest, #1E4D2B);
+  background: var(--paper, #F4F4EE);
+}
+
+/* ── Page hero used across reimagined marketing pages ──── */
+.page-hero {
+  position: relative;
+  padding: 88px 0 64px;
+  background:
+    radial-gradient(circle at 80% -10%, rgba(46,125,50,.08), transparent 50%),
+    linear-gradient(180deg, var(--paper, #F4F4EE) 0%, white 100%);
+  border-bottom: 1px solid var(--hairline, rgba(21,32,26,.09));
+}
+.page-hero .container { position: relative; z-index: 1; }
+.page-hero .eyebrow {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--forest, #1E4D2B);
+  margin-bottom: 16px;
+}
+.page-hero h1 {
+  font-size: clamp(32px, 5vw, 52px);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -.02em;
+  margin: 0 0 20px;
+  color: var(--ink, #15201A);
+  max-width: 18ch;
+}
+.page-hero .lead {
+  font-size: clamp(16px, 1.6vw, 20px);
+  line-height: 1.55;
+  color: var(--slate, #4F5B57);
+  max-width: 60ch;
+  margin: 0 0 32px;
+}
+.page-hero .hero-cta {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 14px 24px;
+  background: var(--forest, #1E4D2B);
+  color: white;
+  font-weight: 600;
+  font-size: 15px;
+  border-radius: 999px;
+  text-decoration: none;
+  transition: background .15s ease, transform .15s ease;
+}
+.page-hero .hero-cta:hover {
+  background: var(--forest-dark, #143821);
+  transform: translateY(-1px);
+}
+.page-hero .hero-cta + .hero-cta-secondary {
+  margin-left: 12px;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 14px 20px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--forest, #1E4D2B);
+  text-decoration: none;
+  border-radius: 999px;
+  transition: background .12s ease;
+}
+.page-hero .hero-cta + .hero-cta-secondary:hover {
+  background: var(--forest-tint, #E8F0EA);
+}
+
+/* ── Section wrapper ─────────────────────────────────────── */
+.section {
+  padding: 64px 0;
+}
+.section.section-tinted {
+  background: var(--paper, #F4F4EE);
+  border-block: 1px solid var(--hairline, rgba(21,32,26,.09));
+}
+.section .section-head {
+  display: flex; align-items: end; justify-content: space-between;
+  flex-wrap: wrap; gap: 16px;
+  margin-bottom: 32px;
+}
+.section .section-head h2 {
+  font-size: clamp(24px, 3vw, 32px);
+  font-weight: 700;
+  letter-spacing: -.015em;
+  margin: 0;
+}
+.section .section-head p {
+  font-size: 14px; color: var(--slate, #4F5B57); margin: 4px 0 0;
+}
+
+/* ── Card grid (services, projects, verticals) ──────────── */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+}
+.card {
+  background: white;
+  border: 1px solid var(--hairline, rgba(21,32,26,.09));
+  border-radius: 12px;
+  padding: 24px;
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  text-decoration: none;
+  color: var(--ink, #15201A);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.card:hover {
+  transform: translateY(-2px);
+  border-color: var(--forest, #1E4D2B);
+  box-shadow: 0 12px 32px rgba(15, 26, 18, .07);
+}
+.card .card-icon {
+  font-size: 28px;
+  margin-bottom: 4px;
+  color: var(--forest, #1E4D2B);
+}
+.card h3 {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -.01em;
+}
+.card p {
+  font-size: 13.5px;
+  color: var(--slate, #4F5B57);
+  line-height: 1.55;
+  margin: 0;
+}
+.card .card-arrow {
+  margin-top: auto;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--forest, #1E4D2B);
+}
+
+/* ── Stat strip ─────────────────────────────────────────── */
+.stat-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 24px;
+  padding: 32px 0;
+}
+.stat-strip .stat-item {
+  border-left: 3px solid var(--forest, #1E4D2B);
+  padding: 4px 0 4px 16px;
+}
+.stat-strip .stat-num {
+  font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--ink, #15201A);
+  letter-spacing: -.02em;
+}
+.stat-strip .stat-lbl {
+  font-size: 12px;
+  color: var(--slate, #4F5B57);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  font-weight: 600;
+}

@@ -150,7 +150,7 @@
 
     redirectByRole(me) {
       if (me.role === 'admin' || me.role === 'staff') {
-        window.location.href = '/staff/';
+        window.location.href = '/admin/';
       } else if (me.clientType === 'residential') {
         window.location.href = '/clients/dashboard.html';
       } else {

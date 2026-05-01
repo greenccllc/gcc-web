@@ -9,6 +9,7 @@
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <meta name="theme-color" content="#1E4D2B" />
   <link rel="stylesheet" href="/assets/css/site.css?v=20260501-redesign" />
+  <link rel="stylesheet" href="/assets/css/chrome.css?v=20260501-restructure" />
   <link rel="stylesheet" href="/assets/css/staff-manage-job.css?v=20260501-tabs-themes" />
 </head>
 <body>
@@ -18,7 +19,7 @@
       <div class="crumb" id="crumb">loading…</div>
     </div>
     <div style="display:flex;gap:10px;align-items:center">
-      <a class="back" id="back-to-leads" href="/staff/bc-leads.html">← GCC Manager</a>
+      <a class="back" id="back-to-leads" href="/admin/bc-leads.html">← GCC Manager</a>
     </div>
   </header>
 
@@ -315,7 +316,7 @@ const JOB_ID = URL_PARAMS.get('jobId') || URL_PARAMS.get('bcBidId') || '';
     if (URL_PARAMS.get('secret')) qs.set('secret', URL_PARAMS.get('secret'));
     if (URL_PARAMS.get('api'))    qs.set('api',    URL_PARAMS.get('api'));
     const q = qs.toString();
-    back.href = '/staff/bc-leads.html' + (q ? '?' + q : '');
+    back.href = '/admin/bc-leads.html' + (q ? '?' + q : '');
   }
 }
 
@@ -827,7 +828,7 @@ function renderActionBar(r) {
       const qs = new URLSearchParams({ jobId: sid });
       if (URL_PARAMS.get('secret')) qs.set('secret', URL_PARAMS.get('secret'));
       if (URL_PARAMS.get('api'))    qs.set('api',    URL_PARAMS.get('api'));
-      return `<a class="mj-act-link mj-act-sib" href="/staff/manage-job.html?${qs.toString()}" title="Sibling RFP ${safeHtml(sid)}">🔗 ${safeHtml(sid.slice(0,8))}…</a>`;
+      return `<a class="mj-act-link mj-act-sib" href="/admin/manage-job.html?${qs.toString()}" title="Sibling RFP ${safeHtml(sid)}">🔗 ${safeHtml(sid.slice(0,8))}…</a>`;
     }).join('');
     linkParts.push(`<span class="mj-act-sib-group" title="Sibling RFPs (same physical project)">Siblings ${sibLinks}</span>`);
   }
@@ -2007,5 +2008,7 @@ $('mj-extract-card')?.addEventListener('toggle', () => {
 
 load();
 </script>
+  <div id="gcc-footer"></div>
+  <script src="/assets/js/footer.js"></script>
 </body>
 </html>

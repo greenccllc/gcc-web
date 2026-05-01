@@ -8,6 +8,7 @@
 <meta name="robots" content="noindex" />
 <link rel="icon" href="/assets/favicon.ico" sizes="any" /><link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
 <link rel="stylesheet" href="/assets/css/site.css" />
+  <link rel="stylesheet" href="/assets/css/chrome.css?v=20260501-restructure" />
 <link rel="stylesheet" href="/assets/css/clients-login.css" />
 </head>
 <body class="login-page">
@@ -170,6 +171,7 @@
 
 <script src="/assets/js/api.js"></script>
 <script src="/assets/js/header.js"></script>
+  <script src="/assets/js/footer.js"></script>
 <script>
 // ── If already signed in, redirect away from this page ────
 // /clients/ is the sign-in page; logged-in users have no business here.
@@ -195,7 +197,7 @@
       return null;
     }
     const target = safeNext(next) || (
-      me.role === 'admin' || me.role === 'staff' ? '/staff/' :
+      me.role === 'admin' || me.role === 'staff' ? '/admin/' :
       me.clientType === 'residential' ? '/clients/estimator-residential.html' :
       '/clients/dashboard.html'
     );
@@ -259,7 +261,7 @@ function postLoginRedirect(client) {
   const next   = safeNextUrl(params.get('next'));
   if (next) { window.location.href = next; return; }
   if (client.role === 'admin' || client.role === 'staff') {
-    window.location.href = '/staff/';
+    window.location.href = '/admin/';
   } else if (client.clientType === 'residential') {
     window.location.href = '/clients/estimator-residential.html';
   } else {
@@ -496,5 +498,6 @@ form.addEventListener('submit', async e => {
   }
 });
 </script>
+  <div id="gcc-footer"></div>
 </body>
 </html>

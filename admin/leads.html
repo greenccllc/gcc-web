@@ -4,11 +4,12 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="robots" content="noindex" />
-<title>Staff · Prospects · GCC LLC</title>
+<title>Staff · Leads · GCC LLC</title>
 <meta name="theme-color" content="#1E4D2B" />
 <meta name="robots" content="noindex" />
 <link rel="icon" href="/assets/favicon.ico" sizes="any" /><link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
 <link rel="stylesheet" href="/assets/css/site.css?v=20260501-redesign" />
+  <link rel="stylesheet" href="/assets/css/chrome.css?v=20260501-restructure" />
 <style>
 .dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 28px; }
 .kpi { background: white; border: 1px solid var(--hairline); border-radius: var(--r-md); padding: 18px; box-shadow: var(--shadow-xs); }
@@ -44,8 +45,8 @@
 
 <section style="padding: 28px 0; background: var(--paper); border-bottom: 1px solid var(--hairline);">
   <div class="container">
-    <h1 style="margin-bottom: 4px;">Prospects</h1>
-    <p style="color: var(--slate); margin: 0;">Qualified leads under active proposal/quote conversation.</p>
+    <h1 style="margin-bottom: 4px;">Leads</h1>
+    <p style="color: var(--slate); margin: 0;">Inbound from contact form, public estimator, referrals.</p>
   </div>
 </section>
 
@@ -53,33 +54,81 @@
   <div class="container">
     <div id="page-loading" style="text-align:center; padding: 40px; color: var(--slate-light);">Loading...</div>
     <div id="page-content" hidden>
-<div id="prospects-table">Loading...</div>
+<div class="filter-bar" id="status-filter">
+    <span style="font-size:13px; font-weight:600; color:var(--slate);">Filter:</span>
+    <button class="filter-pill active" data-status="">All</button>
+    <button class="filter-pill" data-status="new">New</button>
+    <button class="filter-pill" data-status="contacted">Contacted</button>
+    <button class="filter-pill" data-status="quoted">Quoted</button>
+    <button class="filter-pill" data-status="won">Won</button>
+    <button class="filter-pill" data-status="lost">Lost</button>
+    <button class="filter-pill" data-status="spam">Spam</button>
+  </div>
+  <div id="leads-table">Loading...</div>
     </div>
   </div>
 </section>
 
 <script src="/assets/js/api.js"></script>
 <script src="/assets/js/header.js"></script>
+  <script src="/assets/js/footer.js"></script>
 <script src="/assets/js/page.js"></script>
 <script>
 gccPage.requireRole(["staff","admin"]).then(async (me) => {
   document.getElementById('page-loading').hidden = true;
   document.getElementById('page-content').hidden = false;
-  try {
-    const all = await Promise.all([
-      fetch(gccApi.base + '/api/admin/leads?status=contacted', {credentials:'include'}).then(r => r.json()),
-      fetch(gccApi.base + '/api/admin/leads?status=quoted', {credentials:'include'}).then(r => r.json())
-    ]);
-    const merged = [...all[0], ...all[1]].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
-    const target = document.getElementById('prospects-table');
-    if (!merged.length) {
-      target.innerHTML = '<div class="empty-state"><div class="es-icon">🎯</div><div>No active prospects.</div></div>';
-    } else {
-      const rows = merged.map(l => '<tr><td>' + gccPage.datetime(l.createdAt) + '</td><td><strong>' + (l.name || '--') + '</strong></td><td>' + (l.email || '') + '</td><td>' + (l.source || '') + '</td><td>' + (l.estimateMid ? gccPage.money(l.estimateMid) : '--') + '</td><td><span class="status-pill status-' + l.status + '">' + l.status + '</span></td></tr>').join('');
-      target.innerHTML = '<table class="tbl"><thead><tr><th>Date</th><th>Contact</th><th>Email</th><th>Source</th><th>Estimate</th><th>Status</th></tr></thead><tbody>' + rows + '</tbody></table>';
+  let currentStatus = '';
+  async function load() {
+    const url = '/api/admin/leads' + (currentStatus ? '?status=' + currentStatus : '');
+    try {
+      const leads = await fetch(gccApi.base + url, {credentials:'include'}).then(r => r.json());
+      const target = document.getElementById('leads-table');
+      if (!leads.length) {
+        target.innerHTML = '<div class="empty-state"><div class="es-icon">📥</div><div>No leads here.</div></div>';
+        return;
+      }
+      const rows = leads.map(l => {
+        const statuses = ['new','contacted','quoted','won','lost','spam'];
+        const opts = statuses.map(s => '<option value="' + s + '"' + (s === l.status ? ' selected' : '') + '>' + s + '</option>').join('');
+        return '<tr>' +
+          '<td>' + gccPage.datetime(l.createdAt) + '</td>' +
+          '<td><strong>' + (l.name || '--') + '</strong>' + (l.company ? '<br><span style="color:var(--slate); font-size:12px;">' + l.company + '</span>' : '') + '</td>' +
+          '<td>' + (l.email ? '<a href="mailto:' + l.email + '">' + l.email + '</a>' : '') + (l.phone ? '<br><a href="tel:' + l.phone + '" style="color:var(--slate);">' + l.phone + '</a>' : '') + '</td>' +
+          '<td>' + (l.source || '') + '</td>' +
+          '<td>' + (l.vertical || '') + '</td>' +
+          '<td>' + (l.estimateMid ? gccPage.money(l.estimateMid) : '--') + '</td>' +
+          '<td><select data-id="' + l.id + '" class="status-select" style="padding:4px 8px; border:1px solid var(--hairline-strong); border-radius:5px; font-size:12px;">' + opts + '</select></td>' +
+          '<td><button class="view-btn" data-id="' + l.id + '" data-msg="' + encodeURIComponent(l.message || '') + '">View</button></td>' +
+        '</tr>';
+      }).join('');
+      target.innerHTML = '<table class="tbl"><thead><tr><th>Date</th><th>Contact</th><th>Reach</th><th>Source</th><th>Vertical</th><th>Estimate</th><th>Status</th><th></th></tr></thead><tbody>' + rows + '</tbody></table>';
+      target.querySelectorAll('.status-select').forEach(s => {
+        s.addEventListener('change', async (e) => {
+          await fetch(gccApi.base + '/api/admin/leads/' + s.dataset.id, {
+            method:'PUT', credentials:'include',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({Status: e.target.value})
+          });
+        });
+      });
+      target.querySelectorAll('.view-btn').forEach(b => {
+        b.addEventListener('click', () => alert(decodeURIComponent(b.dataset.msg) || '(no message)'));
+      });
+    } catch(e) {
+      document.getElementById('leads-table').innerHTML = '<div class="empty-state">Failed to load.</div>';
     }
-  } catch(e) { document.getElementById('prospects-table').innerHTML = '<div class="empty-state">Failed to load.</div>'; }
+  }
+  document.querySelectorAll('#status-filter .filter-pill').forEach(p => {
+    p.addEventListener('click', () => {
+      document.querySelectorAll('#status-filter .filter-pill').forEach(x => x.classList.remove('active'));
+      p.classList.add('active');
+      currentStatus = p.dataset.status;
+      load();
+    });
+  });
+  await load();
 }).catch(() => { /* redirected */ });
 </script>
+  <div id="gcc-footer"></div>
 </body>
 </html>
