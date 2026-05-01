@@ -888,3 +888,191 @@
   .pp-overlay { padding:0; }
   .pp-modal { max-height:100vh; border-radius:0; }
 }
+
+/* ── Tab nav ────────────────────────────────────────────────────────
+   Sticky-second-row under the action bar. Two tabs (Overview /
+   Proposal Builder) with subtle underline-on-active. Click anywhere
+   on the tab — keyboard accessible by default (button native). */
+.mj-tabs {
+  display:flex; gap:2px; padding:0 16px; background:var(--paper);
+  border-bottom:1px solid var(--line); position:sticky; top:42px; z-index:5;
+}
+.mj-tab {
+  appearance:none; background:transparent; border:0;
+  padding:10px 16px; font-size:13px; font-weight:600;
+  font-family:'Source Sans 3', sans-serif; color:var(--slate);
+  border-bottom:2px solid transparent; cursor:pointer;
+  transition:color .12s ease, border-color .12s ease, background .12s ease;
+}
+.mj-tab:hover { color:var(--forest); background:rgba(30,77,43,.04); }
+.mj-tab.active {
+  color:var(--forest); border-bottom-color:var(--forest);
+  background:white;
+}
+.mj-tab:focus-visible {
+  outline:2px solid var(--forest); outline-offset:-2px;
+}
+.mj-tab-panel { display:none; }
+.mj-tab-panel.active { display:block; }
+.mj-tab-panel#mj-tab-proposal.active {
+  /* Proposal Builder content: full-bleed, padded. */
+  padding:14px 16px 24px;
+}
+
+/* ── Proposal Builder tab inner card ───────────────────────────────
+   The proposal popout used to be a modal overlay; in tab form it's a
+   single rounded card matching the Overview cards. */
+.pp-tab {
+  background:white; border:1px solid var(--line);
+  border-radius:var(--r-lg); overflow:hidden;
+}
+.pp-tab .pp-header {
+  padding:14px 18px; background:linear-gradient(180deg, #FAFAF6, white);
+  border-bottom:1px solid var(--line); display:flex; align-items:center; gap:12px;
+}
+.pp-tab .pp-header h2 {
+  margin:0; font-size:16px; font-weight:700; color:var(--ink);
+}
+.pp-tab .pp-toolbar {
+  display:flex; gap:8px; padding:10px 16px; flex-wrap:wrap; align-items:center;
+  border-bottom:1px solid var(--line); background:var(--paper);
+}
+.pp-tab .pp-spacer { flex:1; }
+.pp-tab .pp-body { padding:16px; max-height:calc(100vh - 320px); overflow:auto; }
+.pp-tab .pp-footer {
+  padding:10px 16px; border-top:1px solid var(--line);
+  display:flex; justify-content:space-between; align-items:center;
+  background:var(--paper);
+}
+
+/* ── Theme picker ──────────────────────────────────────────────────
+   3-up grid of theme cards with live HTML proposal preview. The
+   "render" inside each card is just a styled <div> (no iframe) so
+   all 3 paint instantly and stay accessible. */
+.pp-theme-picker {
+  margin-top:16px; padding:16px;
+  background:linear-gradient(180deg, #FAFAF6, white);
+  border:1px solid var(--line); border-radius:var(--r-lg);
+}
+.pp-theme-hd {
+  display:flex; align-items:center; gap:12px; margin-bottom:14px;
+  padding-bottom:10px; border-bottom:1px dashed var(--line);
+}
+.pp-theme-hd strong { color:var(--forest); font-size:14px; }
+.pp-theme-hd .small { color:var(--slate); flex:1; }
+.pp-theme-cancel { margin-left:auto; }
+
+.pp-theme-grid {
+  display:grid; grid-template-columns:repeat(3, 1fr); gap:14px;
+}
+@media (max-width:1024px) { .pp-theme-grid { grid-template-columns:1fr; } }
+
+.pp-theme-card {
+  display:flex; flex-direction:column;
+  background:white; border:1px solid var(--line); border-radius:var(--r-md);
+  overflow:hidden; transition:transform .12s ease, box-shadow .12s ease, opacity .15s ease;
+}
+.pp-theme-card:hover {
+  transform:translateY(-2px); box-shadow:0 6px 16px rgba(20,56,33,.08);
+  border-color:var(--forest);
+}
+.pp-theme-card.dim { opacity:.35; pointer-events:none; }
+
+.pp-theme-card-hd {
+  padding:10px 12px; border-bottom:1px solid var(--line);
+  display:flex; justify-content:space-between; align-items:flex-start; gap:10px;
+}
+.pp-theme-card-hd strong { font-size:13px; color:var(--ink); }
+.pp-theme-card-hd .small { color:var(--slate); font-size:11px; }
+.pp-theme-swatches { display:flex; gap:4px; }
+.pp-theme-swatches span {
+  width:14px; height:14px; border-radius:3px; display:inline-block;
+  border:1px solid rgba(0,0,0,.08);
+}
+
+.pp-theme-preview {
+  padding:0; background:white; height:280px; overflow:auto;
+  border-bottom:1px solid var(--line);
+}
+.ptp-render { padding:12px 14px; font-size:11px; line-height:1.4; }
+.ptp-h1 {
+  font-size:18px; font-weight:700; padding-bottom:6px; margin-bottom:10px;
+  letter-spacing:-.01em;
+}
+.ptp-h2 {
+  font-size:13px; font-weight:700; margin:12px 0 6px;
+}
+.ptp-meta {
+  display:flex; flex-wrap:wrap; gap:6px 14px; font-size:10px;
+  margin-bottom:10px; color:#444;
+}
+.ptp-p { font-size:11px; margin:4px 0 8px; }
+.ptp-group { margin-top:6px; }
+.ptp-group-hd {
+  font-size:10px; text-transform:uppercase; letter-spacing:.06em; font-weight:700;
+  color:var(--ptp-primary); margin:8px 0 3px;
+}
+.ptp-row {
+  display:flex; justify-content:space-between; padding:2px 0;
+  border-bottom:1px dotted rgba(0,0,0,.06);
+}
+.ptp-row strong { font-variant-numeric:tabular-nums; color:var(--ptp-primary); }
+
+.pp-theme-card-ft {
+  padding:10px 12px; display:flex; justify-content:space-between; align-items:center;
+  background:var(--paper);
+}
+.pp-theme-card-ft .small { color:var(--slate); }
+.pp-theme-footer { color:var(--slate); margin-top:10px; }
+
+/* ── Latest-proposal pane: V# bar + doc-icon grid ──────────────────
+   Replaces the single-PDF card. Version bar shows v#, generated
+   timestamp, and links to Drive folder + local Filestore path.
+   Below it: 4-up icon grid with one tile per output file. */
+.mj-prop-version-bar {
+  display:flex; align-items:center; gap:8px; padding:8px 0;
+  border-bottom:1px dashed var(--line); margin-bottom:10px;
+}
+.mj-prop-version-tag {
+  background:var(--forest); color:white; font-weight:700;
+  padding:3px 10px; border-radius:var(--r-md);
+  font-family:var(--mono); font-size:11.5px; letter-spacing:.02em;
+}
+.mj-prop-version-time { color:var(--slate); }
+.mj-prop-version-spacer { flex:1; }
+.mj-prop-version-link {
+  appearance:none; background:var(--paper); border:1px solid var(--line);
+  padding:4px 10px; border-radius:var(--r-md); cursor:pointer;
+  color:var(--forest); font-size:11.5px; font-weight:600; text-decoration:none;
+  transition:background .12s ease, border-color .12s ease;
+}
+.mj-prop-version-link:hover {
+  background:var(--green-tint); border-color:var(--forest);
+}
+
+.mj-prop-doc-grid {
+  display:grid; grid-template-columns:repeat(4, 1fr); gap:8px;
+}
+@media (max-width:600px) { .mj-prop-doc-grid { grid-template-columns:repeat(3, 1fr); } }
+
+.mj-prop-doc {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:10px 6px; background:var(--paper); border:1px solid var(--line);
+  border-radius:var(--r-md); text-decoration:none; color:var(--ink);
+  text-align:center; min-height:78px;
+  transition:background .12s ease, border-color .12s ease, transform .12s ease;
+}
+.mj-prop-doc:hover {
+  background:var(--green-tint); border-color:var(--forest);
+  transform:translateY(-1px);
+}
+.mj-prop-doc-ico {
+  font-size:22px; line-height:1; margin-bottom:4px;
+}
+.mj-prop-doc-name {
+  font-size:11px; font-weight:600; line-height:1.2;
+}
+.mj-prop-doc-meta {
+  font-size:10px; color:var(--slate); margin-top:2px;
+  font-family:var(--mono); font-variant-numeric:tabular-nums;
+}

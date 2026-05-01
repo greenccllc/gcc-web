@@ -159,7 +159,7 @@
     ];
     if (isAdmin) {
       items.push({ label: 'Admin', group: [
-          { href: '/admin/console/',        label: 'Console (beta)' },
+          { href: '/admin/console/',        label: 'GCC Manager' },
           { divider: true },
           { href: '/admin/users.html',      label: 'Users' },
           { href: '/admin/financials.html', label: 'Financials' },
@@ -211,8 +211,8 @@
       return `<li><a href="${c.href}" class="${subActive ? 'active' : ''}"${ext}${dataAct}>${c.label}</a></li>`;
     }).join('');
     return `
-      <li class="${cls}" data-group="${idx}">
-        <button type="button" class="nav-trigger" aria-haspopup="true" aria-expanded="false">
+      <li class="${cls}" data-group="${idx}" data-nav-group>
+        <button type="button" class="nav-trigger" data-nav-trigger aria-haspopup="true" aria-expanded="false">
           ${item.label}<span class="caret" aria-hidden="true">▾</span>
         </button>
         <ul class="${dropCls}" role="menu">${inner}</ul>
@@ -235,8 +235,8 @@
       <header class="site-header">
         <div class="container">
           ${BRAND}
-          <button class="menu-toggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
-          <nav class="site-nav" aria-label="Primary"><ul>${renderNav(items, path)}</ul></nav>
+          <button class="menu-toggle" data-nav-toggle aria-label="Toggle menu" aria-expanded="false">☰</button>
+          <nav class="site-nav" data-nav-container aria-label="Primary"><ul>${renderNav(items, path)}</ul></nav>
         </div>
       </header>`;
 
@@ -246,43 +246,7 @@
       if (tag) tag.textContent = badgeText;
     }
 
-    // Mobile menu toggle
-    const t = host.querySelector('.menu-toggle');
-    const n = host.querySelector('.site-nav');
-    if (t && n) t.addEventListener('click', () => {
-      n.classList.toggle('is-open');
-      t.setAttribute('aria-expanded', n.classList.contains('is-open') ? 'true' : 'false');
-    });
-
-    // Dropdown groups: click-to-toggle (works on touch + keyboard)
-    host.querySelectorAll('.nav-group').forEach(g => {
-      const trigger = g.querySelector('.nav-trigger');
-      trigger.addEventListener('click', e => {
-        e.stopPropagation();
-        const wasOpen = g.classList.contains('is-open');
-        // Close all other open groups
-        host.querySelectorAll('.nav-group.is-open').forEach(x => {
-          if (x !== g) { x.classList.remove('is-open'); x.querySelector('.nav-trigger').setAttribute('aria-expanded', 'false'); }
-        });
-        g.classList.toggle('is-open', !wasOpen);
-        trigger.setAttribute('aria-expanded', String(!wasOpen));
-      });
-      // Keyboard: Escape closes
-      g.addEventListener('keydown', e => {
-        if (e.key === 'Escape') {
-          g.classList.remove('is-open');
-          trigger.setAttribute('aria-expanded', 'false');
-          trigger.focus();
-        }
-      });
-    });
-    // Click-outside closes any open group
-    document.addEventListener('click', () => {
-      host.querySelectorAll('.nav-group.is-open').forEach(g => {
-        g.classList.remove('is-open');
-        g.querySelector('.nav-trigger').setAttribute('aria-expanded', 'false');
-      });
-    });
+    if (window.gccSite && window.gccSite.initNavigation) window.gccSite.initNavigation(host);
 
     // Sign-out wiring
     host.querySelectorAll('a[data-action="signout"]').forEach(a => {
@@ -309,12 +273,7 @@
   // (mobile menu toggle). For signed-in users we replace the whole header
   // via mount() so the role-aware nav appears.
   function enhanceStatic(host) {
-    const t = host.querySelector('.menu-toggle');
-    const n = host.querySelector('.site-nav');
-    if (t && n) t.addEventListener('click', () => {
-      n.classList.toggle('is-open');
-      t.setAttribute('aria-expanded', n.classList.contains('is-open') ? 'true' : 'false');
-    });
+    if (window.gccSite && window.gccSite.initNavigation) window.gccSite.initNavigation(host);
   }
 
   // ── Boot ──────────────────────────────────────────────────
