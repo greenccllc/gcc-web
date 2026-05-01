@@ -437,3 +437,138 @@
   max-height:280px; overflow:auto;
   white-space:pre-wrap; word-break:break-word;
 }
+
+/* ── Proposal preview popout (overlay modal) ──────────────────────────
+   Inline replacement for the async proposal-worker handoff. Click
+   "Generate proposal" on the LV scope toolbar -> /api/admin/jobs/
+   {jobId}/proposal-preview returns the structured payload -> this
+   modal renders the sections + pills + requirements bullets. The
+   operator can toggle to a textarea to edit, then "Save to Drive"
+   uploads the result as a Google Doc in Output Docs/. */
+.pp-overlay {
+  position:fixed; inset:0; z-index:1000;
+  background:rgba(20, 30, 25, 0.55);
+  display:flex; align-items:center; justify-content:center;
+  padding:24px;
+  animation:ppFade 0.18s ease-out;
+}
+@keyframes ppFade { from { opacity:0; } to { opacity:1; } }
+.pp-modal {
+  width:100%; max-width:920px; max-height:calc(100vh - 48px);
+  background:#FFFFFF; border-radius:12px;
+  box-shadow:0 16px 48px rgba(0,0,0,0.32), 0 4px 12px rgba(0,0,0,0.18);
+  display:flex; flex-direction:column;
+  animation:ppSlide 0.22s ease-out;
+}
+@keyframes ppSlide { from { transform:translateY(8px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+
+.pp-header {
+  display:flex; align-items:center; gap:12px;
+  padding:14px 18px; border-bottom:1px solid var(--line);
+}
+.pp-header h2 { margin:0; font-size:16px; color:var(--forest); }
+.pp-header .pp-meta { color:var(--slate); margin-left:auto; }
+.pp-close {
+  background:transparent; border:1px solid var(--line);
+  width:30px; height:30px; border-radius:6px;
+  font-size:14px; color:var(--slate); cursor:pointer;
+}
+.pp-close:hover { background:var(--paper); color:var(--ink); }
+
+.pp-toolbar {
+  display:flex; align-items:center; gap:8px;
+  padding:10px 18px; background:var(--paper);
+  border-bottom:1px solid var(--line);
+}
+.pp-toolbar .pp-spacer { flex:1; }
+.pp-btn {
+  padding:6px 12px; background:#FFFFFF; border:1px solid var(--line);
+  border-radius:6px; font-size:12.5px; cursor:pointer;
+  color:var(--ink); transition:background .15s, border-color .15s;
+}
+.pp-btn:hover { background:var(--green-tint); border-color:var(--forest); }
+.pp-btn[aria-pressed="true"] {
+  background:var(--green-tint); border-color:var(--forest);
+  color:var(--forest); font-weight:600;
+}
+.pp-btn.primary {
+  background:var(--forest); color:#fff; border-color:var(--forest); font-weight:600;
+}
+.pp-btn.primary:hover { background:#1A3F25; }
+.pp-btn[disabled] { opacity:.5; cursor:not-allowed; }
+
+.pp-body {
+  flex:1; overflow:auto;
+  padding:18px 20px;
+  background:#FCFDFB;
+}
+.pp-view-loading { color:var(--slate); padding:24px; text-align:center; }
+
+.pp-hero {
+  padding:14px 16px; margin-bottom:14px;
+  background:linear-gradient(90deg, var(--green-tint) 0%, #FAFCF9 100%);
+  border:1px solid var(--forest); border-left:4px solid var(--forest);
+  border-radius:8px;
+}
+.pp-hero h3 { margin:0 0 6px; color:var(--forest); font-size:18px; }
+.pp-hero-meta { display:flex; flex-wrap:wrap; gap:14px 24px; font-size:12px; color:var(--slate); }
+.pp-hero-meta strong { color:var(--ink); margin-right:4px; }
+
+.pp-group {
+  margin-bottom:14px; padding:12px 14px;
+  background:#FFFFFF; border:1px solid var(--line); border-radius:8px;
+}
+.pp-group-hd {
+  font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--forest); margin-bottom:8px;
+  padding-bottom:6px; border-bottom:1px solid var(--line);
+}
+.pp-pills {
+  display:grid; grid-template-columns:repeat(2, 1fr); gap:6px;
+}
+@media (min-width:700px) { .pp-pills { grid-template-columns:repeat(3, 1fr); } }
+.pp-pill {
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+  padding:6px 10px; background:#FAFCF9; border:1px solid var(--line);
+  border-radius:6px; font-size:12.5px;
+}
+.pp-pill .lbl { color:var(--slate); }
+.pp-pill .val {
+  color:var(--forest); font-weight:700; font-size:14px;
+  background:var(--green-tint); padding:1px 8px; border-radius:4px;
+  min-width:32px; text-align:center;
+}
+
+.pp-reqs { margin:0; padding-left:20px; font-size:12.5px; line-height:1.5; }
+.pp-reqs li { margin-bottom:3px; color:var(--ink); }
+.pp-note {
+  padding:10px 12px; background:#FFFAEC; border-left:3px solid var(--gold-dark);
+  border-radius:4px; font-size:12.5px; color:var(--slate); font-style:italic;
+}
+
+.pp-edit {
+  width:100%; min-height:50vh;
+  padding:12px 14px;
+  font-family:ui-monospace, Consolas, Menlo, monospace;
+  font-size:12.5px; line-height:1.55;
+  border:1px solid var(--line); border-radius:6px;
+  resize:vertical;
+}
+
+.pp-footer {
+  display:flex; align-items:center; gap:14px;
+  padding:12px 18px; border-top:1px solid var(--line);
+  background:var(--paper);
+  font-size:12px;
+}
+.pp-footer .small { color:var(--slate); }
+.pp-footer #pp-saved-link a {
+  color:var(--forest); font-weight:600; text-decoration:none;
+  border-bottom:1px solid var(--forest);
+}
+.pp-footer #pp-saved-link a:hover { color:#1A3F25; border-bottom-color:#1A3F25; }
+
+@media (max-width:700px) {
+  .pp-overlay { padding:0; }
+  .pp-modal { max-height:100vh; border-radius:0; }
+}

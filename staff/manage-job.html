@@ -54,11 +54,11 @@
                   title="Run a single Gemini pass over every per-file extraction for this job and emit one canonical count per LV category. The synthesized values become the displayed numbers."
                   style="margin-left:auto">1️⃣ Synthesize scope</button>
           <button id="mj-accept-extraction" class="mj-btn-sm" type="button"
-                  title="Accept these counts as bid-ready. Marks dbo.BcRfps.Accepted=1 and auto-publishes the job to the gcc-proposal Pub/Sub topic — the proposal-worker generates a draft into Internal/ within ~2-5 minutes."
-                  disabled>2️⃣ Accept &amp; queue proposal</button>
-          <button id="mj-send-proposal" class="mj-btn-sm" type="button"
-                  title="Re-send to the proposal-worker with optional operator guidance. Use after an addendum or when you want to redo the draft with a tighter brief (e.g. 'lean fast install, prevailing wage on labor')."
-                  disabled>🔄 Re-send w/ note</button>
+                  title="Accept these counts as bid-ready. Marks dbo.BcRfps.Accepted=1."
+                  disabled>2️⃣ Accept extraction</button>
+          <button id="mj-generate-proposal" class="mj-btn-sm primary" type="button"
+                  title="Build a proposal preview from the synthesized scope + requirements right now. Opens a popout window where you can review and save the result as a Google Doc in Output Docs/. No worker, no Pub/Sub -- synchronous from your click."
+                  disabled>3️⃣ 📄 Generate proposal</button>
         </div>
         <!-- Post-accept handoff strip: appears once Accept fires and shows
              where the draft will land + a direct link. Hidden by default. -->
@@ -66,7 +66,7 @@
           <span class="mj-handoff-icon">🚀</span>
           <div class="mj-handoff-body">
             <strong>Proposal queued.</strong>
-            <span class="small" id="mj-handoff-msg">Draft lands in Internal/ in ~2-5 min.</span>
+            <span class="small" id="mj-handoff-msg">Draft lands in Output Docs/ in ~2-5 min.</span>
           </div>
           <a id="mj-handoff-link" class="mj-handoff-cta" target="_blank" rel="noopener">📁 Open job folder ↗</a>
         </div>
@@ -84,7 +84,7 @@
       </div>
 
       <!-- Proposal output: drafts the proposal-worker generates land in
-           Internal/ and show as "pending" rows with status pills. Once
+           Output Docs/ and show as "pending" rows with status pills. Once
            the operator promotes a draft via the GCC Manager tray, the
            v#/ folder appears under Client/Proposal/ with the cleaned
            client-facing docx. Both stacks render here so the operator
@@ -97,13 +97,13 @@
                   style="margin-left:auto; font-size:11px">↻ Refresh</button>
         </h2>
         <div class="sub">
-          The proposal-worker drops each draft into <code>Internal/</code>; once you accept a draft in the GCC Manager tray it gets promoted to <code>Proposals/v#/</code> with a clean client-facing name.
+          The proposal-worker drops each draft into <code>Output Docs/</code>; once you accept a draft in the GCC Manager tray it gets promoted to <code>Proposals/v#/</code> with a clean client-facing name.
         </div>
         <div class="mj-proposal-empty small pad" id="mj-proposal-empty" hidden>
           No proposal drafts yet. Click <em>2️⃣ Accept &amp; queue proposal</em> above to fire the proposal-worker. Drafts land here within ~2-5 minutes.
         </div>
         <div class="mj-proposal-section" id="mj-proposal-internal" hidden>
-          <div class="mj-proposal-section-hd"><span>📝 Drafts (Internal/)</span><span class="small mj-proposal-count" id="mj-proposal-internal-count"></span></div>
+          <div class="mj-proposal-section-hd"><span>📝 Drafts (Output Docs/)</span><span class="small mj-proposal-count" id="mj-proposal-internal-count"></span></div>
           <ul class="mj-proposal-list" id="mj-proposal-internal-list"></ul>
         </div>
         <div class="mj-proposal-section" id="mj-proposal-client" hidden>
@@ -181,6 +181,45 @@
         <iframe id="mj-cal-frame" class="mj-cal-frame"
                 src="about:blank"
                 title="GCC Staff Calendar"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- Proposal preview popout (overlay modal). Opened by "Generate
+       proposal" on the LV scope toolbar; closed by X / outside-click /
+       Escape. Renders the structured preview returned by
+       /api/admin/jobs/{jobId}/proposal-preview. The operator can edit
+       inline or click "Save to Drive" to drop a Google Doc into the
+       job's Output Docs/ folder + register a dbo.ProposalDrafts row.
+       Synchronous from the click — no proposal-worker, no Pub/Sub. -->
+  <div class="pp-overlay" id="pp-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="pp-title">
+    <div class="pp-modal" id="pp-modal">
+      <div class="pp-header">
+        <h2 id="pp-title">📄 Proposal preview</h2>
+        <span class="pp-meta small" id="pp-meta"></span>
+        <button class="pp-close" id="pp-close" type="button" aria-label="Close">✕</button>
+      </div>
+      <div class="pp-toolbar">
+        <button class="pp-btn" id="pp-mode-view"  type="button" aria-pressed="true">📋 Preview</button>
+        <button class="pp-btn" id="pp-mode-edit"  type="button">✏️ Edit text</button>
+        <button class="pp-btn" id="pp-regenerate" type="button" title="Re-fetch the synthesized scope + requirements and rebuild the preview.">↻ Regenerate</button>
+        <span class="pp-spacer"></span>
+        <button class="pp-btn primary" id="pp-save" type="button" title="Save the proposal text as a Google Doc in this job's Output Docs/ folder. Drive auto-converts the plain text on upload.">💾 Save to Drive</button>
+      </div>
+      <div class="pp-body">
+        <!-- View mode: structured render with sections/pills -->
+        <div class="pp-view" id="pp-view">
+          <div class="pp-view-loading" id="pp-loading">Loading…</div>
+          <div class="pp-view-content" id="pp-content" hidden></div>
+        </div>
+        <!-- Edit mode: textarea with the same content as plain text -->
+        <textarea class="pp-edit" id="pp-edit" hidden spellcheck="false"></textarea>
+      </div>
+      <div class="pp-footer">
+        <span class="small" id="pp-footer-msg">Synchronous build from synthesized scope. Save creates a Google Doc in Output Docs/.</span>
+        <span class="small" id="pp-saved-link" hidden>
+          ✓ Saved · <a id="pp-saved-href" target="_blank" rel="noopener">open in Drive ↗</a>
+        </span>
       </div>
     </div>
   </div>
@@ -420,8 +459,8 @@ function tooltipForKey(uiKey) {
 
 // ===== Proposal output (drafts + promoted versions) =====
 // Fetches /api/admin/jobs/{jobId}/proposal-files and renders two stacks:
-//   * Drafts in Internal/ (each row is a dbo.ProposalDrafts entry with
-//     status pending/accepted/rejected, link to the docx in Drive,
+//   * Drafts in Output Docs/ (each row is a dbo.ProposalDrafts entry
+//     with status pending/accepted/rejected, link to the docx in Drive,
 //     decision metadata if decided)
 //   * Promoted versions under Proposals/v#/ (the client-facing copies
 //     the operator created via the GCC Manager tray accept flow)
@@ -465,7 +504,7 @@ async function loadProposalFiles() {
   }
   if (empty) empty.hidden = true;
 
-  // ---- Drafts (Internal/) ----
+  // ---- Drafts (Output Docs/) ----
   const intCount = $('mj-proposal-internal-count');
   const intList  = $('mj-proposal-internal-list');
   if (drafts.length > 0) {
@@ -706,7 +745,7 @@ async function onAction(e, btn) {
     } else if (act === 'accept') {
       const r = await api('POST', '/api/bc/extraction/accept', { jobId: id });
       const proposalLine = r?.proposalPublished
-        ? 'Proposal queued — draft lands in Internal/ in ~2-5 min.'
+        ? 'Proposal queued — draft lands in Output Docs/ in ~2-5 min.'
         : `Accepted, but proposal publish failed: ${r?.publishError || 'unknown'}.`;
       if (typeof showHandoffStrip === 'function') {
         showHandoffStrip({
@@ -899,40 +938,45 @@ function renderScope(r) {
     : '';
   $('mj-scope-conf').innerHTML = safeHtml(confText) + legend;
 
-  // ----- Handoff progression (Synthesize -> Accept -> Re-send) -----
-  // The three buttons in the toolbar form a left-to-right flow. Gate
-  // each one on what's been done before it so the operator can't
-  // accidentally accept a job that's never been synthesized, or
-  // re-send a job that was never accepted in the first place.
-  const accepted   = !!r.extraction?.accepted;
-  const acceptBtn  = $('mj-accept-extraction');
-  const sendBtn    = $('mj-send-proposal');
+  // ----- Toolbar progression (Synthesize -> Accept -> Generate proposal) -----
+  // The three buttons form a left-to-right flow. Gate each on what's
+  // been done before it so the operator can't generate a proposal for
+  // a job that hasn't been synthesized yet (no counts to render).
+  const accepted    = !!r.extraction?.accepted;
+  const acceptBtn   = $('mj-accept-extraction');
+  const generateBtn = $('mj-generate-proposal');
   if (acceptBtn) {
     if (accepted) {
       acceptBtn.disabled = true;
       acceptBtn.textContent = '✓ Already accepted';
-      acceptBtn.title = 'This extraction was already accepted. Click "Re-send w/ note" to give the proposal-worker a fresh brief and refresh the draft.';
+      acceptBtn.title = 'This extraction was already accepted. The synthesized counts are bid-ready; click "Generate proposal" to produce a draft.';
     } else if (hasN === 0 || conf == null) {
       acceptBtn.disabled = true;
-      acceptBtn.textContent = '2️⃣ Accept & queue proposal';
+      acceptBtn.textContent = '2️⃣ Accept extraction';
       acceptBtn.title = 'Run "1️⃣ Synthesize scope" first — there are no canonical counts to accept yet.';
     } else if (conf < 50) {
       acceptBtn.disabled = false;
       acceptBtn.textContent = '⚠️ Accept (low conf)';
-      acceptBtn.title = `Confidence is only ${Math.round(conf)}%. You can still accept, but the proposal-worker will produce a low-quality draft. Consider running "Extract more" or fixing source data first.`;
+      acceptBtn.title = `Confidence is only ${Math.round(conf)}%. You can still accept, but the proposal will reflect the low-confidence inputs.`;
     } else {
       acceptBtn.disabled = false;
-      acceptBtn.textContent = '2️⃣ Accept & queue proposal';
-      acceptBtn.title = 'Accept these counts as bid-ready. Auto-publishes to gcc-proposal — draft lands in Internal/ in ~2-5 min.';
+      acceptBtn.textContent = '2️⃣ Accept extraction';
+      acceptBtn.title = 'Mark these synthesized counts bid-ready (sets BcRfps.Accepted=1). The proposal step is now a separate one-click action.';
     }
   }
-  if (sendBtn) {
-    if (!accepted) {
-      sendBtn.disabled = true;
-      sendBtn.title = 'Accept the extraction first. Re-send is only for refreshing an existing draft (e.g. after an addendum or with a tighter operator brief).';
+  if (generateBtn) {
+    // Generate is allowed any time there's at least one synthesized
+    // count to render -- doesn't require Accept first since it's pure
+    // preview. We surface "review-only" copy when extraction isn't
+    // accepted so operators know they're previewing pre-acceptance.
+    if (hasN === 0 || conf == null) {
+      generateBtn.disabled = true;
+      generateBtn.title = 'Synthesize scope first — there is nothing to render yet.';
     } else {
-      sendBtn.disabled = false;
-      sendBtn.title = 'Re-send to the proposal-worker with optional operator guidance. Use after an addendum or to retry with a tighter brief.';
+      generateBtn.disabled = false;
+      generateBtn.title = accepted
+        ? 'Build a proposal preview from synthesized scope. Opens a popout where you can review and save as a Google Doc in Output Docs/.'
+        : 'Build a preview from synthesized scope (extraction is not yet accepted). Save creates a draft in Output Docs/ for review.';
     }
   }
 
@@ -946,7 +990,7 @@ function renderScope(r) {
       jobFolderUrl: r.driveJobFolderId
                       ? `https://drive.google.com/drive/folders/${r.driveJobFolderId}`
                       : null,
-      message:     `Proposal queued. Draft will land in Internal/ subfolder of this job's Drive folder.`,
+      message:     `Proposal queued. Draft will land in Output Docs/ subfolder of this job's Drive folder.`,
     });
   } else {
     const h = $('mj-handoff'); if (h) h.hidden = true;
@@ -963,7 +1007,7 @@ function showHandoffStrip({ jobId, acceptedAt, jobFolderUrl, message } = {}) {
   const strip = $('mj-handoff'); if (!strip) return;
   const msgEl = $('mj-handoff-msg');
   const linkEl = $('mj-handoff-link');
-  if (msgEl) msgEl.textContent = message || 'Draft will land in Internal/ in ~2-5 min.';
+  if (msgEl) msgEl.textContent = message || 'Draft will land in Output Docs/ in ~2-5 min.';
   if (linkEl) {
     if (jobFolderUrl) {
       linkEl.href = jobFolderUrl;
@@ -991,7 +1035,7 @@ $('mj-accept-extraction')?.addEventListener('click', async () => {
     const r = await api('POST', '/api/bc/extraction/accept', { jobId: LEAD.jobId });
     if (!r?.ok) throw new Error(r?.error || 'accept failed');
     const proposalLine = r.proposalPublished
-      ? 'Proposal queued — draft lands in Internal/ in ~2-5 min.'
+      ? 'Proposal queued — draft lands in Output Docs/ in ~2-5 min.'
       : `Accepted, but proposal publish failed: ${r.publishError || 'unknown'}. Use "Re-send w/ note" to retry.`;
     showHandoffStrip({
       jobId:        LEAD.jobId,
@@ -1012,51 +1056,205 @@ $('mj-accept-extraction')?.addEventListener('click', async () => {
   }
 });
 
-// ===== Re-send to proposal generator (Pub/Sub publish, w/ optional note) =====
-// Use case: the operator already accepted the extraction (which auto-fired
-// the first proposal-worker run) but wants to refresh the draft with a
-// tighter brief — e.g. after reviewing the first draft, or after an
-// addendum lands. The note is persisted as an `operator_note` BidExtractions
-// row so the next synthesis pass surfaces it as context.
-$('mj-send-proposal').addEventListener('click', async () => {
+// ===== Inline proposal-preview popout =====
+// Replaces the old async proposal-worker handoff. Click "📄 Generate
+// proposal" → fetch /api/admin/jobs/{jobId}/proposal-preview → render
+// the structured payload in a modal overlay → operator can click
+// "Save to Drive" which uploads the assembled text as a Google Doc to
+// Output Docs/ (and writes a dbo.ProposalDrafts row so the Proposal
+// output card refreshes). Synchronous from click; no Pub/Sub.
+let _ppData = null;          // last preview payload
+let _ppPlainText = '';       // assembled text (live from view OR edit textarea)
+let _ppMode = 'view';        // 'view' | 'edit'
+
+function _ppCloseOverlay() {
+  $('pp-overlay').hidden = true;
+  document.removeEventListener('keydown', _ppEscapeHandler);
+}
+function _ppEscapeHandler(e) {
+  if (e.key === 'Escape') _ppCloseOverlay();
+}
+function _ppFmtNum(n) {
+  return (n == null) ? '—' : n.toLocaleString();
+}
+
+function buildProposalText(d) {
+  // Assemble a plain-text proposal body from the preview payload. This
+  // is what gets saved as a Google Doc on "Save to Drive". Each section
+  // header is a line of dashes; counts render as "label : N".
+  const lines = [];
+  lines.push(d.projectName || '(unnamed)');
+  if (d.gc)       lines.push(`General Contractor: ${d.gc}`);
+  if (d.location) lines.push(`Location:           ${d.location}`);
+  if (d.dueAt)    lines.push(`Bid due:            ${d.dueAt}`);
+  if (d.synthConfPct != null) lines.push(`Synthesis conf:    ${d.synthConfPct}%`);
+  if (d.filesProcessed != null) lines.push(`Source files:      ${d.filesProcessed} (${d.pagesProcessed || 0} pages)`);
+  lines.push('');
+
+  for (const g of (d.scopeGroups || [])) {
+    const items = (g.items || []).filter(i => i.count != null);
+    if (!items.length) continue;
+    lines.push(`${g.title.toUpperCase()} SCOPE`);
+    lines.push('-'.repeat(40));
+    for (const it of items) {
+      lines.push(`  ${(it.label || it.countType).padEnd(34, ' ')} ${String(it.count).padStart(4)}`);
+    }
+    lines.push('');
+  }
+
+  if ((d.requirements || []).length) {
+    lines.push('REQUIREMENTS');
+    lines.push('-'.repeat(40));
+    for (const r of d.requirements) lines.push(`  • ${r}`);
+    lines.push('');
+  }
+  if (d.operatorNote) {
+    lines.push('OPERATOR NOTE');
+    lines.push('-'.repeat(40));
+    lines.push('  ' + d.operatorNote);
+    lines.push('');
+  }
+
+  lines.push(`-- Generated ${new Date().toLocaleString()} from synthesized scope --`);
+  return lines.join('\n');
+}
+
+function renderProposalView(d) {
+  // Build the rich HTML view (sections with pills) for the modal body.
+  const esc = safeHtml;
+  const hdr = [
+    `<div class="pp-hero">`,
+    `<h3>${esc(d.projectName || '')}</h3>`,
+    `<div class="pp-hero-meta">`,
+      d.gc       ? `<span><strong>GC</strong> ${esc(d.gc)}</span>` : '',
+      d.location ? `<span><strong>Location</strong> ${esc(d.location)}</span>` : '',
+      d.dueAt    ? `<span><strong>Due</strong> ${esc(d.dueAt)}</span>` : '',
+      d.synthConfPct != null ? `<span><strong>Synth</strong> ${d.synthConfPct}%</span>` : '',
+      d.filesProcessed != null ? `<span><strong>Source</strong> ${d.filesProcessed} files · ${_ppFmtNum(d.pagesProcessed)} pages</span>` : '',
+    `</div>`,
+    `</div>`,
+  ].join('');
+
+  const groups = (d.scopeGroups || []).map(g => {
+    const items = (g.items || []).filter(i => i.count != null);
+    if (!items.length) return '';
+    const pills = items.map(i =>
+      `<div class="pp-pill"><span class="lbl">${esc(i.label)}</span><span class="val">${i.count}</span></div>`
+    ).join('');
+    return `<div class="pp-group">
+      <div class="pp-group-hd">${esc(g.title)}</div>
+      <div class="pp-pills">${pills}</div>
+    </div>`;
+  }).join('');
+
+  const reqs = (d.requirements || []).map(r => `<li>${esc(r)}</li>`).join('');
+  const reqsBlock = reqs ? `<div class="pp-group">
+    <div class="pp-group-hd">Requirements <span class="small">(${d.requirements.length})</span></div>
+    <ul class="pp-reqs">${reqs}</ul>
+  </div>` : '';
+
+  const noteBlock = d.operatorNote ? `<div class="pp-group">
+    <div class="pp-group-hd">Operator note</div>
+    <div class="pp-note">${esc(d.operatorNote)}</div>
+  </div>` : '';
+
+  $('pp-content').innerHTML = hdr + groups + reqsBlock + noteBlock;
+  $('pp-content').hidden = false;
+  $('pp-loading').hidden = true;
+}
+
+async function openProposalPreview() {
   if (!LEAD?.jobId) { toast('Job not loaded yet.', 3000); return; }
-  const note = (window.prompt(
-    'Add operator guidance for this proposal-worker pass.\n\n' +
-    'Examples:\n' +
-    '  • "lean fast install, prevailing wage on labor"\n' +
-    '  • "addendum 2 lands today — wait for it"\n' +
-    '  • "match Bone Health #1 pricing structure"\n\n' +
-    'Leave blank to refresh without a new note.',
-    ''
-  ) ?? '').trim();
-  const btn = $('mj-send-proposal');
+  // Reset modal state
+  _ppData = null;
+  _ppPlainText = '';
+  _ppMode = 'view';
+  $('pp-mode-view').setAttribute('aria-pressed', 'true');
+  $('pp-mode-edit').setAttribute('aria-pressed', 'false');
+  $('pp-view').hidden = false;
+  $('pp-edit').hidden = true;
+  $('pp-content').hidden = true;
+  $('pp-loading').hidden = false;
+  $('pp-loading').textContent = 'Building from synthesized scope…';
+  $('pp-saved-link').hidden = true;
+  $('pp-meta').textContent = '';
+  // Show overlay + set up close handlers
+  $('pp-overlay').hidden = false;
+  document.addEventListener('keydown', _ppEscapeHandler);
+  // Fetch
+  try {
+    const r = await api('GET', `/api/admin/jobs/${encodeURIComponent(LEAD.jobId)}/proposal-preview`);
+    if (!r?.ok) throw new Error(r?.error || 'preview failed');
+    _ppData = r;
+    _ppPlainText = buildProposalText(r);
+    renderProposalView(r);
+    $('pp-edit').value = _ppPlainText;
+    $('pp-meta').textContent = `· built ${new Date().toLocaleTimeString()}`;
+  } catch (e) {
+    $('pp-loading').textContent = `Preview failed: ${e.message || e}`;
+    toast(e.message || 'preview failed', 6000);
+  }
+}
+
+$('pp-overlay')?.addEventListener('click', (e) => {
+  // Click outside the modal closes
+  if (e.target.id === 'pp-overlay') _ppCloseOverlay();
+});
+$('pp-close')?.addEventListener('click', _ppCloseOverlay);
+
+$('pp-mode-view')?.addEventListener('click', () => {
+  if (_ppMode === 'view') return;
+  // Pull edits back from the textarea so a re-Save uses them
+  _ppPlainText = $('pp-edit').value;
+  _ppMode = 'view';
+  $('pp-mode-view').setAttribute('aria-pressed', 'true');
+  $('pp-mode-edit').setAttribute('aria-pressed', 'false');
+  $('pp-view').hidden = false;
+  $('pp-edit').hidden = true;
+});
+$('pp-mode-edit')?.addEventListener('click', () => {
+  if (_ppMode === 'edit') return;
+  _ppMode = 'edit';
+  $('pp-mode-view').setAttribute('aria-pressed', 'false');
+  $('pp-mode-edit').setAttribute('aria-pressed', 'true');
+  $('pp-view').hidden = true;
+  $('pp-edit').hidden = false;
+  $('pp-edit').focus();
+});
+
+$('pp-regenerate')?.addEventListener('click', openProposalPreview);
+
+$('pp-save')?.addEventListener('click', async () => {
+  if (!LEAD?.jobId) return;
+  // Always grab the latest text (in case the operator was editing)
+  const content = (_ppMode === 'edit') ? $('pp-edit').value : _ppPlainText;
+  if (!content.trim()) { toast('Nothing to save.', 3000); return; }
+  const btn = $('pp-save');
   btn.disabled = true;
   const orig = btn.textContent;
-  btn.textContent = 'Publishing…';
+  btn.textContent = 'Saving…';
   try {
-    const r = await api('POST', `/api/admin/jobs/${encodeURIComponent(LEAD.jobId)}/generate-proposal`,
-                        note ? { note } : {});
-    if (!r?.ok) throw new Error(r?.error || 'publish failed');
-    const fn = r.sourceFileName ? ` · ${r.sourceFileName}` : '';
-    showHandoffStrip({
-      jobId:        LEAD.jobId,
-      acceptedAt:   new Date().toISOString(),
-      jobFolderUrl: LEAD.driveJobFolderId
-                      ? `https://drive.google.com/drive/folders/${LEAD.driveJobFolderId}`
-                      : null,
-      message:      `Re-sent to proposal-worker${note ? ' with new operator note' : ''}. Refreshed draft lands in Internal/ in ~2-5 min.`,
+    const title = `${(LEAD.projectName || LEAD.jobId).slice(0, 60)} - Bid Proposal ${new Date().toISOString().slice(0,16).replace('T',' ')}`;
+    const r = await api('POST', `/api/admin/jobs/${encodeURIComponent(LEAD.jobId)}/proposal-save`, {
+      title, content,
     });
-    toast(`🔄 Re-sent · extractionId ${String(r.extractionId).slice(0,12)}…${fn}`, 6000);
-    // Reset proposal-files poll so the refreshed draft pops in promptly.
+    if (!r?.ok) throw new Error(r?.error || 'save failed');
+    $('pp-saved-href').href = r.fileUrl;
+    $('pp-saved-href').textContent = r.fileName + ' ↗';
+    $('pp-saved-link').hidden = false;
+    toast(`✓ Saved to Drive · ${r.fileName}`, 6000);
+    // Refresh proposal-output card so the new draft pops in
     if (typeof _propPollAttempts !== 'undefined') _propPollAttempts = 0;
     if (typeof loadProposalFiles === 'function') loadProposalFiles();
   } catch (e) {
-    toast(e.message || 'publish failed', 6000);
+    toast(e.message || 'save failed', 6000);
   } finally {
     btn.disabled = false;
     btn.textContent = orig;
   }
 });
+
+$('mj-generate-proposal')?.addEventListener('click', openProposalPreview);
 
 // ===== Synthesize scope (Gemini pass) =====
 $('mj-scope-synth').addEventListener('click', async () => {
