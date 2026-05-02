@@ -881,7 +881,12 @@ async function refreshExtractMoreStatus(jobId) {
       btn.disabled = false;
       const next = s.nextTool || '(unknown)';
       const remaining = (s.remaining || []).join(', ');
-      btn.title = `Next tool: ${next}. ${total - used} of ${total} tools remaining: ${remaining}.`;
+      // Surface that the next click stays local (no cloud cost) when
+      // vision-llm is up next in the rotation.
+      const localHint = next === 'vision-llm'
+        ? ' This run stays on-prem (qwen2.5vl:7b on the GPU; no cloud cost).'
+        : '';
+      btn.title = `Next tool: ${next}.${localHint} ${total - used} of ${total} tools remaining: ${remaining}.`;
     }
   } catch (err) {
     // Network/auth error -- leave the button in its prior state but

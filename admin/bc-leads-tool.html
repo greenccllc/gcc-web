@@ -476,7 +476,7 @@ const COLS = [
       const mjQs = new URLSearchParams({ jobId: r.jobId });
       if (URL_PARAMS.get('secret')) mjQs.set('secret', URL_PARAMS.get('secret'));
       if (URL_PARAMS.get('api'))    mjQs.set('api',    URL_PARAMS.get('api'));
-      const mjHref = `/staff/manage-job.html?${mjQs.toString()}`;
+      const mjHref = `/admin/manage-job.html?${mjQs.toString()}`;
       return `<span class="toggle">▶</span> ${fIcon}<span class="proj-link"><a href="${mjHref}" data-act="open-manage" data-href="${mjHref}" title="${safeHtml(projectLabel(r))}">${safeHtml(projectLabel(r))}</a>${tip}</span>${sibBadge}${subscript}`;
     } },
 
@@ -612,7 +612,7 @@ function expandTopStrip(r) {
   const mjQs = new URLSearchParams({ jobId: r.jobId });
   if (URL_PARAMS.get('secret')) mjQs.set('secret', URL_PARAMS.get('secret'));
   if (URL_PARAMS.get('api'))    mjQs.set('api',    URL_PARAMS.get('api'));
-  const mjHref = `/staff/manage-job.html?${mjQs.toString()}`;
+  const mjHref = `/admin/manage-job.html?${mjQs.toString()}`;
   const links = [
     `<a class="mini-link" href="${mjHref}" data-act="open-manage" data-href="${mjHref}">🛠 Manage Job</a>`,
     r.href ? `<a class="mini-link" href="${r.href}" data-act="open-bc" data-href="${r.href}">🔗 BC opportunity</a>` : '',
