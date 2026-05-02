@@ -272,13 +272,31 @@
     if (window.gccSite && window.gccSite.initNavigation) window.gccSite.initNavigation(host);
   }
 
+  // Public marketing pages render the public/anonymous nav even when the
+  // visitor is signed in. Auth-state nav (client / staff / admin) only
+  // shows on app surfaces under /clients/* and /admin/*. This keeps the
+  // marketing site consistent regardless of who's logged in.
+  function isPublicMarketingPath() {
+    const p = location.pathname || '/';
+    return p === '/' ||
+           p === '/index.html' ||
+           p.startsWith('/services') ||
+           p.startsWith('/projects') ||
+           p.startsWith('/about') ||
+           p.startsWith('/estimate') ||
+           p.startsWith('/contact') ||
+           p.startsWith('/support') ||
+           p.startsWith('/legal/');
+  }
+
   // ── Boot ──────────────────────────────────────────────────
   async function boot() {
     let items = navAnonymous();
     let badge = null;
     let isAnon = true;
+    const onPublic = isPublicMarketingPath();
 
-    if (window.gccApi) {
+    if (window.gccApi && !onPublic) {
       try {
         const me = await gccApi.me();
         if (me.role === 'admin') {
