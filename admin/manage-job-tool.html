@@ -5,6 +5,11 @@
   <title>Manage Job · GCC Manager</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="robots" content="noindex" />
+  <!-- Loaded inside /admin/manage-job.html iframe shell. <base
+       target="_top"> ensures clicks on the "← GCC Manager" back link
+       and other internal navigation update the top browser window
+       instead of just the iframe (avoids nested iframe stacking). -->
+  <base target="_top">
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <meta name="theme-color" content="#1E4D2B" />
@@ -335,7 +340,7 @@ async function api(method, path, body) {
   if (body) opts.body = JSON.stringify(body);
   const res = await fetch(API_BASE + path, opts);
   if (res.status === 401 || res.status === 403) {
-    window.location.href = '/clients/?next=' + encodeURIComponent(location.href);
+    (window.top || window).location.href = '/clients/?next=' + encodeURIComponent(location.href);
     throw new Error(`${method} ${path} -> ${res.status}: not authenticated`);
   }
   const text = await res.text();
@@ -969,7 +974,7 @@ async function onAction(e, btn) {
       if (confirm('Delete this RFP from GCC Manager? This wipes dbo.BcRfps + Details + Attachments. Drive folder is left alone. Cannot be undone.')) {
         await api('POST', '/api/bc/extraction/delete', { jobId: id });
         toast('RFP deleted.');
-        setTimeout(() => { window.location.href = $('back-to-leads').href; }, 1000);
+        setTimeout(() => { (window.top || window).location.href = $('back-to-leads').href; }, 1000);
         return;
       }
     }

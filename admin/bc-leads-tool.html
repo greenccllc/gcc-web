@@ -5,6 +5,12 @@
   <title>GCC Manager</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="robots" content="noindex" />
+  <!-- This page is loaded inside the /admin/bc-leads.html iframe shell.
+       <base target="_top"> ensures all anchor clicks navigate the top
+       browser window (not the iframe) so we get clean transitions
+       instead of nested iframes when the user clicks "Manage" on a
+       project row. Direct visits (no iframe) are unaffected. -->
+  <base target="_top">
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <meta name="theme-color" content="#1E4D2B" />
@@ -364,7 +370,7 @@ async function api(method, path, body = null) {
   const res = await fetch(API_BASE + path, opts);
   if (res.status === 401 || res.status === 403) {
     // Cookie absent/expired AND no valid secret — bounce to login, preserve URL.
-    window.location.href = '/clients/?next=' + encodeURIComponent(location.href);
+    (window.top || window).location.href = '/clients/?next=' + encodeURIComponent(location.href);
     throw new Error(`${method} ${path} -> ${res.status}: not authenticated`);
   }
   const text = await res.text();
@@ -1108,7 +1114,7 @@ function render() {
     a.addEventListener('click', (e) => {
       e.preventDefault(); e.stopPropagation();
       const href = a.dataset.href;
-      if (href) window.location.href = href;
+      if (href) (window.top || window).location.href = href;
     });
   });
   $('rows').querySelectorAll('a[data-act="open-maps"]').forEach(a => {
@@ -2714,7 +2720,7 @@ async function saveOutcome(_unused, manageAfter) {
       const params = new URLSearchParams({ jobId: it.jobId });
       if (URL_PARAMS.get('secret')) params.set('secret', URL_PARAMS.get('secret'));
       if (URL_PARAMS.get('api'))    params.set('api',    URL_PARAMS.get('api'));
-      window.location.href = '/admin/manage-job.html?' + params.toString();
+      (window.top || window).location.href = '/admin/manage-job.html?' + params.toString();
       return;
     }
     await loadOutcomes();
