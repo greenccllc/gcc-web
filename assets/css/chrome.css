@@ -154,6 +154,26 @@
 @media (max-width: 960px) {
   .page-hero::after { display: none; }
 }
+/* Suppress the cabling-pattern illustration on admin / dashboard pages —
+   they're data-dense and the decorative graphic competes with charts. */
+body.dash .page-hero::after,
+body.login-page .page-hero::after { display: none; }
+/* Compact the hero on admin pages — they don't need the full marketing
+   real estate. */
+body.dash .page-hero {
+  padding: 48px 0 28px;
+  background: linear-gradient(180deg, var(--paper, #F4F4EE) 0%, white 100%);
+}
+body.dash .page-hero h1 {
+  font-size: clamp(24px, 3vw, 32px);
+  max-width: none;
+  margin-bottom: 6px;
+}
+body.dash .page-hero .lead {
+  font-size: 14px;
+  color: var(--slate, #4F5B57);
+  margin: 0;
+}
 .page-hero .container { position: relative; z-index: 1; }
 .page-hero .eyebrow {
   display: inline-block;

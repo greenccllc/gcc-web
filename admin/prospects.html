@@ -9,7 +9,7 @@
 <meta name="robots" content="noindex" />
 <link rel="icon" href="/assets/favicon.ico" sizes="any" /><link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
 <link rel="stylesheet" href="/assets/css/site.css?v=20260501-redesign" />
-  <link rel="stylesheet" href="/assets/css/chrome.css?v=20260501-design-pass" />
+  <link rel="stylesheet" href="/assets/css/chrome.css?v=20260501-admin-pass" />
 <style>
 .dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 28px; }
 .kpi { background: white; border: 1px solid var(--hairline); border-radius: var(--r-md); padding: 18px; box-shadow: var(--shadow-xs); }
@@ -39,14 +39,15 @@
 .filter-bar .filter-pill:hover:not(.active) { background: var(--paper); }
 </style>
 </head>
-<body>
+<body class="dash">
 
 <div id="gcc-header"></div>
 
-<section style="padding: 28px 0; background: var(--paper); border-bottom: 1px solid var(--hairline);">
+<section class="page-hero" style="padding: 48px 0 32px;">
   <div class="container">
-    <h1 style="margin-bottom: 4px;">Prospects</h1>
-    <p style="color: var(--slate); margin: 0;">Qualified leads under active proposal/quote conversation.</p>
+    <span class="eyebrow">Active proposal/quote conversation</span>
+        <h1>Prospects</h1>
+    <p class="lead">Qualified leads under active proposal/quote conversation.</p>
   </div>
 </section>
 

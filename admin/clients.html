@@ -9,7 +9,7 @@
 <meta name="robots" content="noindex" />
 <link rel="icon" href="/assets/favicon.ico" sizes="any" /><link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
 <link rel="stylesheet" href="/assets/css/site.css?v=20260501-redesign" />
-  <link rel="stylesheet" href="/assets/css/chrome.css?v=20260501-design-pass" />
+  <link rel="stylesheet" href="/assets/css/chrome.css?v=20260501-admin-pass" />
 <style>
 .dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 28px; }
 .kpi { background: white; border: 1px solid var(--hairline); border-radius: var(--r-md); padding: 18px; box-shadow: var(--shadow-xs); }
@@ -33,14 +33,15 @@
 .inline-select { padding: 4px 8px; border: 1px solid var(--hairline-strong); border-radius: 5px; font-size: 12px; background: white; font-family: inherit; }
 </style>
 </head>
-<body>
+<body class="dash">
 
 <div id="gcc-header"></div>
 
-<section style="padding: 28px 0; background: var(--paper); border-bottom: 1px solid var(--hairline);">
+<section class="page-hero" style="padding: 48px 0 32px;">
   <div class="container">
-    <h1 style="margin-bottom: 4px;">Clients</h1>
-    <p style="color: var(--slate); margin: 0;">All registered portal users. Admins can change role/status.</p>
+    <span class="eyebrow">Portal users · Roles · Status</span>
+        <h1>Clients</h1>
+    <p class="lead">All registered portal users. Admins can change role/status.</p>
   </div>
 </section>
 

@@ -9,7 +9,7 @@
 <meta name="robots" content="noindex" />
 <link rel="icon" href="/assets/favicon.ico" sizes="any" /><link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
 <link rel="stylesheet" href="/assets/css/site.css?v=20260501-redesign" />
-  <link rel="stylesheet" href="/assets/css/chrome.css?v=20260501-design-pass" />
+  <link rel="stylesheet" href="/assets/css/chrome.css?v=20260501-admin-pass" />
 <style>
 .cal-wrap { display: grid; grid-template-columns: 280px 1fr; gap: 24px; }
 @media (max-width: 860px) { .cal-wrap { grid-template-columns: 1fr; } }
@@ -81,14 +81,15 @@
 .range-tab:hover:not(.active) { color: var(--ink); }
 </style>
 </head>
-<body>
+<body class="dash">
 
 <div id="gcc-header"></div>
 
-<section style="padding: 28px 0; background: var(--paper); border-bottom: 1px solid var(--hairline);">
+<section class="page-hero" style="padding: 48px 0 32px;">
   <div class="container">
-    <h1 style="margin-bottom: 4px;">Calendar</h1>
-    <p style="color: var(--slate); margin: 0;">Project due dates, invoice due dates, and recent estimate activity in one schedule.</p>
+    <span class="eyebrow">Project + invoice schedule</span>
+        <h1>Calendar</h1>
+    <p class="lead">Project due dates, invoice due dates, and recent estimate activity in one schedule.</p>
   </div>
 </section>
 
