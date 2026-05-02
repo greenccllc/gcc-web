@@ -669,7 +669,8 @@ function expandActionsCol(r) {
     items.push(`<button class="primary" data-act="project-details" data-id="${id}">📋 Project Details</button>`);
   }
   if (status === 'Accepted') {
-    items.push(`<button class="primary" data-act="extract-more"  data-id="${id}">🔬 Extract more</button>`);
+    items.push(`<button class="primary" data-act="extract-more"  data-id="${id}" title="Run the next canonical extraction tool (advances one stage per click).">🔬 Extract more</button>`);
+    items.push(`<button data-act="extract-full" data-id="${id}" title="Sequentially queue every remaining canonical tool for this RFP.">⚡ Extract full</button>`);
     items.push(`<button class="${accepted ? 'primary' : ''}" data-act="accept" data-id="${id}">${accepted ? '✓ Accepted' : '✓ Accept extraction'}</button>`);
     items.push(`<button data-act="pause-toggle" data-id="${id}" data-paused="${paused ? '1' : '0'}">${paused ? '▶ Resume' : '⏸ Pause'}</button>`);
   }
@@ -750,7 +751,8 @@ function actionsCell(r) {
     items.push(`<button data-act="project-details" data-id="${id}">📋 Project Details</button>`);
   }
   if (status === 'Accepted') {
-    items.push(`<button data-act="extract-more" data-id="${id}">🔬 Extract more (deeper pass)</button>`);
+    items.push(`<button data-act="extract-more" data-id="${id}" title="Run the next canonical extraction tool (advances one stage per click).">🔬 Extract more (next stage)</button>`);
+    items.push(`<button data-act="extract-full" data-id="${id}" title="Sequentially queue every remaining canonical tool for this RFP.">⚡ Extract full (run all remaining)</button>`);
     items.push(`<button data-act="accept" data-id="${id}" class="${accepted ? 'accepted' : ''}">${accepted ? '✓ Accepted' : '✓ Accept extraction'}</button>`);
     items.push(`<button data-act="pause-toggle" data-id="${id}" data-paused="${paused ? '1' : '0'}">${paused ? '▶ Resume extraction' : '⏸ Pause extraction'}</button>`);
   }
@@ -1168,9 +1170,34 @@ function render() {
       btn.disabled = true; const orig = btn.innerHTML; btn.textContent = '…';
       try {
         if (act === 'extract-more') {
-          await api('POST', '/api/bc/extraction/extract-more', { jobId: id });
-          toast(`Deeper extraction queued for ${id.slice(0,8)}…`);
+          const resp = await api('POST', '/api/bc/extraction/extract-more', { jobId: id });
+          const tool = resp?.tool ? ` (${resp.tool})` : '';
+          toast(`Deeper extraction queued${tool} for ${id.slice(0,8)}…`, 4000);
           setTimeout(load, 1200);
+        } else if (act === 'extract-full') {
+          // Sequentially queue every remaining canonical tool for this RFP.
+          // The /extract-more-status endpoint returns `remaining`; fire one
+          // POST per tool with an explicit `tool` param so each request
+          // pins a different one (the API picks first-unused otherwise,
+          // which would re-pick the same tool until the worker catches up).
+          const status = await api('GET', `/api/admin/jobs/${encodeURIComponent(id)}/extract-more-status`);
+          const remaining = status.remaining || [];
+          if (!remaining.length) { toast('Nothing left to run — every tool already queued.', 3500); return; }
+          let queued = 0, totalFiles = 0;
+          for (let i = 0; i < remaining.length; i++) {
+            const t = remaining[i];
+            btn.textContent = `Queueing ${i + 1}/${remaining.length}: ${t}…`;
+            try {
+              const resp = await api('POST', '/api/bc/extraction/extract-more', { jobId: id, tool: t });
+              queued++;
+              totalFiles += (resp?.filesRepublished || 0);
+            } catch (err) {
+              toast(`Stopped after ${queued}/${remaining.length}: ${err.message}`, 7000);
+              break;
+            }
+          }
+          toast(`✓ Queued ${queued} tools · ${totalFiles} file republishes for ${id.slice(0,8)}…`, 5500);
+          setTimeout(load, 1500);
         } else if (act === 'syn-refresh') {
           // Re-run scope synthesis for this RFP (button in the Syn Conf
           // column). Toasts the new confidence + count and refreshes the

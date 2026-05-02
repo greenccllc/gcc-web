@@ -802,7 +802,10 @@ function renderActionBar(r) {
   }
   if (status === 'Accepted') {
     // Tool-rotation gating populated async after render via refreshExtractMoreStatus().
+    // "Extract more" advances ONE tool per click; "Extract full" sequentially
+    // queues every remaining canonical tool in one go.
     maintItems.push(`<button data-act="extract-more" data-id="${id}" id="mj-extract-more" disabled title="Loading tool rotation status…">🔬 Extract more</button>`);
+    maintItems.push(`<button data-act="extract-full" data-id="${id}" id="mj-extract-full" disabled title="Loading tool rotation status…">⚡ Extract full</button>`);
     maintItems.push(`<button class="${accepted ? '' : ''}" data-act="accept" data-id="${id}">${accepted ? '✓ Accepted' : '✓ Accept extraction'}</button>`);
     maintItems.push(`<button data-act="pause-toggle" data-id="${id}" data-paused="${paused ? '1' : '0'}">${paused ? '▶ Resume' : '⏸ Pause'}</button>`);
   }
@@ -867,39 +870,87 @@ function renderActionBar(r) {
   });
 }
 
-// Fetch tool-rotation status and update the Extract-more button in
-// place. Each click of "Extract more" pins a different canonical tool
-// (cheap → expensive). Once every canonical tool has been used at
-// least once on this job, the button is greyed out permanently.
+// Tools the user has just queued client-side that the worker hasn't yet
+// written rows for. Treated as "used" for UI purposes so the badge
+// advances immediately on click — without this the next click would
+// pick the same tool again until the worker catches up.
+const _pendingTools = new Set();
+
+// Friendly label for each canonical extraction tool. Surfaces in the
+// button text + hover so the operator knows what stage is next without
+// memorizing the rotation order.
+const TOOL_LABELS = {
+  'embedded-pdf':       'Embedded text',
+  'regex':              'Regex pass',
+  'docling-layout':     'Docling layout',
+  'vision-llm':         'Vision LLM (local)',
+  'document-ai-form':   'Document AI form',
+  'document-ai-custom': 'Document AI custom',
+  'vision-ocr':         'Vision OCR',
+  'gemini-flash':       'Gemini Flash',
+  'gemini-long-read':   'Gemini long-read',
+};
+function toolLabel(tool) { return TOOL_LABELS[tool] || tool || '(unknown)'; }
+
+// Fetch tool-rotation status and update both Extract-more + Extract-full
+// buttons in place. Each click of "Extract more" pins a different
+// canonical tool (cheap → expensive). "Extract full" queues every
+// remaining tool sequentially. Once every canonical tool has been used
+// at least once on this job, both buttons are greyed out permanently.
 async function refreshExtractMoreStatus(jobId) {
-  const btn = document.getElementById('mj-extract-more');
-  if (!btn) return;
+  const btnMore = document.getElementById('mj-extract-more');
+  const btnFull = document.getElementById('mj-extract-full');
+  if (!btnMore && !btnFull) return;
   try {
     const s = await api('GET', `/api/admin/jobs/${encodeURIComponent(jobId)}/extract-more-status`);
-    const used  = s.usedCount  ?? 0;
-    const total = s.totalCount ?? 0;
-    btn.textContent = `🔬 Extract more (${used}/${total})`;
-    if (s.allExhausted) {
-      btn.disabled = true;
-      btn.title = `All ${total} extraction tools have been run on this job. Re-running won't surface new counts. Used: ${(s.used || []).join(', ')}`;
-    } else {
-      btn.disabled = false;
-      const next = s.nextTool || '(unknown)';
-      const remaining = (s.remaining || []).join(', ');
-      // Surface that the next click stays local (no cloud cost) when
-      // vision-llm is up next in the rotation.
-      const localHint = next === 'vision-llm'
-        ? ' This run stays on-prem (qwen2.5vl:7b on the GPU; no cloud cost).'
-        : '';
-      btn.title = `Next tool: ${next}.${localHint} ${total - used} of ${total} tools remaining: ${remaining}.`;
+    // Subtract any tools the user just queued client-side but that the
+    // worker hasn't reflected in BidExtractions yet.
+    const remaining = (s.remaining || []).filter(t => !_pendingTools.has(t));
+    const total     = s.totalCount ?? 0;
+    const used      = total - remaining.length;
+    const next      = remaining[0] || null;
+    const exhausted = remaining.length === 0;
+    const localHint = next === 'vision-llm'
+      ? ' Local pass — qwen2.5vl:7b on the GPU, no cloud cost.'
+      : '';
+    if (btnMore) {
+      btnMore.textContent = exhausted
+        ? `🔬 Extract more (${total}/${total})`
+        : `🔬 Extract more · ${toolLabel(next)} (${used}/${total})`;
+      if (exhausted) {
+        btnMore.disabled = true;
+        btnMore.title = `All ${total} extraction tools have been run on this job. Re-running won't surface new counts. Used: ${(s.used || []).join(', ')}`;
+      } else {
+        btnMore.disabled = false;
+        btnMore.title = `Next tool: ${toolLabel(next)} (${next}).${localHint}\n${remaining.length} of ${total} tools remaining: ${remaining.map(toolLabel).join(', ')}.`;
+      }
+    }
+    if (btnFull) {
+      btnFull.textContent = exhausted
+        ? `⚡ Extract full (done)`
+        : `⚡ Extract full (×${remaining.length})`;
+      if (exhausted) {
+        btnFull.disabled = true;
+        btnFull.title = `Nothing left to run. Every canonical extraction tool has been queued for this job.`;
+      } else {
+        btnFull.disabled = false;
+        btnFull.title = `Sequentially queue all ${remaining.length} remaining tools: ${remaining.map(toolLabel).join(' → ')}.`;
+      }
     }
   } catch (err) {
-    // Network/auth error -- leave the button in its prior state but
+    // Network/auth error -- leave the buttons in their prior state but
     // surface the failure in a tooltip so the user knows why the
     // badge never populated.
-    btn.disabled = false;
-    btn.textContent = '🔬 Extract more';
-    btn.title = `Could not load tool-rotation status: ${err.message}`;
+    if (btnMore) {
+      btnMore.disabled = false;
+      btnMore.textContent = '🔬 Extract more';
+      btnMore.title = `Could not load tool-rotation status: ${err.message}`;
+    }
+    if (btnFull) {
+      btnFull.disabled = false;
+      btnFull.textContent = '⚡ Extract full';
+      btnFull.title = `Could not load tool-rotation status: ${err.message}`;
+    }
   }
 }
 
@@ -923,13 +974,44 @@ async function onAction(e, btn) {
   try {
     if (act === 'extract-more') {
       const resp = await api('POST', '/api/bc/extraction/extract-more', { jobId: id });
-      const tool = resp.tool ? ` (${resp.tool})` : '';
+      // Track the just-queued tool client-side so the badge advances
+      // even before the worker writes BidExtractions rows. This is what
+      // makes the button label/hover step forward on every click instead
+      // of stalling on the same "next tool" until the worker catches up.
+      if (resp.tool) _pendingTools.add(resp.tool);
+      const tool = resp.tool ? ` (${toolLabel(resp.tool)})` : '';
       toast(`Deeper extraction queued${tool}: ${resp.filesRepublished || 0} files.`, 4000);
       // Kick the readiness poll right away so the strip pops in with
       // the new queued count instead of waiting for the next 5s tick.
       setTimeout(pollExtractionReadiness, 800);
       // Refresh the tool-rotation badge so the user sees the new
       // used/total tally before the full page reload finishes.
+      refreshExtractMoreStatus(id);
+      setTimeout(load, 1500);
+    } else if (act === 'extract-full') {
+      // Sequentially queue every remaining canonical tool. Each request
+      // pins a specific tool via the `tool` param; we add it to the
+      // client-side pending set BEFORE firing so the next call can't
+      // re-pick the same tool. Stop on the first failure.
+      const status = await api('GET', `/api/admin/jobs/${encodeURIComponent(id)}/extract-more-status`);
+      const remaining = (status.remaining || []).filter(t => !_pendingTools.has(t));
+      if (!remaining.length) { toast('Nothing left to run — every tool already queued.', 3500); return; }
+      let queued = 0, totalFiles = 0;
+      for (let i = 0; i < remaining.length; i++) {
+        const t = remaining[i];
+        btn.textContent = `Queueing ${i + 1}/${remaining.length}: ${toolLabel(t)}…`;
+        try {
+          _pendingTools.add(t);
+          const resp = await api('POST', '/api/bc/extraction/extract-more', { jobId: id, tool: t });
+          queued++;
+          totalFiles += (resp.filesRepublished || 0);
+        } catch (err) {
+          toast(`Stopped after ${queued}/${remaining.length}: ${err.message}`, 7000);
+          break;
+        }
+      }
+      toast(`✓ Queued ${queued} tools · ${totalFiles} file republishes.`, 5500);
+      setTimeout(pollExtractionReadiness, 800);
       refreshExtractMoreStatus(id);
       setTimeout(load, 1500);
     } else if (act === 'accept') {
