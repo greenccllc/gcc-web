@@ -20,22 +20,10 @@
     smartSwitches: { min: 145, mid: 215, max: 295 },
     smartLocks:    { min: 425, mid: 600, max: 850 },
     tvMount:       { min: 350, mid: 525, max: 800 },
-    // Renovations (per project, based on tier)
-    bath: {
-      small:  { min: 4500, mid: 7500, max: 12000 },
-      medium: { min: 9500, mid: 15000, max: 22000 },
-      large:  { min: 18000, mid: 28000, max: 45000 }
-    },
-    kitchen: {
-      small:  { min: 8000, mid: 14000, max: 22000 },
-      medium: { min: 22000, mid: 35000, max: 55000 },
-      large:  { min: 45000, mid: 75000, max: 125000 }
-    },
     // Outdoor (per unit)
     fence:         { min: 38, mid: 55, max: 85 },     // per linear foot
     deck:          { min: 45, mid: 65, max: 95 },     // per square foot
-    // HVAC & electrical
-    miniSplit:     { min: 2800, mid: 4200, max: 6500 },
+    // Light electrical
     ceilingFan:    { min: 285, mid: 425, max: 650 },
     outlet:        { min: 225, mid: 325, max: 500 },
     // Modifiers
@@ -51,12 +39,10 @@
   function getInputs() {
     const form = $('#res-est-form');
     const data = {};
-    ['drops','aps','camIn','camOut','doorbell','smartSwitches','smartLocks','tvMount','miniSplit','ceilingFan','outlet','fence','deck'].forEach(k => {
+    ['drops','aps','camIn','camOut','doorbell','smartSwitches','smartLocks','tvMount','ceilingFan','outlet','fence','deck'].forEach(k => {
       const v = parseInt(form.querySelector('#' + k).value, 10);
       data[k] = isNaN(v) || v < 0 ? 0 : v;
     });
-    data.bath    = (form.querySelector('input[name="bath"]:checked') || {}).value || '0';
-    data.kitchen = (form.querySelector('input[name="kitchen"]:checked') || {}).value || '0';
     ['metro','rush','permit'].forEach(k => { data[k] = form.querySelector('#' + k).checked; });
     return data;
   }
@@ -75,19 +61,9 @@
     add(d.smartSwitches, PRICE.smartSwitches, '{n} smart switch(es)/dimmer(s)');
     add(d.smartLocks, PRICE.smartLocks, '{n} smart lock(s)');
     add(d.tvMount, PRICE.tvMount, '{n} TV mount(s)');
-    add(d.miniSplit, PRICE.miniSplit, '{n} mini-split zone(s)');
     add(d.ceilingFan, PRICE.ceilingFan, '{n} ceiling fan(s) / fixture(s)');
     add(d.outlet, PRICE.outlet, '{n} new outlet(s)/circuit(s)');
 
-    if (d.bath !== '0' && PRICE.bath[d.bath]) {
-      const r = PRICE.bath[d.bath];
-      lines.push({ name: `${d.bath[0].toUpperCase() + d.bath.slice(1)} bathroom remodel`, min: r.min, mid: r.mid, max: r.max });
-    }
-    if (d.kitchen !== '0' && PRICE.kitchen[d.kitchen]) {
-      const r = PRICE.kitchen[d.kitchen];
-      const lblMap = { small: 'Cosmetic kitchen update', medium: 'Full kitchen update', large: 'Full kitchen gut' };
-      lines.push({ name: lblMap[d.kitchen], min: r.min, mid: r.mid, max: r.max });
-    }
     if (d.fence > 0) {
       lines.push({ name: `${d.fence} LF of fencing`, min: PRICE.fence.min * d.fence, mid: PRICE.fence.mid * d.fence, max: PRICE.fence.max * d.fence });
     }
@@ -142,7 +118,7 @@
     breakdownEl.style.display = '';
 
     // Highlight rows
-    ['drops','aps','camIn','camOut','doorbell','smartSwitches','smartLocks','tvMount','miniSplit','ceilingFan','outlet'].forEach(k => {
+    ['drops','aps','camIn','camOut','doorbell','smartSwitches','smartLocks','tvMount','ceilingFan','outlet'].forEach(k => {
       const row = document.querySelector(`.cat-row[data-cat="${k}"]`);
       if (!row) return;
       const v = parseInt(document.getElementById(k).value, 10) || 0;
@@ -183,7 +159,7 @@
           source: 'estimator-res',
           estimate: `${fmt(r.minTotal)} - ${fmt(r.maxTotal)}`,
           drops: d.drops, cameras: d.camIn + d.camOut, doorbell: d.doorbell,
-          smartHome: d.smartSwitches + d.smartLocks, bath: d.bath, kitchen: d.kitchen,
+          smartHome: d.smartSwitches + d.smartLocks,
           fence: d.fence, deck: d.deck
         });
         cta.setAttribute('href', origHref + '?' + params.toString());
@@ -213,16 +189,11 @@
       applyPayload: function (payload) {
         if (!payload || !payload.form) return;
         var d = payload.form;
-        ['drops','aps','camIn','camOut','doorbell','smartSwitches','smartLocks','tvMount','miniSplit','ceilingFan','outlet','fence','deck'].forEach(function (k) {
+        ['drops','aps','camIn','camOut','doorbell','smartSwitches','smartLocks','tvMount','ceilingFan','outlet','fence','deck'].forEach(function (k) {
           if (d[k] != null) form.querySelector('#' + k).value = d[k];
         });
         ['metro','rush','permit'].forEach(function (k) {
           if (d[k] != null) form.querySelector('#' + k).checked = !!d[k];
-        });
-        ['bath','kitchen'].forEach(function (k) {
-          if (!d[k]) return;
-          var r = form.querySelector('input[name="' + k + '"][value="' + d[k] + '"]');
-          if (r) r.checked = true;
         });
         render();
       }

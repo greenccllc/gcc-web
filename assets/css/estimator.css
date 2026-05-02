@@ -55,8 +55,13 @@
 .est-breakdown .line .lbl { color: rgba(255,255,255,0.75); }
 .est-breakdown .line.total { border-top: 1px solid rgba(255,255,255,0.20); margin-top: 8px; padding-top: 10px; font-weight: 700; color: white; }
 
-.est-disclaimer { font-size: 12px; color: rgba(255,255,255,0.65); line-height: 1.5; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.12); }
-.est-disclaimer strong { color: var(--gold); }
+.est-disclaimer { font-size: 12px; color: rgba(255,255,255,0.85); line-height: 1.5; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.18); }
+.est-disclaimer strong { color: var(--gold, #C9A158); }
+.est-disclaimer a { color: var(--gold, #C9A158); font-weight: 600; }
+/* In empty state the panel is light grey, so flip to slate text. */
+.est-result.empty .est-disclaimer { color: var(--slate, #4F5B57); border-top-color: rgba(15,32,18,0.12); }
+.est-result.empty .est-disclaimer strong { color: var(--forest, #1E4D2B); }
+.est-result.empty .est-disclaimer a { color: var(--forest, #1E4D2B); }
 
 .est-result .btn-primary { background: var(--gold); color: var(--ink); width: 100%; justify-content: center; margin-top: 16px; }
 .est-result .btn-primary:hover { background: var(--gold-dark); color: white; }
