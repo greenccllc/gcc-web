@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#1E4D2B" />
 <link rel="icon" href="/assets/favicon.ico" sizes="any" /><link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
 <link rel="stylesheet" href="/assets/css/site.css" />
-  <link rel="stylesheet" href="/assets/css/chrome.css?v=20260501-design-pass" />
+  <link rel="stylesheet" href="/assets/css/chrome.css?v=20260501-wizard" />
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://greencommllc.com/"},{"@type":"ListItem","position":2,"name":"Estimator","item":"https://greencommllc.com/estimate/commercial.html"}]}</script>
 <link rel="stylesheet" href="/assets/css/estimator.css?v=20260501-contrast" />
 <link rel="canonical" href="https://greencommllc.com/estimate/commercial.html" />
@@ -40,6 +40,7 @@
     <h1>30 seconds. <span class="highlight">Real ballpark.</span></h1>
     <p class="lead" style="max-width: 720px;">Tell us roughly what you need — drops, cameras, doors, speakers, fiber, server room — and we'll show a live range based on GCC's actual 2026 pricing. No lead form, no "we'll get back to you," no upsell.</p>
     <p style="color: var(--slate); font-size: 0.95em; max-width: 720px; margin-top: 8px;">Need a more precise breakdown (20+ categories: HDMI, IoT, ladder rack, switches, MDF/IDF rooms, etc.)? <a href="/clients/" style="color: var(--forest); font-weight: 600;">Request a client login</a> and we'll send you the full estimator.</p>
+    <button type="button" class="estimator-wizard-cta" data-estimator-wizard>Start the guided wizard</button>
   </div>
 </section>
 
@@ -50,19 +51,15 @@
         <h3>Project details</h3>
         <p class="form-sub">All fields optional. The more you fill in, the tighter the range.</p>
 
-        <!-- Step 1: project type -->
-        <div class="est-step">
-          <h4>1 · Project type</h4>
-          <div class="choice-grid" data-input="projectType">
-            <label class="choice"><input type="radio" name="projectType" value="commercial" checked /><span class="c-icon"><svg class="icon" aria-hidden="true"><use href="/assets/svg/icons.svg#icon-building"/></svg></span><span class="c-label">Commercial</span></label>
-            <label class="choice"><input type="radio" name="projectType" value="residential" /><span class="c-icon"><svg class="icon" aria-hidden="true"><use href="/assets/svg/icons.svg#icon-home"/></svg></span><span class="c-label">Residential</span></label>
-            <label class="choice"><input type="radio" name="projectType" value="mixed" /><span class="c-icon">🏘️</span><span class="c-label">Mixed / Multi-family</span></label>
-          </div>
-        </div>
+        <!-- Project type defaulted to "commercial" via the URL — the
+             est-mode-toggle pill at the top swaps to /estimate/residential.html
+             when needed. Hidden field preserves the JS contract that reads
+             projectType from the form. -->
+        <input type="hidden" name="projectType" value="commercial" />
 
-        <!-- Step 2: scope categories -->
+        <!-- Step 1: scope categories -->
         <div class="est-step">
-          <h4>2 · What do you need?</h4>
+          <h4>1 · What do you need?</h4>
           <div class="cat-grid" id="cat-grid">
 
             <div class="cat-row" data-cat="drops">
@@ -130,7 +127,7 @@
 
         <!-- Step 3: extras -->
         <div class="est-step">
-          <h4>3 · Project conditions</h4>
+          <h4>2 · Project conditions</h4>
           <div class="chk-row"><input type="checkbox" id="pw" name="pw" /><label for="pw">Prevailing-wage project<span class="chk-hint">Government, public schools, federal. Adds certified-payroll line items.</span></label></div>
           <div class="chk-row"><input type="checkbox" id="testing" name="testing" checked /><label for="testing">Full Fluke DSX-8000 + OTDR certification<span class="chk-hint">Included by default. Uncheck only if a separate cert shop is handling it.</span></label></div>
           <div class="chk-row"><input type="checkbox" id="asBuilts" name="asBuilts" checked /><label for="asBuilts">As-built drawings + closeout package<span class="chk-hint">Bluebeam-marked plans, per-drop cert reports, rack photos.</span></label></div>
@@ -173,5 +170,6 @@
   <script src="/assets/js/footer.js"></script>
 <script src="/assets/js/estimator-save.js"></script>
 <script src="/assets/js/estimator.js"></script>
+<script src="/assets/js/estimator-wizard.js?v=20260501-wizard"></script>
 </body>
 </html>

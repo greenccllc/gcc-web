@@ -1,0 +1,2890 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>GCC Manager</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex" />
+  <link rel="icon" href="/assets/favicon.ico" sizes="any" />
+  <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
+  <meta name="theme-color" content="#1E4D2B" />
+  <link rel="stylesheet" href="/assets/css/site.css?v=20260501-redesign" />
+  <link rel="stylesheet" href="/assets/css/chrome.css?v=20260501-admin-pass" />
+  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260501-admin-tab" />
+</head>
+<body>
+  <header>
+    <div>
+      <h1><img src="/assets/img/gcc-logo-128.png" alt="GCC" />GCC Manager</h1>
+      <div class="meta" id="meta">loading...</div>
+    </div>
+    <div class="tabs" id="tabs">
+      <button class="tab active" data-tab="leads">Projects</button>
+      <button class="tab" data-tab="queue">Queue</button>
+      <button class="tab" data-tab="outcomes">Outcomes</button>
+      <button class="tab" data-tab="processes">Processes</button>
+      <a class="tab tab-link" href="/admin/console/" title="Operations, pipeline, users, and reporting console (Google Workspace SSO required)">Admin Console</a>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <span class="small" id="auto" style="color:rgba(255,255,255,.7)"></span>
+      <button id="refresh" title="Refetch the leads-summary feed (no BC scrape)">↻ Refresh</button>
+      <button id="fix-folders" title="Create any missing Drive job/Intake folders, stale the scrape, and re-pull BC attachments unzipped" style="background:rgba(255,255,255,.15);color:white;border:0;padding:8px 14px;font-size:12px;font-weight:600;border-radius:8px;cursor:pointer;transition:all .12s ease">🗂 Fix folders</button>
+      <button id="rescan" title="Force-fire BC scrape tasks now">Rescan now</button>
+    </div>
+  </header>
+
+  <!-- =================== Leads tab =================== -->
+  <section id="tab-leads">
+    <div class="intake-filters" id="intake-filters">
+      <span class="if-label">Filter</span>
+      <span class="if-group"><label class="if-label" style="text-transform:none;font-weight:500" for="if-status">Status</label>
+        <select id="if-status">
+          <option value="">All (no archive)</option>
+          <option value="Undecided">Undecided</option>
+          <option value="Accepted">Accepted</option>
+          <option value="Submitted">Submitted</option>
+          <option value="Won">Won</option>
+          <option value="Lost">Lost</option>
+          <option value="Archived">Archived</option>
+          <option value="__include_archived__">Show all (incl. Archived)</option>
+        </select></span>
+      <span class="if-group"><label class="if-label" style="text-transform:none;font-weight:500" for="if-gc">GC</label>
+        <select id="if-gc"><option value="">All</option></select></span>
+      <span class="if-group"><label class="if-label" style="text-transform:none;font-weight:500" for="if-trade">Trade</label>
+        <select id="if-trade"><option value="">All</option></select></span>
+      <span class="if-group"><label class="if-label" style="text-transform:none;font-weight:500" for="if-state">State</label>
+        <select id="if-state"><option value="">All</option></select></span>
+      <span class="if-group"><label class="if-label" style="text-transform:none;font-weight:500" for="if-source">Source</label>
+        <select id="if-source"><option value="">All</option><option value="scrape">BC scrape</option><option value="email">Email-driven</option><option value="manual">Manual</option></select></span>
+      <button class="if-clear" id="if-clear" type="button" title="Reset every filter">Clear filters</button>
+      <span id="if-count" class="small" style="margin-left:auto"></span>
+    </div>
+    <table id="t">
+      <thead><tr id="head"></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <div id="empty" hidden>No RFPs scraped yet. Click "Rescan now" to trigger a fresh pull.</div>
+  </section>
+
+  <!-- =================== Queue tab =================== -->
+  <section id="tab-queue" hidden>
+    <!-- Watchdog (Chihuahua) pane -- summarizes the bid-extractor
+         watchdog scheduled task's recent activity. Polls every 30s
+         while the Queue tab is open. -->
+    <div class="wd-pane" id="wd-pane" hidden>
+      <div class="wd-row">
+        <div class="wd-emoji" id="wd-emoji">🐕</div>
+        <div class="wd-body">
+          <div class="wd-title">
+            <strong>Chihuahua</strong>
+            <span class="small wd-tick">…</span>
+          </div>
+          <div class="wd-verdict" id="wd-verdict">…</div>
+          <div class="wd-stats" id="wd-stats"></div>
+        </div>
+        <div class="wd-patterns" id="wd-patterns"></div>
+      </div>
+      <details class="wd-events" id="wd-events-details">
+        <summary>Recent fixes (today)</summary>
+        <ul class="wd-events-list" id="wd-events-list"></ul>
+      </details>
+    </div>
+
+    <!-- Worker status panel -- bid-extractor health, in-flight, errors, queue counts -->
+    <div class="ws-panel" id="ws-panel">
+      <div class="ws-row ws-top">
+        <div class="ws-pill" id="ws-task" title="Scheduled task state">
+          <span class="ws-dot"></span>
+          <strong class="ws-task-state">…</strong>
+          <span class="small ws-task-meta"></span>
+        </div>
+        <div class="ws-pill" id="ws-heartbeat" title="Last log heartbeat">
+          <span class="ws-dot"></span>
+          <strong class="ws-hb-state">…</strong>
+          <span class="small ws-hb-meta"></span>
+          <button type="button" class="ws-hb-reset" data-act="ws-reset"
+                  title="Clear processing strip + dismiss any logged error">↺ Reset</button>
+        </div>
+        <div class="ws-pill" id="ws-queue" title="Queue depth">
+          <strong class="ws-q-counts">… queued · … processing</strong>
+          <span class="small ws-q-pending"></span>
+        </div>
+        <div class="ws-pill ws-error" id="ws-error" hidden title="Most recent error in worker log">
+          <strong>⚠ Last error</strong>
+          <span class="small ws-err-msg"></span>
+        </div>
+        <button type="button" class="ws-restart-all" data-act="ws-restart-all"
+                title="Force-quit all in-flight extractions + claude.exe agents, then relaunch the worker with the most recent code. In-flight messages NACK and Pub/Sub re-delivers them.">
+          🔁 Restart all
+        </button>
+      </div>
+      <div class="ws-inflight" id="ws-inflight">
+        <div class="ws-inflight-empty small pad">No active extractions in the last 10 min.</div>
+      </div>
+      <!-- Real-time activity feed: parses the worker log every 2s and
+           shows starts / local-hits / DONEs / ACKs / orphans as they
+           land. Replaces the need to tail the log file in a console. -->
+      <div class="ws-activity" id="ws-activity">
+        <div class="ws-activity-header">
+          <strong>Live activity</strong>
+          <span class="small ws-activity-meta"></span>
+        </div>
+        <ol class="ws-activity-feed" id="ws-activity-feed"></ol>
+      </div>
+      <details class="ws-log-details" id="ws-log-details">
+        <summary>Worker log (last 30 lines)</summary>
+        <pre class="ws-log-tail" id="ws-log-tail"></pre>
+      </details>
+    </div>
+
+    <!-- Cost-approval panel -- files projected over $20 wait here -->
+    <div class="ca-panel" id="ca-panel" hidden>
+      <div class="ca-header">
+        <strong>Cost approval pending</strong>
+        <span class="small ca-threshold"></span>
+      </div>
+      <div class="ca-rows" id="ca-rows"></div>
+    </div>
+
+    <!-- (Queue summary chips + Filter / Scope / Refresh band removed --
+         the queue table only shows actively-queued + processing rows
+         in the default 'accepted, status=' query. Header's global
+         Refresh button covers the manual-poke case.) -->
+    <span id="q-summary" hidden></span>
+    <span id="q-count"   hidden></span>
+    <table id="q-table">
+      <thead><tr>
+        <th data-sort="project">Project <span class="sort-ind"></span></th>
+        <th data-sort="file">File <span class="sort-ind"></span></th>
+        <th data-sort="state">Status <span class="sort-ind"></span></th>
+        <th data-sort="progress">Progress <span class="sort-ind"></span></th>
+        <th data-sort="cost">Cost <span class="sort-ind"></span></th>
+        <th data-sort="updated">Updated <span class="sort-ind"></span></th>
+        <th>Actions</th>
+      </tr></thead>
+      <tbody id="q-rows"></tbody>
+    </table>
+    <div id="q-empty" hidden style="padding:60px 20px;text-align:center;color:var(--slate)">No files in the queue.</div>
+  </section>
+
+  <!-- =================== Outcomes tab =================== -->
+  <section id="tab-outcomes" hidden>
+    <div class="summary" id="oc-summary"></div>
+    <div class="outcomes-pane">
+      <!-- Col 1: selectable proposal cards -->
+      <div class="oc-col oc-list">
+        <h4>Proposals</h4>
+        <div class="oc-list-controls">
+          <select id="oc-filter">
+            <option value="">All</option>
+            <option value="Submitted">Submitted</option>
+            <option value="Won">Won</option>
+            <option value="Lost">Lost</option>
+            <option value="holding">Holding</option>
+            <option value="unknown">Unknown outcome</option>
+          </select>
+          <input id="oc-search" type="search" placeholder="Search project / GC..." />
+        </div>
+        <div class="oc-cards" id="oc-cards"></div>
+      </div>
+      <!-- Col 2: financial summary aggregates -->
+      <div class="oc-col oc-financial">
+        <h4>Financial summary</h4>
+        <div class="oc-fin-body" id="oc-fin-body"><span class="pad">loading…</span></div>
+      </div>
+      <!-- Col 3: financial quantitative brief -->
+      <div class="oc-col oc-brief">
+        <h4>Financial brief</h4>
+        <div class="oc-brief-body" id="oc-brief-body"><span class="pad">loading…</span></div>
+      </div>
+      <!-- Col 4: selected outcome detail -->
+      <div class="oc-col oc-detail" id="oc-detail">
+        <h4>Outcome detail</h4>
+        <div class="oc-detail-body" id="oc-detail-body">
+          <div class="oc-empty">Select a proposal on the left to record an outcome.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =================== Processes tab =================== -->
+  <section id="tab-processes" hidden>
+    <div class="summary"><span class="chip"><strong id="proc-count">0</strong> automated processes</span><span class="chip" id="proc-running-chip" style="display:none">⚙️ <strong id="proc-running">0</strong> running now</span></div>
+
+    <!-- Health Board: api status, DNS resolve, recent errors, pipeline counts -->
+    <div class="hb-grid" id="hb-grid">
+      <div class="hb-card" id="hb-api">
+        <div class="hb-title">API</div>
+        <div class="hb-body small">loading…</div>
+      </div>
+      <div class="hb-card" id="hb-dns">
+        <div class="hb-title">Public DNS</div>
+        <div class="hb-body small">loading…</div>
+      </div>
+      <div class="hb-card" id="hb-stats">
+        <div class="hb-title">Pipeline</div>
+        <div class="hb-body small">loading…</div>
+      </div>
+      <div class="hb-card hb-card-wide" id="hb-errors">
+        <div class="hb-title">
+          Latest API errors
+          <button class="hb-copy" data-act="hb-copy-errors" title="Copy all errors to clipboard">📋 Copy</button>
+        </div>
+        <div class="hb-body small">loading…</div>
+      </div>
+    </div>
+
+    <h3 class="proc-section-title">Scheduled tasks</h3>
+    <table id="proc-table">
+      <thead>
+        <tr>
+          <th style="cursor:default">Task</th>
+          <th style="cursor:default">State</th>
+          <th style="cursor:default">Last run</th>
+          <th style="cursor:default">Next run</th>
+          <th style="cursor:default">Last result</th>
+          <th style="cursor:default">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="proc-rows"></tbody>
+    </table>
+  </section>
+
+  <div id="status-bar"></div>
+
+  <footer class="site-footer">
+    <div>
+      <strong>Green Communications Contracting LLC</strong> · Division 27 / 28 low-voltage · Missouri
+    </div>
+    <div class="footer-meta">
+      GCC Manager · <a href="https://greencommllc.com" data-act="open-bc" data-href="https://greencommllc.com">greencommllc.com</a>
+    </div>
+  </footer>
+
+  <!-- Project Details modal: surfaced by the Undecided row "Project Details" button. -->
+  <div id="modal" hidden></div>
+
+<script>
+'use strict';
+
+// Map of BC trade-name fragments -> emoji icon. Drives the scope chips on
+// Undecided rows. Order matters; the first match wins.
+const TRADE_ICONS = [
+  [/data|voice|low.?volt|telecom|communic/i,           '📡'],
+  [/fiber/i,                                            '🧵'],
+  [/security|access\s*control|intrusion/i,              '🔐'],
+  [/camera|surveill|cctv|video/i,                       '📹'],
+  [/audio|av\b|a\/v/i,                                  '🎚️'],
+  [/fire|alarm|life.?safety/i,                          '🚨'],
+  [/intercom/i,                                         '📞'],
+  [/tv\b|display|signage/i,                             '📺'],
+  [/electric/i,                                         '⚡'],
+  [/network|wifi|wi-?fi|wlan|wireless/i,                '📶'],
+  [/cabling|wiring|raceway|conduit/i,                   '🔌'],
+  [/door|opening|hardware/i,                            '🚪'],
+  [/general|gc\b|construction|civil/i,                  '🏗️'],
+  [/demolition|demo\b/i,                                '🔨'],
+];
+function tradeIcon(label) {
+  for (const [re, ico] of TRADE_ICONS) if (re.test(label || '')) return ico;
+  return '🔧';
+}
+
+// BC's project names habitually carry the trade scope as a trailer:
+//   "Pleasant Lea Middle School Addition & Renovation Data & Telecommunications"
+//   "Comedy Club at The District Electrical"
+//   "Mean Well New Facility - DD Budget Budget Visual Display Boards"
+// When the detail-scrape hasn't captured an explicit Trades list yet,
+// derive a single-trade fallback from this trailer so the column always
+// gets a badge instead of going blank.
+function deriveTradeFromName(name) {
+  if (!name) return null;
+  const m = String(name).match(SCOPE_TRAILER);
+  if (!m) return null;
+  const raw = m[0].trim();
+  return normalizeTrade(raw) || raw;
+}
+// Get the trades for a row, falling back to a name-derived single-trade
+// chip when r.trades is empty / placeholder-only.
+function rowTrades(r) {
+  const have = Array.isArray(r.trades)
+    ? r.trades.map(normalizeTrade).filter(Boolean)
+    : [];
+  if (have.length) return have;
+  const fb = deriveTradeFromName(r.projectName);
+  return fb ? [fb] : [];
+}
+
+// Reduce a free-form address to "City, ST" for the Location column. The full
+// string still lives on the link's title attribute for hover, and is what
+// gets sent to Google Maps. BC sometimes hands us the bare "City, ST", and
+// sometimes a full street address with ZIP and country tacked on.
+function compactLocation(loc) {
+  if (!loc) return '';
+  const s = loc.trim().replace(/,\s*United States.*$/i, '').replace(/\s+/g, ' ');
+  // Already compact -- "City, ST" or "City, State"
+  if (/^[^,]+,\s*([A-Z]{2}|[A-Za-z]{3,})\s*$/.test(s)) return s;
+  // Pattern: "...something..., City, ST 12345" -- pull the last "City, ST"
+  const m = s.match(/,\s*([^,]+?),\s*([A-Z]{2})(?:\s+\d{4,5}(?:-\d{4})?)?\s*$/);
+  if (m) return `${m[1].trim()}, ${m[2]}`;
+  // Pattern: "City, ST 12345" with no street prefix
+  const m2 = s.match(/^([^,]+?),\s*([A-Z]{2})(?:\s+\d{4,5})?\s*$/);
+  if (m2) return `${m2[1].trim()}, ${m2[2]}`;
+  return s;
+}
+
+// Auth precedence:
+//   1. ?secret= on URL (set by GCC Manager tray launcher) — lasts the session via localStorage
+//   2. localStorage.gccAdminSecret (sticky after a tray-launched session)
+//   3. browser session cookie (gcc_sess) sent automatically — lets staff bookmark/open this page
+//      in a normal browser without the tray, as long as they're already signed in at /clients/
+//   4. nothing → bounce to /clients/ to log in
+const URL_PARAMS = new URLSearchParams(location.search);
+const SECRET = URL_PARAMS.get('secret') || localStorage.getItem('gccAdminSecret') || '';
+if (URL_PARAMS.get('secret')) localStorage.setItem('gccAdminSecret', URL_PARAMS.get('secret'));
+
+// API base: same origin by default; override with ?api=... for local-host probes.
+const API_BASE = URL_PARAMS.get('api') || ('https://api.' + location.hostname.replace(/^www\./, '').replace(/^staff\./, ''));
+
+const $  = (id) => document.getElementById(id);
+const fmt = (d) => d ? new Date(d).toLocaleString([], { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' }) : '—';
+const fmtDate = (d) => d ? new Date(d).toLocaleDateString([], { month:'short', day:'numeric', year:'2-digit' }) : null;
+const toast = (msg, ms = 2200) => { const b = $('status-bar'); b.textContent = msg; b.classList.add('show'); setTimeout(() => b.classList.remove('show'), ms); };
+
+async function api(method, path, body = null) {
+  // Always send cookies so a staff session works without the secret header.
+  const opts = {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+  };
+  // Add secret header only if we have one — gcc-api accepts either path.
+  if (SECRET) opts.headers['X-Gcc-Admin-Secret'] = SECRET;
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(API_BASE + path, opts);
+  if (res.status === 401 || res.status === 403) {
+    // Cookie absent/expired AND no valid secret — bounce to login, preserve URL.
+    window.location.href = '/clients/?next=' + encodeURIComponent(location.href);
+    throw new Error(`${method} ${path} -> ${res.status}: not authenticated`);
+  }
+  const text = await res.text();
+  if (!res.ok) throw new Error(`${method} ${path} -> ${res.status}: ${text.slice(0, 300)}`);
+  return text ? JSON.parse(text) : {};
+}
+
+function statusBadge(s) {
+  const safe = (s || '').replace(/[^A-Za-z]/g, '') || 'Unknown';
+  return `<span class="status status-${safe}">${s || '—'}</span>`;
+}
+
+// ===== columns =====
+// `key` = sort key on the row object;  `accessor(r)` returns the rendered HTML.
+// projectLabel = the bare site name from BC (no date prefix, no city suffix,
+// no trade-scope suffix). BC project names habitually pile multiple "fluff"
+// trailers onto the actual site name:
+//
+//   "Taste Buds Kitchen - Parkville, MO Signage"
+//   "Five Four Restaurant & Drafthouse - Liberty Interior Signage"
+//   "Barnes & Noble // Creve Coeur, MO Data & Telecommunications"
+//
+// Strip them iteratively (date leader, then scope, then city+state, then
+// bare-city, then any leftover punctuation). The loop keeps going until the
+// string stabilizes so multi-suffix tails like "- Liberty Interior Signage"
+// fully unwind.
+const SCOPE_TRAILER = /\s+(?:Data\s*(?:&|and)\s*Telecommunications|Voice\s*&\s*Data|Building\s*Signage|Interior\s*Signage|Exterior\s*Signage|Visual\s*Display\s*Boards?|Visual\s*Displays?|Low[\s-]?Voltage|Audio[\s\/-]?Visual|Telecommunications?|Communications?|Structured\s*Cabling|Cabling|Networking|Network|Electrical|Security|Fire\s*Alarm|Access\s*Control|Intercom|Paging|Sound\s*System|Datacom|Data|Telecom|Signage|AV)\s*$/i;
+const DATE_LEADER    = /^\d{4}-\d{2}-\d{2}\s*[-–—]\s*/;
+// "- City, ST" or "// City, ST" or ", City, ST" -- any of those at the tail.
+const CITY_STATE_TAIL = /\s*(?:[-–—\/]+|,)\s*[^-,\/]{2,}?,\s*[A-Z]{2}\.?\s*$/;
+// "- Word" or "// Word" or "- Multi Word" at the tail. Conservative: only
+// strips when the remaining base is at least 2 words long, so "KC Lounge Bar"
+// doesn't become "KC".
+function tryStripBareCity(s) {
+  const m = s.match(/^(.*?)\s+(?:[-–—\/]+)\s+([A-Z][^-\/]{1,40}?)\s*$/);
+  if (!m) return s;
+  const base = m[1].trim();
+  if (base.split(/\s+/).length < 2) return s;     // don't dissolve short bases
+  return base;
+}
+function trimScope(name) {
+  if (!name) return '';
+  let s = name.trim();
+  let prev = null;
+  while (s !== prev) {
+    prev = s;
+    s = s.replace(DATE_LEADER, '');
+    s = s.replace(SCOPE_TRAILER, '').trim();
+    s = s.replace(CITY_STATE_TAIL, '').trim();
+    s = tryStripBareCity(s);
+    s = s.replace(/[\s\-–—,\/\\]+$/, '').trim();
+  }
+  return s || name;                                // never collapse to empty
+}
+function projectLabel(r) { return trimScope(r.projectName) || r.driveJobFolderName || '(no name)'; }
+
+// Single source of truth for the Extraction column %. Pages is the unit
+// of agent work (1 sheet = 1 page, 1 image = 1 page, 1 PDF page = 1 page),
+// so the cleanest progress signal is pages_processed / pages_total.
+// Returns null when we don't have a trustworthy denominator -- callers
+// then render "—" or a count-only label instead of a misleading percent.
+// Files-based percent was producing junk values ("3 of 2 files" -> 100%,
+// "1 of 2 files" -> 50% even when 1 was a re-extraction of a single
+// attachment), so we no longer compute it.
+function extractionPct(r) {
+  const pp = r.extraction?.pagesProcessed || 0;
+  const pt = r.extraction?.pagesTotal     || 0;
+  if (pt > 0) return Math.min(100, Math.round(100 * pp / pt));
+  return null;
+}
+
+// safeHtml: escape user-controlled strings before injecting into innerHTML.
+function safeHtml(s) {
+  return String(s || '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+}
+
+const COLS = [
+  // Project: folder icon → project name → file/msg subscript → scope chips
+  // → confidence-tooltip on hover.
+  { id:'project', label:'Project',
+    sort:(a,b) => projectLabel(a).localeCompare(projectLabel(b)),
+    cell:(r) => {
+      // Folder icon: prefer local Filestore (post-2026-04-30 migration);
+      // fall back to Drive folder when local path isn't set yet
+      // (bc-scraper detail hasn't run on this RFP).
+      let fIcon;
+      if (r.localJobFolderPath) {
+        const localUrl = 'file:///' + r.localJobFolderPath.replace(/\\/g, '/').replace(/^([A-Za-z]):/, '$1:');
+        fIcon = `<span class="proj-folder-icon local" data-act="open-local-folder" data-local-path="${safeHtml(r.localJobFolderPath)}" title="Open local Filestore: ${safeHtml(r.localJobFolderPath)}">📁</span>`;
+      } else if (r.driveJobFolderId) {
+        fIcon = `<span class="proj-folder-icon" data-act="open-folder" data-folder-id="${r.driveJobFolderId}" title="${safeHtml(r.driveJobFolderName || 'Open Drive folder')}">📂</span>`;
+      } else {
+        fIcon = '<span class="proj-folder-icon missing" title="No folder linked">📂</span>';
+      }
+      const tip = projTip(r);
+      // Scope chips moved to the expand pane (top strip) so the
+      // project-name cell can give the title room. Sibling badge +
+      // file/msg subscript still ride here.
+      const sibBadge = (r._siblingJobIds && r._siblingJobIds.length)
+        ? `<span class="sib-badge" title="${r._siblingJobIds.length} sibling RFP${r._siblingJobIds.length === 1 ? '' : 's'} for the same physical job (different trade scopes)">🔗 +${r._siblingJobIds.length}</span>`
+        : '';
+      const att = r.scrape?.attachmentsCount || 0;
+      const msg = r.scrape?.messagesCount    || 0;
+      const subscript = (att || msg)
+        ? `<sub class="proj-subscript">${att ? att + ' att' : ''}${att && msg ? '<span class="dot">·</span>' : ''}${msg ? msg + ' msg' : ''}</sub>`
+        : '';
+      // Project name -> Manage Job. BC link is preserved in the
+      // expand pane footer.
+      const mjQs = new URLSearchParams({ jobId: r.jobId });
+      if (URL_PARAMS.get('secret')) mjQs.set('secret', URL_PARAMS.get('secret'));
+      if (URL_PARAMS.get('api'))    mjQs.set('api',    URL_PARAMS.get('api'));
+      const mjHref = `/staff/manage-job.html?${mjQs.toString()}`;
+      return `<span class="toggle">▶</span> ${fIcon}<span class="proj-link"><a href="${mjHref}" data-act="open-manage" data-href="${mjHref}" title="${safeHtml(projectLabel(r))}">${safeHtml(projectLabel(r))}</a>${tip}</span>${sibBadge}${subscript}`;
+    } },
+
+  { id:'location', label:'Location',
+    sort:(a,b) => (a.location || '').localeCompare(b.location || ''),
+    cell:(r) => {
+      if (!r.location) return '<span class="pad">—</span>';
+      const compact = compactLocation(r.location);
+      const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.location)}`;
+      return `<a class="loc-link small" data-act="open-maps" data-href="${url}" title="${safeHtml(r.location)}">${safeHtml(compact)}</a>`;
+    } },
+
+  { id:'due', label:'Due',
+    sort:(a,b) => (parseDue(a.dueAt) || 0) - (parseDue(b.dueAt) || 0),
+    cell:(r) => renderDue(r.dueAt) },
+
+  // Extraction: ALWAYS "X pages of Y" where
+  //   X = pages_processed (sum of pages across files the agent has finished)
+  //   Y = pages_total      (sum of PageCount across every attachment in
+  //                         the RFP's Intake folder -- the truth)
+  // Shows "—" only when Y is unknown (attachments not yet counted).
+  { id:'extraction', label:'Extraction',
+    sort:(a,b) => (a.extraction?.pagesProcessed || 0) - (b.extraction?.pagesProcessed || 0),
+    cell:(r) => {
+      const pp = r.extraction?.pagesProcessed || 0;
+      const pt = r.extraction?.pagesTotal     || 0;
+      if (pt === 0) return '<span class="pad">—</span>';
+      const conf = r.extraction?.confidencePct;
+      const titleAttr = conf == null ? '' : ` title="Agent confidence: ${Math.round(conf)}%"`;
+      return `<strong${titleAttr}>${pp}</strong> <span class="small">pages of ${pt}</span>`;
+    } },
+
+  // Syn Conf -- the synthesis pass's self-reported confidence in the
+  // canonical scope numbers ("our AI's confidence that the LV scope it
+  // synthesized for this project is accurate enough to bid against").
+  // After /api/admin/jobs/{jobId}/scope-synthesize runs, the picker
+  // (ai-synthesis score = 2.00) makes those numbers the displayed
+  // counts; this column is the operator's go/no-go signal that those
+  // numbers are trustworthy. The 🔄 button next to each value re-runs
+  // synthesis for that JobId (POST /api/admin/jobs/.../scope-synthesize).
+  { id:'synconf', label:'Syn Conf',
+    sort:(a,b) => (a.extraction?.confidencePct || -1) - (b.extraction?.confidencePct || -1),
+    cell:(r) => {
+      const conf = r.extraction?.confidencePct;
+      const id   = r.jobId;
+      const txt  = conf == null ? '<span class="pad">—</span>' : `<strong>${Math.round(conf)}%</strong>`;
+      // Color tier: 0 = no synth (red dot), <70 spot-check (amber), >=85 bid-ready (green).
+      const tier = conf == null ? 'none' : (conf < 70 ? 'low' : (conf >= 85 ? 'good' : 'mid'));
+      const tip  = conf == null
+        ? 'No synthesis run yet. Click 🔄 to synthesize the canonical LV-scope numbers from this RFP\'s extraction rows.'
+        : `Synthesis confidence: AI's self-rated trust in the canonical LV-scope numbers (go/no-go signal for bidding). Click 🔄 to re-run.`;
+      return `<span class="synconf-cell synconf-${tier}" data-stop title="${tip}">
+        <span class="synconf-dot"></span>${txt}
+        <button class="synconf-refresh" data-act="syn-refresh" data-id="${id}" title="Re-run scope synthesis for this RFP">🔄</button>
+      </span>`;
+    } },
+
+  // AI cost -- shows "—" when the row has no real cost yet. Previously
+  // showed "$0.0000" for every unextracted row, which was visual noise
+  // because "0" cost just meant "we haven't extracted this yet".
+  { id:'cost', label:'AI cost',
+    sort:(a,b) => (a.ai?.costUsd || 0) - (b.ai?.costUsd || 0),
+    cell:(r) => {
+      const c = Number(r.ai?.costUsd || 0);
+      const t = Number(r.ai?.tokensUsed || 0);
+      if (!c && !t) return '<span class="pad">—</span>';
+      const costPart = c > 0 ? `$${c.toFixed(2)}` : '<span class="pad">—</span>';
+      const tokPart  = t > 0 ? ` <span class="small">(${(t/1000).toFixed(1)}k tok)</span>` : '';
+      return `${costPart}${tokPart}`;
+    } },
+
+  // (Files column removed -- the att/msg summary now sits as a subscript
+  // right after the project name in the Project column.)
+
+  // Last file access -- newest BcRfpAttachments.UploadedAt. Earlier
+  // versions fell back to BcRfps.LastSeenAt when no files had been
+  // uploaded yet, but that's misleading -- LastSeenAt is just "when
+  // the BC list scrape last saw this RFP". Show "—" instead so the
+  // column reflects actual file activity, not list-scrape freshness.
+  { id:'lastfile', label:'Last file access',
+    sort:(a,b) => new Date(a.lastFileAt || 0) - new Date(b.lastFileAt || 0),
+    cell:(r) => r.lastFileAt
+        ? `<span class="small">${fmt(r.lastFileAt)}</span>`
+        : '<span class="pad">—</span>' },
+];
+
+// Confidence tooltip on the project name. Shows the confidence bar + the
+// "next best step" suggestion the backend computed for this row, with a
+// button that POSTs the appropriate endpoint.
+function projTip(r) {
+  const c    = r.extraction?.confidencePct;
+  const step = r.nextBestStep;
+  const bar  = c == null ? '' : `<div class="bar"><span style="width:${Math.min(100, Math.max(0, Math.round(c)))}%"></span></div>`;
+  const conf = c == null ? 'No extraction yet' : `${Math.round(c)}% confidence`;
+  const stepBlock = step
+    ? `<div class="tip-reason">${safeHtml(step.reason || '')}</div>
+       <button class="tip-step-btn" data-act="next-step" data-id="${r.jobId}" data-step-act="${safeHtml(step.action)}">${safeHtml(step.label)}</button>`
+    : `<div class="tip-reason">No specific recommendation -- this row looks good.</div>`;
+  return `<span class="proj-tip" data-stop>
+    <div class="tip-conf">${bar}<span>${conf}</span></div>
+    ${stepBlock}
+  </span>`;
+}
+
+// ===== Expanded-row column builders =====
+// Col 1: project summary -- key fields + description excerpt.
+// Top strip: every "at a glance" datum on one wrapping row of compact
+// chips. Click-throughs to manage-job, BC, and Drive folder live here.
+function expandTopStrip(r) {
+  const c    = r.extraction?.confidencePct;
+  const pp   = r.extraction?.pagesProcessed || 0;
+  const pt   = r.extraction?.pagesTotal     || 0;
+  const cost = r.ai?.costUsd;
+  const tok  = r.ai?.tokensUsed;
+  const att  = r.scrape?.attachmentsCount || 0;
+  const msg  = r.scrape?.messagesCount    || 0;
+  const trades = Array.isArray(r.trades) && r.trades.length
+    ? r.trades.map(t => `<span class="scope-chip"><span class="ico">${tradeIcon(t)}</span>${safeHtml(t)}</span>`).join('')
+    : '<span class="scope-chip unknown">scope unknown</span>';
+  const addBadge = r.addendaSeen
+    ? '<span class="status status-Lost" title="A new addendum was detected during the last BC scrape.">⚠ Addendum</span>' : '';
+  const pausedBadge = r.extractionPaused
+    ? '<span class="status status-Archived" title="Extraction is paused for this RFP.">⏸ Paused</span>' : '';
+  const acceptedBadge = r.extraction?.accepted
+    ? '<span class="status status-Accepted">✓ Accepted</span>' : '';
+  const progressVal = pt > 0 ? `${pp} of ${pt} pages` : '—';
+  const confVal     = c == null ? '—' : `${Math.round(c)}% confidence`;
+  const costVal     = cost == null
+    ? '—'
+    : `$${Number(cost).toFixed(2)}${tok ? ` <span class="small">(${(tok/1000).toFixed(1)}k tok)</span>` : ''}`;
+
+  // Manage / BC / Drive links + Extraction details deep-link
+  const mjQs = new URLSearchParams({ jobId: r.jobId });
+  if (URL_PARAMS.get('secret')) mjQs.set('secret', URL_PARAMS.get('secret'));
+  if (URL_PARAMS.get('api'))    mjQs.set('api',    URL_PARAMS.get('api'));
+  const mjHref = `/staff/manage-job.html?${mjQs.toString()}`;
+  const links = [
+    `<a class="mini-link" href="${mjHref}" data-act="open-manage" data-href="${mjHref}">🛠 Manage Job</a>`,
+    r.href ? `<a class="mini-link" href="${r.href}" data-act="open-bc" data-href="${r.href}">🔗 BC opportunity</a>` : '',
+    r.localJobFolderPath ? `<a class="mini-link" data-act="open-local-folder" data-local-path="${safeHtml(r.localJobFolderPath)}" title="Click to copy local path">📁 Local folder</a>` : '',
+    r.driveJobFolderId ? `<a class="mini-link" data-act="open-folder" data-folder-id="${r.driveJobFolderId}">📂 Drive folder</a>` : '',
+    `<a class="mini-link" href="${mjHref}#mj-extract-card" data-act="open-manage" data-href="${mjHref}#mj-extract-card">🔍 Extraction details</a>`,
+  ].filter(Boolean).join('');
+
+  return `<div class="expand-strip">
+    <div class="strip-row strip-meta">
+      <span class="chip"><span class="lbl">GC</span> ${safeHtml(r.gc || 'unknown')}</span>
+      <span class="chip"><span class="lbl">Location</span> ${safeHtml(r.location || '—')}</span>
+      <span class="chip"><span class="lbl">Due</span> ${safeHtml(r.dueAt || '—')}</span>
+      <span class="chip"><span class="lbl">Status</span> ${statusBadge(r.status)}</span>
+      <span class="chip"><span class="lbl">Scope</span> <span style="display:inline-flex;flex-wrap:wrap;gap:3px;vertical-align:middle">${trades}</span></span>
+    </div>
+    <div class="strip-row strip-extract">
+      <span class="chip"><span class="lbl">Pages</span> <strong>${progressVal}</strong></span>
+      <span class="chip"><span class="lbl">Confidence</span> ${confVal}</span>
+      <span class="chip"><span class="lbl">AI cost</span> ${costVal}</span>
+      <span class="chip"><span class="lbl">Files</span> ${att} att · ${msg} msg</span>
+      <span class="chip"><span class="lbl">Last file</span> ${fmt(r.lastFileAt || r.lastSeenAt) || '—'}</span>
+      ${[acceptedBadge, addBadge, pausedBadge].filter(Boolean).map(b => `<span class="chip strip-badge">${b}</span>`).join('')}
+    </div>
+    <div class="strip-row strip-links">${links}</div>
+  </div>`;
+}
+
+function expandDescriptionCol(r) {
+  const desc = r.description && r.description.trim()
+    ? safeHtml(r.description).slice(0, 1200)
+    : '<em>No description from BC yet. Use Actions → Rescan details to refresh.</em>';
+  return `<div class="expand-col expand-desc-col">
+    <h4>Project description</h4>
+    <div class="descr">${desc}</div>
+  </div>`;
+}
+// Col 3: actions, vertically stacked. Replaces the old action-menu dropdown
+// in the expanded view (the menu is dense and clumsy when there's room).
+function expandActionsCol(r) {
+  const id       = r.jobId;
+  const accepted = r.extraction?.accepted;
+  const paused   = r.extractionPaused;
+  const status   = r.status || 'Unknown';
+  const flagged  = !!r.addendaSeen;
+  const items = [];
+  if (status === 'Undecided') {
+    items.push(`<button class="primary" data-act="project-details" data-id="${id}">📋 Project Details</button>`);
+  }
+  if (status === 'Accepted') {
+    items.push(`<button class="primary" data-act="extract-more"  data-id="${id}">🔬 Extract more</button>`);
+    items.push(`<button class="${accepted ? 'primary' : ''}" data-act="accept" data-id="${id}">${accepted ? '✓ Accepted' : '✓ Accept extraction'}</button>`);
+    items.push(`<button data-act="pause-toggle" data-id="${id}" data-paused="${paused ? '1' : '0'}">${paused ? '▶ Resume' : '⏸ Pause'}</button>`);
+  }
+  if (status === 'Submitted') {
+    items.push(`<button class="primary" data-act="view-prop" data-id="${id}">📤 View latest proposal</button>`);
+    items.push(`<button class="${flagged ? 'warn' : ''}" data-act="scan-addenda" data-id="${id}">${flagged ? '⚠ Scan addenda (NEW)' : '🔍 Scan addenda'}</button>`);
+  }
+  if (status === 'Won' || status === 'Lost' || status === 'Archived') {
+    items.push(`<button data-act="view-prop" data-id="${id}">📤 View latest proposal</button>`);
+  }
+  items.push(`<select data-act="move-status" data-id="${id}">
+    <option value="">— Move to status —</option>
+    ${STATUS_OPTIONS.map(s => `<option value="${s}" ${s === status ? 'disabled' : ''}>${s}${s === status ? ' (current)' : ''}</option>`).join('')}
+  </select>`);
+  items.push(`<button data-act="rescan-details" data-id="${id}">🔄 Rescan details</button>`);
+  items.push(`<button class="danger" data-act="delete" data-id="${id}">🗑 Delete RFP</button>`);
+  return `<div class="expand-col actions-col">
+    <h4>Actions</h4>
+    <div class="stacked-actions">${items.join('')}</div>
+  </div>`;
+}
+// Col 4: extraction + scrape meta. Surfaces what was previously buried in
+// the row footer + extraction tooltip.
+function expandMetaCol(r) {
+  const c    = r.extraction?.confidencePct;
+  const pp   = r.extraction?.pagesProcessed || 0;
+  const pt   = r.extraction?.pagesTotal     || 0;
+  const proc = r.extraction?.filesProcessed || 0;
+  const tot  = r.filesTotal                 || proc;
+  const cost = r.ai?.costUsd;
+  const tok  = r.ai?.tokensUsed;
+  const att  = r.scrape?.attachmentsCount || 0;
+  const msg  = r.scrape?.messagesCount    || 0;
+  const addBadge = r.addendaSeen
+    ? '<span class="status status-Lost" title="A new addendum was detected during the last BC scrape.">⚠ Addendum</span>' : '';
+  const pausedBadge = r.extractionPaused
+    ? '<span class="status status-Archived" title="Extraction is paused for this RFP.">⏸ Paused</span>' : '';
+  const acceptedBadge = r.extraction?.accepted
+    ? '<span class="status status-Accepted">✓ Accepted</span>' : '';
+  const progressVal = pt > 0 ? `${pp} pages of ${pt}` : '—';
+  return `<div class="expand-col">
+    <h4>Extraction & scrape</h4>
+    <div class="field"><span class="lbl">Progress</span><span class="val">${progressVal}</span></div>
+    <div class="field"><span class="lbl">Agent confidence</span><span class="val">${c == null ? '—' : Math.round(c) + '%'}</span></div>
+    <div class="field"><span class="lbl">AI cost</span><span class="val">${cost == null ? '—' : '$' + Number(cost).toFixed(2)}${tok ? ` <span class="small">(${(tok/1000).toFixed(1)}k tok)</span>` : ''}</span></div>
+    <div class="field"><span class="lbl">Attachments</span><span class="val">${att} att · ${msg} msg</span></div>
+    <div class="field"><span class="lbl">First seen</span><span class="val">${fmt(r.firstSeenAt)}</span></div>
+    <div class="field"><span class="lbl">Last list scrape</span><span class="val">${fmt(r.lastSeenAt)}</span></div>
+    <div class="field"><span class="lbl">Last file</span><span class="val">${fmt(r.lastFileAt || r.lastSeenAt)}</span></div>
+    <div class="field" style="display:flex;flex-direction:row;gap:6px;flex-wrap:wrap;margin-top:6px">${[acceptedBadge, addBadge, pausedBadge].filter(Boolean).join('')}</div>
+    <div class="field" style="margin-top:8px">
+      <a class="ext-detail-link" href="/admin/manage-job.html?jobId=${safeHtml(r.jobId)}${URL_PARAMS.get('secret') ? '&secret=' + encodeURIComponent(URL_PARAMS.get('secret')) : ''}${URL_PARAMS.get('api') ? '&api=' + encodeURIComponent(URL_PARAMS.get('api')) : ''}">
+        🔍 Extraction details
+      </a>
+      <span class="small pad" style="margin-left:6px">notes, specs, prop reqs, per-source counts</span>
+    </div>
+  </div>`;
+}
+
+// ===== Action dropdown menu =====
+// Single "Actions ▾" button on every row; clicking expands a list of every
+// action that's relevant to that row's current state. Includes Move-to-status
+// (selectable), Rescan-details, and Delete in addition to the per-status
+// actions (Extract more / Accept / Pause / View Prop / Scan Addenda /
+// Project Details).
+const STATUS_OPTIONS = ['Undecided', 'Accepted', 'Submitted', 'Won', 'Archived', 'Lost'];
+
+function actionsCell(r) {
+  const id       = r.jobId;
+  const accepted = r.extraction?.accepted;
+  const paused   = r.extractionPaused;
+  const status   = r.status || 'Unknown';
+  const flagged  = !!r.addendaSeen;
+
+  const items = [];
+  // Per-status primary actions
+  if (status === 'Undecided') {
+    items.push(`<button data-act="project-details" data-id="${id}">📋 Project Details</button>`);
+  }
+  if (status === 'Accepted') {
+    items.push(`<button data-act="extract-more" data-id="${id}">🔬 Extract more (deeper pass)</button>`);
+    items.push(`<button data-act="accept" data-id="${id}" class="${accepted ? 'accepted' : ''}">${accepted ? '✓ Accepted' : '✓ Accept extraction'}</button>`);
+    items.push(`<button data-act="pause-toggle" data-id="${id}" data-paused="${paused ? '1' : '0'}">${paused ? '▶ Resume extraction' : '⏸ Pause extraction'}</button>`);
+  }
+  if (status === 'Submitted') {
+    items.push(`<button data-act="view-prop" data-id="${id}">📤 View latest proposal</button>`);
+    items.push(`<button data-act="scan-addenda" data-id="${id}" class="${flagged ? 'danger' : ''}">${flagged ? '⚠ Scan addenda (new addendum detected)' : '🔍 Scan addenda'}</button>`);
+  }
+  if (status !== 'Undecided' && status !== 'Accepted' && status !== 'Submitted') {
+    items.push(`<button data-act="view-prop" data-id="${id}">📤 View latest proposal</button>`);
+  }
+
+  // Workflow + maintenance (always available)
+  items.push(`<div class="divider"></div>`);
+  items.push(`<div class="submenu-label">Move to status</div>`);
+  items.push(`<select data-act="move-status" data-id="${id}">
+    <option value="">— pick a status —</option>
+    ${STATUS_OPTIONS.map(s => `<option value="${s}" ${s === status ? 'disabled' : ''}>${s}${s === status ? ' (current)' : ''}</option>`).join('')}
+  </select>`);
+  items.push(`<div class="divider"></div>`);
+  items.push(`<button data-act="rescan-details" data-id="${id}">🔄 Rescan project details</button>`);
+  items.push(`<button data-act="delete" data-id="${id}" class="danger">🗑 Delete RFP from GCC Manager</button>`);
+
+  return `<div class="action-menu" data-stop>
+    <button class="menu-trigger" data-act="toggle-menu">Actions</button>
+    <div class="menu-list">${items.join('')}</div>
+  </div>`;
+}
+
+const COUNT_KEYS = [
+  ['data','DATA'],     ['fiber','FIBER'],   ['fiberEnc','FIBER ENC'], ['fiberPp','FIBER PP'], ['coax','COAX'],
+  ['hdmi','HDMI'],     ['tv','TV'],         ['iot','IOT'],            ['aps','APS'],          ['intercom','INTERCOM'],
+  ['camInt','CAM INT'],['camExt','CAM EXT'],['doors','DOORS'],        ['elevator','ELEVATOR'],['ups','UPS'],
+  ['mdf','MDF'],       ['idf','IDF'],       ['switch','SWITCH'],      ['patch','PATCH'],      ['ladder','LADDER'],
+];
+
+// confidencePct < 70 (or null) means the agent had to estimate the counts
+// from drawing symbols / riser diagrams instead of reading explicit numbers
+// in the spec. Render those values in italics with a faint "?" superscript
+// so the operator knows to spot-check before bidding.
+function countsGrid(counts, confidencePct) {
+  if (!counts) counts = {};
+  const estimated = confidencePct == null || confidencePct < 70;
+  let hasN = 0;
+  const pills = COUNT_KEYS.map(([k, label]) => {
+    const v = counts[k];
+    const has = v != null && v !== 0;
+    if (has) hasN++;
+    const cls = (has ? 'has' : 'empty') + (has && estimated ? ' estimated' : '');
+    return `<div class="count-pill ${cls}"><span class="lbl">${label}</span><span class="val">${v == null ? '—' : v}</span></div>`;
+  }).join('');
+  const toolbar = `<div class="counts-toolbar">
+    <span class="small">${hasN} in scope · ${COUNT_KEYS.length - hasN} empty</span>
+  </div>`;
+  return `${toolbar}<div class="counts-grid">${pills}</div>`;
+}
+
+function uploadsCell(scrape) {
+  if (!scrape) return '<span class="pad">—</span>';
+  const att = scrape.attachmentsCount || 0;
+  const msg = scrape.messagesCount || 0;
+  // Backend computes AVG(filled / applicable) across files. The agent is sometimes
+  // optimistic and ends up filling more fields than it deemed "applicable" --
+  // the raw percent exceeds 100. Cap the displayed value so we don't show "180%".
+  const raw = scrape.progressPct == null ? null : Math.round(scrape.progressPct);
+  const pct = raw == null ? null : Math.min(100, Math.max(0, raw));
+  let parts = [];
+  if (pct != null) parts.push(`<span class="progress-bar"><span style="width:${pct}%"></span></span><strong>${pct}%</strong>`);
+  if (att) parts.push(`<span class="small">${att} att</span>`);
+  if (msg) parts.push(`<span class="small">${msg} msg</span>`);
+  if (parts.length === 0) parts.push('<span class="pad">none</span>');
+  return parts.join(' · ');
+}
+
+// Parse the BC dueAt string ("Fri, Jul 19 2025 · 5:00 PM CDT" etc.) to ms.
+function parseDue(s) {
+  if (!s) return null;
+  const t = Date.parse(s.replace(/[·•]/g, ' '));
+  return isNaN(t) ? null : t;
+}
+const DUE_FMT = new Intl.DateTimeFormat([], { month:'short', day:'numeric', year:'numeric' });
+function renderDue(s) {
+  const t = parseDue(s);
+  if (t == null) return s ? `<span class="small">${safeHtml(s)}</span>` : '<span class="pad">—</span>';
+  const d = new Date(t);
+  const overdue = t < Date.now();
+  const cls = overdue ? 'due-overdue' : 'small';
+  return `<span class="${cls}">${DUE_FMT.format(d)}</span>`;
+}
+
+// ===== state =====
+// Single Filter band now: Status + GC + Trade + State + Source. Status is
+// just another dropdown alongside the rest. The empty value ("All (no
+// archive)") is the default view; "__include_archived__" = show all
+// statuses including Archived; any specific status = that status only.
+const INTAKE_KEY     = 'gccLeadsIntakeFilters';
+const COL_WIDTHS_KEY = 'gccLeadsColWidths';
+function loadIntake() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(INTAKE_KEY) || '{}');
+    return {
+      status: raw.status || '',
+      gc:     raw.gc     || '',
+      trade:  raw.trade  || '',
+      state:  raw.state  || '',
+      source: raw.source || '',
+    };
+  } catch { return { status:'', gc:'', trade:'', state:'', source:'' }; }
+}
+const STATE = {
+  data : null,
+  sort : { col: 'lastfile', dir: 'desc' },
+  open : new Set(),                                                 // jobIds with expanded count rows
+  intake: loadIntake(),                                             // {status, gc, trade, state, source}
+  autoAccepted: new Set(),                                          // jobIds we already POSTed accept for this session
+  colWidths: JSON.parse(localStorage.getItem(COL_WIDTHS_KEY) || '{}'),
+};
+function saveIntake()    { localStorage.setItem(INTAKE_KEY, JSON.stringify(STATE.intake)); }
+function saveColWidths() { localStorage.setItem(COL_WIDTHS_KEY, JSON.stringify(STATE.colWidths)); }
+
+const STATUS_ORDER = ['Undecided', 'Accepted', 'Submitted', 'Won', 'Archived', 'Lost'];
+
+// Pull a 2-letter US state out of a free-form location string.
+function locState(loc) {
+  if (!loc) return '';
+  const m = loc.match(/,\s*([A-Z]{2})(?:\s+\d{4,5})?\s*(?:,\s*United States)?\s*$/);
+  return m ? m[1] : '';
+}
+
+async function load() {
+  $('meta').textContent = 'loading...';
+  try {
+    const data = await api('GET', '/api/bc/leads-summary');
+    STATE.data = data;
+    render();
+    $('meta').textContent = `${data.summary.total} RFPs · last list scrape ${fmt(data.summary.lastListScrape)} · last detail scrape ${fmt(data.summary.lastDetailScrape)}`;
+  } catch (e) {
+    $('meta').textContent = 'error loading';
+    toast(e.message, 5000);
+  }
+}
+
+function renderHead() {
+  const cells = COLS.map(c => {
+    const ind = STATE.sort.col === c.id ? (STATE.sort.dir === 'asc' ? '▲' : '▼') : '';
+    const w   = STATE.colWidths[c.id] ? ` style="width:${STATE.colWidths[c.id]}px"` : '';
+    return `<th data-col="${c.id}"${w}>${c.label}<span class="sort-ind">${ind}</span><span class="col-resizer" data-col="${c.id}"></span></th>`;
+  }).join('');
+  $('head').innerHTML = cells;
+  $('head').querySelectorAll('th').forEach(th => {
+    th.addEventListener('click', (e) => {
+      // Ignore clicks that came from the resizer handle.
+      if (e.target.classList && e.target.classList.contains('col-resizer')) return;
+      const id = th.dataset.col;
+      if (STATE.sort.col === id) STATE.sort.dir = (STATE.sort.dir === 'asc' ? 'desc' : 'asc');
+      else { STATE.sort.col = id; STATE.sort.dir = (id === 'lastfile' ? 'desc' : 'asc'); }
+      render();
+    });
+  });
+  // Drag-resize: mousedown on .col-resizer captures pointer move; commit on mouseup.
+  $('head').querySelectorAll('.col-resizer').forEach(handle => {
+    handle.addEventListener('mousedown', (downEvt) => {
+      downEvt.preventDefault(); downEvt.stopPropagation();
+      const th = handle.closest('th');
+      const id = handle.dataset.col;
+      const startX = downEvt.clientX;
+      const startW = th.offsetWidth;
+      handle.classList.add('dragging');
+      const onMove = (ev) => {
+        const next = Math.max(60, startW + (ev.clientX - startX));
+        th.style.width = next + 'px';
+        STATE.colWidths[id] = next;
+      };
+      const onUp = () => {
+        handle.classList.remove('dragging');
+        saveColWidths();
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup',   onUp);
+      };
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup',   onUp);
+    });
+  });
+}
+
+// Sibling-RFP merge: BC sometimes invites GCC to bid separately on Div 27
+// (data/telecom) AND Div 28 (security/AV) for the SAME physical job, and
+// occasionally a third trade like Visual Display Boards. The list ends up
+// looking like "Planet Fitness Electrical" + "Planet Fitness Data &
+// Telecommunications" -- two near-duplicate rows. Group them so the table
+// shows one row per physical job, with merged trade chips, plus a
+// "🔗 +N" badge linking to the sibling jobIds.
+function mergeSiblings(items) {
+  // HISTORY: this used to collapse sibling RFPs (Pleasant Lea Visual
+  // Display + Pleasant Lea Data & Tele, etc.) into a single primary row
+  // with the others tucked into _siblings. Operators kept asking "where
+  // did the second RFP go?" -- the merge hid scope-specific extraction
+  // status (one trade may be 100% extracted while the other is
+  // partial), and acceptance/move-to-status was per-jobId anyway.
+  //
+  // New behavior: ANNOTATE each sibling with _siblingJobIds pointing to
+  // the OTHER members of its group, but return every row separately.
+  // The 🔗 +N badge on each row signals "this RFP has N sibling
+  // scope(s)"; the manage-job page's Quick Links section deep-links
+  // between them. No collapsing.
+  function key(it) {
+    const name = trimScope(it.projectName || it.driveJobFolderName || '').toLowerCase().replace(/\s+/g, ' ').trim();
+    const gc   = (it.gc || '').toLowerCase().trim();
+    const st   = locState(it.location || '');
+    return `${name}|${gc}|${st}`;
+  }
+  const groups = new Map();
+  for (const it of items) {
+    const k = key(it);
+    if (!k.replace(/\|/g, '')) { groups.set(`__solo__:${it.jobId}`, [it]); continue; }
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(it);
+  }
+  const out = [];
+  for (const group of groups.values()) {
+    if (group.length === 1) { out.push(group[0]); continue; }
+    // Each row in a multi-member group gets _siblingJobIds = the OTHER
+    // members. Render order keeps BC's natural feed-order (no reshuffle).
+    for (const it of group) {
+      const annotated = { ...it };
+      annotated._siblingJobIds = group.filter(s => s.jobId !== it.jobId).map(s => s.jobId);
+      annotated._siblings      = group.filter(s => s.jobId !== it.jobId);
+      out.push(annotated);
+    }
+  }
+  return out;
+}
+
+function render() {
+  if (!STATE.data) return;
+  renderHead();
+
+  // Intake filters: populate dropdowns from the current dataset (GC, trade, state).
+  populateIntakeFilters(STATE.data.items);
+
+  // Filter + sort (single flat list).
+  const sortFn = (COLS.find(c => c.id === STATE.sort.col) || COLS[0]).sort;
+  const dirMul = STATE.sort.dir === 'asc' ? 1 : -1;
+  const intake = STATE.intake;
+  const filtered = STATE.data.items.filter(r => {
+    const status = r.status || 'Unknown';
+    // Status filter: "" = default (all except Archived); a specific status =
+    // that status only; "__include_archived__" = show everything.
+    if (intake.status === '') {
+      if (status === 'Archived') return false;
+    } else if (intake.status !== '__include_archived__') {
+      if (status !== intake.status) return false;
+    }
+    if (intake.gc) {
+      const rgc = (r.gc || '').trim();
+      if (rgc !== intake.gc) return false;
+    }
+    if (intake.trade) {
+      // Normalize the row's trades through the same synonym map the dropdown
+      // populator used so "Data" matches when the user picked "Data &
+      // Telecommunications".
+      const rTrades = Array.isArray(r.trades) ? r.trades.map(normalizeTrade).filter(Boolean) : [];
+      if (!rTrades.includes(intake.trade)) return false;
+    }
+    if (intake.state && locState(r.location) !== intake.state)                            return false;
+    if (intake.source) {
+      const src = (r.intakeSource || r.source || 'scrape').toLowerCase();
+      if (src !== intake.source) return false;
+    }
+    return true;
+  });
+  // Merge sibling-RFP rows (same trimmed-base-name + GC + state) so the
+  // table shows one physical job per row. The primary's _siblings array
+  // keeps the full sibling rows so per-jobId actions remain available.
+  const merged = mergeSiblings(filtered);
+  merged.sort((a,b) => sortFn(a,b) * dirMul);
+  // Re-bind to the loop variable below.
+  filtered.length = 0; for (const it of merged) filtered.push(it);
+  $('if-count').textContent = `${merged.length} of ${STATE.data.items.length} shown`;
+
+  const html = [];
+  for (const r of filtered) {
+    const open = STATE.open.has(r.jobId);
+    html.push(`<tr class="row${open ? ' open' : ''}" data-id="${r.jobId}">` +
+      COLS.map(c => `<td>${c.cell(r)}</td>`).join('') + `</tr>`);
+
+    // Expanded sub-panel: just the at-a-glance top strip now. Project
+    // description, the action bar, and the LV scope grid all live on the
+    // Manage Job page (linked from the strip), so the row drawer stays
+    // light. Operators who want to take action on a row click through to
+    // Manage Job rather than acting from inside the table.
+    html.push(`<tr class="counts${open ? ' open' : ''}" data-counts-for="${r.jobId}" data-stop><td colspan="${COLS.length}" data-stop>
+      <div class="expand-pane">
+        ${expandTopStrip(r)}
+      </div>
+    </td></tr>`);
+  }
+  $('rows').innerHTML = html.join('');
+  $('empty').hidden = filtered.length > 0;
+
+  $('rows').querySelectorAll('tr.row').forEach(tr => {
+    tr.addEventListener('click', (e) => {
+      // Don't toggle the row when the click came from inside the actions cell
+      // or from a folder/BC link — those have their own handlers.
+      if (e.target.closest('[data-stop]') || e.target.closest('a[data-act]')) return;
+      const id = tr.dataset.id;
+      if (STATE.open.has(id)) STATE.open.delete(id);
+      else                    STATE.open.add(id);
+      tr.classList.toggle('open');
+      const sub = $('rows').querySelector(`tr.counts[data-counts-for="${id}"]`);
+      if (sub) sub.classList.toggle('open');
+    });
+  });
+  // Folder + BC project-name links use window.open: Chrome --app windows
+  // silently swallow target="_blank" navigations from <a> tags, so we
+  // intercept the click and call window.open() ourselves. Folder icon is
+  // now a <span> (not an <a>) so it can sit inline with the project name.
+  $('rows').querySelectorAll('[data-act="open-folder"]').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault(); e.stopPropagation();
+      const fid = el.dataset.folderId;
+      if (fid) window.open(`https://drive.google.com/drive/folders/${fid}`, '_blank', 'noopener,noreferrer');
+    });
+  });
+  // Local Filestore folder icon. Browsers refuse to navigate to file:///
+  // URLs from web pages (security boundary), so we copy the path to the
+  // clipboard and toast — operator pastes into Explorer's address bar.
+  $('rows').querySelectorAll('[data-act="open-local-folder"]').forEach(el => {
+    el.addEventListener('click', async (e) => {
+      e.preventDefault(); e.stopPropagation();
+      const path = el.dataset.localPath;
+      if (!path) return;
+      try {
+        await navigator.clipboard.writeText(path);
+        // brief flash so the operator knows the click registered
+        const orig = el.textContent;
+        el.textContent = '📋';
+        el.title = `Copied: ${path}`;
+        setTimeout(() => { el.textContent = orig; el.title = `Open local Filestore: ${path}`; }, 1200);
+      } catch (err) {
+        // Fallback: prompt() so the user can copy manually
+        prompt('Local Filestore path (Ctrl+C to copy):', path);
+      }
+    });
+  });
+  $('rows').querySelectorAll('a[data-act="open-bc"]').forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault(); e.stopPropagation();
+      const href = a.dataset.href;
+      if (href) window.open(href, '_blank', 'noopener,noreferrer');
+    });
+  });
+  // Project-name click -> Manage Job. Navigate IN PLACE rather than
+  // window.open(_, '_blank'). The tray launches the Projects tab via
+  // `chrome.exe --app=<url>` which is a chromeless desktop-style
+  // window; calling window.open with target=_blank from inside it
+  // punts the new URL to the user's default-browser session instead
+  // of staying in the app window. In-place nav keeps everything
+  // inside the same chrome --app window. Use the browser back button
+  // to return to Projects (manage-job has its own crumb back-link too).
+  $('rows').querySelectorAll('a[data-act="open-manage"]').forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault(); e.stopPropagation();
+      const href = a.dataset.href;
+      if (href) window.location.href = href;
+    });
+  });
+  $('rows').querySelectorAll('a[data-act="open-maps"]').forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault(); e.stopPropagation();
+      const href = a.dataset.href;
+      if (href) window.open(href, '_blank', 'noopener,noreferrer');
+    });
+  });
+  // (Counts grid no longer has a "Show all" toggle -- 4x5 always shown.)
+  // Open / close the Actions dropdown.
+  $('rows').querySelectorAll('button.menu-trigger').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const wrap = btn.closest('.action-menu');
+      const wasOpen = wrap.classList.contains('open');
+      // Close every other menu first
+      document.querySelectorAll('.action-menu.open').forEach(m => m.classList.remove('open'));
+      if (!wasOpen) wrap.classList.add('open');
+    });
+  });
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.action-menu')) {
+      document.querySelectorAll('.action-menu.open').forEach(m => m.classList.remove('open'));
+    }
+  });
+
+  // Move-to-status select (lives inside the action menu)
+  $('rows').querySelectorAll('select[data-act="move-status"]').forEach(sel => {
+    sel.addEventListener('change', async (e) => {
+      e.stopPropagation();
+      const id = sel.dataset.id;
+      const v  = sel.value;
+      if (!v) return;
+      sel.disabled = true;
+      try {
+        await api('POST', '/api/bc/extraction/move-status', { jobId: id, newStatus: v });
+        toast(`Moved ${id.slice(0,8)}… to ${v}`);
+        setTimeout(load, 800);
+      } catch (err) { toast(err.message, 4500); }
+      finally { sel.disabled = false; }
+    });
+  });
+
+  // Action buttons (everything inside the dropdown menu + next-step button on the project tooltip)
+  $('rows').querySelectorAll('button[data-act]').forEach(btn => {
+    if (btn.classList.contains('menu-trigger')) return;
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const act = btn.dataset.act, id = btn.dataset.id;
+      btn.disabled = true; const orig = btn.innerHTML; btn.textContent = '…';
+      try {
+        if (act === 'extract-more') {
+          await api('POST', '/api/bc/extraction/extract-more', { jobId: id });
+          toast(`Deeper extraction queued for ${id.slice(0,8)}…`);
+          setTimeout(load, 1200);
+        } else if (act === 'syn-refresh') {
+          // Re-run scope synthesis for this RFP (button in the Syn Conf
+          // column). Toasts the new confidence + count and refreshes the
+          // table so the column updates in place.
+          const r = await api('POST', `/api/admin/jobs/${encodeURIComponent(id)}/scope-synthesize`, {});
+          if (r?.ok) {
+            toast(`Synthesized ${r.rowsWritten || 0} counts at ${r.confidencePct ?? '?'}% conf`, 4500);
+          } else {
+            toast(`Synthesis: ${r?.error || 'failed'}`, 5000);
+          }
+          setTimeout(load, 800);
+        } else if (act === 'accept') {
+          const r = await api('POST', '/api/bc/extraction/accept', { jobId: id });
+          const tail = r?.proposalPublished
+            ? '· Proposal queued (draft in ~2-5 min)'
+            : `· proposal publish failed: ${r?.publishError || 'unknown'}`;
+          toast(`✓ Accepted ${id.slice(0,8)}… ${tail}`, 5000);
+          setTimeout(load, 1500); return;
+        } else if (act === 'pause-toggle') {
+          const willBePaused = btn.dataset.paused !== '1';
+          await api('POST', '/api/bc/extraction/pause', { jobId: id, paused: willBePaused });
+          toast(`${willBePaused ? 'Paused' : 'Resumed'} extraction for ${id.slice(0,8)}…`);
+          setTimeout(load, 800); return;
+        } else if (act === 'project-details') {
+          const r = (STATE.data.items || []).find(x => x.jobId === id);
+          showProjectDetails(r);
+        } else if (act === 'view-prop') {
+          const resp = await api('GET', '/api/bc/proposal-folder?jobId=' + encodeURIComponent(id));
+          if (resp && resp.url) window.open(resp.url, '_blank', 'noopener,noreferrer');
+          else toast('No proposal folder yet for this RFP.', 4000);
+        } else if (act === 'scan-addenda') {
+          const r = (STATE.data.items || []).find(x => x.jobId === id);
+          if (!r?.addendaSeen) {
+            toast('No new addendum detected during the last BC scrape.', 3500);
+          } else if (confirm('A new addendum was detected. Re-extract and move this job back to Accepted with an "Addendum-" name prefix?')) {
+            await api('POST', '/api/bc/extraction/process-addendum', { jobId: id });
+            toast('Addendum queued: re-extracting and moving to Accepted.', 4000);
+            setTimeout(load, 1500); return;
+          }
+        } else if (act === 'rescan-details') {
+          await api('POST', '/api/bc/extraction/rescan-details', { jobId: id });
+          toast(`Rescan project details queued for ${id.slice(0,8)}…`);
+        } else if (act === 'delete') {
+          if (confirm('Delete this RFP from GCC Manager? This wipes dbo.BcRfps + Details + Attachments. Drive folder is left alone. Cannot be undone.')) {
+            await api('POST', '/api/bc/extraction/delete', { jobId: id });
+            toast(`RFP ${id.slice(0,8)}… deleted`);
+            setTimeout(load, 800); return;
+          }
+        } else if (act === 'next-step') {
+          // Forwards to the actual underlying action.
+          const real = btn.dataset.stepAct;
+          const r = (STATE.data.items || []).find(x => x.jobId === id);
+          if (real === 'extract-more')        { await api('POST', '/api/bc/extraction/extract-more', { jobId: id });  toast('Deeper extraction queued.'); setTimeout(load, 1200); }
+          else if (real === 'rescan-details') { await api('POST', '/api/bc/extraction/rescan-details', { jobId: id }); toast('Rescan queued.'); }
+          else if (real === 'accept')         {
+            const acc = await api('POST', '/api/bc/extraction/accept', { jobId: id });
+            const tail = acc?.proposalPublished ? '· Proposal queued (draft in ~2-5 min)' : `· publish failed: ${acc?.publishError || 'unknown'}`;
+            toast(`✓ Accepted ${tail}`, 5000); setTimeout(load, 1500);
+          }
+          else if (real === 'pause-toggle')   { await api('POST', '/api/bc/extraction/pause', { jobId: id, paused: false }); toast('Resumed.'); setTimeout(load, 800); }
+          else { toast(`Unknown next-step action: ${real}`, 4000); }
+        }
+      } catch (err) { toast(err.message, 4500); }
+      finally      { btn.disabled = false; if (btn.textContent === '…') btn.innerHTML = orig; }
+    });
+  });
+
+  // Auto-accept disabled per operator preference: every accept must be a
+  // deliberate human action (Actions ▾ -> Accept) since the new
+  // confidence-cap policy means "≥90% confidence" no longer guarantees a
+  // fully-reconciled extraction. Leaving the AUTO badge logic in the
+  // Extraction column so that a manual eyeball can still spot eligible rows.
+  if (false) for (const r of STATE.data.items) {
+    const c = r.extraction?.confidencePct;
+    if (c == null || c < 90) continue;
+    if (r.extraction?.accepted) continue;
+    if (r.extractionPaused) continue;
+    if (STATE.autoAccepted.has(r.jobId)) continue;
+    STATE.autoAccepted.add(r.jobId);
+    api('POST', '/api/bc/extraction/accept', { jobId: r.jobId })
+      .then(() => toast(`Auto-accepted ${r.jobId.slice(0,8)}… at ${Math.round(c)}% confidence`))
+      .catch(e => toast(`Auto-accept failed: ${e.message}`, 4500));
+  }
+}
+
+// ===== Intake filters (GC / Trade / State / Source) =====
+// Populates the dropdowns from the visible dataset and wires the change
+// handlers. Selection is persisted across reloads.
+//
+// Two cleanup layers:
+//   1. isPlaceholder() drops em-dash / "--" / "(none)" style markers BC
+//      (or the scraper) emits when a field is blank.
+//   2. normalizeTrade() collapses BC's short codes onto their long forms
+//      so "Data" + "Data & Telecommunications" don't both show in the
+//      dropdown as two distinct options.
+const PLACEHOLDER_RX = /^[\s\-–—.()\/_]*(none|n\/a|na|null|tbd|unknown)?[\s\-–—.()\/_]*$/i;
+function isPlaceholder(v) {
+  if (v == null) return true;
+  const s = String(v).trim();
+  if (!s) return true;
+  return PLACEHOLDER_RX.test(s);
+}
+const TRADE_SYNONYMS = {
+  // BC short code -> long form. Add new entries when scraper produces a
+  // synonym pair (showing up in the dropdown is the smoke test).
+  'data':                       'Data & Telecommunications',
+  'data & telecom':             'Data & Telecommunications',
+  'data and telecommunications':'Data & Telecommunications',
+  'telecommunications':         'Data & Telecommunications',
+  'telecom':                    'Data & Telecommunications',
+  'low-voltage':                'Low Voltage',
+  'lowvoltage':                 'Low Voltage',
+  'low voltage':                'Low Voltage',
+  'av':                         'Audio Visual',
+  'a/v':                        'Audio Visual',
+  'audio/visual':               'Audio Visual',
+  'audio-visual':               'Audio Visual',
+  'audio visual':               'Audio Visual',
+  'visual display board':       'Visual Display Boards',
+  'visual display':             'Visual Display Boards',
+};
+function normalizeTrade(t) {
+  if (isPlaceholder(t)) return null;
+  const key = String(t).trim().toLowerCase();
+  return TRADE_SYNONYMS[key] || String(t).trim();
+}
+function populateIntakeFilters(items) {
+  const gcs = new Set(); const trades = new Set(); const states = new Set();
+  for (const r of items) {
+    if (!isPlaceholder(r.gc)) gcs.add(r.gc.trim());
+    if (Array.isArray(r.trades)) {
+      for (const t of r.trades) {
+        const nt = normalizeTrade(t);
+        if (nt) trades.add(nt);
+      }
+    }
+    const st = locState(r.location);
+    if (st && !isPlaceholder(st)) states.add(st);
+  }
+  fillIntakeSelect('if-gc',    Array.from(gcs).sort(),    STATE.intake.gc);
+  fillIntakeSelect('if-trade', Array.from(trades).sort(), STATE.intake.trade);
+  fillIntakeSelect('if-state', Array.from(states).sort(), STATE.intake.state);
+  // 'source' and 'status' have fixed options in the markup; just set the value.
+  const src = $('if-source'); if (src && src.value !== STATE.intake.source) src.value = STATE.intake.source || '';
+  const sst = $('if-status'); if (sst && sst.value !== STATE.intake.status) sst.value = STATE.intake.status || '';
+}
+function fillIntakeSelect(id, values, current) {
+  const sel = $(id); if (!sel) return;
+  // Wipe + rebuild while preserving the leading "All" option.
+  sel.innerHTML = `<option value="">All</option>` +
+    values.map(v => `<option value="${safeHtml(v)}"${v === current ? ' selected' : ''}>${safeHtml(v)}</option>`).join('');
+  if (current && !values.includes(current)) sel.value = '';                // stale selection
+}
+function wireIntakeFilters() {
+  const wire = (id, key) => {
+    const el = $(id); if (!el) return;
+    el.addEventListener('change', () => {
+      STATE.intake[key] = el.value || '';
+      saveIntake();
+      render();
+    });
+  };
+  wire('if-status', 'status'); wire('if-gc', 'gc'); wire('if-trade', 'trade'); wire('if-state', 'state'); wire('if-source', 'source');
+  $('if-clear')?.addEventListener('click', () => {
+    STATE.intake = { status:'', gc:'', trade:'', state:'', source:'' };
+    saveIntake();
+    render();
+  });
+}
+
+// ===== Project Details modal (Undecided action) =====
+function showProjectDetails(r) {
+  if (!r) return;
+  const m = $('modal');
+  const trades = Array.isArray(r.trades) && r.trades.length
+    ? r.trades.map(t => `<span class="scope-chip"><span class="ico">${tradeIcon(t)}</span>${safeHtml(t)}</span>`).join('')
+    : '<span class="scope-chip unknown">scope: unknown</span>';
+  const desc = r.description && r.description.trim()
+    ? safeHtml(r.description)
+    : '<em>No description scraped from BC yet. Force a detail rescan to populate.</em>';
+  m.hidden = false;
+  m.innerHTML = `<div class="modal-bg" data-close="1"><div class="modal" onclick="event.stopPropagation()">
+    <button class="close" data-close="1">×</button>
+    <h2>${safeHtml(projectLabel(r))}</h2>
+    <div class="sub">${safeHtml(r.gc || 'unknown GC')} · ${safeHtml(r.location || 'no location')} · due ${safeHtml(r.dueAt || '—')}</div>
+    <div class="meta-row">${trades}</div>
+    <div class="body">${desc}</div>
+  </div></div>`;
+  m.querySelectorAll('[data-close]').forEach(el => el.addEventListener('click', () => { m.hidden = true; m.innerHTML = ''; }));
+}
+
+// ===== Processes tab =====
+// While any task is in Running state, also poll /api/bc/scrape-progress
+// for live X/Y progress against the BC scrape logs and render an inline
+// progress bar in that task's "Last result" cell.
+let _procProgressTimer = null;
+async function loadProcesses() {
+  try {
+    const data = await api('GET', '/api/admin/scheduled-tasks');
+    const tasks = data.tasks || [];
+    $('proc-count').textContent = tasks.length;
+    const running = tasks.filter(t => (t.state || '').toLowerCase() === 'running').length;
+    if (running > 0) { $('proc-running').textContent = running; $('proc-running-chip').style.display = ''; }
+    else             { $('proc-running-chip').style.display = 'none'; }
+
+    // Pull progress whenever any task is running. Quietly tolerates 4xx/5xx --
+    // missing log files just leave progress empty for that task.
+    let progress = {};
+    if (running > 0) {
+      try { progress = await api('GET', '/api/bc/scrape-progress'); } catch {}
+    }
+    function progressFor(taskName) {
+      const n = (taskName || '').toLowerCase();
+      if (n.includes('scrape-detail')) return progress.detail;
+      if (n.includes('bc-scrape'))     return progress.list;
+      if (n === 'gcc-bc-scrape')       return progress.list;
+      return null;
+    }
+    // Daemon-style tasks that run continuously rather than processing a
+    // finite queue. We don't try to compute "X of Y" for these -- showing
+    // an indeterminate "starting…" bar forever was misleading. Show the
+    // run age + last activity instead.
+    function isDaemonTask(taskName) {
+      const n = (taskName || '').toLowerCase();
+      return n.includes('app-tray')
+          || n.includes('bidextractor')
+          || n.includes('webserver')
+          || n.includes('email-watch')
+          || n.includes('webserv')
+          || n.includes('webhook')
+          || n.includes('aidrive')
+          || n.includes('quoteproc')
+          || n.includes('dashboarddata')
+          || n.includes('bundler-intake')
+          || n.includes('api-service');
+    }
+    function runAge(t) {
+      if (!t.lastRunAt) return null;
+      const ms = Date.now() - new Date(t.lastRunAt).getTime();
+      if (ms < 0)              return 'just now';
+      if (ms < 60_000)         return Math.floor(ms / 1_000) + 's';
+      if (ms < 3_600_000)      return Math.floor(ms / 60_000) + 'm';
+      if (ms < 86_400_000)     return Math.floor(ms / 3_600_000) + 'h';
+      return Math.floor(ms / 86_400_000) + 'd';
+    }
+
+    const stateBadge = (s) => {
+      const v = (s || '').toLowerCase();
+      if (v === 'ready')    return '<span class="status status-Accepted">Ready</span>';
+      if (v === 'running')  return '<span class="status status-Won">Running</span>';
+      if (v === 'disabled') return '<span class="status status-Archived">Paused</span>';
+      return `<span class="status status-Unknown">${s || '?'}</span>`;
+    };
+    const html = tasks.map(t => {
+      const isPaused  = (t.state || '').toLowerCase() === 'disabled';
+      const isRunning = (t.state || '').toLowerCase() === 'running';
+      // Build the "Last result" / progress cell.
+      const p = isRunning ? progressFor(t.name) : null;
+      let resultCell;
+      if (p && p.running && p.total) {
+        // Real X-of-Y queue progress (BC scrape tasks).
+        const pct = p.pctComplete ?? 0;
+        const sub = [
+          `${p.processed} of ${p.total}`,
+          p.currentJobId ? `${p.currentJobId.slice(0,8)}… ${p.currentStep || ''}` : '',
+        ].filter(Boolean).join(' · ');
+        resultCell = `<div class="proc-progress">
+          <div class="proc-progress-bar"><span style="width:${pct}%"></span></div>
+          <div class="proc-progress-meta"><strong>${pct}%</strong> <span class="small">${safeHtml(sub)}</span></div>
+        </div>`;
+      } else if (isRunning && isDaemonTask(t.name)) {
+        // Continuously-running daemon (App-Tray, BidExtractor-Worker, etc.)
+        // -- don't try to fake a percent. Show "running for X" instead.
+        const age = runAge(t) || '?';
+        resultCell = `<span class="small"><span class="status status-Won" style="margin-right:6px">Running</span>for ${safeHtml(age)}</span>`;
+      } else if (isRunning) {
+        // Finite queue task we know how to track but the log hasn't yielded
+        // a "Queue: N" line yet (just kicked off). Brief indeterminate bar.
+        resultCell = `<div class="proc-progress">
+          <div class="proc-progress-bar indeterminate"><span></span></div>
+          <div class="proc-progress-meta small">starting…</div>
+        </div>`;
+      } else {
+        resultCell = `<span class="small">${t.lastResultText || `<code>${t.lastResultCode ?? ''}</code>`}</span>`;
+      }
+      return `<tr>
+        <td><strong>${t.name}</strong>${t.description ? `<div class="small">${t.description}</div>` : ''}</td>
+        <td>${stateBadge(t.state)}</td>
+        <td class="small">${t.lastRunAt ? fmt(t.lastRunAt) : '<span class="pad">—</span>'}</td>
+        <td class="small">${t.nextRunAt ? fmt(t.nextRunAt) : '<span class="pad">—</span>'}</td>
+        <td>${resultCell}</td>
+        <td>
+          <div class="row-actions">
+            <button data-task="${t.name}" data-act="run"     ${isRunning ? 'disabled' : ''}>${isRunning ? 'running' : 'Start'}</button>
+            <button data-task="${t.name}" data-act="${isPaused ? 'enable' : 'disable'}">${isPaused ? 'Resume' : 'Pause'}</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+    $('proc-rows').innerHTML = html || `<tr><td colspan="6" style="text-align:center;color:var(--slate);padding:30px">No scheduled tasks discovered.</td></tr>`;
+    // Wire buttons.
+    $('proc-rows').querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const name = btn.dataset.task, act = btn.dataset.act;
+        btn.disabled = true; const orig = btn.textContent; btn.textContent = '…';
+        try {
+          if (act === 'run') {
+            await api('POST', '/api/admin/scheduled-tasks/run', { name });
+            toast(`Started ${name}`);
+          } else {
+            await api('POST', '/api/admin/scheduled-tasks/toggle', { name, enable: act === 'enable' });
+            toast(`${act === 'enable' ? 'Resumed' : 'Paused'} ${name}`);
+          }
+        } catch (e) { toast(e.message, 4500); }
+        finally    { btn.disabled = false; btn.textContent = orig; loadProcesses(); }
+      });
+    });
+
+    // Keep the progress bars live: poll every 5s while anything's running.
+    clearInterval(_procProgressTimer);
+    if (running > 0 && !$('tab-processes').hidden) {
+      _procProgressTimer = setInterval(loadProcesses, 5000);
+    }
+  } catch (e) {
+    $('proc-rows').innerHTML = `<tr><td colspan="6" style="padding:20px;color:var(--danger)">${e.message}</td></tr>`;
+  }
+}
+
+// ===== Tab switching =====
+$('tabs').addEventListener('click', (e) => {
+  const btn = e.target.closest('.tab');
+  if (!btn) return;
+  $('tabs').querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  const which = btn.dataset.tab;
+  $('tab-leads').hidden     = (which !== 'leads');
+  $('tab-queue').hidden     = (which !== 'queue');
+  $('tab-outcomes').hidden  = (which !== 'outcomes');
+  $('tab-processes').hidden = (which !== 'processes');
+  $('rescan').style.display = (which === 'leads') ? '' : 'none';
+  if (which === 'processes') { loadProcesses(); loadHealthBoard(); }
+  if (which === 'outcomes')  { loadOutcomes(); }
+  if (which === 'queue')     { loadQueue(); scheduleQueueRefresh(); }
+  else {
+    clearInterval(_queueTimer);
+    clearInterval(_watchdogTimer);
+    clearInterval(_activityTimer);
+  }
+});
+
+// ===== Queue tab =====
+let _queueTimer = null;
+// State priority order: processing > queued > pending-approval > completed > skipped > cancelled
+// (used by the "auto" sort so live work surfaces at the top, idle stuff below).
+const Q_STATE_RANK = { processing:0, queued:1, pending:2, completed:3, skipped:4, cancelled:5 };
+const QSTATE = {
+  state: '',
+  scope: 'accepted',
+  // Default sort: state-rank asc (processing on top), then updated desc.
+  sortKey: 'auto',
+  sortDir: 'asc',
+  lastData: null,
+};
+let _watchdogTimer = null;
+function scheduleQueueRefresh() {
+  clearInterval(_queueTimer);
+  _queueTimer = setInterval(loadQueue, 7000);
+  // Watchdog pane runs on its own 60s tick -- it's a slower-moving
+  // signal (the watchdog itself only fires once a minute) so polling
+  // it 8x more often than it changes is wasted bandwidth.
+  loadWatchdog().catch(()=>{});
+  clearInterval(_watchdogTimer);
+  _watchdogTimer = setInterval(() => loadWatchdog().catch(()=>{}), 60000);
+  // Live activity feed: 2s tick. Every poll asks for events newer
+  // than _activityLastSeen, so the bandwidth scales with throughput
+  // (an idle worker returns count=0). Reset _activityLastSeen on
+  // each open so we don't leave a stale cursor lingering across
+  // tab switches that would hide events emitted while the tab was
+  // hidden -- but keep last 80 in DOM as a "scrollback" buffer.
+  _activityLastSeen = null;
+  loadActivity().catch(()=>{});
+  clearInterval(_activityTimer);
+  _activityTimer = setInterval(() => loadActivity().catch(()=>{}), 2000);
+}
+async function loadQueue() {
+  if ($('tab-queue').hidden) return;
+  // Visual cue on the refresh button so the user can tell a click registered.
+  const btn = $('q-refresh');
+  if (btn) { btn.disabled = true; btn.dataset.origText = btn.dataset.origText || btn.textContent; btn.textContent = '… refreshing'; }
+  // Fire worker-status in parallel -- it doesn't block the table render.
+  // Watchdog summary runs on its own 60s timer (scheduleQueueRefresh).
+  loadWorkerStatus().catch(()=>{});
+  try {
+    const params = new URLSearchParams();
+    if (QSTATE.state) params.set('status', QSTATE.state);
+    params.set('scope', QSTATE.scope || 'accepted');
+    const data = await api('GET', '/api/bc/extraction-queue?' + params.toString());
+    QSTATE.lastData = data;
+    renderQueue(data);
+  } catch (e) {
+    $('q-rows').innerHTML = `<tr><td colspan="7" style="padding:20px;color:var(--danger)">${safeHtml(e.message)}</td></tr>`;
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = btn.dataset.origText || '↻ Refresh'; }
+  }
+}
+
+// ----- Watchdog (Chihuahua) pane -----
+// Polls /api/bc/watchdog/summary to surface what the watchdog scheduled
+// task has been fixing. The dog "learns from what it does" by tallying
+// drift patterns + trends week-over-week so the operator sees what's
+// improving / regressing.
+async function loadWatchdog() {
+  if ($('tab-queue').hidden) return;
+  let r;
+  try {
+    r = await api('GET', '/api/bc/watchdog/summary');
+  } catch { return; }
+  const pane = $('wd-pane');
+  if (!r || !r.ok) {
+    // Watchdog not yet logged anything (first install) -- hide pane.
+    pane.hidden = true;
+    return;
+  }
+  pane.hidden = false;
+
+  // Mood -> emoji: chihuahua-style (small, alert dog face)
+  const moodEmoji = {
+    'watching': '🐕',         // calm
+    'helping':  '🐕‍🦺',        // working
+    'worried':  '😾',         // wait, no -- use a worried dog
+  };
+  // Override worried with stronger alert so users notice
+  if (r.mood === 'worried') $('wd-emoji').textContent = '🐕💢';
+  else                      $('wd-emoji').textContent = moodEmoji[r.mood] || '🐕';
+
+  // Last-tick relative time
+  const lastTickStr = r.lastTickAt ? _wsSinceText(r.lastTickAt) : 'no ticks yet';
+  $('wd-pane').querySelector('.wd-tick').textContent = `last tick ${lastTickStr}`;
+
+  // Verdict (one-line summary)
+  $('wd-verdict').textContent = r.verdict || '';
+  $('wd-verdict').className = 'wd-verdict wd-mood-' + (r.mood || 'watching');
+
+  // Last-hour / today / all-time aggregate badges. Headline number is
+  // last-hour (most actionable for the operator); today + all-time are
+  // in the tooltip for context.
+  const t = r.today || {}, h = r.lastHour || {}, a = r.allTime || {};
+  const fmt = (label, hour, today, all) =>
+    `<span class="wd-stat" title="${label}: ${hour} last hour · ${today} today · ${all} all-time">
+       <span class="wd-stat-lbl">${label}</span>
+       <span class="wd-stat-val">${hour}</span>
+       <span class="wd-stat-week">/ ${today} today</span>
+     </span>`;
+  $('wd-stats').innerHTML = [
+    fmt('Stalled agents killed',    h.stalledAgentsKilled || 0, t.stalledAgentsKilled || 0, a.stalledAgentsKilled || 0),
+    fmt('Worker restarts',          h.workerRestarts      || 0, t.workerRestarts      || 0, a.workerRestarts      || 0),
+    fmt('Drift attempts (blocked)', h.driftDetections     || 0, t.driftDetections     || 0, a.driftDetections     || 0),
+    fmt('Orphan cleanups',          h.orphanCleanups      || 0, t.orphanCleanups      || 0, a.orphanCleanups      || 0),
+    fmt('Errors cleared',           t.errorsCleared       || 0, t.errorsCleared       || 0, a.errorsCleared       || 0),
+    fmt('Healthy ticks',            h.ticks               || 0, t.ticks               || 0, a.ticks               || 0),
+  ].join('');
+
+  // Two pattern stacks the dog tracks:
+  //   * driftPatterns -- forbidden tools the agent reflexively reaches for
+  //                      (SDK blocks; we surface the count).
+  //   * learnedPatterns -- error patterns the dog has classified as known
+  //                        and auto-clears (worker recovers, transient).
+  const drift = (r.driftPatterns || []).filter(p => p.samples > 0);
+  const learned = (r.learnedPatterns || []).filter(p => p.seenCount > 0);
+  let pHtml = '';
+  if (drift.length > 0) {
+    pHtml += '<div class="wd-pattern-title small">Drift attempts (SDK blocked)</div>';
+    pHtml += drift.map(p =>
+      `<div class="wd-pattern" title="The agent reached for tool:${safeHtml(p.tool)} ${p.samples} times -- the SDK rejected each one">
+         <span class="wd-pattern-tool">tool:${safeHtml(p.tool)}</span>
+         <span class="wd-pattern-count">${p.samples}×</span>
+       </div>`).join('');
+  }
+  if (learned.length > 0) {
+    pHtml += '<div class="wd-pattern-title small" style="margin-top:6px">Errors I know how to clear</div>';
+    pHtml += learned.slice(0, 5).map(p =>
+      `<div class="wd-pattern" title="${safeHtml(p.desc || '')}">
+         <span class="wd-pattern-tool">${safeHtml(p.name)}</span>
+         <span class="wd-pattern-count">${p.seenCount}×</span>
+       </div>`).join('');
+  }
+  if (!pHtml) pHtml = '<div class="small wd-pattern-empty">No patterns to report. Worker is humming. ✓</div>';
+  $('wd-patterns').innerHTML = pHtml;
+
+  // Recent events timeline -- collapsed by default, only shown when there are events.
+  const events = r.recentEvents || [];
+  const eList = $('wd-events-list');
+  if (events.length === 0) {
+    eList.innerHTML = '<li class="small wd-pattern-empty">No fixes today.</li>';
+  } else {
+    eList.innerHTML = events.map(ev => {
+      const t = _wsSinceText(ev.at);
+      const kindClass = `wd-ev-${ev.kind}`;
+      return `<li class="${kindClass}">
+        <span class="wd-ev-time small">${t}</span>
+        <span class="wd-ev-kind">${safeHtml(ev.kind)}</span>
+        <span class="wd-ev-detail small">${safeHtml(ev.detail)}</span>
+      </li>`;
+    }).join('');
+  }
+}
+
+// ----- Live activity feed (above the Queue table) -----
+// Polls /api/bc/worker-status/activity every 2s while the Queue tab is
+// visible. The endpoint tails the bid-extractor.log file and parses
+// events into structured records (start / local-hit / done / ack /
+// orphan / error). Replaces the need to tail the log in a console.
+let _activityTimer = null;
+let _activityLastSeen = null; // ISO of the newest event we've already rendered
+
+async function loadActivity() {
+  if ($('tab-queue').hidden) return;
+  const feed = $('ws-activity-feed');
+  if (!feed) return;
+  let r;
+  try {
+    const params = new URLSearchParams();
+    if (_activityLastSeen) params.set('since', _activityLastSeen);
+    params.set('limit', '80');
+    r = await api('GET', '/api/bc/worker-status/activity?' + params.toString());
+  } catch { return; }
+  if (!r || !r.ok) return;
+
+  const meta = document.querySelector('.ws-activity-meta');
+  if (meta) meta.textContent = r.count
+    ? `${r.count} new event${r.count === 1 ? '' : 's'}`
+    : (_activityLastSeen ? 'idle' : 'waiting for activity…');
+
+  const events = r.events || [];
+  if (!events.length) return;
+
+  // Bump _activityLastSeen to the newest event we just received so
+  // the next poll only fetches deltas. Events come back most-recent
+  // first so events[0].at is the max.
+  if (events[0] && events[0].at) {
+    if (!_activityLastSeen || events[0].at > _activityLastSeen) {
+      _activityLastSeen = events[0].at;
+    }
+  }
+
+  // Build new <li>s and prepend them in chronological order so the
+  // most-recent ends up at the top of the visible list. Existing
+  // entries (already keyed by at+kind+shortId) are de-duped.
+  const seen = new Set();
+  for (const li of feed.querySelectorAll('li[data-key]')) seen.add(li.dataset.key);
+
+  // Iterate oldest -> newest so that prepending each in turn yields
+  // newest-on-top order.
+  const fresh = [];
+  for (let i = events.length - 1; i >= 0; i--) {
+    const ev = events[i];
+    const key = `${ev.at}|${ev.kind}|${ev.shortId || ev.msgId || ev.jobId || ''}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    fresh.push(_renderActivityEvent(ev, key));
+  }
+  if (!fresh.length) return;
+
+  for (const node of fresh) feed.insertBefore(node, feed.firstChild);
+
+  // Trim to last 80 entries (oldest at the bottom)
+  while (feed.children.length > 80) feed.removeChild(feed.lastChild);
+
+  // Briefly flash the newly-added rows. Animation runs once then ends
+  // on its own via CSS keyframes; remove the class after to avoid
+  // re-running if anything triggers a layout change.
+  for (const node of fresh) {
+    node.classList.add('flash-new');
+    setTimeout(() => node.classList.remove('flash-new'), 1500);
+  }
+}
+
+function _renderActivityEvent(ev, key) {
+  const li = document.createElement('li');
+  li.className = 'k-' + ev.kind;
+  li.dataset.key = key;
+  const ts = new Date(ev.at);
+  const hh = String(ts.getHours()).padStart(2, '0');
+  const mm = String(ts.getMinutes()).padStart(2, '0');
+  const ss = String(ts.getSeconds()).padStart(2, '0');
+  const tsStr = `${hh}:${mm}:${ss}`;
+
+  const idStr = ev.shortId ? ev.shortId.substring(0, 8)
+              : ev.msgId   ? '#' + ev.msgId.substring(ev.msgId.length - 6)
+              : ev.jobId   ? ev.jobId
+              : '';
+
+  let body = '', meta = '';
+  switch (ev.kind) {
+    case 'start':
+      body = `▶ ${ev.fileName || '(file)'}`;
+      meta = `job=${ev.jobId || ''}`;
+      break;
+    case 'local-hit':
+      body = `📁 LOCAL hit (${ev.pages || 0}p, ${ev.textKb || 0}KB)`;
+      meta = 'skip Drive';
+      break;
+    case 'done':
+      body = `✓ DONE rows=${ev.rows || 0}`;
+      meta = `${ev.method || ''} · $${(ev.costUsd || 0).toFixed(4)} · ${(ev.elapsedS || 0).toFixed(1)}s`;
+      break;
+    case 'ack':
+      body = `✓ ACK msg`;
+      meta = `${ev.method || ''} · $${(ev.costUsd || 0).toFixed(4)}`;
+      break;
+    case 'orphan':
+      body = `⊘ orphan`;
+      meta = `job=${ev.jobId || ''} · ACK+skip`;
+      break;
+    case 'error':
+      body = `✗ ${(ev.raw || '').slice(0, 120)}`;
+      meta = '';
+      break;
+    default:
+      body = ev.kind;
+  }
+
+  // We escape via textContent on each span; safer than building a
+  // template string and innerHTML-ing it because file names can
+  // contain HTML-meta chars (& < >).
+  const tsEl = document.createElement('span'); tsEl.className = 'ts';   tsEl.textContent = tsStr;
+  const idEl = document.createElement('span'); idEl.className = 'id';   idEl.textContent = idStr;
+  const bdEl = document.createElement('span'); bdEl.className = 'body'; bdEl.textContent = body;
+  const mtEl = document.createElement('span'); mtEl.className = 'meta'; mtEl.textContent = meta;
+  if (body) bdEl.title = body;
+  li.appendChild(tsEl);
+  li.appendChild(idEl);
+  li.appendChild(bdEl);
+  li.appendChild(mtEl);
+  return li;
+}
+
+// ----- Worker status panel (above the Queue table) -----
+async function loadWorkerStatus() {
+  if ($('tab-queue').hidden) return;
+  try {
+    const w = await api('GET', '/api/bc/worker-status');
+    renderWorkerStatus(w);
+  } catch (e) {
+    // Silent fail -- panel just stays at last known state.
+  }
+  // Cost-approval poll runs in parallel -- separate endpoint, separate render.
+  loadCostApprovals().catch(() => {});
+}
+
+// Reset button on the Heartbeat pill: clears the processing strip
+// (DELETE FROM AiExtractionProgress) and marks any current lastError
+// dismissed (with a 30s server-side snooze on new errors so the panel
+// stays clean even if a persistent issue is firing every few seconds).
+// Active workers will write fresh rows on their next heartbeat tick (~30s).
+document.addEventListener('click', async (e) => {
+  const btn = e.target.closest('[data-act="ws-reset"]'); if (!btn) return;
+  e.preventDefault(); e.stopPropagation();
+  if (!confirm('Reset Heartbeat panel? This clears the processing strip and dismisses any logged error.')) return;
+  btn.disabled = true; const orig = btn.textContent; btn.textContent = '…';
+
+  // Immediate visual feedback: hide the lastError pill + clear strip
+  // BEFORE waiting on the API. The next loadWorkerStatus() will
+  // re-render based on real state (the 30s server snooze keeps it
+  // clean unless something legitimately new fires later).
+  const errEl = $('ws-error');
+  if (errEl) errEl.hidden = true;
+  const ifEl = $('ws-inflight');
+  if (ifEl) ifEl.innerHTML = `<div class="ws-inflight-empty small pad">No active extractions.</div>`;
+  // Force the heartbeat pill out of err state too -- otherwise the
+  // ".err" class lingers (red dot) until the next poll redraws.
+  const hbEl = $('ws-heartbeat');
+  if (hbEl) { hbEl.classList.remove('err'); hbEl.classList.add('ok'); }
+
+  try {
+    const r = await api('POST', '/api/bc/worker-status/reset', {});
+    toast(`Reset (${r.progressRowsCleared || 0} rows cleared)`);
+    await loadWorkerStatus();
+  } catch (err) {
+    toast('Reset failed: ' + err.message, 5000);
+  } finally {
+    btn.disabled = false; btn.textContent = orig;
+  }
+});
+
+// "Restart all" button on the worker-status panel.
+// Hard-quits the worker process + every claude.exe child agent, then
+// relaunches the worker via its scheduled task. In-flight Pub/Sub
+// messages NACK + redeliver. Use this after a deploy of new bid-
+// extractor code (worker.py / system_prompt.py / prompt-ref.md) so
+// the new code takes effect immediately on the entire fleet rather
+// than waiting for the natural agent-rotation pace.
+document.addEventListener('click', async (e) => {
+  const btn = e.target.closest('[data-act="ws-restart-all"]'); if (!btn) return;
+  e.preventDefault(); e.stopPropagation();
+  if (!confirm('Restart all extractions?\n\nThis will:\n  • Kill every claude.exe agent (in-flight files NACK and redeliver via Pub/Sub)\n  • Restart the bid-extractor worker process\n  • New code (most recent push) takes effect on every new agent\n\n~10-30s of downtime; messages re-process from the start.')) return;
+  btn.disabled = true; const orig = btn.textContent; btn.textContent = 'Restarting…';
+  try {
+    const r = await api('POST', '/api/bc/worker/restart-all', {});
+    toast(`Worker restarted (killed ${r.agentsKilled || 0} agents).`, 5000);
+    setTimeout(() => loadWorkerStatus().catch(()=>{}), 5000);
+  } catch (err) {
+    toast('Restart failed: ' + err.message, 6000);
+  } finally {
+    btn.disabled = false; btn.textContent = orig;
+  }
+});
+
+// ----- Cost-approval panel (between worker-status and the queue table) -----
+async function loadCostApprovals() {
+  if ($('tab-queue').hidden) return;
+  try {
+    const r = await api('GET', '/api/bc/extraction-cost-approval-list?status=pending');
+    renderCostApprovals(r);
+  } catch (e) { /* silent */ }
+}
+function renderCostApprovals(r) {
+  const items = r.items || [];
+  const panel = $('ca-panel');
+  if (!panel) return;
+  if (items.length === 0) { panel.hidden = true; return; }
+  panel.hidden = false;
+  const threshold = r.thresholdUsd || 20;
+  const tEl = panel.querySelector('.ca-threshold');
+  if (tEl) tEl.textContent = `Threshold: $${Number(threshold).toFixed(2)} -- the worker projects each file's cost before running and pauses any over the threshold.`;
+  $('ca-rows').innerHTML = items.map(it => {
+    const cost = (it.projectedCostUsd != null) ? Number(it.projectedCostUsd).toFixed(2) : '?';
+    const tok  = (it.projectedTokens != null) ? `${Math.round(it.projectedTokens / 1000)}k tok` : '';
+    const proj = it.projectName || it.jobId || '(unknown)';
+    const file = it.fileName || it.driveFileId || '(no file)';
+    return `<div class="ca-row" data-ext="${safeHtml(it.extractionId)}">
+      <div class="ca-row-info">
+        <div class="ca-row-proj">${safeHtml(proj)}</div>
+        <div class="ca-row-file" title="${safeHtml(file)}">${safeHtml(file)}</div>
+      </div>
+      <div class="ca-row-cost">
+        <strong>$${cost}</strong>
+        <span class="small">${tok}</span>
+      </div>
+      <div class="ca-row-actions">
+        <button class="ca-approve" data-ext="${safeHtml(it.extractionId)}" title="Approve this run -- worker will pick it up on next delivery">✓ Approve</button>
+        <button class="ca-deny"    data-ext="${safeHtml(it.extractionId)}" title="Deny -- file will NOT be extracted">✕ Deny</button>
+      </div>
+    </div>`;
+  }).join('');
+  // Wire actions
+  $('ca-rows').querySelectorAll('.ca-approve, .ca-deny').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const intent = btn.classList.contains('ca-approve') ? 'approve' : 'deny';
+      const ext = btn.dataset.ext;
+      btn.disabled = true; const orig = btn.textContent; btn.textContent = '…';
+      try {
+        await api('POST', '/api/bc/extraction-cost-approval', {
+          intent,
+          extractionId: ext,
+          reason: `operator-${intent}`,
+        });
+        toast(intent === 'approve' ? 'Approved -- worker will pick it up on next delivery.' : 'Denied -- file will not be extracted.');
+        await loadCostApprovals();
+        await loadQueue();
+      } catch (e) {
+        btn.disabled = false; btn.textContent = orig; toast(e.message, 4500);
+      }
+    });
+  });
+}
+function _wsSinceText(iso) {
+  if (!iso) return '—';
+  // Server emits ISO timestamps without a 'Z' suffix on values that are
+  // actually UTC -- new Date(iso) treats those as local time and the
+  // delta vs Date.now() comes back negative (e.g. 5h on a CDT box) which
+  // clamps to 0 and renders as "0s ago" on every stale row. Patch by
+  // pretending the string is UTC if it lacks a tz marker.
+  const isoUtc = (typeof iso === 'string' && !/[zZ]|[+-]\d{2}:?\d{2}$/.test(iso))
+    ? iso + 'Z' : iso;
+  const t = new Date(isoUtc); if (isNaN(t)) return '—';
+  const s = Math.max(0, (Date.now() - t.getTime()) / 1000);
+  return _wsAgoFromSeconds(s);
+}
+function _wsAgoFromSeconds(s) {
+  s = Math.max(0, s);
+  if (s < 60)   return Math.round(s) + 's ago';
+  if (s < 3600) return Math.round(s / 60) + 'm ago';
+  if (s < 86400) return Math.round(s / 3600) + 'h ago';
+  return Math.round(s / 86400) + 'd ago';
+}
+function renderWorkerStatus(w) {
+  const t   = w.scheduledTask || {};
+  const p   = w.process       || {};
+  const log = w.log           || {};
+  const q   = w.queue         || {};
+  // Active processing list. The API renamed this from `inflight` to
+  // `processingList` and consolidated the 10-min stale window away --
+  // every row in this array is a currently-processing extraction
+  // (UpdatedAt within 60s, kept fresh by the worker's watchdog).
+  const proc = w.processingList || w.inflight || [];
+
+  // 1. Scheduled task pill
+  const taskState = String(t.state || '?').trim();
+  const taskCls   = /^Running$/i.test(taskState) ? 'ok'
+                  : /^Ready$/i.test(taskState)   ? 'ok'
+                  : /^Disabled$/i.test(taskState)? 'warn'
+                  :                                'err';
+  const taskEl = $('ws-task');
+  if (taskEl) {
+    taskEl.className = 'ws-pill ' + taskCls;
+    taskEl.querySelector('.ws-task-state').textContent = t.name ? `Worker: ${taskState}` : 'Worker task: not installed';
+    const meta = [];
+    if (t.lastRunAt && !/N\/A|Never/i.test(t.lastRunAt)) meta.push(`last run ${t.lastRunAt}`);
+    if (t.lastResult && t.lastResult !== '0' && t.lastResult !== '267011') meta.push(`exit ${t.lastResult}`);
+    taskEl.querySelector('.ws-task-meta').textContent = meta.join(' · ');
+  }
+
+  // 2. Heartbeat pill
+  const hbAt    = log && p.logHeartbeatAt;
+  const hbState = !hbAt          ? { txt:'No heartbeat', cls:'warn' }
+                : p.errored      ? { txt:'Heartbeat (error logged)', cls:'err' }
+                : p.stale        ? { txt:'Heartbeat stale', cls:'warn' }
+                :                  { txt:'Heartbeat fresh', cls:'ok' };
+  const hbEl = $('ws-heartbeat');
+  if (hbEl) {
+    hbEl.className = 'ws-pill ' + hbState.cls;
+    hbEl.querySelector('.ws-hb-state').textContent = hbState.txt;
+    hbEl.querySelector('.ws-hb-meta').textContent = hbAt ? `(${_wsSinceText(hbAt)})` : '';
+  }
+
+  // 3. Queue counts pill
+  const qEl = $('ws-queue');
+  if (qEl) {
+    qEl.querySelector('.ws-q-counts').textContent =
+      `${q.queued || 0} queued · ${q.processing || 0} processing`;
+    const pend = q.pendingApprovals || 0;
+    qEl.querySelector('.ws-q-pending').textContent =
+      pend > 0 ? `· ${pend} cost-approval pending` : '';
+    qEl.classList.toggle('warn', (q.processing || 0) === 0 && (q.queued || 0) > 0);
+    qEl.classList.toggle('ok',   (q.processing || 0) > 0);
+  }
+
+  // 4. Last-error pill -- show ONLY the most recent error AND only
+  // while it's still the leading edge of the log (i.e. the worker
+  // hasn't recovered past it). Hide once the heartbeat has advanced
+  // 5+ minutes past the error timestamp -- at that point the worker
+  // is back to processing cleanly and the operator doesn't need the
+  // old error nagging from the panel.
+  const errEl = $('ws-error');
+  if (errEl) {
+    let showErr = false;
+    if (log.lastError && log.lastError.message) {
+      const errAt = Date.parse(log.lastError.at) || 0;
+      const hbAt2 = Date.parse(p.logHeartbeatAt || '') || 0;
+      // Show if: still errored per server, OR error is recent (<5 min),
+      // OR heartbeat hasn't moved past the error window.
+      const heartbeatRecovered = (hbAt2 > 0) && (errAt > 0) && ((hbAt2 - errAt) >= 5 * 60 * 1000);
+      showErr = !heartbeatRecovered;
+    }
+    if (showErr) {
+      errEl.hidden = false;
+      errEl.querySelector('.ws-err-msg').textContent =
+        `${_wsSinceText(log.lastError.at)}: ${(log.lastError.message || '').slice(0, 240)}`;
+    } else {
+      errEl.hidden = true;
+    }
+  }
+
+  // 5. Processing rows. Every row is currently-active (UpdatedAt < 60s);
+  // there's no stale/stuck distinction anymore -- if a row stops being
+  // updated, it falls out of the list entirely on the next poll.
+  const ifEl = $('ws-inflight');
+  if (ifEl) {
+    if (!proc.length) {
+      ifEl.innerHTML = `<div class="ws-inflight-empty small pad">No active extractions.</div>`;
+    } else {
+      ifEl.innerHTML = proc.map(it => {
+        const pp  = it.pagesProcessed || 0;
+        const pt  = it.pagesTotal || 0;
+        const pct = pt > 0 ? Math.min(100, Math.round(100 * pp / pt)) : null;
+        const bar = pct != null
+          ? `<span class="q-progress-bar"><span style="width:${Math.max(pct, 4)}%"></span></span>`
+          : `<span class="q-progress-bar indeterminate"><span></span></span>`;
+        const counts = pt > 0 ? `<strong>${pp}</strong><span class="small"> of ${pt}</span>`
+                              : `<strong>${pp}</strong><span class="small"> pages so far</span>`;
+        // ageS is the server-computed age in seconds (always non-negative)
+        // -- always < 60 here since the API filters for that window.
+        const ageBadge = `<span class="ws-age fresh">${it.ageS != null ? it.ageS + 's' : ''}</span>`;
+        return `<div class="ws-inflight-row">
+          <div class="ws-if-proj" title="${safeHtml(it.fileName || '')}">${safeHtml(it.fileName || '(file pending)')}</div>
+          <div class="ws-if-bar">${bar}${counts}</div>
+          ${ageBadge}
+        </div>`;
+      }).join('');
+    }
+  }
+
+  // 6. Log tail (collapsed by default, only re-rendered when expanded)
+  const logEl = $('ws-log-tail');
+  if (logEl && $('ws-log-details') && $('ws-log-details').open) {
+    logEl.textContent = (log.tail || []).join('\n');
+  }
+}
+// Group items by project (jobId), compute group aggregates, then sort
+// the GROUPS by the active sort key. Files within each group are always
+// sorted state-first (processing on top) -- we don't want a project's
+// queued files mixed in front of its actively-processing one.
+function _groupQueueItems(items) {
+  const updatedAt = (it) => Date.parse(it.liveUpdatedAt || it.costPatchedAt || it.uploadedAt || 0) || 0;
+  const groups = new Map();
+  for (const it of items) {
+    const key = it.jobId || it.projectName || '(unknown)';
+    let g = groups.get(key);
+    if (!g) {
+      g = {
+        jobId:     it.jobId,
+        projectName: it.projectName || it.jobId || '(unknown)',
+        rfpStatus:   it.rfpStatus,
+        files:       [],
+        // Aggregates -- filled after we collect every file.
+        counts:        { queued:0, processing:0, completed:0, skipped:0, cancelled:0 },
+        totalFiles:    0,
+        totalCostUsd:  0,
+        pagesDone:     0,
+        pagesTotal:    0,
+        latestUpdated: 0,
+        worstState:    'completed', // upgraded as we encounter live work
+      };
+      groups.set(key, g);
+    }
+    g.files.push(it);
+    g.totalFiles += 1;
+    if (g.counts[it.state] != null) g.counts[it.state] += 1;
+    if (typeof it.costUsd === 'number') g.totalCostUsd += it.costUsd;
+    g.pagesDone  += (it.pagesProcessed || 0);
+    g.pagesTotal += (it.pagesTotal || it.pageCount || 0);
+    const ts = updatedAt(it);
+    if (ts > g.latestUpdated) g.latestUpdated = ts;
+    // worstState: the most "alive" state in the group drives the group's
+    // visual treatment. processing > queued > completed > skipped > cancelled.
+    const rankCur = Q_STATE_RANK[g.worstState] ?? 9;
+    const rankNew = Q_STATE_RANK[it.state]     ?? 9;
+    if (rankNew < rankCur) g.worstState = it.state;
+  }
+  // Sort files within each group: processing first, then queued, etc.
+  for (const g of groups.values()) {
+    g.files.sort((a, b) => {
+      const ra = Q_STATE_RANK[a.state] ?? 9;
+      const rb = Q_STATE_RANK[b.state] ?? 9;
+      if (ra !== rb) return ra - rb;
+      return (a.fileName || '').localeCompare(b.fileName || '');
+    });
+  }
+  return Array.from(groups.values());
+}
+function _sortQueueGroups(groups) {
+  const key = QSTATE.sortKey || 'auto';
+  const dir = (QSTATE.sortDir === 'desc') ? -1 : 1;
+  const groupProgressPct = (g) => g.pagesTotal > 0 ? (g.pagesDone / g.pagesTotal) : 0;
+  const accessor = {
+    auto:     (g) => [Q_STATE_RANK[g.worstState] ?? 9, -g.latestUpdated],
+    project:  (g) => (g.projectName || '').toLowerCase(),
+    file:     (g) => (g.files[0]?.fileName || '').toLowerCase(),
+    state:    (g) => Q_STATE_RANK[g.worstState] ?? 9,
+    progress: (g) => groupProgressPct(g),
+    cost:     (g) => g.totalCostUsd,
+    updated:  (g) => g.latestUpdated,
+  }[key] || ((g) => 0);
+  return groups.map((g, i) => ({ g, i, k: accessor(g) }))
+               .sort((a, b) => {
+                 const ka = a.k, kb = b.k;
+                 if (Array.isArray(ka)) {
+                   for (let j = 0; j < ka.length; j++) {
+                     if (ka[j] < kb[j]) return -1 * dir;
+                     if (ka[j] > kb[j]) return  1 * dir;
+                   }
+                   return a.i - b.i;
+                 }
+                 if (ka < kb) return -1 * dir;
+                 if (ka > kb) return  1 * dir;
+                 return a.i - b.i;
+               })
+               .map(x => x.g);
+}
+function _updateSortIndicators() {
+  const arrow = QSTATE.sortDir === 'desc' ? '▾' : '▴';
+  document.querySelectorAll('#q-table thead th[data-sort]').forEach(th => {
+    const ind = th.querySelector('.sort-ind');
+    if (!ind) return;
+    ind.textContent = (th.dataset.sort === QSTATE.sortKey) ? arrow : '';
+  });
+}
+// Persisted per-jobId expand/collapse memory (reset on full reload).
+const Q_EXPANDED = new Set();
+
+function _fileRowHtml(it) {
+  const pp = it.pagesProcessed || 0;
+  const pt = it.pagesTotal || it.pageCount || 0;
+  const pct = pt > 0 ? Math.min(100, Math.round(100 * pp / pt)) : null;
+  let progressCell;
+  if (it.state === 'completed') {
+    progressCell = `<span class="small ok">✓ done${pt > 0 ? ` (${pt} pages)` : ''}</span>`;
+  } else if (it.state === 'skipped') {
+    progressCell = `<span class="small pad">— skipped</span>`;
+  } else if (it.state === 'cancelled') {
+    progressCell = `<span class="small">cancelled</span>`;
+  } else if (it.state === 'processing') {
+    progressCell = pct != null
+      ? `<span class="q-progress-bar"><span style="width:${Math.max(pct, 4)}%"></span></span><strong>${pp}</strong><span class="small"> of ${pt}</span>`
+      : `<span class="q-progress-bar indeterminate"><span></span></span><span class="small">starting…</span>`;
+  } else { // queued
+    progressCell = pt > 0
+      ? `<span class="small">${pt} pages queued</span>`
+      : `<span class="small pad">— queued</span>`;
+  }
+  const costCell = it.costUsd != null
+    ? `$${Number(it.costUsd).toFixed(2)}`
+    : '<span class="pad">—</span>';
+  const updatedCell = fmt(it.liveUpdatedAt || it.costPatchedAt || it.uploadedAt);
+  const canCancel = it.state === 'queued' || it.state === 'processing';
+  const action = canCancel
+    ? `<button data-act="cancel" data-bid="${safeHtml(it.jobId)}" data-fid="${safeHtml(it.driveFileId)}" title="Mark this file as cancelled — worker skips on next pull / breaks within 10s mid-run">✕ Cancel</button>`
+    : `<button disabled>—</button>`;
+  return `<tr class="q-row q-file-row state-${it.state}" data-parent="${safeHtml(it.jobId || '')}">
+    <td class="q-file-cell"></td>
+    <td class="q-file" title="${safeHtml(it.classification)}">${safeHtml(it.fileName)}</td>
+    <td><span class="q-status ${it.state}">${it.state}</span></td>
+    <td>${progressCell}</td>
+    <td>${costCell}</td>
+    <td class="small">${updatedCell}</td>
+    <td class="q-actions">${action}</td>
+  </tr>`;
+}
+
+function _groupRowHtml(g, expanded) {
+  // Active state derives from the group's "worst" (most-alive) file state.
+  const state = g.worstState || 'queued';
+  // Aggregate progress: sum(pagesProcessed) / sum(pagesTotal) across all files.
+  const pct = g.pagesTotal > 0 ? Math.min(100, Math.round(100 * g.pagesDone / g.pagesTotal)) : null;
+  // Group progress cell: indeterminate bar if there's processing but no
+  // pagesTotal yet; static "N files" when fully queued.
+  let progressCell;
+  if (g.counts.processing > 0) {
+    progressCell = pct != null
+      ? `<span class="q-progress-bar"><span style="width:${Math.max(pct, 4)}%"></span></span><strong>${g.pagesDone}</strong><span class="small"> of ${g.pagesTotal} pages</span>`
+      : `<span class="q-progress-bar indeterminate"><span></span></span><span class="small">starting…</span>`;
+  } else if (g.counts.queued > 0) {
+    progressCell = g.pagesTotal > 0
+      ? `<span class="small">${g.pagesTotal} pages queued</span>`
+      : `<span class="small pad">queued</span>`;
+  } else if (g.counts.completed > 0 && g.counts.queued === 0 && g.counts.processing === 0) {
+    progressCell = `<span class="small ok">✓ ${g.counts.completed}/${g.totalFiles} done</span>`;
+  } else {
+    progressCell = `<span class="small pad">—</span>`;
+  }
+  // Status pill: the worst state with a count.
+  const statePill = `<span class="q-status ${state}">${state}</span>`;
+  // Mini-counts inline: ⚙ 2 / ⏳ 5 / ✓ 1 etc -- compact tally.
+  const tallies = [
+    g.counts.processing ? `<span class="q-tally tally-processing" title="processing">⚙️ ${g.counts.processing}</span>` : '',
+    g.counts.queued     ? `<span class="q-tally tally-queued"     title="queued">⏳ ${g.counts.queued}</span>` : '',
+    g.counts.completed  ? `<span class="q-tally tally-completed"  title="completed">✓ ${g.counts.completed}</span>` : '',
+    g.counts.skipped    ? `<span class="q-tally tally-skipped"    title="skipped">⏭ ${g.counts.skipped}</span>` : '',
+    g.counts.cancelled  ? `<span class="q-tally tally-cancelled"  title="cancelled">✕ ${g.counts.cancelled}</span>` : '',
+  ].filter(Boolean).join(' ');
+  const fileTally = `<span class="small q-file-tally">${g.totalFiles} ${g.totalFiles === 1 ? 'file' : 'files'}${tallies ? ' · ' + tallies : ''}</span>`;
+  const totalCost = g.totalCostUsd > 0 ? `$${g.totalCostUsd.toFixed(2)}` : '<span class="pad">—</span>';
+  const updated = g.latestUpdated > 0 ? fmt(new Date(g.latestUpdated).toISOString()) : '<span class="pad">—</span>';
+  const arrow = expanded ? '▾' : '▸';
+  const groupCancellable = (g.counts.queued + g.counts.processing) > 0;
+  const groupCancel = groupCancellable
+    ? `<button data-act="cancel-group" data-bid="${safeHtml(g.jobId || '')}" title="Cancel every queued/processing file in this RFP">✕ Cancel ${g.counts.queued + g.counts.processing}</button>`
+    : `<button disabled>—</button>`;
+  return `<tr class="q-row q-group-row state-${state}${expanded ? ' expanded' : ''}" data-bid="${safeHtml(g.jobId || '')}">
+    <td class="q-group-name">
+      <button class="q-toggle" data-act="toggle-group" data-bid="${safeHtml(g.jobId || '')}" aria-expanded="${expanded}">${arrow}</button>
+      <a href="#" data-act="goto-rfp" data-id="${safeHtml(g.jobId || '')}">${safeHtml(g.projectName)}</a>
+    </td>
+    <td>${fileTally}</td>
+    <td>${statePill}</td>
+    <td>${progressCell}</td>
+    <td>${totalCost}</td>
+    <td class="small">${updated}</td>
+    <td class="q-actions">${groupCancel}</td>
+  </tr>`;
+}
+
+function renderQueue(data) {
+  // Filter to ACTIVE files only -- queued + processing. Completed,
+  // skipped, and cancelled hidden so the queue panel only shows work
+  // that's still pending. (Was a UI filter dropdown above the table;
+  // now hard-coded since the panel is single-purpose.)
+  const items = (data.items || []).filter(it =>
+    it.state === 'queued' || it.state === 'processing'
+  );
+  const groups = _sortQueueGroups(_groupQueueItems(items));
+  _updateSortIndicators();
+  for (const g of groups) {
+    if ((g.counts.processing || 0) > 0 && g.jobId) Q_EXPANDED.add(g.jobId);
+  }
+  if (groups.length === 0) {
+    $('q-empty').hidden = false;
+    $('q-rows').innerHTML = '';
+    return;
+  }
+  $('q-empty').hidden = true;
+  $('q-rows').innerHTML = groups.map(g => {
+    const expanded = !g.jobId || Q_EXPANDED.has(g.jobId);
+    const groupRow = _groupRowHtml(g, expanded);
+    if (!expanded) return groupRow;
+    const fileRows = g.files.map(_fileRowHtml).join('');
+    return groupRow + fileRows;
+  }).join('');
+  // Wire group toggle buttons.
+  $('q-rows').querySelectorAll('button[data-act="toggle-group"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.bid;
+      if (!id) return;
+      if (Q_EXPANDED.has(id)) Q_EXPANDED.delete(id); else Q_EXPANDED.add(id);
+      // Re-render from cached data -- avoid a server round-trip.
+      if (QSTATE.lastData) renderQueue(QSTATE.lastData);
+    });
+  });
+  // Wire group-level cancel buttons. Iterates every cancellable file in
+  // the group and POSTs cancel one-by-one (the bulk endpoint can come
+  // later; this is correct).
+  $('q-rows').querySelectorAll('button[data-act="cancel-group"]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const bid = btn.dataset.bid;
+      const g = groups.find(x => x.jobId === bid);
+      if (!g) return;
+      const live = g.files.filter(f => f.state === 'queued' || f.state === 'processing');
+      if (live.length === 0) return;
+      if (!confirm(`Cancel ${live.length} ${live.length === 1 ? 'file' : 'files'} for this RFP? Worker will skip on next pull (or break mid-run within 10s).`)) return;
+      btn.disabled = true; const orig = btn.textContent; btn.textContent = '…';
+      try {
+        for (const f of live) {
+          await api('POST', '/api/bc/extraction-cancel', {
+            jobId:     f.jobId,
+            driveFileId: f.driveFileId,
+            reason:      'operator-cancel-group',
+          });
+        }
+        toast(`Cancelled ${live.length} ${live.length === 1 ? 'file' : 'files'} for this RFP.`);
+        await loadQueue();
+      } catch (e) {
+        btn.disabled = false; btn.textContent = orig;
+        toast(e.message, 4500);
+      }
+    });
+  });
+
+  // Wire cancel buttons.
+  $('q-rows').querySelectorAll('button[data-act="cancel"]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Cancel this extraction? The worker will skip on its next pull.')) return;
+      btn.disabled = true; const orig = btn.textContent; btn.textContent = '…';
+      try {
+        await api('POST', '/api/bc/extraction-cancel', {
+          jobId:     btn.dataset.bid,
+          driveFileId: btn.dataset.fid,
+          reason:      'operator-cancel',
+        });
+        toast('Cancelled. Worker will skip on next pull.');
+        await loadQueue();
+      } catch (e) { btn.disabled = false; btn.textContent = orig; toast(e.message, 4500); }
+    });
+  });
+  // "Open in Projects" link -- jumps from a Queue-tab row back to the
+  // Projects tab and scrolls the matching RFP into view.
+  $('q-rows').querySelectorAll('a[data-act="goto-rfp"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const tabs = $('tabs'); tabs.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      const leadsTab = tabs.querySelector('[data-tab="leads"]'); leadsTab?.classList.add('active');
+      $('tab-leads').hidden = false; $('tab-queue').hidden = true; $('tab-outcomes').hidden = true; $('tab-processes').hidden = true;
+      $('rescan').style.display = '';
+      // Optional: scroll to / highlight the RFP row -- left as a TODO.
+    });
+  });
+}
+$('q-state')?.addEventListener('change',  () => { QSTATE.state = $('q-state').value; loadQueue(); });
+$('q-scope')?.addEventListener('change',  () => { QSTATE.scope = $('q-scope').value; loadQueue(); });
+$('q-refresh')?.addEventListener('click', (e) => { e.preventDefault(); loadQueue(); });
+// Column header sorting. Click toggles asc/desc; first click on a new
+// column also clears the implicit 'auto' (state-rank then updated) sort.
+document.querySelectorAll('#q-table thead th[data-sort]').forEach(th => {
+  th.style.cursor = 'pointer';
+  th.addEventListener('click', () => {
+    const k = th.dataset.sort;
+    if (QSTATE.sortKey === k) {
+      QSTATE.sortDir = (QSTATE.sortDir === 'asc') ? 'desc' : 'asc';
+    } else {
+      QSTATE.sortKey = k;
+      // Sensible default direction per column: text=asc, numeric/time=desc
+      QSTATE.sortDir = (k === 'project' || k === 'file' || k === 'state') ? 'asc' : 'desc';
+    }
+    if (QSTATE.lastData) renderQueue(QSTATE.lastData);
+  });
+});
+// Belt-and-suspenders: catch the refresh click via delegation too. The
+// direct listener above assumes the element exists at script-load; this
+// guard keeps the button working even if Queue tab markup was injected.
+document.addEventListener('click', (e) => {
+  const t = e.target?.closest?.('#q-refresh');
+  if (t && !t.disabled) { e.preventDefault(); loadQueue(); }
+});
+
+// ===== Outcomes tab =====
+// State for the active proposal selection. The detail panel mirrors STATE.oc.selected.
+const OC_STATE = { data:null, selected:null, filter:'', search:'' };
+const fmtUsd = (n) => (n == null) ? '—' : '$' + Number(n).toLocaleString(undefined, { minimumFractionDigits:2, maximumFractionDigits:2 });
+const fmtUsdK = (n) => {
+  if (n == null) return '—';
+  const v = Number(n);
+  if (v >= 1_000_000) return '$' + (v/1_000_000).toFixed(2) + 'M';
+  if (v >= 10_000)    return '$' + (v/1_000).toFixed(0)    + 'k';
+  if (v >= 1_000)     return '$' + (v/1_000).toFixed(1)    + 'k';
+  return '$' + v.toFixed(0);
+};
+function ocGlyph(it) {
+  // 2-letter monogram from the project name.
+  const n = (it.projectName || '').replace(/[^A-Za-z0-9 ]/g,' ').trim().split(/\s+/).slice(0,2);
+  const m = (n[0]?.[0] || 'G') + (n[1]?.[0] || n[0]?.[1] || 'C');
+  return m.toUpperCase();
+}
+function ocStateClass(it) {
+  if (it.status === 'Won' || it.outcomeStatus === 'won')          return 'won';
+  if (it.status === 'Lost' || it.outcomeStatus === 'lost')        return 'lost';
+  if (it.outcomeStatus === 'holding')                             return 'holding';
+  return 'unknown';
+}
+async function loadOutcomes() {
+  $('oc-fin-body').innerHTML  = '<span class="pad">loading…</span>';
+  $('oc-brief-body').innerHTML = '<span class="pad">loading…</span>';
+  try {
+    const data = await api('GET', '/api/outcomes/list');
+    OC_STATE.data = data;
+    renderOutcomes();
+  } catch (e) {
+    $('oc-fin-body').innerHTML  = `<span class="pad">${safeHtml(e.message)}</span>`;
+    $('oc-brief-body').innerHTML = '<span class="pad">—</span>';
+    $('oc-cards').innerHTML = '';
+  }
+}
+function renderOutcomes() {
+  if (!OC_STATE.data) return;
+  const { summary, items } = OC_STATE.data;
+
+  // Summary chips at the top of the tab.
+  $('oc-summary').innerHTML = [
+    `<span class="chip"><strong>${summary.total}</strong> proposals</span>`,
+    `<span class="chip">📤 <strong>${summary.submitted}</strong> submitted</span>`,
+    `<span class="chip">🏆 <strong>${summary.won}</strong> won</span>`,
+    `<span class="chip">⏳ <strong>${summary.holding}</strong> holding</span>`,
+    summary.lost ? `<span class="chip">❌ <strong>${summary.lost}</strong> lost</span>` : '',
+    summary.winRatePct != null ? `<span class="chip" title="Of decided (won + lost) bids">${summary.winRatePct}% win rate</span>` : '',
+    `<span class="chip">💰 <strong>${fmtUsd(summary.totalAiCostUsd)}</strong> AI</span>`,
+  ].filter(Boolean).join('');
+
+  // Filter + search the items list.
+  const filt = OC_STATE.filter;
+  const q    = (OC_STATE.search || '').trim().toLowerCase();
+  const list = items.filter(it => {
+    if (filt === 'Submitted' || filt === 'Won' || filt === 'Lost') {
+      if (it.status !== filt) return false;
+    } else if (filt === 'holding' || filt === 'unknown') {
+      if (it.outcomeStatus !== filt) return false;
+    }
+    if (q) {
+      const hay = `${it.projectName||''} ${it.gc||''} ${it.location||''}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  // Card list (col 1).
+  $('oc-cards').innerHTML = list.length === 0
+    ? '<div class="oc-empty">No proposals match.</div>'
+    : list.map(it => {
+        const cls = ocStateClass(it);
+        const sel = OC_STATE.selected === it.jobId ? ' selected' : '';
+        return `<div class="oc-card ${cls}${sel}" data-id="${safeHtml(it.jobId)}">
+          <div class="oc-glyph">${ocGlyph(it)}</div>
+          <div class="oc-meta">
+            <div class="name">${safeHtml(projectLabel({projectName:it.projectName, driveJobFolderName:it.driveFolderName}))}</div>
+            <div class="sub">${safeHtml(it.gc || 'unknown GC')} · ${safeHtml(compactLocation(it.location || '') || '—')}</div>
+          </div>
+          <div class="oc-amt">${it.bidAmountUsd != null ? fmtUsdK(it.bidAmountUsd) : statusBadge(it.status)}<span class="small">${cls === 'unknown' ? (it.status||'') : cls}</span></div>
+        </div>`;
+      }).join('');
+  $('oc-cards').querySelectorAll('.oc-card').forEach(card => {
+    card.addEventListener('click', () => {
+      OC_STATE.selected = card.dataset.id;
+      renderOutcomes();
+    });
+  });
+
+  // Col 2: financial summary (aggregates + bar).
+  const totalDecided = (summary.totalWonUsd || 0) + (summary.totalLostUsd || 0);
+  const winPct  = totalDecided > 0 ? Math.round(100 * summary.totalWonUsd / totalDecided) : 0;
+  const lostPct = totalDecided > 0 ? 100 - winPct : 0;
+  $('oc-fin-body').innerHTML = `
+    <div class="oc-fin-row headline"><span class="k">Total submitted</span><span class="v">${fmtUsd(summary.totalSubmittedUsd)}</span></div>
+    <div class="oc-fin-row"><span class="k">Won (revenue captured)</span><span class="v">${fmtUsd(summary.totalWonUsd)}</span></div>
+    <div class="oc-fin-row"><span class="k">Lost (revenue forfeited)</span><span class="v">${fmtUsd(summary.totalLostUsd)}</span></div>
+    <div class="oc-fin-bar">
+      <span class="won"  style="width:${winPct}%"></span>
+      <span class="lost" style="width:${lostPct}%"></span>
+    </div>
+    <div class="oc-fin-legend">
+      <span><span class="dot" style="background:var(--forest)"></span>Won ${winPct}%</span>
+      <span><span class="dot" style="background:var(--danger)"></span>Lost ${lostPct}%</span>
+    </div>
+    <div class="oc-fin-row" style="margin-top:8px"><span class="k">AI cost (all extractions)</span><span class="v">${fmtUsd(summary.totalAiCostUsd)}</span></div>
+    <div class="oc-fin-row"><span class="k">Win rate</span><span class="v">${summary.winRatePct == null ? '—' : summary.winRatePct + '%'}</span></div>
+  `;
+
+  // Col 3: financial brief -- top 5 by amount + per-status breakdown.
+  const top5 = items.filter(i => i.bidAmountUsd != null).sort((a,b) => b.bidAmountUsd - a.bidAmountUsd).slice(0, 5);
+  const top5Html = top5.length === 0
+    ? '<div class="oc-empty">No bid amounts entered yet. Open an Outcome on the right to enter the bid amount.</div>'
+    : top5.map(i => `<div class="oc-brief-row"><span class="k">${safeHtml(projectLabel({projectName:i.projectName,driveJobFolderName:i.driveFolderName}))}</span><span class="v">${fmtUsdK(i.bidAmountUsd)}</span></div>`).join('');
+  const avgWon  = summary.won  ? summary.totalWonUsd  / summary.won  : null;
+  const avgLost = summary.lost ? summary.totalLostUsd / summary.lost : null;
+  $('oc-brief-body').innerHTML = `
+    <h5 style="margin:0 0 5px;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--slate)">Top 5 by amount</h5>
+    ${top5Html}
+    <h5 style="margin:10px 0 5px;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--slate)">Averages</h5>
+    <div class="oc-brief-row"><span class="k">Avg won bid</span><span class="v">${fmtUsd(avgWon)}</span></div>
+    <div class="oc-brief-row"><span class="k">Avg lost bid</span><span class="v">${fmtUsd(avgLost)}</span></div>
+    <div class="oc-brief-row"><span class="k">Pipeline value (open)</span><span class="v">${fmtUsd(summary.totalSubmittedUsd)}</span></div>
+  `;
+
+  // Col 4: outcome detail.
+  renderOutcomeDetail();
+}
+
+// ===== Outcome detail panel (col 4) =====
+function selectedOutcome() {
+  if (!OC_STATE.selected || !OC_STATE.data) return null;
+  return OC_STATE.data.items.find(i => i.jobId === OC_STATE.selected) || null;
+}
+function safeJsonParse(s, fallback) {
+  if (!s) return fallback;
+  try { return JSON.parse(s); } catch { return fallback; }
+}
+function renderOutcomeDetail() {
+  const it = selectedOutcome();
+  const body = $('oc-detail-body');
+  if (!it) {
+    body.innerHTML = '<div class="oc-empty">Select a proposal on the left to record an outcome.</div>';
+    return;
+  }
+  const os = it.outcomeStatus || (it.status === 'Won' ? 'won' : it.status === 'Lost' ? 'lost' : 'unknown');
+  const alts    = safeJsonParse(it.altsJson,        []);
+  const deducts = safeJsonParse(it.deductsJson,     []);
+  const terms   = safeJsonParse(it.paymentTermsJson, { netDays:30, retainagePct:10, schedule:'progress', notes:'' });
+  const labor   = safeJsonParse(it.laborPlanJson,   { weeks:[{techs:2},{techs:3},{techs:3},{techs:2}] });
+  const isWon   = os === 'won';
+  body.innerHTML = `
+    <div class="field"><span class="lbl">Project</span><span class="val">${safeHtml(projectLabel({projectName:it.projectName,driveJobFolderName:it.driveFolderName}))}</span></div>
+    <div class="field"><span class="lbl">GC / Client</span><span class="val">${safeHtml(it.gc || 'unknown')}</span></div>
+    <div class="field"><span class="lbl">Location</span><span class="val">${safeHtml(it.location || '—')}</span></div>
+    <div class="field"><span class="lbl">Bid status</span><span class="val">${statusBadge(it.status)} ${it.confidencePct != null ? `<span class="small">${Math.round(it.confidencePct)}% extraction</span>` : ''}</span></div>
+
+    <div class="oc-status-slider" id="oc-slider">
+      ${['won','holding','unknown','lost'].map(s => `<button class="${s}${s===os?' active':''}" data-os="${s}">${s[0].toUpperCase()+s.slice(1)}</button>`).join('')}
+    </div>
+
+    <div class="oc-detail-section">
+      <h5>Bid amount</h5>
+      <div class="oc-detail-fields">
+        <label>Total bid (USD)<input type="number" id="oc-bid-amount" step="100" value="${it.bidAmountUsd != null ? Number(it.bidAmountUsd) : ''}" /></label>
+        <label>BC link
+          <input type="text" value="${safeHtml(it.href || '')}" readonly />
+        </label>
+      </div>
+    </div>
+
+    ${isWon ? renderWonExtras(alts, deducts, terms, labor, it) : `
+      <div class="oc-detail-section">
+        <div class="oc-empty">Pick <strong>Won</strong> above to enter alts / deducts, payment terms, dates, and labor plan.</div>
+      </div>
+    `}
+
+    <div class="oc-detail-section">
+      <h5>Notes</h5>
+      <div class="oc-detail-fields"><textarea id="oc-notes" placeholder="Any context worth keeping (decision rationale, GC feedback, etc.)">${safeHtml(it.notes || '')}</textarea></div>
+    </div>
+
+    <div class="oc-actions-row">
+      <button class="primary" data-act="oc-save">💾 Save outcome</button>
+      ${isWon ? `<button data-act="oc-save-manage">🗂 Save &amp; Manage Job</button>
+                 <button data-act="oc-calendar"   ${it.calendarEventId ? 'disabled' : ''}>${it.calendarEventId ? '✓ On calendar' : '📅 Add to GCC calendar'}</button>` : ''}
+      <button data-act="oc-open-folder" ${!it.driveFolderId ? 'disabled' : ''}>📂 Drive folder</button>
+    </div>
+  `;
+  // Wire the slider.
+  body.querySelectorAll('#oc-slider button').forEach(b => {
+    b.addEventListener('click', () => {
+      it.outcomeStatus = b.dataset.os;
+      renderOutcomeDetail();
+    });
+  });
+  // Wire the action buttons.
+  body.querySelector('[data-act="oc-save"]')?.addEventListener('click',         () => saveOutcome(false, false));
+  body.querySelector('[data-act="oc-save-manage"]')?.addEventListener('click',  () => saveOutcome(false, true));
+  body.querySelector('[data-act="oc-calendar"]')?.addEventListener('click',     () => addToCalendar(it));
+  body.querySelector('[data-act="oc-open-folder"]')?.addEventListener('click',  () => {
+    if (it.driveFolderId) window.open(`https://drive.google.com/drive/folders/${it.driveFolderId}`, '_blank', 'noopener,noreferrer');
+  });
+  // Wire the "add line" buttons inside the won extras (they exist only when status === 'won').
+  body.querySelectorAll('button[data-act="add-line"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.target;
+      const arr = target === 'alts' ? alts : deducts;
+      arr.push({ name:'', amount:0, selected:false });
+      it[target === 'alts' ? 'altsJson' : 'deductsJson'] = JSON.stringify(arr);
+      renderOutcomeDetail();
+    });
+  });
+  // Live total updates as user toggles checkboxes / changes amounts.
+  body.querySelectorAll('.oc-line').forEach(line => {
+    const target  = line.dataset.target;
+    const idx     = parseInt(line.dataset.idx, 10);
+    const arr     = target === 'alts' ? alts : deducts;
+    line.querySelector('input[type=checkbox]')?.addEventListener('change', e => { arr[idx].selected = e.target.checked; line.classList.toggle('selected', e.target.checked); recomputeTotals(alts, deducts, it); });
+    line.querySelector('input[type=text]')?.addEventListener('input',     e => { arr[idx].name     = e.target.value; });
+    line.querySelector('input[type=number]')?.addEventListener('input',   e => { arr[idx].amount   = parseFloat(e.target.value) || 0; recomputeTotals(alts, deducts, it); });
+    line.querySelector('button.rm')?.addEventListener('click', () => {
+      arr.splice(idx, 1);
+      it[target === 'alts' ? 'altsJson' : 'deductsJson'] = JSON.stringify(arr);
+      renderOutcomeDetail();
+    });
+  });
+}
+function renderWonExtras(alts, deducts, terms, labor, it) {
+  const altsLines = alts.length === 0
+    ? '<div class="small" style="color:var(--slate);padding:4px 0">No alts entered. Click "+ Add alt" below.</div>'
+    : alts.map((a, i) => `<div class="oc-line ${a.selected ? 'selected' : ''}" data-target="alts" data-idx="${i}">
+        <input type="checkbox" ${a.selected ? 'checked' : ''} title="Client selected this alt" />
+        <input type="text" value="${safeHtml(a.name)}" placeholder="Alt description" />
+        <input type="number" step="50" value="${a.amount || 0}" />
+        <button class="rm" title="Remove">✕</button>
+      </div>`).join('');
+  const dedLines = deducts.length === 0
+    ? '<div class="small" style="color:var(--slate);padding:4px 0">No deducts entered. Click "+ Add deduct" below.</div>'
+    : deducts.map((d, i) => `<div class="oc-line ${d.selected ? 'selected' : ''}" data-target="deducts" data-idx="${i}">
+        <input type="checkbox" ${d.selected ? 'checked' : ''} title="Client selected this deduct" />
+        <input type="text" value="${safeHtml(d.name)}" placeholder="Deduct description" />
+        <input type="number" step="50" value="${d.amount || 0}" />
+        <button class="rm" title="Remove">✕</button>
+      </div>`).join('');
+  const altSel = alts.filter(a => a.selected).reduce((s, a) => s + (Number(a.amount) || 0), 0);
+  const dedSel = deducts.filter(d => d.selected).reduce((s, d) => s + (Number(d.amount) || 0), 0);
+  const wks = labor.weeks || [{techs:2}];
+  const laborCells = wks.map((w, i) => `<div class="oc-labor-cell">
+    <span class="wk">Wk ${i+1}</span><span class="techs" data-techs="${i}">${w.techs ?? 2}</span>
+    <input type="range" min="0" max="8" value="${w.techs ?? 2}" data-wk="${i}" />
+  </div>`).join('');
+  const fmtDate = (d) => d ? String(d).slice(0, 10) : '';
+  return `
+    <div class="oc-detail-section">
+      <h5>Alts (client-selectable)</h5>
+      <div class="oc-line-list">${altsLines}</div>
+      <button class="oc-add-line" data-act="add-line" data-target="alts">+ Add alt</button>
+      <div class="oc-line-totals"><span>Selected alts</span><strong id="oc-alts-total">${fmtUsd(altSel)}</strong></div>
+    </div>
+    <div class="oc-detail-section">
+      <h5>Deducts</h5>
+      <div class="oc-line-list">${dedLines}</div>
+      <button class="oc-add-line" data-act="add-line" data-target="deducts">+ Add deduct</button>
+      <div class="oc-line-totals"><span>Selected deducts</span><strong id="oc-ded-total">${fmtUsd(dedSel)}</strong></div>
+      <div class="oc-line-totals"><span>Adjusted total</span><strong id="oc-grand-total">${fmtUsd((Number(it.bidAmountUsd)||0) + altSel - dedSel)}</strong></div>
+    </div>
+    <div class="oc-detail-section">
+      <h5>Payment terms</h5>
+      <div class="oc-detail-fields">
+        <label>Net days<input type="number" id="oc-net-days" value="${terms.netDays ?? 30}" /></label>
+        <label>Retainage %<input type="number" step="0.5" id="oc-retain" value="${terms.retainagePct ?? 10}" /></label>
+        <label style="grid-column:1 / -1">Schedule
+          <select id="oc-schedule">
+            ${['progress','milestone','net30','net45','net60','custom'].map(s => `<option value="${s}" ${s===(terms.schedule||'progress')?'selected':''}>${s}</option>`).join('')}
+          </select>
+        </label>
+        <label style="grid-column:1 / -1">Terms notes<textarea id="oc-terms-notes">${safeHtml(terms.notes || '')}</textarea></label>
+      </div>
+    </div>
+    <div class="oc-detail-section">
+      <h5>Project dates</h5>
+      <div class="oc-detail-fields">
+        <label>Start<input type="date" id="oc-start" value="${fmtDate(it.projectStartAt)}" /></label>
+        <label>End  <input type="date" id="oc-end"   value="${fmtDate(it.projectEndAt)}"   /></label>
+      </div>
+    </div>
+    <div class="oc-detail-section">
+      <h5>Labor plan (techs / week)</h5>
+      <div class="oc-labor" style="--wks:${wks.length}">${laborCells}</div>
+      <div class="oc-actions-row" style="margin-top:6px">
+        <button data-act="oc-add-week"  type="button">+ Add week</button>
+        <button data-act="oc-rm-week"   type="button" ${wks.length<=1?'disabled':''}>– Remove week</button>
+      </div>
+    </div>
+  `;
+}
+function recomputeTotals(alts, deducts, it) {
+  const altSel = alts.filter(a => a.selected).reduce((s,a)=>s+(Number(a.amount)||0),0);
+  const dedSel = deducts.filter(d => d.selected).reduce((s,d)=>s+(Number(d.amount)||0),0);
+  const at = $('oc-alts-total');  if (at) at.textContent  = fmtUsd(altSel);
+  const dt = $('oc-ded-total');   if (dt) dt.textContent  = fmtUsd(dedSel);
+  const gt = $('oc-grand-total'); if (gt) gt.textContent  = fmtUsd((Number(it.bidAmountUsd)||0) + altSel - dedSel);
+}
+function collectOutcomePayload(it) {
+  const os = it.outcomeStatus || 'unknown';
+  const bidAmount = parseFloat($('oc-bid-amount')?.value || '');
+  const notes     = $('oc-notes')?.value || null;
+  const payload = {
+    jobId: it.jobId,
+    outcomeStatus: os,
+    bidAmountUsd: isFinite(bidAmount) ? bidAmount : null,
+    notes,
+  };
+  if (os === 'won') {
+    // Read the live alts/deducts (mutated in-place by listeners).
+    payload.altsJson    = it.altsJson    || JSON.stringify([]);
+    payload.deductsJson = it.deductsJson || JSON.stringify([]);
+    const terms = {
+      netDays:      parseInt($('oc-net-days')?.value || '30',  10),
+      retainagePct: parseFloat($('oc-retain')?.value   || '10'),
+      schedule:     $('oc-schedule')?.value || 'progress',
+      notes:        $('oc-terms-notes')?.value || '',
+    };
+    payload.paymentTermsJson = JSON.stringify(terms);
+    payload.projectStartAt = $('oc-start')?.value || null;
+    payload.projectEndAt   = $('oc-end')?.value   || null;
+    const wkEls  = document.querySelectorAll('.oc-labor input[type=range]');
+    const weeks  = Array.from(wkEls).map(el => ({ techs: parseInt(el.value, 10) }));
+    payload.laborPlanJson = JSON.stringify({ weeks: weeks.length ? weeks : [{techs:2}] });
+  }
+  return payload;
+}
+async function saveOutcome(_unused, manageAfter) {
+  const it = selectedOutcome();
+  if (!it) return;
+  try {
+    const payload = collectOutcomePayload(it);
+    await api('POST', '/api/outcomes/upsert', payload);
+    toast('Outcome saved.');
+    if (manageAfter) {
+      const params = new URLSearchParams({ jobId: it.jobId });
+      if (URL_PARAMS.get('secret')) params.set('secret', URL_PARAMS.get('secret'));
+      if (URL_PARAMS.get('api'))    params.set('api',    URL_PARAMS.get('api'));
+      window.location.href = '/admin/manage-job.html?' + params.toString();
+      return;
+    }
+    await loadOutcomes();
+    OC_STATE.selected = it.jobId;
+    renderOutcomes();
+  } catch (e) { toast(e.message, 4500); }
+}
+async function addToCalendar(it) {
+  try {
+    const r = await api('POST', '/api/outcomes/calendar-add', { jobId: it.jobId });
+    if (r.eventUrl) window.open(r.eventUrl, '_blank', 'noopener,noreferrer');
+    toast('Added to GCC staff calendar.');
+    await loadOutcomes();
+    OC_STATE.selected = it.jobId;
+    renderOutcomes();
+  } catch (e) { toast(e.message, 5000); }
+}
+// Filter / search wiring (set up once at startup, not on every render).
+$('oc-filter')?.addEventListener('change', () => { OC_STATE.filter = $('oc-filter').value; renderOutcomes(); });
+$('oc-search')?.addEventListener('input',  () => { OC_STATE.search = $('oc-search').value; renderOutcomes(); });
+// Add/remove labor week buttons (delegated; the buttons re-render but lifetime is per-render).
+document.addEventListener('click', (e) => {
+  const it = selectedOutcome(); if (!it) return;
+  if (e.target.matches('button[data-act="oc-add-week"]')) {
+    const labor = safeJsonParse(it.laborPlanJson, { weeks:[{techs:2}] });
+    labor.weeks.push({ techs:2 });
+    it.laborPlanJson = JSON.stringify(labor);
+    renderOutcomeDetail();
+  }
+  if (e.target.matches('button[data-act="oc-rm-week"]')) {
+    const labor = safeJsonParse(it.laborPlanJson, { weeks:[{techs:2}] });
+    if (labor.weeks.length > 1) labor.weeks.pop();
+    it.laborPlanJson = JSON.stringify(labor);
+    renderOutcomeDetail();
+  }
+});
+// Live tech count update on the labor sliders.
+document.addEventListener('input', (e) => {
+  if (!e.target.matches('.oc-labor input[type=range]')) return;
+  const wk = parseInt(e.target.dataset.wk, 10);
+  const lbl = e.target.parentElement.querySelector(`[data-techs="${wk}"]`);
+  if (lbl) lbl.textContent = e.target.value;
+});
+
+// ===== Health Board (Processes tab) =====
+let _hbErrorsRaw = '';
+async function loadHealthBoard() {
+  try {
+    const hb = await api('GET', '/api/admin/health-board');
+    // API card
+    const startedAt = new Date(hb.api.startedAt);
+    $('hb-api').querySelector('.hb-body').innerHTML =
+      `<div class="row"><span class="k">Status</span><span class="v ok">healthy</span></div>
+       <div class="row"><span class="k">Started</span><span class="v">${fmt(startedAt)}</span></div>
+       <div class="row"><span class="k">Uptime</span><span class="v">${hb.api.uptime}</span></div>
+       <div class="row"><span class="k">Host</span><span class="v">${safeHtml(hb.api.machine)}</span></div>`;
+
+    // DNS card
+    const dnsHtml = (hb.dns || []).map(d => {
+      const cls = d.ok ? 'ok' : 'bad';
+      const val = d.ok ? d.addresses.join(', ') : (d.error || 'no resolve');
+      return `<div class="row"><span class="k">${safeHtml(d.host)}</span><span class="v ${cls}">${safeHtml(val)}</span></div>`;
+    }).join('');
+    $('hb-dns').querySelector('.hb-body').innerHTML = dnsHtml || '<span class="pad">no hosts</span>';
+
+    // Pipeline stats card
+    const s = hb.stats || {};
+    const fmtN = (n) => n == null ? '—' : Number(n).toLocaleString();
+    $('hb-stats').querySelector('.hb-body').innerHTML =
+      `<div class="row"><span class="k">BC RFPs</span><span class="v">${fmtN(s.bcRfps)}</span></div>
+       <div class="row"><span class="k">BC attachments</span><span class="v">${fmtN(s.bcAttachments)}</span></div>
+       <div class="row"><span class="k">BC details</span><span class="v">${fmtN(s.bcDetails)}</span></div>
+       <div class="row"><span class="k">BQ extractions</span><span class="v">${fmtN(s.bqExtractions)}</span></div>
+       <div class="row"><span class="k">LV symbols</span><span class="v">${fmtN(s.bqSymbols)}</span></div>
+       <div class="row"><span class="k">Bid notes</span><span class="v">${fmtN(s.bqNotes)}</span></div>
+       <div class="row"><span class="k">Resp. matrix</span><span class="v">${fmtN(s.bqRespMatrix)}</span></div>
+       <div class="row"><span class="k">Acronyms</span><span class="v">${fmtN(s.bqAcronyms)}</span></div>`;
+
+    // Errors card
+    const errs = hb.errors || [];
+    _hbErrorsRaw = errs.map(e => `[${e.at}] ${e.source}\n${e.message}`).join('\n\n----\n\n');
+    $('hb-errors').querySelector('.hb-body').innerHTML = errs.length
+      ? errs.map(e => `<div class="hb-error"><span class="at">${fmt(e.at)}</span><strong>${safeHtml(e.source)}</strong>\n${safeHtml(e.message)}</div>`).join('')
+      : '<span class="ok">no recent errors 🎉</span>';
+  } catch (e) {
+    $('hb-api').querySelector('.hb-body').innerHTML = `<span class="bad">${safeHtml(e.message)}</span>`;
+    $('hb-dns').querySelector('.hb-body').innerHTML = '<span class="pad">—</span>';
+    $('hb-stats').querySelector('.hb-body').innerHTML = '<span class="pad">—</span>';
+    $('hb-errors').querySelector('.hb-body').innerHTML = '<span class="pad">—</span>';
+  }
+}
+// Wire the copy-errors button (delegated since it's nested inside the dynamic body).
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-act="hb-copy-errors"]');
+  if (!b) return;
+  navigator.clipboard.writeText(_hbErrorsRaw || 'no errors').then(
+    () => { b.textContent = '✓ Copied'; setTimeout(() => b.textContent = '📋 Copy', 1500); },
+    () => toast('Clipboard write failed', 3500)
+  );
+});
+
+// Refresh: just refetch leads-summary (no BC scrape, no Pub/Sub fanout).
+$('refresh').addEventListener('click', async () => {
+  const btn = $('refresh');
+  btn.disabled = true; const orig = btn.textContent; btn.textContent = '↻ refreshing…';
+  try { await load(); toast('Refreshed.'); }
+  catch (e) { toast(e.message, 5000); }
+  finally   { btn.disabled = false; btn.textContent = orig; }
+});
+
+$('fix-folders').addEventListener('click', async () => {
+  const btn = $('fix-folders');
+  if (!confirm('Create any missing Drive job folders + Intake subfolders, stale the BC scrape freshness, and trigger a re-pull (which will unzip BC ZIPs into Intake)?\n\nThis only CREATES folders — it never moves your hand-curated ones.')) return;
+  btn.disabled = true; const orig = btn.textContent; btn.textContent = 'fixing…';
+  try {
+    const r = await api('POST', '/api/bc/fix-job-folders', { triggerScrape: true });
+    const parts = [];
+    if (r.created) parts.push(`${r.created} job folder${r.created === 1 ? '' : 's'} created`);
+    if (r.intakeCreated) parts.push(`${r.intakeCreated} Intake subfolder${r.intakeCreated === 1 ? '' : 's'} created`);
+    if (r.healed) parts.push(`${r.healed} dangling pointer${r.healed === 1 ? '' : 's'} healed`);
+    if (r.verified) parts.push(`${r.verified} already OK`);
+    if (r.failed) parts.push(`${r.failed} failed`);
+    if (r.scrapeTriggered) parts.push('scrape-detail triggered');
+    toast(parts.join(' · ') || 'No folders needed fixing.', 6000);
+    setTimeout(load, 4000);
+  } catch (e) { toast(e.message, 6000); }
+  finally   { btn.disabled = false; btn.textContent = orig; }
+});
+
+$('rescan').addEventListener('click', async () => {
+  const btn = $('rescan');
+  btn.disabled = true;
+  btn.textContent = 'firing...';
+  try {
+    const r = await api('POST', '/api/bc/rescan-now', {});
+    toast(`Triggered ${r.triggered.length} scheduled tasks. Auto-refreshes every 30s.`, 4500);
+  } catch (e) { toast(e.message, 5000); }
+  finally {
+    btn.disabled = false;
+    btn.textContent = 'Rescan now';
+  }
+  setTimeout(load, 4000);
+});
+
+let refreshTimer = null;
+function scheduleRefresh() {
+  clearInterval(refreshTimer);
+  refreshTimer = setInterval(load, 30000);
+  $('auto').textContent = 'auto-refresh every 30s';
+}
+
+// Header height varies with viewport width (the meta line wraps to two
+// lines on narrower screens). The table head is sticky and needs to clear
+// the header by exactly that height, so we publish the live value as a
+// CSS variable on :root and re-measure on resize / fonts-ready / refetch.
+function syncStickyOffsets() {
+  const header = document.querySelector('header');
+  if (header) document.documentElement.style.setProperty('--header-h', header.offsetHeight + 'px');
+}
+window.addEventListener('resize',          syncStickyOffsets);
+window.addEventListener('DOMContentLoaded', syncStickyOffsets);
+syncStickyOffsets();
+
+wireIntakeFilters();
+load();
+scheduleRefresh();
+if (document.fonts?.ready) document.fonts.ready.then(syncStickyOffsets);
+setTimeout(syncStickyOffsets, 200);
+</script>
+  <div id="gcc-footer"></div>
+  <script src="/assets/js/footer.js"></script>
+</body>
+</html>

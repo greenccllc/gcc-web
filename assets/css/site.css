@@ -527,12 +527,17 @@ section {
 
 /* ── Login pages ─────────────────────────────────────────────── */
 .login-page {
-  min-height: 100vh;
-  display: flex; align-items: center; justify-content: center;
-  padding: 32px 16px;
+  /* Min-height kept so the gradient background fills tall viewports
+     even when the card is short, but the layout is now driven by the
+     <main> wrapper so the GCC site nav + footer can sit above/below. */
   background:
     radial-gradient(1000px 800px at 50% -100px, rgba(30, 77, 43, 0.10), transparent 70%),
     var(--color-surface-page);
+}
+.login-page main#main {
+  min-height: calc(100vh - 64px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 48px 16px;
 }
 .login-card {
   width: 100%; max-width: 420px;
