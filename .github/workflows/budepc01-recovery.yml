@@ -1,0 +1,77 @@
+name: budepc01-emergency-recovery
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'What to do on budepc01'
+        required: true
+        default: 'restart-iis-and-reopen-mgmt'
+        type: choice
+        options:
+          - restart-iis-and-reopen-mgmt
+          - reboot-host
+          - status-only
+  push:
+    paths:
+      - '.github/workflows/budepc01-recovery.yml'
+
+jobs:
+  recover:
+    runs-on: self-hosted
+    timeout-minutes: 10
+    steps:
+      - name: Show current state
+        shell: pwsh
+        run: |
+          Write-Host "=== Hostname / OS ==="
+          [System.Net.Dns]::GetHostName()
+          (Get-CimInstance Win32_OperatingSystem).Caption
+          Write-Host "=== W3SVC + WAS state ==="
+          Get-Service W3SVC, WAS | Format-Table Name, Status, StartType -AutoSize
+          Write-Host "=== Listening ports of interest ==="
+          Get-NetTCPConnection -State Listen |
+            Where-Object LocalPort -in 80, 443, 445, 3389, 5985, 5986, 8765 |
+            Sort-Object LocalPort | Format-Table LocalAddress, LocalPort, OwningProcess -AutoSize
+
+      - name: Restart IIS and reopen management ports
+        if: ${{ github.event_name == 'push' || inputs.action == 'restart-iis-and-reopen-mgmt' }}
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Continue'
+          Write-Host "Starting W3SVC + WAS..."
+          Start-Service WAS, W3SVC
+          Get-Service W3SVC, WAS | Format-Table Name, Status -AutoSize
+
+          Write-Host "Re-opening WinRM firewall rules..."
+          Get-NetFirewallRule -DisplayGroup 'Windows Remote Management' -ErrorAction SilentlyContinue |
+            Set-NetFirewallRule -Enabled True
+          Enable-PSRemoting -Force -SkipNetworkProfileCheck
+
+          Write-Host "Re-opening File and Printer Sharing (SMB)..."
+          Get-NetFirewallRule -DisplayGroup 'File and Printer Sharing' -ErrorAction SilentlyContinue |
+            Set-NetFirewallRule -Enabled True
+
+          Write-Host "Confirm gcc-site responds locally on 8765..."
+          try {
+            $r = Invoke-WebRequest http://localhost:8765/ -UseBasicParsing -TimeoutSec 5
+            "Local gcc-site -> $($r.StatusCode)"
+          } catch {
+            "Local gcc-site fetch failed: $($_.Exception.Message)"
+          }
+
+          Write-Host "RDS-related Windows features currently installed:"
+          Get-WindowsFeature *RDS*, *Remote-Desktop* -ErrorAction SilentlyContinue |
+            Where-Object Installed | Format-Table Name, DisplayName -AutoSize
+
+      - name: Reboot host
+        if: ${{ inputs.action == 'reboot-host' }}
+        shell: pwsh
+        run: |
+          Write-Host "Scheduling reboot in 30 seconds so this job can finish reporting..."
+          Start-Process shutdown -ArgumentList '/r', '/t', '30', '/d', 'p:4:1', '/c', 'Emergency reboot via GitHub Actions runner' -NoNewWindow
+
+      - name: Status only
+        if: ${{ inputs.action == 'status-only' }}
+        shell: pwsh
+        run: |
+          Write-Host "(no changes - diagnostic run only)"
