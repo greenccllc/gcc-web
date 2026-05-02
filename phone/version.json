@@ -1,0 +1,8 @@
+{
+  "versionName": "1.3.0",
+  "versionCode": 10,
+  "apkUrl": "https://phone.greencommllc.com/app-release.apk",
+  "releasedAt": "2026-05-02",
+  "minSupportedVersionCode": 8,
+  "changelog": "1.3.0 — SSO sign-in gate via Cloudflare Access (Google Workspace). Reimagined 3-tab UI: Today (status + sync controls) · Health (perms + diagnostics) · Settings (advanced + sign out). Theme refresh to greencommllc.com forest #1E4D2B. New /api/phone/sync/state endpoint primes cursors on fresh install. Dynamic User-Agent."
+}
