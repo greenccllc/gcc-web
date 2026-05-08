@@ -2,47 +2,87 @@
 
 ## Project overview
 
-Static HTML/CSS/JS website for GCC LLC (Green Communications Contracting) — a Division 27/28 low-voltage cabling contractor. No build step, no package manager, no bundler. The repo is deployed to IIS via a git-pull scheduled task (`publish.ps1`).
+This repo (`gcc-site`) is the static HTML/CSS/JS marketing site + customer/staff/admin portal for GCC LLC (Green Communications Contracting) — a Division 27/28 low-voltage cabling contractor. No build step, no package manager, no bundler. Deployed to IIS via git-pull scheduled task (`publish.ps1`).
 
 Production: https://greencommllc.com
 
+The full GCC + MAJIC ecosystem spans 25 repos in the `greenccllc` GitHub org. The sibling repos are cloned into `/workspace/repos/` for cross-repo development.
+
 ## Cursor Cloud specific instructions
 
-### Running the dev server
-
-Serve the site locally with any static file server from the repo root:
+### Running this site (gcc-site)
 
 ```
 python3 -m http.server 8080 --directory /workspace
 ```
 
-All pages are then at `http://localhost:8080/`. No build step is required.
+All pages at `http://localhost:8080/`. No build step needed.
 
-### Architecture (for context)
+### Ecosystem services (sibling repos in /workspace/repos/)
 
-- This repo contains **only the static frontend**. The backend API (`gcc-api`, .NET minimal API on port 5099) and Admin Console Express server (port 3001) live in separate, private repos not available here.
-- The site's JS calls the API via `/assets/js/api.js` which expects `api.greencommllc.com` — those calls will 404 or fail locally. Marketing pages, estimators, and contact form UI all render and function client-side without the API.
-- `/admin/console/` contains a pre-built React SPA (bundled, no source code in this repo).
+| Service | Repo | Stack | Run locally | Port |
+|---------|------|-------|-------------|------|
+| **gcc-api** | `repos/gcc-api` | ASP.NET Core 8 | `dotnet run` (needs SQL Server + appsettings.json) | 5099 |
+| **gcc-scoper** | `repos/gcc-scoper` | Python/FastAPI | `.venv/bin/uvicorn gcc_scoper.main:app --port 5108` | 5108 |
+| **majic-app API** | `repos/majic-app/MajicApi` | ASP.NET Core 8 | `dotnet run` (needs SQL Server) | 5000 |
+| **majic-app SPA** | `repos/majic-app/spa` | React/Vite/TS | `npm run dev -- --port 5173` | 5173 |
+| **google-admin-mcp** | `repos/google-admin-mcp` | Node.js MCP | `node index.js` (needs gcc-api running) | stdio |
+| **gcc-bc-scraper** | `repos/gcc-bc-scraper` | Node.js/Playwright | `node scrape.js` (headless browser) | — |
+| **proposal-worker** | `repos/proposal-worker` | Python | `.venv/bin/python worker.py` (needs Pub/Sub + GCP) | — |
+| **bid-extractor** | `repos/bid-extractor` | Python | `.venv/bin/python worker.py` (needs Pub/Sub + Anthropic key) | — |
+| **compliance-checker** | `repos/compliance-checker` | Python | `.venv/bin/python -m compliance` | — |
+| **lv-plan-annotator** | `repos/lv-plan-annotator` | Python/OpenCV | Library, no server | — |
+| **quote-agent** | `ops/quote-agent.js` (this repo) | Node.js | `node ops/quote-agent.js` | 7101 |
 
-### What works locally without the API
+### What works locally without external services
 
-- All marketing pages (`/index.html`, `/about.html`, `/services.html`, `/projects.html`, `/contact.html`, `/support.html`)
-- Cost estimators (`/estimate/commercial.html`, `/estimate/residential.html`) — fully client-side JS calculations
-- Client login/signup UI (`/clients/index.html`) — form renders but auth calls will fail
-- Admin dashboard pages (`/admin/*.html`) — UI renders but data fetches will fail
+- **gcc-site**: All marketing pages + estimators (client-side JS). Auth/data calls fail without gcc-api.
+- **gcc-scoper**: FastAPI starts and responds on `/healthz`. Full inference requires Ollama + GPU.
+- **majic-app SPA**: Vite dev server runs. Dashboard renders; live data requires MajicApi backend.
+- **compliance-checker**: Full test suite passes (`pytest tests/` — 20 tests).
+- **lv-plan-annotator**: Full test suite passes (`pytest tests/` — 9 tests).
 
-### Linting / validation
+### Building .NET projects
 
-No linter is configured (no `package.json`, no `.eslintrc`). For quick validation:
+.NET 8 SDK installed at `~/.dotnet`. Ensure PATH includes it:
+```
+export PATH="$HOME/.dotnet:$PATH"
+```
 
-- **HTML parse check:** `python3 -c "import html.parser, os; ..."`  (see setup session for snippet)
-- **JS syntax check:** `node -e "..."` wrapping each file in `new Function(...)` catches syntax errors
+All three .csproj projects build cleanly:
+- `repos/gcc-api/GccApi` — 0 errors, 13 warnings (unused locals)
+- `repos/majic-app/MajicApi` — 0 errors, 0 warnings
+- `repos/majic-agent/MajicAgent` — 0 errors, 1 warning (Windows-only API)
 
-### Quote Agent (optional microservice in-repo)
+### Python repos — venv pattern
 
-`/ops/quote-agent.js` is a standalone Node.js HTTP receiver (port 7101). Run with `node ops/quote-agent.js`. It's only relevant for lead-handling workflows and not needed for frontend dev.
+Each Python repo has its own `.venv/` with deps installed:
+```
+cd repos/<name> && .venv/bin/python -m ...
+```
+Repos: `bid-extractor`, `gcc-scoper`, `compliance-checker`, `proposal-worker`, `lv-plan-annotator`, `docai-training`
 
-### Key paths
+### Linting
+
+- **majic-app SPA**: `cd repos/majic-app/spa && npm run lint` (ESLint — has 13 pre-existing lint errors)
+- **majic-app SPA TypeScript**: `cd repos/majic-app/spa && npx tsc --noEmit` (passes clean)
+- **gcc-site**: No configured linter. Use `node -e "new Function(fs.readFileSync(f,'utf8'))"` for JS syntax checks.
+
+### Tests
+
+- `repos/compliance-checker`: `cd repos/compliance-checker && .venv/bin/python -m pytest tests/ -v` (20 pass)
+- `repos/lv-plan-annotator`: `cd repos/lv-plan-annotator && .venv/bin/python -m pytest tests/ -v` (9 pass)
+
+### Key constraints / gotchas
+
+- **gcc-api** targets `windows` platform (IIS, COM, Win32 APIs). It builds on Linux but cannot fully run without SQL Server and Windows services.
+- **gcc-scoper** requires Ollama + RTX 3090 GPU for inference. The FastAPI server starts without it but vision/synthesis endpoints return 502.
+- **bid-extractor** and **proposal-worker** need GCP Pub/Sub credentials and Anthropic API key.
+- **gcc-bc-scraper** needs Playwright + stored BuildingConnected session cookies.
+- **gcc-proposal-generator** is an Electron app (Windows desktop only).
+- **majic-agent** is a Windows Service (win-x64 runtime, PerformanceCounter APIs).
+
+### Key paths (this repo)
 
 | Path | Purpose |
 |------|---------|
