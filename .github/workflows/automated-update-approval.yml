@@ -1,0 +1,40 @@
+name: Automated update approval
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review, edited]
+  schedule:
+    # Poll Slack reactions and 48-hour deadlines for pending automated updates.
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: automated-update-approval-${{ github.event.pull_request.number || 'scheduled' }}
+  cancel-in-progress: false
+
+jobs:
+  approval:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out approval controller
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: Post/poll approval messages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_APPROVAL_CHANNEL_ID: ${{ secrets.SLACK_APPROVAL_CHANNEL_ID }}
+          SLACK_APPROVER_USER_ID: ${{ secrets.SLACK_APPROVER_USER_ID }}
+          AUTOMATED_APPROVAL_TIMEOUT_HOURS: '48'
+          AUTOMATED_APPROVAL_BRANCH_PREFIXES: 'cursor/,dependabot/,renovate/,github-actions/'
+          AUTOMATED_APPROVAL_LABELS: 'automated-update,agent-update,scheduled-update,recurring-update'
+          AUTOMATED_APPROVAL_ACTORS: 'github-actions[bot],dependabot[bot],renovate[bot],cursor[bot]'
+          AUTOMATED_APPROVAL_MERGE_METHOD: 'squash'
+        run: python3 .github/scripts/automated_update_approval.py
