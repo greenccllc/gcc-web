@@ -4,6 +4,72 @@ All notable changes to the GCC LLC public site + portal land here. The release
 workflow (`.github/workflows/release.yml`) reads the matching section by version
 when a new tag is cut.
 
+## v2.0.0 — Manager rebuild + marketing facelift + ecosystem dev env
+
+Big batch on top of v1.1.0. The customer-facing marketing site got a visual
+refresh, the staff portal was renamed and redesigned as **GCC Manager**, and
+the repo now hosts the rest of the greenccllc dev environment alongside the
+site code. No portal logins or saved estimates were invalidated.
+
+### Marketing site
+- Overhauled visual language and CTA layouts across the public pages (#10) —
+  hero illustration, paired CTAs, login-footer fix, refreshed public nav
+- Estimator: dropped renovations + HVAC, fixed contrast, stripped legacy chrome
+- New `phone.greencommllc.com` landing page + APK distribution for the
+  field-tech phone build
+
+### Site structure & auth
+- Site restructure: unified chrome, new sitemap, `/staff/` merged into
+  `/admin/`, shared nav shell across customer + staff + admin
+- SSO gates `/admin/`; `/staff/` falls through to the landing page
+- Client-side Google OAuth gate on staff pages with Cloudflare Access docs
+- Admin Console tab on bc-leads; admin tools iframe nav fixed so links jump
+  to the top window; admin `<title>` renamed Staff → Admin on 8 dashboards
+
+### Manager (was Admin Console)
+- Admin Console aligned as **GCC Manager** with the shared nav shell (#7)
+- Manager redesign: Source Sans 3 + JetBrains Mono, tighter radii, tabbed
+  manage-job layout, theme picker, V# proposal pane
+- manage-job: live extraction-readiness strip; Job Requirements card with
+  per-pill location tooltips; refined LV scope groups
+  (DATA / SECURITY / TELECOMM / AV); Send-to-proposal button + collapsed
+  Audit card; AI describe fallback; LV requirements pane under Latest Proposal
+- Queue tab: live activity feed; Chihuahua watchdog pane (last-hour vs today,
+  60s tick); Restart All + Chihuahua learning; admin-only Manager nav link;
+  "Open local folder" link via `LocalJobFolderPath`
+- Projects: Bulk extract-full button (+ auto-synth), Syn Conf column, per-row
+  Synthesize refresh, Chihuahua watchdog atop the Queue tab
+- Proposal popout: bootstrap action + template manifest, "Build all sections"
+  button + results panel, fixed close (hidden attr was being overridden),
+  inline popout replaces the proposal-worker handoff, Proposal output card on
+  manage-job, smoother Synthesize → Accept → Proposal handoff
+- Extract-more button: optimistic UI + local-LLM hint, rotates through
+  canonical extraction tools
+- Estimator wizard + iframe shell + login-page chrome
+- bc-leads + `staff/index.html` drop MyAiDrive references
+
+### Shared foundations
+- Shared CSS component layer + internal styleguide (#2)
+- Inline marketing styles refactored into reusable utility classes (#3)
+- Layered CSS token system; site styles migrated onto it (#4)
+- Design governance documentation set (#5)
+- Shared navigation initialization + hooks refactored (#6)
+
+### Ops & dev environment
+- `ops/recover-iis.ps1` — self-elevating one-shot IIS host recovery script
+  for the gcc-site box (#8)
+- `.github/workflows/budepc01-recovery.yml` — emergency recovery workflow
+- `repos/` — sibling greenccllc repos vendored as gitlinks so a single
+  `gcc-site` clone surfaces the rest of the ecosystem (#11)
+- `AGENTS.md` — full greenccllc ecosystem dev environment notes (25 repos) (#9)
+- `.cursor/rules/gcc-house.mdc` shared Cursor rule + narrowed `.cursor/`
+  ignore; `.env*` and `.cursor/` ignored as local-only artifacts
+
+### Known gaps
+- `repos/` gitlinks ship without a `.gitmodules`, so
+  `git submodule update --init` won't auto-clone them yet — follow-up to add
+  the mapping or move siblings out of the repo
+
 ## v1.1.0 — Settings consolidation + Places autocomplete
 
 Five-commit batch on top of v1.0.0. No breaking changes; portal users keep
