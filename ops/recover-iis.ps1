@@ -72,10 +72,17 @@ Write-Host "=== 2. Pin services to Automatic ==="
 foreach ($row in $snapshot | Where-Object Present) {
     try {
         if ($row.Name -eq 'cloudflared') {
-            # Delayed-start gives the network stack time to come up before
-            # the tunnel tries to dial home.
-            Set-Service -Name $row.Name -StartupType AutomaticDelayedStart -ErrorAction Stop
-            Write-Host "  $($row.Name): AutomaticDelayedStart"
+            # Windows PowerShell 5.1 (what `powershell.exe` resolves to on the
+            # box) doesn't accept `-StartupType AutomaticDelayedStart` -
+            # that enum value only exists in PowerShell 7+. Shell out to
+            # sc.exe so this works on both shells. The literal space after
+            # `start=` is required by sc.exe's argument parser.
+            $sc = & sc.exe config $row.Name start= delayed-auto 2>&1
+            if ($LASTEXITCODE -eq 0) {
+                Write-Host "  $($row.Name): AutomaticDelayedStart (via sc.exe)"
+            } else {
+                throw "sc.exe exited $LASTEXITCODE: $sc"
+            }
         } else {
             Set-Service -Name $row.Name -StartupType Automatic -ErrorAction Stop
             Write-Host "  $($row.Name): Automatic"
