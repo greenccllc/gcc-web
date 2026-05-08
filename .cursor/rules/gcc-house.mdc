@@ -1,0 +1,108 @@
+---
+description: GCC company context — stack, infra, secrets layout. Always loaded.
+alwaysApply: true
+---
+
+# GCC house knowledge
+
+You are working in a GCC LLC repository. This rule loads context the AI
+otherwise wouldn't know — read it once, refer back when relevant.
+
+## Company
+
+**Green Communications Contracting LLC** (GCC LLC) — Nathan and Kaitlyn
+Morris's Missouri Division 27 / Division 28 low-voltage contractor. Office in
+O'Fallon, MO. Operates in MO/KS/IL prevailing-wage territory (Cat6/Cat6A
+structured cabling, fiber, IP cameras, access control, intercom, AV).
+Subsidiary of **Majic Holdings**, the parent that also owns Jacked Up Gaming
+(JUG). Admin app for the holding company is at `admin.majicholdings.com`.
+
+## Repos in `D:\GCC_LLC\Repos\`
+
+| Repo | What it is |
+| --- | --- |
+| `gcc-api` | ASP.NET Core 8 minimal-API. Kestrel behind IIS as a Windows service at `api.greencommllc.com`. Single `Program.cs` (~14k lines, intentional). Dapper + SQL Server (`localhost\GCCLLC`, db `GCCWeb`). |
+| `gcc-site` | Vanilla HTML/JS/CSS marketing + admin + portals. Served from IIS at `C:\GCC_LLC\IIS\gcc-site`. Deploys via `publish.ps1` (git fetch + reset --hard + clean -fdx). Cloudflare-fronted. |
+| `gcc-app` | MAJIC desktop / Tauri app frontend. Part of the 4-repo MAJIC stack at `greenccllc/majic-{app,agent,agent-installer,tauri}`. Deploy target: MAJIC-SVR-HV1. |
+| `proposal-system`, `proposal-worker` | Bid-proposal generation pipeline. Composio + Drive + Gemini. |
+| `bid-extractor`, `bc-scraper`, `compliance-checker`, `lv-plan-annotator`, `docai-training` | Domain-specific tooling around RFP intake → estimate → submit. |
+| `gcc-shared` | Cross-repo shared assets (CSS, JS, brand kit) referenced by gcc-site et al. |
+| `gcc-tray`, `gcc-skills`, `gcc-scoper`, `gcc-phone-sync`, `gcc-brand` | Various utilities and integrations. |
+
+## Stack defaults
+
+- **.NET**: `gcc-api` is .NET 8.0, Kestrel-only (no IIS static files). The
+  app is `Microsoft.NET.Sdk.Web` with `TargetPlatformIdentifier=windows`.
+  Don't suggest cross-platform refactors — Win32 ACL APIs and Schedule.Service
+  COM are deliberate.
+- **Database**: SQL Server, Dapper for queries (no EF). Schema lives in
+  `gcc-api/db-schema/` migrations.
+- **JavaScript**: Vanilla ES6+ in gcc-site. No bundler, no build step. Files
+  served as-is from IIS. Browser targets are evergreen Chrome/Edge — no
+  IE/legacy concerns.
+- **PowerShell**: PowerShell 7+ (`pwsh`). Default encoding UTF-8 without BOM.
+  Pipeline-chain operators (`&&`/`||`) are available.
+
+## Domain / infrastructure
+
+- AD forest: `greencommcont.com`. Primary DCs: `GCC01`, `MAJIC-DC01`.
+  Subnet: `10.0.0.0/24`.
+- Hyper-V plan (some hosts active, some planned): `MAJIC-SVR-HV1` (data-room
+  domain primary), `JUG-SVR-HV1` (dual-GPU LLM + render), `GCC-SVR-HV1`
+  (redundancy / cold-standby DR replica target).
+- TLS / fronting: Cloudflare terminates TLS at the edge, forwards to
+  `cloudflared` → local Kestrel/IIS. Original visitor scheme is in the
+  `CF-Visitor` header — gcc-api uses this for its 301 HTTPS redirect.
+- Code-signing cert (self-signed on GCC01): thumb starts `71D664ED…32C20`,
+  valid until 2031. Public copy at `admin.majicholdings.com/MajicCodeSigning.cer`.
+  GPO pushes it to **Trusted Root + Trusted Publishers** domain-wide, so
+  internally-signed binaries don't trip SmartScreen.
+
+## Secrets — Google Secret Manager
+
+GSM project `micro-enigma-494403-d0` is the **source of truth** for all
+integration secrets. The `gcc-api` reads them at startup via
+`SecretManagerConfig.cs` (custom `IConfigurationProvider`, registered in
+`Program.cs` immediately after `WebApplication.CreateBuilder` so it has
+highest precedence). `appsettings.json` is gitignored everywhere and only
+holds non-secret bootstrap pointers.
+
+Local mirror: `$HOME\.gcc-secrets\` (ACL'd to Administrator + SYSTEM).
+
+- `sync-from-gsm.py` — pull all 95 GSM secrets to `gsm.json` and `gsm.env`.
+- `Load-GccSecrets.ps1` — source `gsm.json` into a pwsh session as `$env:`
+  vars. Often auto-loaded via `$PROFILE`.
+
+**Key gotcha — `Bc:ClientSecret` reuses `infra-aps-client-secret`** (same
+Autodesk APS app per `Bc.cs`). Don't add a parallel `admin-bc-client-secret`
+— the two would just drift.
+
+Full secret-ID → config-key map and the rest of the architecture lives at
+`C:\Users\Administrator.greencommcont\.claude\projects\C--\memory\gcc_secrets.md`.
+
+## MAJIC quick refs
+
+- OAuth: reuses staff client `699304045834-…ccaab3g4`. Authorized redirect
+  URI is `admin.majicholdings.com/api/auth/callback` (NOT `admin-api.`).
+  Google Web OAuth clients are Console-only — no SA / API path to manage them.
+- DR: when MAJIC-SVR-HV1 + JUG-SVR-HV1 land, run `Configure-MajicReplica.ps1`
+  from `greenccllc/majic-ops` to set up cold-standby DR onto GCC-SVR-HV1
+  (Kerberos auth, 5-min RPO, DCs and DFS-N excluded).
+
+## Working style
+
+- Nathan tends toward terse, decisive prompts. Match the energy — be concise,
+  skip the preamble, surface trade-offs rather than rubber-stamping.
+- Don't auto-commit. Stage and explain; let Nathan approve the commit.
+- Don't push to `main` of a repo that has open PRs without confirming.
+- For destructive ops (`git reset --hard`, `git push --force`, `Remove-Item -Recurse`,
+  `git clean -fdx` outside of `publish.ps1`), pause and confirm.
+
+## Deeper context
+
+Memory files at `C:\Users\Administrator.greencommcont\.claude\projects\C--\memory\`
+have the long-form versions of each topic above. Read whichever's relevant
+when more depth is needed: `gcc_secrets.md`, `domain_topology.md`,
+`hyperv_topology.md`, `majic_holdings.md`, `majic_app_stack.md`,
+`majic_chat_trust.md`, `majic_oauth.md`, `majic_codesigning.md`,
+`majic_hyperv_replica.md`.
