@@ -5,14 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Contact — 48-hour quote turnaround · GCC LLC</title>
   <meta name="description" content="Request a quote, send plans for review, or schedule a site walk. Direct phone, email, and form — answered by ownership. 48-hour proposal turnaround. Same-day COI and W9." />
+  <meta name="author" content="Green Communications Contracting LLC" />
   <meta name="theme-color" content="#1E4D2B" />
   <link rel="canonical" href="https://greencommllc.com/contact.html" />
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
-  <link rel="stylesheet" href="/assets/css/site.css?v=20260501-restructure" />
-  <link rel="stylesheet" href="/assets/css/chrome.css?v=20260501-design-pass" />
+  <link rel="stylesheet" href="/assets/css/site.css?v=20260509" />
+  <link rel="stylesheet" href="/assets/css/chrome.css?v=20260509" />
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
+  <meta property="og:locale" content="en_US" />
   <meta property="og:site_name" content="GCC LLC" />
   <meta property="og:url" content="https://greencommllc.com/contact.html" />
   <meta property="og:title" content="Contact — 48-hour quote turnaround · GCC LLC" />
@@ -145,13 +147,16 @@
               <label for="c-msg">Project notes</label>
               <textarea id="c-msg" name="message" placeholder="Drop count, timeline, anything you want us to know."></textarea>
             </div>
+            <div aria-hidden="true" style="position:absolute;left:-9999px;">
+              <input type="text" name="_hp" tabindex="-1" autocomplete="off" />
+            </div>
             <button type="submit">Send →</button>
             <p style="font-size:11px; color:var(--slate); margin: 12px 0 0;">
               Plans? Email <a href="mailto:info@greencommllc.com" style="color:var(--forest);">info@greencommllc.com</a> directly. We accept attachments up to 50 MB; for larger sets, send a link.
             </p>
           </form>
 
-          <aside class="contact-side">
+          <aside class="contact-side" aria-label="Contact details">
             <div class="info-block">
               <h3>Phone</h3>
               <a href="tel:+16362248192">636-224-8192</a>
@@ -200,6 +205,7 @@
     document.getElementById('contact-form').addEventListener('submit', (e) => {
       e.preventDefault();
       const data = Object.fromEntries(new FormData(e.target));
+      if (data._hp) return;
       const subject = encodeURIComponent(`[GCC contact] ${data.kind} — ${data.company || data.name}`);
       const body = encodeURIComponent([
         `Name: ${data.name}`,
