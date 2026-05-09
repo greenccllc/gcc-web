@@ -348,6 +348,18 @@ async function api(method, path, body) {
   return text ? JSON.parse(text) : {};
 }
 
+// Debug session 12bc58: POST to Cursor NDJSON ingest + mirror to console (HTTPS
+// pages often block fetch to http://127.0.0.1 — filter Console by [gcc-debug]).
+function _gccDbg(row) {
+  const payload = Object.assign({ sessionId: '12bc58', timestamp: Date.now() }, row);
+  try { console.info('[gcc-debug]', payload); } catch (e) {}
+  fetch('http://127.0.0.1:7768/ingest/622ee950-c691-44e9-bdf4-ebc45d78cd0d', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '12bc58' },
+    body: JSON.stringify(payload),
+  }).catch(function () {});
+}
+
 // LEAD = the bc/leads-summary item for this JobId. Has the full row payload:
 // description, counts, extraction state, scrape state, ai cost, etc.
 // JOB  = the outcomes/list item (subset; only set if there's an outcome row).
@@ -358,6 +370,24 @@ const STATUS_OPTIONS = ['Undecided', 'Accepted', 'Submitted', 'Won', 'Archived',
 function statusBadge(s) {
   const cls = `mj-status mj-status-${(s || 'Unknown').replace(/[^A-Za-z]/g,'')}`;
   return `<span class="${cls}">${safeHtml(s || 'Unknown')}</span>`;
+}
+
+/** NFKC + strip ZW* so API / copy-paste homoglyphs still match tokens. */
+function normalizeOutcomeHeroToken(raw) {
+  if (raw == null) return '';
+  let s = String(raw).normalize('NFKC');
+  s = s.replace(/[\u200B-\u200D\uFEFF]/g, '').trim().toLowerCase();
+  return s;
+}
+/** Slider canonicals in bc-leads-tool (Outcomes tab); "unknown" = undecided bucket. */
+const OUTCOME_KNOWN_DECIDED = new Set(['won', 'lost', 'holding']);
+/**
+ * Only show bid-outcome on the hero when it is a decided slider value (won / lost / holding).
+ * Backend or LLM pipelines may rename the undecided bucket ("unknown", new slug, sentence); all
+ * of those stay off the hero so operators are not shown noisy placeholder labels.
+ */
+function shouldShowOutcomeOnHero(raw) {
+  return OUTCOME_KNOWN_DECIDED.has(normalizeOutcomeHeroToken(raw));
 }
 
 async function load() {
@@ -414,6 +444,9 @@ async function pollExtractionReadiness() {
   try {
     r = await api('GET', '/api/bc/extraction-readiness?jobId=' + encodeURIComponent(LEAD.jobId));
   } catch { return; }  // swallow transient errors
+  // #region agent log
+  _gccDbg({ location: 'manage-job-tool.html:pollExtractionReadiness', message: 'readiness', data: { jobId: String(LEAD.jobId || ''), extracted: r.extracted, extractable: r.extractable, total: r.total, queued: r.queued, processing: r.processing, skipped: r.skipped, cancelled: r.cancelled }, hypothesisId: 'H6', runId: 'pre' });
+  // #endregion
   const strip = $('mj-extract-strip');
   const inFlight = (r.queued || 0) + (r.processing || 0);
   if (inFlight === 0 && r.extracted === r.extractable) {
@@ -426,12 +459,16 @@ async function pollExtractionReadiness() {
   const total = r.extractable || (r.total - (r.skipped || 0) - (r.cancelled || 0));
   const done  = r.extracted || 0;
   const pct   = total > 0 ? Math.min(100, Math.round((done / total) * 100)) : 0;
+  const stripHint = inFlight > 0
+    ? '<div class="mj-strip-hint">Bar = attachments fully processed so far. Queued/processing work does not advance the bar until each file job completes. Proposal preview can still show counts from data already in the database.</div>'
+    : '';
   strip.hidden = false;
   strip.innerHTML = `
     <div class="mj-strip-row">
-      <div class="mj-strip-progress" title="${done} of ${total} extractable files completed">
+      <div class="mj-strip-progress" title="Completed file-extraction jobs (${done} of ${total} extractable). Separate from page-level &quot;Pages&quot; in the header.">
         <div class="mj-strip-bar"><div class="mj-strip-fill" style="width:${pct}%"></div></div>
-        <div class="mj-strip-label">${done} of ${total} files extracted (${pct}%)</div>
+        <div class="mj-strip-label">${done} of ${total} attachment extractions finished (${pct}%)</div>
+        ${stripHint}
       </div>
       <div class="mj-strip-counts">
         ${(r.queued    || 0) > 0 ? `<span class="mj-strip-chip mj-strip-queued">⏳ ${r.queued} queued</span>` : ''}
@@ -764,9 +801,27 @@ function renderHero(r) {
     r.lastFileAt || r.lastSeenAt ? `<span class="lbl">Last file</span> ${fmt(r.lastFileAt || r.lastSeenAt)}` : '',
     (att || msg) ? `<span class="lbl">Files</span> ${att} att · ${msg} msg` : '',
     cost != null ? `<span class="lbl">AI cost</span> $${Number(cost).toFixed(2)}` : '',
-    JOB?.outcomeStatus ? `<span class="lbl">Outcome</span> ${safeHtml(JOB.outcomeStatus)}` : '',
+    (JOB && shouldShowOutcomeOnHero(JOB.outcomeStatus))
+      ? `<span class="lbl">Outcome</span> ${safeHtml(JOB.outcomeStatus)}`
+      : '',
   ].filter(Boolean).join(' · ');
   $('mj-hero-subline').innerHTML = sublineParts;
+  // #region agent log
+  if (JOB?.outcomeStatus != null && JOB.outcomeStatus !== '') {
+    _gccDbg({
+      location: 'manage-job-tool.html:renderHero',
+      message: 'outcome hero field',
+      data: {
+        raw: JOB.outcomeStatus,
+        norm: normalizeOutcomeHeroToken(JOB.outcomeStatus),
+        show: shouldShowOutcomeOnHero(JOB.outcomeStatus),
+        allowlist: Array.from(OUTCOME_KNOWN_DECIDED),
+      },
+      hypothesisId: 'H7',
+      runId: 'pre',
+    });
+  }
+  // #endregion
 }
 
 // ===== Central action bar =====
@@ -876,6 +931,17 @@ function renderActionBar(r) {
 // pick the same tool again until the worker catches up.
 const _pendingTools = new Set();
 
+/** Align client optimistic pins with server `used` / `remaining` (avoids stuck badges). */
+function reconcilePendingTools(status) {
+  const remSrv = Array.isArray(status.remaining) ? status.remaining : [];
+  const usedSrv = Array.isArray(status.used) ? status.used : [];
+  for (const t of usedSrv) _pendingTools.delete(t);
+  for (const t of [..._pendingTools]) {
+    if (!remSrv.includes(t)) _pendingTools.delete(t);
+  }
+  return remSrv;
+}
+
 // Friendly label for each canonical extraction tool. Surfaces in the
 // button text + hover so the operator knows what stage is next without
 // memorizing the rotation order.
@@ -901,15 +967,22 @@ async function refreshExtractMoreStatus(jobId) {
   const btnMore = document.getElementById('mj-extract-more');
   const btnFull = document.getElementById('mj-extract-full');
   if (!btnMore && !btnFull) return;
+  // #region agent log
+  _gccDbg({ location: 'manage-job-tool.html:refreshExtractMoreStatus:entry', message: 'refreshExtractMoreStatus', data: { jobId: String(jobId || ''), hasMore: !!btnMore, hasFull: !!btnFull }, hypothesisId: 'H3', runId: 'pre' });
+  // #endregion
   try {
     const s = await api('GET', `/api/admin/jobs/${encodeURIComponent(jobId)}/extract-more-status`);
+    const remSrv = reconcilePendingTools(s);
     // Subtract any tools the user just queued client-side but that the
     // worker hasn't reflected in BidExtractions yet.
-    const remaining = (s.remaining || []).filter(t => !_pendingTools.has(t));
+    const remaining = remSrv.filter(t => !_pendingTools.has(t));
     const total     = s.totalCount ?? 0;
     const used      = total - remaining.length;
     const next      = remaining[0] || null;
     const exhausted = remaining.length === 0;
+    // #region agent log
+    _gccDbg({ location: 'manage-job-tool.html:refreshExtractMoreStatus:afterGET', message: 'extract-more-status', data: { rawRemainingLen: (s.remaining || []).length, remainingLen: remaining.length, totalCount: total, exhausted, hasRemainingKey: Object.prototype.hasOwnProperty.call(s, 'remaining'), pendingTools: _pendingTools.size }, hypothesisId: 'H1', runId: 'pre' });
+    // #endregion
     const localHint = next === 'vision-llm'
       ? ' Local pass — qwen2.5vl:7b on the GPU, no cloud cost.'
       : '';
@@ -938,6 +1011,9 @@ async function refreshExtractMoreStatus(jobId) {
       }
     }
   } catch (err) {
+    // #region agent log
+    _gccDbg({ location: 'manage-job-tool.html:refreshExtractMoreStatus:catch', message: String(err && err.message || err), data: { jobId: String(jobId || '') }, hypothesisId: 'H4', runId: 'pre' });
+    // #endregion
     // Network/auth error -- leave the buttons in their prior state but
     // surface the failure in a tooltip so the user knows why the
     // badge never populated.
@@ -970,17 +1046,23 @@ async function onMoveStatus(e) {
 async function onAction(e, btn) {
   e.stopPropagation();
   const act = btn.dataset.act, id = btn.dataset.id;
+  // #region agent log
+  _gccDbg({ location: 'manage-job-tool.html:onAction', message: 'action-click', data: { act: String(act || ''), id: String(id || ''), btnDisabled: !!btn.disabled }, hypothesisId: 'H5', runId: 'pre' });
+  // #endregion
   btn.disabled = true; const orig = btn.innerHTML; btn.textContent = '…';
   try {
     if (act === 'extract-more') {
       const resp = await api('POST', '/api/bc/extraction/extract-more', { jobId: id });
+      // #region agent log
+      _gccDbg({ location: 'manage-job-tool.html:onAction:extract-more', message: 'post-ok', data: { tool: resp && resp.tool, filesRepublished: resp && resp.filesRepublished }, hypothesisId: 'H2', runId: 'pre' });
+      // #endregion
       // Track the just-queued tool client-side so the badge advances
       // even before the worker writes BidExtractions rows. This is what
       // makes the button label/hover step forward on every click instead
       // of stalling on the same "next tool" until the worker catches up.
       if (resp.tool) _pendingTools.add(resp.tool);
       const tool = resp.tool ? ` (${toolLabel(resp.tool)})` : '';
-      toast(`Deeper extraction queued${tool}: ${resp.filesRepublished || 0} files.`, 4000);
+      toast(`Deeper extraction queued${tool}: ${resp.filesRepublished || 0} file version(s) republished to workers (pipeline fan-out; not the same number as the readiness strip or proposal “Source” files).`, 5200);
       // Kick the readiness poll right away so the strip pops in with
       // the new queued count instead of waiting for the next 5s tick.
       setTimeout(pollExtractionReadiness, 800);
@@ -994,7 +1076,8 @@ async function onAction(e, btn) {
       // client-side pending set BEFORE firing so the next call can't
       // re-pick the same tool. Stop on the first failure.
       const status = await api('GET', `/api/admin/jobs/${encodeURIComponent(id)}/extract-more-status`);
-      const remaining = (status.remaining || []).filter(t => !_pendingTools.has(t));
+      const remSrv = reconcilePendingTools(status);
+      const remaining = remSrv.filter(t => !_pendingTools.has(t));
       if (!remaining.length) { toast('Nothing left to run — every tool already queued.', 3500); return; }
       let queued = 0, totalFiles = 0;
       for (let i = 0; i < remaining.length; i++) {
@@ -1463,7 +1546,7 @@ function renderProposalView(d) {
       d.location ? `<span><strong>Location</strong> ${esc(d.location)}</span>` : '',
       d.dueAt    ? `<span><strong>Due</strong> ${esc(d.dueAt)}</span>` : '',
       d.synthConfPct != null ? `<span><strong>Synth</strong> ${d.synthConfPct}%</span>` : '',
-      d.filesProcessed != null ? `<span><strong>Source</strong> ${d.filesProcessed} files · ${_ppFmtNum(d.pagesProcessed)} pages</span>` : '',
+      d.filesProcessed != null ? `<span title="From proposal-preview: files included when assembling this preview. The yellow readiness strip counts extractable attachments finished in the live queue — different metric."><strong>Source</strong> ${d.filesProcessed} files · ${_ppFmtNum(d.pagesProcessed)} pages</span>` : '',
     `</div>`,
     `</div>`,
   ].join('');

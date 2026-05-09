@@ -170,6 +170,10 @@
       transition:width .4s ease;
     }
     .mj-strip-label { font-size:11.5px; color:var(--slate); }
+    .mj-strip-hint {
+      font-size:10.5px; color:var(--slate-2); margin-top:4px; line-height:1.35;
+      max-width:52rem;
+    }
     .mj-strip-counts { display:flex; gap:6px; flex-wrap:wrap; }
     .mj-strip-chip {
       display:inline-flex; align-items:center; gap:4px;

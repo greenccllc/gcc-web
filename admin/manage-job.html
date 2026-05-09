@@ -45,7 +45,10 @@
   <script>
     (function () {
       var params = location.search ? location.search.replace(/^\?/, '?') : '';
-      var src = '/admin/manage-job-tool.html' + params + location.hash;
+      // Bump when manage-job-tool.html changes so the iframe does not stick on a stale cached copy.
+      var TOOL_V = '20260508c';
+      var sep = params ? '&' : '?';
+      var src = '/admin/manage-job-tool.html' + params + sep + 'toolV=' + encodeURIComponent(TOOL_V) + location.hash;
       document.getElementById('tool-frame').src = src;
     })();
   </script>
