@@ -9,6 +9,8 @@
   <link rel="canonical" href="https://greencommllc.com/contact.html" />
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="/assets/css/site.css?v=20260501-restructure" />
   <link rel="stylesheet" href="/assets/css/chrome.css?v=20260501-design-pass" />
   <!-- Open Graph -->
@@ -71,9 +73,10 @@
       font-weight: 600;
       font-size: 15px;
       cursor: pointer;
-      transition: background .12s ease;
+      transition: background .12s ease, opacity .12s ease;
     }
-    .contact-form button:hover { background: var(--forest-dark, #143821); }
+    .contact-form button:hover:not(:disabled) { background: var(--forest-dark, #143821); }
+    .contact-form button:disabled { opacity: .6; cursor: not-allowed; }
     .contact-side .info-block {
       padding: 20px 0;
       border-bottom: 1px solid var(--hairline);
@@ -93,6 +96,31 @@
     }
     .contact-side .info-block a:hover { color: var(--forest); }
     .contact-side .info-block p { font-size: 13px; color: var(--slate); margin: 4px 0 0; }
+    .form-success {
+      text-align: center;
+      padding: 40px 24px;
+    }
+    .form-success .success-icon {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--forest, #1E4D2B), #2B6A3D);
+      color: white;
+      font-size: 26px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px;
+    }
+    .form-success h3 { font-size: 22px; margin: 0 0 10px; color: var(--ink, #15201A); }
+    .form-success p { color: var(--slate, #4F5B57); font-size: 14px; margin: 0; line-height: 1.6; }
+    .form-error {
+      color: #B91C1C;
+      font-size: 13px;
+      margin: 10px 0 0;
+      padding: 10px 14px;
+      background: rgba(185,28,28,.06);
+      border: 1px solid rgba(185,28,28,.18);
+      border-radius: 6px;
+    }
+    .form-error a { color: var(--forest, #1E4D2B); font-weight: 600; }
   </style>
 </head>
 <body>
@@ -114,42 +142,44 @@
     <section class="section">
       <div class="container">
         <div class="contact-grid">
-          <form class="contact-form" id="contact-form" novalidate>
-            <div class="field">
-              <label for="c-name">Name</label>
-              <input type="text" id="c-name" name="name" required autocomplete="name" />
-            </div>
-            <div class="field">
-              <label for="c-email">Email</label>
-              <input type="email" id="c-email" name="email" required autocomplete="email" />
-            </div>
-            <div class="field">
-              <label for="c-company">Company / property name</label>
-              <input type="text" id="c-company" name="company" autocomplete="organization" />
-            </div>
-            <div class="field">
-              <label for="c-phone">Phone</label>
-              <input type="tel" id="c-phone" name="phone" autocomplete="tel" />
-            </div>
-            <div class="field">
-              <label for="c-kind">What's the project?</label>
-              <select id="c-kind" name="kind">
-                <option value="commercial-bid">Commercial — RFP / GC-direct bid</option>
-                <option value="commercial-direct">Commercial — owner-direct quote</option>
-                <option value="residential">Residential</option>
-                <option value="service">Service contract / takeover audit</option>
-                <option value="other">Something else</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="c-msg">Project notes</label>
-              <textarea id="c-msg" name="message" placeholder="Drop count, timeline, anything you want us to know."></textarea>
-            </div>
-            <button type="submit">Send →</button>
-            <p style="font-size:11px; color:var(--slate); margin: 12px 0 0;">
-              Plans? Email <a href="mailto:info@greencommllc.com" style="color:var(--forest);">info@greencommllc.com</a> directly. We accept attachments up to 50 MB; for larger sets, send a link.
-            </p>
-          </form>
+          <div class="contact-form" id="contact-form-wrap">
+            <form id="contact-form" novalidate>
+              <div class="field">
+                <label for="c-name">Name</label>
+                <input type="text" id="c-name" name="name" required autocomplete="name" />
+              </div>
+              <div class="field">
+                <label for="c-email">Email</label>
+                <input type="email" id="c-email" name="email" required autocomplete="email" />
+              </div>
+              <div class="field">
+                <label for="c-company">Company / property name</label>
+                <input type="text" id="c-company" name="company" autocomplete="organization" />
+              </div>
+              <div class="field">
+                <label for="c-phone">Phone</label>
+                <input type="tel" id="c-phone" name="phone" autocomplete="tel" />
+              </div>
+              <div class="field">
+                <label for="c-kind">What's the project?</label>
+                <select id="c-kind" name="kind">
+                  <option value="commercial-bid">Commercial — RFP / GC-direct bid</option>
+                  <option value="commercial-direct">Commercial — owner-direct quote</option>
+                  <option value="residential">Residential</option>
+                  <option value="service">Service contract / takeover audit</option>
+                  <option value="other">Something else</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="c-msg">Project notes</label>
+                <textarea id="c-msg" name="message" placeholder="Drop count, timeline, anything you want us to know."></textarea>
+              </div>
+              <button type="submit" id="contact-submit">Send →</button>
+              <p style="font-size:11px; color:var(--slate); margin: 12px 0 0;">
+                Plans? Email <a href="mailto:info@greencommllc.com" style="color:var(--forest);">info@greencommllc.com</a> directly. We accept attachments up to 50 MB; for larger sets, send a link.
+              </p>
+            </form>
+          </div>
 
           <aside class="contact-side">
             <div class="info-block">
@@ -197,20 +227,62 @@
   <script src="/assets/js/header.js"></script>
   <script src="/assets/js/footer.js"></script>
   <script>
-    document.getElementById('contact-form').addEventListener('submit', (e) => {
+    document.getElementById('contact-form').addEventListener('submit', async function (e) {
       e.preventDefault();
-      const data = Object.fromEntries(new FormData(e.target));
-      const subject = encodeURIComponent(`[GCC contact] ${data.kind} — ${data.company || data.name}`);
-      const body = encodeURIComponent([
-        `Name: ${data.name}`,
-        `Email: ${data.email}`,
-        `Company: ${data.company || ''}`,
-        `Phone: ${data.phone || ''}`,
-        `Project: ${data.kind}`,
-        '',
-        data.message || ''
-      ].join('\n'));
-      window.location.href = `mailto:info@greencommllc.com?subject=${subject}&body=${body}`;
+      var form = e.target;
+      var btn = document.getElementById('contact-submit');
+      var data = Object.fromEntries(new FormData(form));
+
+      // Basic client-side validation
+      if (!data.name || !data.name.trim()) { form.querySelector('#c-name').focus(); return; }
+      if (!data.email || !data.email.includes('@')) { form.querySelector('#c-email').focus(); return; }
+
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
+
+      // Remove any prior error
+      var prior = form.querySelector('.form-error');
+      if (prior) prior.remove();
+
+      try {
+        await window.gccApi.submitLead({
+          name: data.name.trim(),
+          email: data.email.trim(),
+          company: (data.company || '').trim(),
+          phone: (data.phone || '').trim(),
+          kind: data.kind,
+          message: (data.message || '').trim(),
+          source: 'contact-form'
+        });
+
+        // Replace the whole form wrapper with a success pane
+        document.getElementById('contact-form-wrap').innerHTML = [
+          '<div class="form-success">',
+          '  <div class="success-icon">&#10003;</div>',
+          '  <h3>Message received</h3>',
+          '  <p>We\'ll follow up within 48 hours — usually same day.<br>',
+          '  For plan sets and attachments, email <a href="mailto:info@greencommllc.com" style="color:var(--forest,#1E4D2B);">info@greencommllc.com</a> directly.</p>',
+          '</div>'
+        ].join('');
+
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = 'Send →';
+
+        var subject = encodeURIComponent('[GCC contact] ' + data.kind + ' — ' + (data.company || data.name));
+        var body = encodeURIComponent(
+          'Name: ' + data.name + '\n' +
+          'Email: ' + data.email + '\n' +
+          'Company: ' + (data.company || '') + '\n' +
+          'Phone: ' + (data.phone || '') + '\n' +
+          'Project: ' + data.kind + '\n\n' +
+          (data.message || '')
+        );
+        var errEl = document.createElement('p');
+        errEl.className = 'form-error';
+        errEl.innerHTML = 'Couldn\'t reach our server. <a href="mailto:info@greencommllc.com?subject=' + subject + '&body=' + body + '">Email us directly instead →</a>';
+        form.appendChild(errEl);
+      }
     });
   </script>
 </body>
