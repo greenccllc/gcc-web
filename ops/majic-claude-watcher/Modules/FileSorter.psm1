@@ -72,12 +72,21 @@ function Sort-RemoteDownloads {
                         }
 
                         # Copy then delete (Move-Item across UNC shares is unreliable on
-                        # files held briefly by the user's shell). On any failure, leave
-                        # the source in place and let the next tick retry.
+                        # files held briefly by the user's shell). Mark the file as
+                        # seen as soon as the copy lands, so a transient delete failure
+                        # on the next tick doesn't cause us to re-copy and create
+                        # duplicate archived names.
                         Copy-Item -Path $f.FullName -Destination $destPath -Force -ErrorAction Stop
-                        Remove-Item -Path $f.FullName -Force -ErrorAction Stop
-
                         $seen[$key] = (Get-Date).ToString('o')
+                        try {
+                            Remove-Item -Path $f.FullName -Force -ErrorAction Stop
+                        } catch {
+                            # Source still locked — leave it; subsequent ticks will
+                            # short-circuit on the seen key and skip the copy. Note
+                            # this in the trace so an operator can clean up later.
+                            Write-WatcherLog -Path $WatcherLogPath -Channel 'FileSorter' -Event 'orphan-source' -Detail "$($f.FullName) -> $destPath ($_)"
+                        }
+
                         $movedTotal++
 
                         Append-MemoryRecord -Config $Config -Type 'move' -Source $host `

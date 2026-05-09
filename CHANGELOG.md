@@ -4,6 +4,45 @@ All notable changes to the GCC LLC public site + portal land here. The release
 workflow (`.github/workflows/release.yml`) reads the matching section by version
 when a new tag is cut.
 
+## v2.1.0 — SEO baseline + ops agent + automation gate
+
+Three PRs on top of v2.0.0. No portal or marketing-page behavior changes
+visible to end users; everything here is discoverability, ops automation,
+and CI guardrails.
+
+### SEO (#16)
+- Open Graph + Twitter Card meta on `index.html`, `services.html`,
+  `about.html`, `contact.html`, `projects.html`, plus all 5 service
+  sub-pages — link unfurls in Slack/iMessage/social now show a card
+  instead of a bare URL
+- `JSON-LD` `LocalBusiness` schema on `index.html` so Google can render
+  rich-result panels
+- `sitemap.xml` corrections so the new sub-pages get indexed
+
+### Ops (#18)
+- `ops/majic-claude-watcher/` — Windows service (NSSM-hosted) that runs
+  on `majic-svr-iis` with four watchers:
+  - **PsExecutor** — drop-folder `*.ps1` runner gated by NTFS ACL +
+    owner check; quarantines unauthorized scripts
+  - **MemorySync** — appends every exec + file move to `filememory.md`
+    on the `claudework` share; digests new memory artifacts to Slack
+  - **RemoteClaudeSync** — robocopy mirror of each domain server's
+    Claude + Cursor session/memory dirs into `claudework\hosts\`
+  - **FileSorter** — moves new generated/downloaded files from watched
+    user-profile dirs into `FileStore\<host>\<yyyy>\<MM>\<ext>\`
+- Slack `chat.postMessage` wrapper with per-channel soft rate limit so
+  a runaway watcher cannot flood the channel
+- Trust boundary is the NTFS ACL on the drop folder; `Install-Service.ps1`
+  sets it explicitly. Stop-gap location: `MIGRATION.md` tracks the
+  eventual move to `majic-agent`
+
+### Automation (#17)
+- New `.github/workflows/automated-update-approval.yml` + Python script:
+  Slack approval gate that bot-driven dependency-update PRs must clear
+  before they can auto-merge — humans Approve/Reject from a Slack
+  message, the workflow records the decision on the PR
+- Docs at `docs/automated-update-approvals.md`
+
 ## v2.0.0 — Manager rebuild + marketing facelift + ecosystem dev env
 
 Big batch on top of v1.1.0. The customer-facing marketing site got a visual

@@ -35,7 +35,18 @@ function Initialize-PsExecutor {
         -MessageData $queue `
         -Action { $event.MessageData.Enqueue($eventArgs.FullPath) } | Out-Null
 
-    [pscustomobject]@{ Watcher = $fsw; Queue = $queue }
+    # Backlog scan: scripts already in the folder when the service starts
+    # (e.g. dropped while the service was down) won't fire FSW events, so
+    # enqueue them explicitly. Only files at the top level — .processed/
+    # and .quarantine/ subdirs are intentionally excluded.
+    Get-ChildItem -Path $Config.DropFolder -Filter '*.ps1' -File -ErrorAction SilentlyContinue |
+        ForEach-Object { $queue.Enqueue($_.FullName) }
+
+    [pscustomobject]@{
+        Watcher       = $fsw
+        Queue         = $queue
+        UnstableTries = @{}    # path -> retry count, bounded by Pump-PsExecutor
+    }
 }
 
 function Get-FileOwnerName {
@@ -150,11 +161,20 @@ function Pump-PsExecutor {
         [Parameter(Mandatory)] [string]    $WatcherLogPath
     )
 
+    # Snapshot the queue so any items we re-enqueue (unstable retry) are
+    # processed on the next pump, not this one — avoids a hot loop when a
+    # file is genuinely stuck mid-write.
+    $batch = New-Object 'System.Collections.Generic.List[string]'
     $script = $null
-    while ($State.Queue.TryDequeue([ref]$script)) {
+    while ($State.Queue.TryDequeue([ref]$script)) { $batch.Add($script) }
+
+    $maxUnstableTries = 5
+
+    foreach ($script in $batch) {
         # FileSystemWatcher fires before the writer is finished — wait for the
         # file to settle (size stable across two reads) before we touch it.
         $stable = $false
+        $missing = $false
         for ($i = 0; $i -lt 30 -and -not $stable; $i++) {
             Start-Sleep -Milliseconds 200
             try {
@@ -162,12 +182,45 @@ function Pump-PsExecutor {
                 Start-Sleep -Milliseconds 200
                 $b = (Get-Item $script -ErrorAction Stop).Length
                 if ($a -eq $b -and $a -gt 0) { $stable = $true }
-            } catch { break }
+            } catch {
+                $missing = $true
+                break
+            }
         }
-        if (-not $stable) {
-            Write-WatcherLog -Path $WatcherLogPath -Channel 'PsExecutor' -Event 'skip-unstable' -Detail $script
+
+        if ($missing) {
+            # File vanished between event and pump (already moved/deleted by
+            # someone). Drop quietly; nothing to retry.
+            $State.UnstableTries.Remove($script)
+            Write-WatcherLog -Path $WatcherLogPath -Channel 'PsExecutor' -Event 'gone' -Detail $script
             continue
         }
+
+        if (-not $stable) {
+            $tries = if ($State.UnstableTries.ContainsKey($script)) {
+                $State.UnstableTries[$script] + 1
+            } else { 1 }
+            $State.UnstableTries[$script] = $tries
+            if ($tries -lt $maxUnstableTries) {
+                # Re-enqueue for a later pump so a slow network copy can finish.
+                $State.Queue.Enqueue($script)
+                Write-WatcherLog -Path $WatcherLogPath -Channel 'PsExecutor' -Event 'requeue-unstable' -Detail "$script tries=$tries"
+            } else {
+                # Give up: quarantine so the operator can investigate.
+                $State.UnstableTries.Remove($script)
+                $name = Split-Path $script -Leaf
+                try {
+                    $dest = Join-Path (Join-Path $Config.DropFolder '.quarantine') "unstable-$name"
+                    Move-Item -Path $script -Destination $dest -Force -ErrorAction Stop
+                } catch { }
+                Send-SlackMessage -Slack $Slack -Channel 'status' -Severity 'warn' `
+                    -Text ":warning: Quarantined ``$name`` after $maxUnstableTries unstable-size retries"
+                Write-WatcherLog -Path $WatcherLogPath -Channel 'PsExecutor' -Event 'give-up-unstable' -Detail $script
+            }
+            continue
+        }
+
+        $State.UnstableTries.Remove($script)
         try {
             Invoke-DroppedScript -Config $Config -ScriptPath $script -Slack $Slack -WatcherLogPath $WatcherLogPath
         } catch {
