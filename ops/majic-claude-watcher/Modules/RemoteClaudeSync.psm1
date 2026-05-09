@@ -50,10 +50,13 @@ function Sync-RemoteClaudeAndCursor {
                     $rcLog = Join-Path (Split-Path $WatcherLogPath -Parent) "robocopy-$host-$kind-$userSegment-$leaf.log"
                     $rcArgs = @($src.FullName, $dst, '/E', '/XO', '/R:1', '/W:2', '/NFL', '/NDL', '/NP', '/LOG+:' + $rcLog)
                     $rc = Start-Process -FilePath 'robocopy.exe' -ArgumentList $rcArgs -Wait -PassThru -WindowStyle Hidden
-                    # robocopy exit codes <8 = success-ish
+                    # robocopy return-code bits: 1=files copied, 2=extra files,
+                    # 4=mismatched, 8+=errors. 0 means nothing happened — don't
+                    # count it as a sync or we'll spam Slack on every quiet tick.
                     if ($rc.ExitCode -ge 8) {
                         Write-WatcherLog -Path $WatcherLogPath -Channel 'RemoteClaudeSync' -Event 'robocopy-error' -Detail "$host $kind $userSegment $leaf rc=$($rc.ExitCode)"
-                    } else {
+                    } elseif (($rc.ExitCode -band 1) -ne 0) {
+                        # Bit 1 set = at least one file was actually copied.
                         $totalCopied++
                     }
                 }
