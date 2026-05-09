@@ -9,10 +9,17 @@
   <link rel="canonical" href="https://greencommllc.com/services/residential.html" />
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
+  <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
   <link rel="stylesheet" href="/assets/css/site.css?v=20260501-restructure" />
   <link rel="stylesheet" href="/assets/css/chrome.css?v=20260501-design-pass" />
+  <!-- Geo / local SEO -->
+  <meta name="geo.region" content="US-MO" />
+  <meta name="geo.placename" content="O'Fallon, Missouri" />
+  <meta name="geo.position" content="38.8106;-90.6998" />
+  <meta name="ICBM" content="38.8106, -90.6998" />
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
+  <meta property="og:locale" content="en_US" />
   <meta property="og:site_name" content="GCC LLC" />
   <meta property="og:url" content="https://greencommllc.com/services/residential.html" />
   <meta property="og:title" content="Residential — Smart Home, Wi-Fi, Renovations · GCC LLC" />
@@ -26,6 +33,29 @@
   <meta name="twitter:title" content="Residential — Smart Home, Wi-Fi, Renovations · GCC LLC" />
   <meta name="twitter:description" content="Whole-home Cat6 + Wi-Fi 7, Ubiquiti smart-home ecosystem, Govee + Alexa + Google Home integration, and the multi-trade renovation work other low-voltage shops won't touch." />
   <meta name="twitter:image" content="https://greencommllc.com/assets/og/og-default.png" />
+  <script type="application/ld+json">
+  [
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://greencommllc.com/"},
+        {"@type": "ListItem", "position": 2, "name": "Services", "item": "https://greencommllc.com/services.html"},
+        {"@type": "ListItem", "position": 3, "name": "Residential", "item": "https://greencommllc.com/services/residential.html"}
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Service",
+      "name": "Residential Smart Home & Low-Voltage",
+      "description": "Whole-home Cat6, Wi-Fi 7 mesh, Ubiquiti smart-home, Govee + Alexa + Google Home integration, IP cameras, TV mounts, and multi-trade renovation work including bath, kitchen, fencing, and light electrical.",
+      "provider": {"@id": "https://greencommllc.com/#business"},
+      "serviceType": "Residential Smart Home",
+      "areaServed": [{"@type": "City", "name": "Kansas City"}, {"@type": "City", "name": "St. Louis"}],
+      "url": "https://greencommllc.com/services/residential.html"
+    }
+  ]
+  </script>
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to content</a>
@@ -85,8 +115,8 @@
 
   <div id="gcc-footer"></div>
 
-  <script src="/assets/js/api.js"></script>
-  <script src="/assets/js/header.js"></script>
-  <script src="/assets/js/footer.js"></script>
+  <script src="/assets/js/api.js" defer></script>
+  <script src="/assets/js/header.js" defer></script>
+  <script src="/assets/js/footer.js" defer></script>
 </body>
 </html>

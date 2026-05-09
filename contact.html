@@ -9,10 +9,17 @@
   <link rel="canonical" href="https://greencommllc.com/contact.html" />
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
+  <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
   <link rel="stylesheet" href="/assets/css/site.css?v=20260501-restructure" />
   <link rel="stylesheet" href="/assets/css/chrome.css?v=20260501-design-pass" />
+  <!-- Geo / local SEO -->
+  <meta name="geo.region" content="US-MO" />
+  <meta name="geo.placename" content="O'Fallon, Missouri" />
+  <meta name="geo.position" content="38.8106;-90.6998" />
+  <meta name="ICBM" content="38.8106, -90.6998" />
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
+  <meta property="og:locale" content="en_US" />
   <meta property="og:site_name" content="GCC LLC" />
   <meta property="og:url" content="https://greencommllc.com/contact.html" />
   <meta property="og:title" content="Contact — 48-hour quote turnaround · GCC LLC" />
@@ -26,6 +33,33 @@
   <meta name="twitter:title" content="Contact — 48-hour quote turnaround · GCC LLC" />
   <meta name="twitter:description" content="Request a quote, send plans for review, or schedule a site walk. Direct phone, email, and form — answered by ownership. 48-hour proposal turnaround. Same-day COI and W9." />
   <meta name="twitter:image" content="https://greencommllc.com/assets/og/og-default.png" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    "name": "Contact GCC LLC",
+    "url": "https://greencommllc.com/contact.html",
+    "description": "Request a quote, send plans for review, or schedule a site walk. 48-hour proposal turnaround. Same-day COI and W9.",
+    "mainEntity": {
+      "@type": "Organization",
+      "@id": "https://greencommllc.com/#business",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+16362248192",
+        "email": "info@greencommllc.com",
+        "contactType": "sales",
+        "areaServed": ["Kansas City", "St. Louis", "Missouri", "Kansas", "Illinois"],
+        "availableLanguage": "English",
+        "hoursAvailable": {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+          "opens": "07:00",
+          "closes": "18:00"
+        }
+      }
+    }
+  }
+  </script>
   <style>
     .contact-grid {
       display: grid;
@@ -193,9 +227,9 @@
 
   <div id="gcc-footer"></div>
 
-  <script src="/assets/js/api.js"></script>
-  <script src="/assets/js/header.js"></script>
-  <script src="/assets/js/footer.js"></script>
+  <script src="/assets/js/api.js" defer></script>
+  <script src="/assets/js/header.js" defer></script>
+  <script src="/assets/js/footer.js" defer></script>
   <script>
     document.getElementById('contact-form').addEventListener('submit', (e) => {
       e.preventDefault();
