@@ -23,8 +23,15 @@ function Initialize-PsExecutor {
     $fsw.NotifyFilter = [System.IO.NotifyFilters]'FileName, LastWrite, CreationTime'
     $fsw.EnableRaisingEvents = $true
 
+    # Register Created + Renamed: a cut/paste or rename into the drop folder
+    # arrives as a Renamed event, not Created. Both must enqueue the file.
     Register-ObjectEvent -InputObject $fsw -EventName 'Created' `
         -SourceIdentifier 'PsExecutor.Created' `
+        -MessageData $queue `
+        -Action { $event.MessageData.Enqueue($eventArgs.FullPath) } | Out-Null
+
+    Register-ObjectEvent -InputObject $fsw -EventName 'Renamed' `
+        -SourceIdentifier 'PsExecutor.Renamed' `
         -MessageData $queue `
         -Action { $event.MessageData.Enqueue($eventArgs.FullPath) } | Out-Null
 

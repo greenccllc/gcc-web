@@ -87,7 +87,7 @@ $psExe = (Get-Command powershell.exe).Source
 $entry = Join-Path $PSScriptRoot 'MajicClaudeWatcher.ps1'
 
 & nssm install $ServiceName $psExe `
-    "-NoProfile -ExecutionPolicy Bypass -File `"$entry`""    | Out-Null
+    "-NoProfile -ExecutionPolicy Bypass -File `"$entry`" -ConfigPath `"$ConfigPath`"" | Out-Null
 & nssm set $ServiceName AppDirectory  $PSScriptRoot          | Out-Null
 & nssm set $ServiceName DisplayName   'Majic Claude Watcher' | Out-Null
 & nssm set $ServiceName Description   'Local agent: PS executor, claudework memory sync, file sorter.' | Out-Null
