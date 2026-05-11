@@ -6,12 +6,18 @@
   <title>About — A small, sharp Missouri LLC · GCC LLC</title>
   <meta name="description" content="Green Communications Contracting LLC is a Missouri Division 27/28 contractor working across Kansas City and St. Louis. Two-person ownership, lean field crew, tight standards, direct line to ownership." />
   <meta name="author" content="Green Communications Contracting LLC" />
+  <meta name="keywords" content="GCC LLC about, Green Communications Contracting Missouri, low voltage contractor founders, Division 27 28 contractor ownership, Nathan Morris Kaitlyn Morris, structured cabling company Kansas City, Missouri LLC electrician" />
   <meta name="theme-color" content="#1E4D2B" />
   <link rel="canonical" href="https://greencommllc.com/about.html" />
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <link rel="stylesheet" href="/assets/css/site.css?v=20260509" />
   <link rel="stylesheet" href="/assets/css/chrome.css?v=20260509" />
+  <!-- Geo -->
+  <meta name="geo.region" content="US-MO" />
+  <meta name="geo.placename" content="O'Fallon, Missouri" />
+  <meta name="geo.position" content="38.8106;-90.6998" />
+  <meta name="ICBM" content="38.8106, -90.6998" />
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="en_US" />
@@ -38,6 +44,7 @@
       "alternateName": "GCC LLC",
       "url": "https://greencommllc.com/",
       "description": "Division 27/28 low-voltage contractor delivering structured cabling, IP surveillance, access control, and smart-home work across Kansas City and St. Louis.",
+      "foundingDate": "2026",
       "telephone": "+16362248192",
       "email": "info@greencommllc.com",
       "address": {
@@ -52,19 +59,36 @@
         {"@type": "City", "name": "Kansas City"},
         {"@type": "City", "name": "St. Louis"}
       ],
+      "numberOfEmployees": {
+        "@type": "QuantitativeValue",
+        "minValue": 2,
+        "maxValue": 5
+      },
       "employee": [
         {
           "@type": "Person",
           "name": "Kaitlyn Lim Morris",
           "jobTitle": "President",
+          "description": "90% owner. Owns sales strategy, estimating, financial administration, procurement, customer relations, COIs, W9s, and certified payroll. Background in medical operations and hospital administration.",
+          "knowsAbout": ["Sales", "Estimating", "Financial Administration", "Procurement", "Customer Relations", "Construction Contracts"],
           "worksFor": {"@id": "https://greencommllc.com/#business"}
         },
         {
           "@type": "Person",
           "name": "Nathan Morris",
           "jobTitle": "Director of Operations",
+          "description": "10% owner. 10+ years in structured cabling, network design, and field foreman work. Owns technical operations, BICSI/TIA design, field coordination, QA, and the Ubiquiti specialty practice.",
+          "knowsAbout": ["Structured Cabling", "Network Design", "BICSI", "TIA-568", "TIA-606-B", "TIA-607", "UniFi", "Ubiquiti", "Field Operations", "Low Voltage", "Division 27", "Division 28"],
           "worksFor": {"@id": "https://greencommllc.com/#business"}
         }
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://greencommllc.com/"},
+        {"@type": "ListItem", "position": 2, "name": "About", "item": "https://greencommllc.com/about.html"}
       ]
     }
   ]
