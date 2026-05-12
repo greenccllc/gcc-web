@@ -17,18 +17,17 @@ structured cabling, fiber, IP cameras, access control, intercom, AV).
 Subsidiary of **Majic Holdings**, the parent that also owns Jacked Up Gaming
 (JUG). Admin app for the holding company is at `admin.majicholdings.com`.
 
-## Repos in `D:\GCC_LLC\Repos\`
+## Repos in `D:\GCC_LLC\Repos\_github\greenccllc\GCC\`
 
 | Repo | What it is |
 | --- | --- |
-| `gcc-api` | ASP.NET Core 8 minimal-API. Kestrel behind IIS as a Windows service at `api.greencommllc.com`. Single `Program.cs` (~14k lines, intentional). Dapper + SQL Server (`localhost\GCCLLC`, db `GCCWeb`). |
-| `gcc-site` | Vanilla HTML/JS/CSS marketing + admin + portals. Served from IIS at `C:\GCC_LLC\IIS\gcc-site`. Deploys via `publish.ps1` (git fetch + reset --hard + clean -fdx). Cloudflare-fronted. |
-| `gcc-app` | MAJIC desktop / Tauri app frontend. Part of the 4-repo MAJIC stack at `greenccllc/majic-{app,agent,agent-installer,tauri}`. Deploy target: MAJIC-SVR-HV1. |
-| `proposal-system`, `proposal-worker` | Bid-proposal generation pipeline. Composio + Drive + Gemini. |
-| `bid-extractor`, `bc-scraper`, `compliance-checker`, `lv-plan-annotator`, `docai-training` | Domain-specific tooling around RFP intake → estimate → submit. |
-| `gcc-shared` | Cross-repo shared assets (CSS, JS, brand kit) referenced by gcc-site et al. |
-| `gcc-tray`, `gcc-skills`, `gcc-scoper`, `gcc-phone-sync`, `gcc-brand` | Various utilities and integrations. |
-
+| `Website\gcc-api` | ASP.NET Core 8 minimal-API. Kestrel behind IIS as a Windows service at `api.greencommllc.com`. Dapper + SQL Server (`GCCWeb`). |
+| `Website\gcc-site` | Vanilla HTML/JS/CSS marketing + admin + portals. Served from IIS at `C:\GCC_LLC\IIS\gcc-site`. Includes `gcc-brand`, `gcc-ops`, and legacy `greencommllc`. |
+| `Extractor\gcc-scoper` | Scoping service plus merged `bid-extractor`, `gcc-bc-scraper`, `composio-setup`, and `docai-training`. |
+| `Extractor\gcc-proposal-generator` | Bid-proposal generation pipeline plus merged `proposal-system`, `proposal-worker`, and `lv-plan-annotator`. |
+| `Tools\gcc-app` | MAJIC desktop / Tauri app frontend plus merged `gcc-tray`. |
+| `Tools\gcc-skills` | GCC skills plus merged `google-admin-mcp`. |
+| `compliance-checker`, `Tools\gcc-phone-sync` | Rule engine and phone sync utility. |
 ## Stack defaults
 
 - **.NET**: `gcc-api` is .NET 8.0, Kestrel-only (no IIS static files). The

@@ -1,5 +1,5 @@
 # One-time setup for GCC-Site-Sync scheduled task.
-# Runs C:\GCC_LLC\Repos\gcc-site\publish.ps1 every 2 minutes as SYSTEM,
+# Runs this repo's publish.ps1 every 2 minutes as SYSTEM,
 # keeping C:\GCC_LLC\IIS\gcc-site in sync with origin/main automatically.
 #
 # Run as administrator. Idempotent -- re-running rewrites the task definition.
@@ -9,7 +9,8 @@
 # be tolerated rather than thrown.
 
 $TaskName    = 'GCC-Site-Sync'
-$Script      = 'C:\GCC_LLC\Repos\gcc-site\publish.ps1'
+$SiteRoot    = Split-Path -Parent $PSScriptRoot
+$Script      = Join-Path $SiteRoot 'publish.ps1'
 $IntervalMin = 2
 
 if (-not (Test-Path $Script)) {

@@ -6,7 +6,7 @@ This repo (`gcc-site`) is the static HTML/CSS/JS marketing site + customer/staff
 
 Production: https://greencommllc.com
 
-The full GCC + MAJIC ecosystem spans 25 repos in the `greenccllc` GitHub org. The sibling repos are cloned into `/workspace/repos/` for cross-repo development.
+The GCC + MAJIC ecosystem is consolidated into parent repos in the `greenccllc` GitHub org. In this workspace, GCC repos live under `D:\GCC_LLC\Repos\_github\greenccllc\GCC\`.
 
 ## Cursor Cloud specific instructions
 
@@ -18,20 +18,20 @@ python3 -m http.server 8080 --directory /workspace
 
 All pages at `http://localhost:8080/`. No build step needed.
 
-### Ecosystem services (sibling repos in /workspace/repos/)
+### Ecosystem services (merged GCC workspace)
 
 | Service | Repo | Stack | Run locally | Port |
 |---------|------|-------|-------------|------|
-| **gcc-api** | `repos/gcc-api` | ASP.NET Core 8 | `dotnet run` (needs SQL Server + appsettings.json) | 5099 |
-| **gcc-scoper** | `repos/gcc-scoper` | Python/FastAPI | `.venv/bin/uvicorn gcc_scoper.main:app --port 5108` | 5108 |
+| **gcc-api** | `Website/gcc-api` | ASP.NET Core 8 | `dotnet run` (needs SQL Server + appsettings.json) | 5099 |
+| **gcc-scoper** | `Extractor/gcc-scoper` | Python/FastAPI | `.venv/bin/uvicorn gcc_scoper.main:app --port 5108` | 5108 |
 | **majic-app API** | `repos/majic-app/MajicApi` | ASP.NET Core 8 | `dotnet run` (needs SQL Server) | 5000 |
 | **majic-app SPA** | `repos/majic-app/spa` | React/Vite/TS | `npm run dev -- --port 5173` | 5173 |
-| **google-admin-mcp** | `repos/google-admin-mcp` | Node.js MCP | `node index.js` (needs gcc-api running) | stdio |
-| **gcc-bc-scraper** | `repos/gcc-bc-scraper` | Node.js/Playwright | `node scrape.js` (headless browser) | — |
-| **proposal-worker** | `repos/proposal-worker` | Python | `.venv/bin/python worker.py` (needs Pub/Sub + GCP) | — |
-| **bid-extractor** | `repos/bid-extractor` | Python | `.venv/bin/python worker.py` (needs Pub/Sub + Anthropic key) | — |
-| **compliance-checker** | `repos/compliance-checker` | Python | `.venv/bin/python -m compliance` | — |
-| **lv-plan-annotator** | `repos/lv-plan-annotator` | Python/OpenCV | Library, no server | — |
+| **google-admin-mcp** | `Tools/gcc-skills/google-admin-mcp` | Node.js MCP | `node index.js` (needs gcc-api running) | stdio |
+| **gcc-bc-scraper** | `Extractor/gcc-scoper/gcc-bc-scraper` | Node.js/Playwright | `node scrape.js` (headless browser) | — |
+| **proposal-worker** | `Extractor/gcc-proposal-generator/proposal-worker` | Python | `.venv/bin/python worker.py` (needs Pub/Sub + GCP) | — |
+| **bid-extractor** | `Extractor/gcc-scoper/bid-extractor` | Python | `.venv/bin/python worker.py` (needs Pub/Sub + Anthropic key) | — |
+| **compliance-checker** | `compliance-checker` | Python | `.venv/bin/python -m compliance` | — |
+| **lv-plan-annotator** | `Extractor/gcc-proposal-generator/lv-plan-annotator` | Python/OpenCV | Library, no server | — |
 | **quote-agent** | `ops/quote-agent.js` (this repo) | Node.js | `node ops/quote-agent.js` | 7101 |
 
 ### What works locally without external services
@@ -50,7 +50,7 @@ export PATH="$HOME/.dotnet:$PATH"
 ```
 
 All three .csproj projects build cleanly:
-- `repos/gcc-api/GccApi` — 0 errors, 13 warnings (unused locals)
+- `Website/gcc-api/GccApi` — 0 errors, 13 warnings (unused locals)
 - `repos/majic-app/MajicApi` — 0 errors, 0 warnings
 - `repos/majic-agent/MajicAgent` — 0 errors, 1 warning (Windows-only API)
 
@@ -58,9 +58,9 @@ All three .csproj projects build cleanly:
 
 Each Python repo has its own `.venv/` with deps installed:
 ```
-cd repos/<name> && .venv/bin/python -m ...
+cd <merged-tool-path> && .venv/bin/python -m ...
 ```
-Repos: `bid-extractor`, `gcc-scoper`, `compliance-checker`, `proposal-worker`, `lv-plan-annotator`, `docai-training`
+Paths: `Extractor/gcc-scoper/bid-extractor`, `Extractor/gcc-scoper`, `compliance-checker`, `Extractor/gcc-proposal-generator/proposal-worker`, `Extractor/gcc-proposal-generator/lv-plan-annotator`, `Extractor/gcc-scoper/docai-training`
 
 ### Linting
 
@@ -70,8 +70,8 @@ Repos: `bid-extractor`, `gcc-scoper`, `compliance-checker`, `proposal-worker`, `
 
 ### Tests
 
-- `repos/compliance-checker`: `cd repos/compliance-checker && .venv/bin/python -m pytest tests/ -v` (20 pass)
-- `repos/lv-plan-annotator`: `cd repos/lv-plan-annotator && .venv/bin/python -m pytest tests/ -v` (9 pass)
+- `compliance-checker`: `cd compliance-checker && .venv/bin/python -m pytest tests/ -v` (20 pass)
+- `Extractor/gcc-proposal-generator/lv-plan-annotator`: `cd Extractor/gcc-proposal-generator/lv-plan-annotator && .venv/bin/python -m pytest tests/ -v` (9 pass)
 
 ### Key constraints / gotchas
 

@@ -1,5 +1,5 @@
 # One-time setup for the GCC-Bc-Scrape scheduled task.
-# Runs C:\GCC_LLC\Repos\bc-scraper\scrape.js every 15 min as SYSTEM.
+# Runs the merged gcc-bc-scraper wrapper every 15 min as SYSTEM.
 #
 # Also sets GCC_GOOGLE_ADMIN_SECRET as a MACHINE-level env var so the SYSTEM
 # task can read it (User-level vars don't apply to SYSTEM).
@@ -7,7 +7,10 @@
 # Run as administrator. Idempotent.
 
 $TaskName    = 'GCC-Bc-Scrape'
-$WorkingDir  = 'C:\GCC_LLC\Repos\bc-scraper'
+$SiteRoot    = Split-Path -Parent $PSScriptRoot
+$WebsiteRoot = Split-Path -Parent $SiteRoot
+$GccRoot     = Split-Path -Parent $WebsiteRoot
+$WorkingDir  = Join-Path $GccRoot 'Extractor\gcc-scoper\gcc-bc-scraper'
 $Wrapper     = "$WorkingDir\run-scheduled.cmd"
 $IntervalMin = 15
 
@@ -43,7 +46,7 @@ Write-Host "Registered $TaskName -- runs every $IntervalMin min as SYSTEM."
 
 Write-Host ""
 Write-Host "NEXT STEP: run the one-time login to capture your BC session:"
-Write-Host "  cd C:\GCC_LLC\Repos\bc-scraper"
+Write-Host "  cd $WorkingDir"
 Write-Host "  npm run login"
 Write-Host ""
 Write-Host "After that, the scheduled task will start producing rows in dbo.BcRfps automatically."

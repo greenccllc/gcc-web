@@ -4,7 +4,7 @@
 # Keeps only well-formed Bid Board entries.
 
 Add-Type -AssemblyName 'System.Data'
-$conn = 'Server=localhost\GCCLLC;Database=GCCWeb;Trusted_Connection=True;TrustServerCertificate=True;Application Name=cleanup'
+$conn = 'Server=gcc-svr-sql.greencommcont.com\GCCLLC;Database=GCCWeb;Trusted_Connection=True;TrustServerCertificate=True;Application Name=cleanup'
 $cn = New-Object System.Data.SqlClient.SqlConnection $conn
 try {
     $cn.Open()

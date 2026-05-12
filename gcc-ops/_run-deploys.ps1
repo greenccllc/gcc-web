@@ -1,9 +1,15 @@
 $ErrorActionPreference = 'Continue'
+$SiteRoot = Split-Path -Parent $PSScriptRoot
+$WebsiteRoot = Split-Path -Parent $SiteRoot
+$ApiPublish = Join-Path $WebsiteRoot 'gcc-api\publish.ps1'
+$SitePublish = Join-Path $SiteRoot 'publish.ps1'
+$AutoSync = Join-Path $PSScriptRoot 'setup_gcc_site_autosync.ps1'
+
 Write-Host '==== Step 1: redeploy gcc-api ===='
-& 'C:\GCC_LLC\Repos\gcc-api\publish.ps1'
+& $ApiPublish
 Write-Host ''
 Write-Host '==== Step 2: sync gcc-site (initial run) ===='
-& 'C:\GCC_LLC\Repos\gcc-site\publish.ps1'
+& $SitePublish
 Write-Host ''
 Write-Host '==== Step 3: register GCC-Site-Sync scheduled task ===='
-& 'C:\ProgramData\GCC\scripts\setup_gcc_site_autosync.ps1'
+& $AutoSync

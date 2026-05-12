@@ -1,4 +1,7 @@
-$WorkingDir = 'C:\GCC_LLC\Repos\bc-scraper'
+$SiteRoot    = Split-Path -Parent $PSScriptRoot
+$WebsiteRoot = Split-Path -Parent $SiteRoot
+$GccRoot     = Split-Path -Parent $WebsiteRoot
+$WorkingDir  = Join-Path $GccRoot 'Extractor\gcc-scoper\gcc-bc-scraper'
 $NodeExe    = 'C:\Program Files\nodejs\node.exe'
 $tr = "cmd.exe /c cd /d `"$WorkingDir`" && `"$NodeExe`" scrape.js"
 $out = 'C:\ProgramData\GCC\schtasks-diag.log'

@@ -1,4 +1,4 @@
-$conn = "Server=localhost\GCCLLC;Database=GCCWeb;Trusted_Connection=True;TrustServerCertificate=True;Application Name=cleanup"
+$conn = "Server=gcc-svr-sql.greencommcont.com\GCCLLC;Database=GCCWeb;Trusted_Connection=True;TrustServerCertificate=True;Application Name=cleanup"
 Add-Type -AssemblyName "System.Data"
 $cn = New-Object System.Data.SqlClient.SqlConnection $conn
 try {

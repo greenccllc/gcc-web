@@ -1,7 +1,7 @@
 -- ============================================================
 -- GCC Web DB — Google Business Profile connections table.
 -- Idempotent: safe to re-run.
--- Apply with:  sqlcmd -S localhost\GCCLLC -d GCCWeb -i schema-gbp.sql
+-- Apply with:  sqlcmd -S gcc-svr-sql.greencommcont.com\GCCLLC -d GCCWeb -i schema-gbp.sql
 -- ============================================================
 SET QUOTED_IDENTIFIER ON;
 GO

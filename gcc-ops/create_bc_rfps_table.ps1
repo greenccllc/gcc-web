@@ -1,7 +1,7 @@
 # Create dbo.BcRfps in GCCWeb. Run elevated -- needs SQL sysadmin / db_owner.
 # Idempotent.
 
-$conn = 'Server=localhost\GCCLLC;Database=GCCWeb;Trusted_Connection=True;TrustServerCertificate=True;Application Name=GccApi-setup'
+$conn = 'Server=gcc-svr-sql.greencommcont.com\GCCLLC;Database=GCCWeb;Trusted_Connection=True;TrustServerCertificate=True;Application Name=GccApi-setup'
 $sql = @'
 IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'BcRfps' AND schema_id = SCHEMA_ID('dbo'))
 BEGIN

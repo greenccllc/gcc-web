@@ -37,7 +37,7 @@ SA_KEY_PATH = os.environ.get(
 )
 DB_CONN = os.environ.get(
     "GCC_DB_CONN",
-    r"DRIVER={ODBC Driver 17 for SQL Server};SERVER=localhost\GCCLLC;DATABASE=GCCWeb;Trusted_Connection=yes",
+    r"DRIVER={ODBC Driver 17 for SQL Server};SERVER=gcc-svr-sql.greencommcont.com\GCCLLC;DATABASE=GCCWeb;Trusted_Connection=yes",
 )
 
 CLOUD_PLATFORM_SCOPE = "https://www.googleapis.com/auth/cloud-platform"
