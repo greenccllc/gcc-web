@@ -1,0 +1,42 @@
+{#
+  Base proposal template — page skeleton + @page footer + token import.
+  Each proposal type extends this and fills the {% block pages %}.
+#}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ title|default("GCC Proposal") }}</title>
+  <link rel="stylesheet" href="../tokens/tokens.css">
+  <link rel="stylesheet" href="../react/src/styles.css">
+  <style>
+    @page {
+      size: Letter;
+      margin: var(--gcc-page-margin);
+      @bottom-left {
+        content: "GCC LLC  ·  Proprietary & Confidential  ·  {{ proposal_no }}  ·  {{ issue_date }}";
+        font-family: var(--gcc-font-sans);
+        font-size: var(--gcc-size-footer);
+        color: var(--gcc-slate-light);
+      }
+      @bottom-right {
+        content: "Page " counter(page);
+        font-family: var(--gcc-font-sans);
+        font-size: var(--gcc-size-footer);
+        color: var(--gcc-slate-light);
+      }
+    }
+    html, body { margin: 0; padding: 0; font-family: var(--gcc-font-sans);
+                 font-size: var(--gcc-size-body); line-height: var(--gcc-line-body);
+                 color: var(--gcc-ink); background: var(--gcc-cream); }
+    .gcc-page { page-break-after: always; }
+    .gcc-page:last-child { page-break-after: auto; }
+    .gcc-num { font-variant-numeric: tabular-nums; }
+    .gcc-caps { font-size: var(--gcc-size-caps); letter-spacing: var(--gcc-track-caps);
+                text-transform: uppercase; color: var(--gcc-slate-light); font-weight: 700; }
+  </style>
+</head>
+<body>
+  {% block pages %}{% endblock %}
+</body>
+</html>

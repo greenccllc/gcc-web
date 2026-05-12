@@ -1,0 +1,113 @@
+# GCC Proposal Intake Schema
+# Fill one per project. Generator consumes this to produce the PDF.
+# Required fields: proposal_type, proposal_no, issue_date, client, project,
+#                  scope_lines, alternates, prepared_by.
+
+proposal_type: <formal-bid | direct-quote | residential-quote | change-order>
+proposal_no:   GCC-YYYY-NNNN            # auto-generated if blank
+issue_date:    2026-04-20               # ISO 8601
+validity_days: 30                       # pricing firm window
+
+client:
+  name:     <Company / Person>
+  contact:  <Primary contact name>
+  title:    <Their title>               # optional for residential
+  email:    <email@domain.com>
+  phone:    "<+1 816 555 0000>"          # optional
+  address:
+    street: <street>
+    city:   <city>
+    state:  <state>
+    zip:    "<zip>"
+  is_repeat_client: false                # drives loyalty-discount logic
+  prior_project_refs: []                 # list of prior GCC project names
+
+project:
+  name:        <Project name>
+  address:
+    street:    <street>
+    city:      <city>
+    state:     <state>
+    zip:       "<zip>"
+  description: |
+    2–3 sentence narrative summary. No sales language, no adjectives,
+    state what the job is. Pulled by the generator into the opening
+    paragraph of the proposal.
+  vertical:    <commercial | municipal | k-12 | higher-ed | nonprofit | residential | healthcare>
+  is_public_work: false                  # triggers prevailing-wage note
+  bid_due_date:   null                   # ISO date; formal-bid only
+  bid_number:     null                   # formal-bid only
+  target_start:   null                   # ISO date
+  target_finish:  null                   # ISO date
+
+# Scope line items. For formal-bid, labor and materials are split.
+# For direct-quote and residential-quote, they are rolled into the line.
+scope_lines:
+  - category:    cabling                 # cabling | cctv | access | network | fiber | labor | other
+    qty:         1
+    unit:        ea                      # ea | lf | hr | ls (lump-sum)
+    description: <clear single-line description>
+    unit_price:  0.00
+    line_total:  0.00
+    # Cat6A baseline enforcement: the generator checks that every
+    # category=cabling line quotes Cat6A plenum on data drops. If the
+    # source spec says Cat6, the description must still read
+    # "Cat6A plenum — supplied at Cat6 spec price".
+
+# Mandatory alternates (the MSP one is always added by the generator
+# if not present; additional alternates listed here get appended).
+alternates:
+  - name:        "Managed Services — Monthly"
+    monthly:     0.00                    # required
+    annual:      null                    # optional rollup
+    description: |
+      Monitoring & remote support, MAC labor allowance, warranty
+      administration, on-site response (drive-time billed per T&M).
+
+# Exclusions. Leave empty and the generator will auto-append standard
+# exclusions (rules §1.6) where relevant scopes appear in the source.
+exclusions:
+  standard_excluded_auto: true           # generator adds §1.6 list
+  extra:
+    - <additional project-specific exclusion, one per line>
+
+# Loyalty discount. If is_repeat_client: true, generator applies this
+# percentage to the subtotal as a visible line item.
+loyalty_discount_pct: 0                  # e.g. 3 for 3%
+
+# Optional value-engineering section (bids only — invited VE only)
+value_engineering: []
+
+# Notes — things for Claude to weave into the narrative, not a scope item.
+notes:
+  - <e.g. "Client wants off-hours cutover due to surgical suite next door">
+  - <e.g. "Prior AdHoc Center job referenced in their email">
+
+# Sign-off
+prepared_by:
+  name:  Nathan Morris
+  title: Director of Operations & CTO
+  email: nmorris@greencommllc.com
+  phone: "<phone>"
+
+approved_by:                             # required if total > $25k or is_public_work
+  name:  Kaitlyn Lim Morris
+  title: President & CEO
+
+# Terms — defaults used if omitted
+terms:
+  payment: "Net 30 from invoice date"
+  deposit: "25% mobilization deposit, balance at invoice"
+  change_order_policy: "Any scope change documented via CO, priced T&M or lump-sum"
+  insurance: "GL $2M · Auto $1M · WC $1M. Certificate furnished on request."
+  licensure: "Licensed & insured in MO. Additional state licensure on request."
+
+# Change-order-only fields
+change_order:
+  co_number:           null              # e.g. "CO-001"
+  original_proposal:   null              # ref proposal_no of parent job
+  original_contract:   0.00              # dollar amount of original scope
+  schedule_impact_days: 0
+  reason: |
+    <Describe the driver for the change — scope add, conflict, unforeseen
+    condition, etc.>

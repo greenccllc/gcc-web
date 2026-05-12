@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>GCC-2026-0104-CO-001 · MOCSA · Added Access Points · Change Order</title>
+<style>
+/* =========================================================================
+   GCC Proposal — Change-Order Mockup
+   Source: proposal-generator/examples/change-order-example.yaml (MOCSA CO-001)
+   Design: proposal-generator/redesign/Bundler Visual Redesign Spec.md §3
+           + §7 (new Change-Order section — short-form variant)
+   CO-specific structure: CO header band (amber-gold), reason/justification,
+   reference to original proposal, revised-contract math panel, schedule impact.
+   Typically 2 pages. All 1:1 content preserved.
+   ========================================================================= */
+
+:root {
+  --forest:       #2E7D32;
+  --forest-dark:  #1E5622;
+  --slate:        #455A64;
+  --slate-light:  #788A93;
+  --gold:         #D4AF37;
+  --gold-deep:    #B8941E;      /* slightly darker gold for CO banner text */
+  --gold-tint:    #FAF3DC;
+  --cream:        #FDFBF4;
+  --green-tint:   #F1F8F1;
+  --ink:          #1A1A1A;
+  --rule:         #D8D8D8;
+}
+
+@page {
+  size: Letter;
+  margin: 0.75in;
+  @bottom-left {
+    content: "GCC LLC · Proprietary & Confidential · GCC-2026-0104-CO-001 · 2026-04-20";
+    font-family: "Liberation Sans", Arial, sans-serif;
+    font-size: 8.5pt;
+    color: var(--slate-light);
+    border-top: 1pt solid var(--rule);
+    padding-top: 6pt;
+  }
+  @bottom-right {
+    content: "Page " counter(page);
+    font-family: "Liberation Sans", Arial, sans-serif;
+    font-size: 8.5pt;
+    color: var(--slate-light);
+    border-top: 1pt solid var(--rule);
+    padding-top: 6pt;
+  }
+}
+
+html, body {
+  background: #e5e5e5;
+  font-family: "Liberation Sans", Arial, sans-serif;
+  color: var(--ink);
+  font-size: 10.5pt;
+  line-height: 1.43;
+  margin: 0;
+  padding: 0;
+}
+body { padding: 24pt; }
+
+.page {
+  width: 8.5in;
+  min-height: 11in;
+  background: var(--cream);
+  box-sizing: border-box;
+  padding: 0.75in;
+  margin: 0 auto 24pt;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  position: relative;
+  page-break-after: always;
+  overflow: hidden;
+}
+.page:last-child { page-break-after: auto; }
+.page.cover { padding-top: 0; }
+
+.run-header {
+  display: grid;
+  grid-template-columns: 12pt 1fr auto;
+  column-gap: 8pt;
+  align-items: center;
+  padding-bottom: 8pt;
+  border-bottom: 1pt solid var(--rule);
+  margin-bottom: 22pt;
+}
+.run-header .gold-sq { width: 6pt; height: 6pt; background: var(--gold); }
+.run-header .label {
+  font-family: "Liberation Sans", Arial, sans-serif;
+  font-weight: 700;
+  font-size: 9pt;
+  color: var(--forest);
+  letter-spacing: 0.8pt;
+  text-transform: uppercase;
+}
+.run-header .meta {
+  font-family: "Liberation Sans", Arial, sans-serif;
+  font-size: 8.5pt;
+  color: var(--slate-light);
+  letter-spacing: 0.4pt;
+}
+
+.run-footer {
+  position: absolute;
+  left: 0.75in;
+  right: 0.75in;
+  bottom: 0.55in;
+  display: flex;
+  justify-content: space-between;
+  padding-top: 6pt;
+  border-top: 1pt solid var(--rule);
+  font-family: "Liberation Sans", Arial, sans-serif;
+  font-size: 8.5pt;
+  color: var(--slate-light);
+}
+
+/* ------- CO Header Band (prominent, amber-gold, NOT a bid cover) ------- */
+.co-band {
+  background: var(--gold-tint);
+  border-bottom: 3pt solid var(--gold);
+  padding: 28pt 48pt 22pt 48pt;
+  margin: -0.75in -0.75in 0 -0.75in;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  column-gap: 24pt;
+}
+.co-band .left .co-kicker {
+  font-family: "Liberation Sans", Arial, sans-serif;
+  font-weight: 700;
+  font-size: 10pt;
+  color: var(--gold-deep);
+  text-transform: uppercase;
+  letter-spacing: 1.2pt;
+  margin-bottom: 10pt;
+}
+.co-band .left .co-title {
+  font-family: "Liberation Serif", "Times New Roman", serif;
+  font-weight: 700;
+  font-size: 30pt;
+  line-height: 1.1;
+  color: var(--forest-dark);
+  margin-bottom: 6pt;
+}
+.co-band .left .co-sub {
+  font-family: "Liberation Serif", "Times New Roman", serif;
+  font-style: italic;
+  font-size: 12pt;
+  color: var(--slate);
+}
+.co-band .right {
+  text-align: right;
+  min-width: 2.2in;
+}
+.co-band .right .co-number {
+  font-family: "Liberation Sans", Arial, sans-serif;
+  font-weight: 700;
+  font-size: 22pt;
+  color: var(--forest-dark);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 1pt;
+}
+.co-band .right .co-ref {
+  font-family: "Liberation Sans", Arial, sans-serif;
+  font-size: 9pt;
+  color: var(--slate);
+  margin-top: 4pt;
+}
+
+/* ------- Type ------- */
+h1.h1 {
+  font-family: "Liberation Serif", "Times New Roman", serif;
+  font-weight: 700;
+  font-size: 20pt;
+  line-height: 1.18;
+  color: var(--forest-dark);
+  margin: 0 0 10pt 0;
+}
+h2.h2 {
+  font-family: "Liberation Serif", "Times New Roman", serif;
+  font-weight: 700;
+  font-size: 14pt;
+  line-height: 1.28;
+  color: var(--forest-dark);
+  margin: 0 0 8pt 0;
+}
+.kicker {
+  font-family: "Liberation Sans", Arial, sans-serif;
+  font-weight: 700;
+  font-size: 9pt;
+  line-height: 1.3;
+  color: var(--slate);
+  text-transform: uppercase;
+  letter-spacing: 0.8pt;
+}
+.kicker-forest { color: var(--forest); }
+.lead {
+  font-family: "Liberation Serif", "Times New Roman", serif;
+  font-size: 12pt;
+  line-height: 1.5;
+  color: var(--ink);
+  margin: 0 0 10pt 0;
+}
+p { margin: 0 0 8pt 0; }
+
+.grid-12  { display: grid; grid-template-columns: repeat(12, 1fr); column-gap: 8pt; }
+.col-1-12 { grid-column: 1 / span 12; }
+.col-1-6  { grid-column: 1 / span 6; }
+.col-7-12 { grid-column: 7 / span 6; }
+
+.section-rule {
+  height: 0.5pt;
+  background: var(--rule);
+  margin: 0 0 12pt 0;
+}
+
+/* ------- Cover facts grid ------- */
+.cover-facts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 24pt;
+  row-gap: 14pt;
+  margin: 28pt 0 24pt 0;
+}
+.cover-facts .row { display: grid; grid-template-columns: 1fr; row-gap: 2pt; }
+.cover-facts .row .val { font-size: 10.5pt; color: var(--ink); }
+
+/* ------- Reason / justification callout (unique to CO) ------- */
+.reason-panel {
+  background: var(--green-tint);
+  border-left: 3pt solid var(--gold);
+  padding: 14pt 18pt;
+  margin: 20pt 0;
+}
+.reason-panel .r-kicker {
+  font-family: "Liberation Sans", Arial, sans-serif;
+  font-weight: 700;
+  font-size: 9pt;
+  color: var(--forest);
+  text-transform: uppercase;
+  letter-spacing: 0.8pt;
+  margin-bottom: 8pt;
+}
+.reason-panel .r-text {
+  font-family: "Liberation Serif", "Times New Roman", serif;
+  font-size: 12pt;
+  line-height: 1.5;
+  color: var(--forest-dark);
+  margin: 0;
+}
+
+/* ------- Revised-contract hero panel (replaces typical Total hero) ------- */
+.revised {
+  background: var(--cream);
+  border-top: 3pt solid var(--gold);
+  border-right: 0.5pt solid var(--rule);
+  border-bottom: 0.5pt solid var(--rule);
+  border-left: 0.5pt solid var(--rule);
+  padding: 18pt 22pt;
+  margin-top: 16pt;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  column-gap: 16pt;
+  text-align: center;
+}
+.revised .cell { padding: 4pt; }
+.revised .cell .k {
+  font-family: "Liberation Sans", Arial, sans-serif;
+  font-weight: 700;
+  font-size: 9pt;
+  color: var(--slate);
+  text-transform: uppercase;
+  letter-spacing: 0.8pt;
+  margin-bottom: 6pt;
+}
+.revised .cell .n {
+  font-family: "Liberation Serif", "Times New Roman", serif;
+  font-weight: 700;
+  font-size: 24pt;
+  color: var(--forest-dark);
+  font-variant-numeric: tabular-nums;
+}
+.revised .cell.delta .n { color: var(--gold-deep); }
+.revised .cell .note {
+  font-family: "Liberation Sans", Arial, sans-serif;
+  font-size: 8.5pt;
+  color: var(--slate-light);
+  margin-top: 4pt;
+}
+.revised .math-op {
+  align-self: center;
+  font-family: "Liberation Serif", "Times New Roman", serif;
+  font-weight: 700;
+  font-size: 24pt;
+  color: var(--slate);
+  text-align: center;
+}
+
+/* ------- Scope table (same chassis) ------- */
+table.scope {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: "Liberation Sans", Arial, sans-serif;
+  font-size: 10pt;
+  table-layout: fixed;
+  margin-top: 10pt;
+}
+table.scope thead th {
+  background: var(--forest-dark);
+  color: var(--cream);
+  font-weight: 700;
+  font-size: 9pt;
+  text-align: left;
+  padding: 8pt 7pt;
+  border-bottom: 1.5pt solid var(--gold);
+  letter-spacing: 0.4pt;
+  text-transform: uppercase;
+}
+table.scope thead th.num { text-align: right; }
+table.scope tbody td {
+  padding: 9pt 7pt;
+  vertical-align: top;
+  line-height: 1.35;
+}
+table.scope tbody tr.alt td { background: var(--green-tint); }
+table.scope tbody tr.cat-band td {
+  background: #E6EFE6;
+  color: var(--forest-dark);
+  font-family: "Liberation Sans", Arial, sans-serif;
+  font-weight: 700;
+  font-size: 8.5pt;
+  letter-spacing: 0.8pt;
+  text-transform: uppercase;
+  padding: 5pt 7pt;
+}
+table.scope tbody td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+table.scope tbody td.qty { text-align: right; font-variant-numeric: tabular-nums; color: var(--slate); }
+table.scope .col-qty  { width: 0.55in; }
+table.scope .col-unit { width: 0.5in;  }
+table.scope .col-desc { width: auto;   }
+table.scope .col-up   { width: 0.95in; }
+table.scope .col-lt   { width: 1.05in; }
+.unit-cell { color: var(--slate); }
+
+/* ------- CO summary row at bottom of scope table ------- */
+.co-subtotal {
+  background: var(--forest-dark);
+  color: var(--cream);
+  font-family: "Liberation Sans", Arial, sans-serif;
+  font-weight: 700;
+  font-size: 11pt;
+  padding: 10pt 22pt;
+  display: flex;
+  justify-content: space-between;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------- Carryover card ------- */
+.carryover {
+  background: var(--cream);
+  border: 0.5pt solid var(--rule);
+  border-left: 3pt solid var(--slate);
+  padding: 12pt 18pt;
+  margin: 14pt 0;
+  font-family: "Liberation Sans", Arial, sans-serif;
+  font-size: 10pt;
+  color: var(--ink);
+}
+.carryover strong { color: var(--forest-dark); }
+
+/* ------- Terms + accept ------- */
+.terms-panel {
+  background: var(--cream);
+  border: 0.5pt solid var(--rule);
+  padding: 16pt 22pt;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 22pt;
+  row-gap: 12pt;
+}
+.terms-panel .row { display: grid; grid-template-columns: 1fr; row-gap: 3pt; }
+.terms-panel .row .kicker { color: var(--slate); }
+.terms-panel .row .val {
+  font-family: "Liberation Sans", Arial, sans-serif;
+  font-size: 10pt;
+  line-height: 1.4;
+  color: var(--ink);
+}
+
+.accept-panel {
+  background: var(--cream);
+  border: 0.5pt solid var(--rule);
+  padding: 18pt 22pt 22pt 22pt;
+  margin-top: 14pt;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 28pt;
+}
+.accept-panel .kicker { color: var(--slate); margin-bottom: 10pt; }
+.accept-panel .name {
+  font-family: "Liberation Serif", "Times New Roman", serif;
+  font-weight: 700;
+  font-size: 13pt;
+  color: var(--forest-dark);
+  margin-bottom: 2pt;
+}
+.accept-panel .title {
+  font-family: "Liberation Serif", "Times New Roman", serif;
+  font-style: italic;
+  font-size: 11pt;
+  color: var(--slate);
+  margin-bottom: 4pt;
+}
+.accept-panel .contact {
+  font-family: "Liberation Sans", Arial, sans-serif;
+  font-size: 9.5pt;
+  color: var(--ink);
+  line-height: 1.4;
+  margin-bottom: 20pt;
+}
+.accept-panel hr.sigline {
+  border: none;
+  border-top: 0.75pt solid var(--ink);
+  margin: 22pt 0 4pt 0;
+  width: 2.6in;
+}
+.accept-panel .sig-label {
+  font-family: "Liberation Sans", Arial, sans-serif;
+  font-size: 8.5pt;
+  color: var(--slate-light);
+  text-transform: uppercase;
+  letter-spacing: 0.6pt;
+  margin-bottom: 14pt;
+}
+
+.reassure {
+  background: var(--green-tint);
+  border-top: 1pt solid var(--gold);
+  text-align: center;
+  padding: 10pt 0;
+  font-family: "Liberation Sans", Arial, sans-serif;
+  font-size: 10pt;
+  color: var(--forest-dark);
+  margin: 24pt -0.75in -0.75in -0.75in;
+}
+
+/* ------- Notes / meta ------- */
+.notes-list {
+  font-family: "Liberation Serif", "Times New Roman", serif;
+  font-style: italic;
+  font-size: 11pt;
+  line-height: 1.5;
+  color: var(--ink);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.notes-list li {
+  padding: 3pt 0 3pt 14pt;
+  position: relative;
+}
+.notes-list li::before {
+  content: "·";
+  position: absolute;
+  left: 2pt;
+  color: var(--forest);
+  font-size: 14pt;
+  line-height: 0.9;
+}
+
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     PAGE 1 · CO HEADER + FACTS + REASON + SCOPE TABLE + REVISED
+     ============================================================ -->
+<section class="page cover">
+
+  <div class="co-band">
+    <div class="left">
+      <div class="co-kicker">CHANGE ORDER  ·  ADDED SCOPE</div>
+      <div class="co-title">MOCSA Secure Facility Build</div>
+      <div class="co-sub">CO-001 &mdash; Added Access Points (4 interior doors)</div>
+    </div>
+    <div class="right">
+      <div class="co-number">CO-001</div>
+      <div class="co-ref">Against GCC-2023-019</div>
+      <div class="co-ref" style="margin-top: 6pt; font-size: 8.5pt; color: var(--slate-light);">
+        Issued 2026-04-20 &nbsp;·&nbsp; Valid 14 days
+      </div>
+    </div>
+  </div>
+
+  <!-- Cover facts -->
+  <div class="cover-facts">
+    <div class="row">
+      <div class="kicker">Prepared for</div>
+      <div class="val">MOCSA &nbsp;·&nbsp; Dawn Richardson, Director of Operations</div>
+    </div>
+    <div class="row">
+      <div class="kicker">CO number</div>
+      <div class="val">CO-001</div>
+    </div>
+    <div class="row">
+      <div class="kicker">Property</div>
+      <div class="val">3100 Broadway Blvd., Kansas City, MO 64111</div>
+    </div>
+    <div class="row">
+      <div class="kicker">Original proposal</div>
+      <div class="val">GCC-2023-019 &mdash; MOCSA Secure Facility Build</div>
+    </div>
+    <div class="row">
+      <div class="kicker">Issued</div>
+      <div class="val">2026-04-20</div>
+    </div>
+    <div class="row">
+      <div class="kicker">Proposal no.</div>
+      <div class="val">GCC-2026-0104-CO-001</div>
+    </div>
+    <div class="row">
+      <div class="kicker">Validity</div>
+      <div class="val">14 days &nbsp;·&nbsp; through 2026-05-04</div>
+    </div>
+    <div class="row">
+      <div class="kicker">Schedule impact</div>
+      <div class="val">0 days &mdash; none</div>
+    </div>
+  </div>
+
+  <!-- Reason callout: unique and important to CO -->
+  <div class="reason-panel">
+    <div class="r-kicker">WHY THIS CHANGE ORDER</div>
+    <p class="r-text">
+      Facilities identified 4 interior doors during pre-install walkdown that should be brought onto the same access system for programmatic consistency. Adding these during mobilization is the least-disruptive option; doing them as a follow-on would require a second trip and separate commissioning window.
+    </p>
+  </div>
+
+  <!-- Summary of change -->
+  <p class="lead">
+    Original scope included 42 access-controlled doors. Facilities identified 4 additional interior doors during pre-install walkdown that should be brought onto the same access system for programmatic consistency. This change order adds rough-in and head-end work for those 4 doors.
+  </p>
+
+  <!-- Added scope table (start on page 1, continues if needed) -->
+  <div style="margin-top: 18pt; margin-bottom: 6pt;">
+    <h2 class="h2">Added scope.</h2>
+  </div>
+
+  <table class="scope">
+    <thead>
+      <tr>
+        <th class="col-qty num">Qty</th>
+        <th class="col-unit">Unit</th>
+        <th class="col-desc">Description</th>
+        <th class="col-up num">Unit Price</th>
+        <th class="col-lt num">Line Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="cat-band"><td colspan="5">Access Control</td></tr>
+      <tr>
+        <td class="qty">4</td>
+        <td class="unit-cell">ea</td>
+        <td>Access-control rough-in on added doors &mdash; door position switch, REX, reader cable, strike cable, terminated at IDF-2</td>
+        <td class="num">$485.00</td>
+        <td class="num">$1,940.00</td>
+      </tr>
+      <tr class="alt">
+        <td class="qty">4</td>
+        <td class="unit-cell">ea</td>
+        <td>Device-level labor &mdash; reader mount, strike install, door-position calibration (hardware consistent w/ original scope, Genetec Synergis)</td>
+        <td class="num">$285.00</td>
+        <td class="num">$1,140.00</td>
+      </tr>
+
+      <tr class="cat-band"><td colspan="5">Labor</td></tr>
+      <tr>
+        <td class="qty">1</td>
+        <td class="unit-cell">ls</td>
+        <td>Head-end programming &mdash; 4 doors added to access groups, credentialing updated, audit log test</td>
+        <td class="num">$420.00</td>
+        <td class="num">$420.00</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="co-subtotal">
+    <div>CHANGE ORDER SUBTOTAL</div>
+    <div>$3,500.00</div>
+  </div>
+
+  <div class="run-footer">
+    <div>GCC LLC · Proprietary &amp; Confidential · GCC-2026-0104-CO-001 · 2026-04-20</div>
+    <div>Page 1</div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PAGE 2 · REVISED CONTRACT + CARRYOVER + NOTES + TERMS + SIGS
+     ============================================================ -->
+<section class="page">
+
+  <header class="run-header">
+    <div class="gold-sq"></div>
+    <div class="label">GCC  ·  CHANGE ORDER CO-001  ·  REVISED CONTRACT · ACCEPTANCE</div>
+    <div class="meta">GCC-2026-0104-CO-001</div>
+  </header>
+
+  <div class="grid-12" style="margin-bottom: 10pt;">
+    <div class="col-1-12">
+      <h1 class="h1">Revised contract.</h1>
+      <div class="section-rule"></div>
+    </div>
+  </div>
+
+  <!-- Revised contract math panel -->
+  <div class="revised">
+    <div class="cell">
+      <div class="k">ORIGINAL CONTRACT</div>
+      <div class="n">$64,520.00</div>
+      <div class="note">Per GCC-2023-019</div>
+    </div>
+    <div class="cell delta">
+      <div class="k">THIS CHANGE ORDER</div>
+      <div class="n">+ $3,500.00</div>
+      <div class="note">CO-001 · 5.4% change</div>
+    </div>
+    <div class="cell">
+      <div class="k">REVISED CONTRACT</div>
+      <div class="n">$68,020.00</div>
+      <div class="note">Effective on signature</div>
+    </div>
+  </div>
+
+  <!-- Carryover from original -->
+  <div class="carryover">
+    <strong>Carryover from the original project.</strong> This document supersedes the original scope only for the added items listed; the balance of the original scope, exclusions, warranty, insurance, and payment terms all remain in force per GCC-2023-019. Managed Services (MSP) already in place under the original contract &mdash; no separate alternate on this CO. Loyalty discount not applied (CO does not stack with loyalty).
+  </div>
+
+  <!-- Project exclusions (from original — remain in force) -->
+  <div class="grid-12" style="margin-top: 14pt; margin-bottom: 6pt;">
+    <div class="col-1-12">
+      <h2 class="h2">Exclusions.</h2>
+    </div>
+  </div>
+  <p style="font-family: 'Liberation Sans', Arial, sans-serif; font-size: 10.5pt;">
+    All exclusions from the original project (GCC-2023-019) remain in force. Standard GCC exclusions do not auto-apply to this CO; the original PO's exclusion list governs.
+  </p>
+
+  <!-- Notes -->
+  <div class="grid-12" style="margin-top: 14pt; margin-bottom: 6pt;">
+    <div class="col-1-12">
+      <h2 class="h2">Project notes.</h2>
+    </div>
+  </div>
+  <ul class="notes-list">
+    <li>Hardware is consistent with original Genetec Synergis deployment.</li>
+    <li>No schedule impact &mdash; additional doors will be completed during the same mobilization as the original commissioning window.</li>
+  </ul>
+
+  <!-- Terms -->
+  <div class="grid-12" style="margin-top: 18pt; margin-bottom: 6pt;">
+    <div class="col-1-12">
+      <h1 class="h1">Terms.</h1>
+      <div class="section-rule"></div>
+    </div>
+  </div>
+
+  <div class="terms-panel">
+    <div class="row">
+      <div class="kicker">Payment</div>
+      <div class="val">Per original project payment terms</div>
+    </div>
+    <div class="row">
+      <div class="kicker">Insurance</div>
+      <div class="val">Per original project.</div>
+    </div>
+    <div class="row">
+      <div class="kicker">Deposit</div>
+      <div class="val">Waived for CO</div>
+    </div>
+    <div class="row">
+      <div class="kicker">Licensure</div>
+      <div class="val">Per original project.</div>
+    </div>
+    <div class="row">
+      <div class="kicker">Supersession</div>
+      <div class="val">This document supersedes the original scope only for the added items listed; balance of original scope remains in force.</div>
+    </div>
+    <div class="row">
+      <div class="kicker">Validity</div>
+      <div class="val">CO pricing firm through 2026-05-04 (14 days from issue)</div>
+    </div>
+  </div>
+
+  <!-- Acceptance -->
+  <div class="grid-12" style="margin-top: 18pt; margin-bottom: 2pt;">
+    <div class="col-1-12">
+      <h1 class="h1">Acceptance.</h1>
+      <div class="section-rule"></div>
+    </div>
+  </div>
+
+  <div class="accept-panel">
+    <div>
+      <div class="kicker">PREPARED BY</div>
+      <div class="name">Nathan Morris</div>
+      <div class="title">Director of Operations &amp; CTO, GCC LLC</div>
+      <div class="contact">nmorris@greencommllc.com</div>
+
+      <hr class="sigline">
+      <div class="sig-label">SIGNATURE</div>
+      <hr class="sigline">
+      <div class="sig-label">DATE</div>
+    </div>
+    <div>
+      <div class="kicker">MOCSA ACCEPTANCE</div>
+      <div class="name">Dawn Richardson</div>
+      <div class="title">Director of Operations</div>
+      <div class="contact">drichardson@mocsa.org &nbsp;·&nbsp; +1 816 555 0422</div>
+
+      <hr class="sigline">
+      <div class="sig-label">SIGNATURE</div>
+      <hr class="sigline">
+      <div class="sig-label">DATE</div>
+    </div>
+  </div>
+
+  <div class="reassure">
+    Questions? Call (636) 224-8192  ·  corporate@greencommllc.com  ·  greencommllc.com
+  </div>
+
+  <div class="run-footer">
+    <div>GCC LLC · Proprietary &amp; Confidential · GCC-2026-0104-CO-001 · 2026-04-20</div>
+    <div>Page 2</div>
+  </div>
+</section>
+
+</body>
+</html>

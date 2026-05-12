@@ -1,0 +1,26 @@
+# Repeat-client registry — drives loyalty-discount detection.
+# Claude reads this during intake extraction. If the client name matches
+# (case-insensitive, punctuation-insensitive), set is_repeat_client: true.
+#
+# Update this file when invoicing a new repeat client.
+
+clients:
+  - name:    AdHoc Center
+    projects:
+      - { ref: GCC-2024-037, year: 2024, description: "East-wing low-voltage buildout" }
+    standard_discount_pct: 3
+
+  - name:    MOCSA (Metropolitan Organization to Counter Sexual Assault)
+    projects:
+      - { ref: GCC-2023-019, year: 2023, description: "Secure facility build" }
+    standard_discount_pct: 3
+
+  - name:    University of Central Missouri
+    projects:
+      - { ref: GCC-2023-044, year: 2023, description: "Mitchell Barn retrofit" }
+    standard_discount_pct: 2
+
+  - name:    Independence School District
+    projects:
+      - { ref: GCC-2022-061, year: 2022, description: "Wm. Chrisman HS structured cabling" }
+    standard_discount_pct: 2

@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>GCC LLC — Proposal Generator</title>
+<style>
+  :root {
+    --forest-green: #2E7D32;
+    --slate: #455A64;
+    --warm-gold: #D4AF37;
+    --cream: #FDFBF4;
+    --ink: #1A1A1A;
+    --green-tint: #F1F8F1;
+    --gold-tint: #FAF5E6;
+    --border: #D8DFD8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: Calibri, 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    margin: 0;
+    padding: 0;
+    line-height: 1.5;
+  }
+  header {
+    background: var(--forest-green);
+    color: white;
+    padding: 24px 40px;
+    border-bottom: 4px solid var(--warm-gold);
+  }
+  header h1 { margin: 0; font-size: 28px; font-weight: 700; }
+  header p { margin: 4px 0 0 0; font-size: 14px; opacity: 0.92; }
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 32px 40px;
+  }
+  .audience-picker {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .audience-option {
+    background: white;
+    border: 2px solid var(--border);
+    padding: 16px;
+    cursor: pointer;
+    text-align: center;
+    border-radius: 4px;
+    transition: all 0.15s;
+  }
+  .audience-option:hover { border-color: var(--forest-green); }
+  .audience-option.selected {
+    border-color: var(--forest-green);
+    background: var(--green-tint);
+  }
+  .audience-option h3 {
+    margin: 0 0 4px 0;
+    color: var(--forest-green);
+    font-size: 16px;
+  }
+  .audience-option p {
+    margin: 0;
+    font-size: 12px;
+    color: var(--slate);
+  }
+  fieldset {
+    border: 1px solid var(--border);
+    background: white;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    border-radius: 2px;
+  }
+  legend {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--forest-green);
+    padding: 0 8px;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--slate);
+    margin-bottom: 4px;
+    margin-top: 12px;
+  }
+  label:first-of-type { margin-top: 0; }
+  input[type="text"], input[type="email"], input[type="number"], input[type="date"],
+  textarea, select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    font-family: inherit;
+    font-size: 14px;
+    background: white;
+  }
+  input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: var(--forest-green);
+  }
+  textarea { resize: vertical; min-height: 60px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .service-checkbox {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    background: var(--green-tint);
+    border: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .service-checkbox:hover { border-color: var(--forest-green); }
+  .service-checkbox input { margin-right: 8px; }
+  .service-checkbox label {
+    margin: 0;
+    font-weight: 500;
+    cursor: pointer;
+    flex: 1;
+  }
+  .quantity-input {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .quantity-input input { padding: 6px 10px; font-size: 13px; }
+  .small-btn {
+    padding: 6px 12px;
+    background: white;
+    border: 1px solid var(--forest-green);
+    color: var(--forest-green);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .small-btn:hover { background: var(--green-tint); }
+  .actions {
+    position: sticky;
+    bottom: 0;
+    background: white;
+    border-top: 2px solid var(--forest-green);
+    padding: 16px 40px;
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 24px;
+  }
+  .btn {
+    padding: 12px 24px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+  }
+  .btn-primary {
+    background: var(--forest-green);
+    color: white;
+  }
+  .btn-primary:hover { background: #255b28; }
+  .btn-secondary {
+    background: white;
+    color: var(--forest-green);
+    border: 2px solid var(--forest-green);
+  }
+  .btn-gold {
+    background: var(--warm-gold);
+    color: var(--ink);
+    border-left: 4px solid #A38527;
+  }
+  .btn-gold:hover { background: #c09a2c; }
+  .hidden { display: none; }
+  .residential-only, .commercial-only { display: none; }
+  body[data-audience="residential"] .residential-only { display: block; }
+  body[data-audience="gc"] .commercial-only,
+  body[data-audience="owner"] .commercial-only { display: block; }
+  #output-panel {
+    background: var(--ink);
+    color: #eee;
+    padding: 20px;
+    font-family: 'Consolas', 'Menlo', monospace;
+    font-size: 12px;
+    line-height: 1.4;
+    white-space: pre;
+    overflow-x: auto;
+    max-height: 400px;
+    overflow-y: auto;
+    margin-top: 16px;
+    border-radius: 2px;
+  }
+  .hint {
+    font-size: 12px;
+    color: var(--slate);
+    font-weight: 400;
+    font-style: italic;
+  }
+  .diff-badge {
+    display: inline-block;
+    background: var(--warm-gold);
+    color: var(--ink);
+    padding: 2px 6px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-left: 6px;
+  }
+  .banner {
+    background: var(--gold-tint);
+    border-left: 4px solid var(--warm-gold);
+    padding: 12px 16px;
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+</style>
+</head>
+<body data-audience="gc">
+
+<header>
+  <h1>GCC LLC — Proposal Generator</h1>
+  <p>Fill in what you know. Export a JSON brief to paste into Claude, or download a markdown draft.</p>
+</header>
+
+<div class="container">
+
+  <div class="banner">
+    <strong>Step 1:</strong> Pick the audience. <strong>Step 2:</strong> Fill in project details. <strong>Step 3:</strong> Click <em>Export Briefing</em> — copy the JSON and paste it into Claude with the master system prompt loaded. Or click <em>Generate Markdown</em> for a quick starting draft right here.
+  </div>
+
+  <div class="audience-picker">
+    <div class="audience-option selected" data-value="gc">
+      <h3>GC Subcontractor Bid</h3>
+      <p>Subcontract bid under a General Contractor. Formal, technical.</p>
+    </div>
+    <div class="audience-option" data-value="owner">
+      <h3>Owner Direct</h3>
+      <p>Direct-to-owner business proposal. First-person, helpful.</p>
+    </div>
+    <div class="audience-option" data-value="residential">
+      <h3>Residential</h3>
+      <p>Homeowner smart-home proposal. Warm, plain-English.</p>
+    </div>
+  </div>
+
+  <form id="brief-form" autocomplete="off">
+
+    <fieldset>
+      <legend>Client</legend>
+      <div class="commercial-only">
+        <label>Client Company Name</label>
+        <input type="text" name="client_company_name" placeholder="Smith Construction Co." />
+
+        <div class="grid-2">
+          <div>
+            <label>Primary Contact Name</label>
+            <input type="text" name="client_contact_name" placeholder="Mike Reynolds" />
+          </div>
+          <div>
+            <label>Title</label>
+            <input type="text" name="client_contact_title" placeholder="Senior Estimator" />
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div>
+            <label>Client Email</label>
+            <input type="email" name="client_email" placeholder="mike@smithconst.com" />
+          </div>
+          <div>
+            <label>Client Industry <span class="hint">(for analogy selection on Owner proposals)</span></label>
+            <input type="text" name="client_industry" placeholder="e.g., healthcare, retail, education" />
+          </div>
+        </div>
+      </div>
+
+      <div class="residential-only">
+        <label>Homeowner Name</label>
+        <input type="text" name="homeowner_name" placeholder="Sarah and Mark Patel" />
+
+        <div class="grid-2">
+          <div>
+            <label>First Name (for "Hi" letter)</label>
+            <input type="text" name="homeowner_first_name" placeholder="Sarah" />
+          </div>
+          <div>
+            <label>Contact Email / Phone</label>
+            <input type="text" name="homeowner_contact" placeholder="sarah.patel@example.com" />
+          </div>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Project</legend>
+      <label>Project Name</label>
+      <input type="text" name="project_name" placeholder="Riverside Warehouse — LV Infrastructure" />
+
+      <div class="commercial-only">
+        <label>Project Address / Site</label>
+        <input type="text" name="project_address" placeholder="4500 Industrial Way, St. Peters, MO 63376" />
+
+        <div class="grid-2">
+          <div>
+            <label>Project Type</label>
+            <select name="project_type">
+              <option value="new-commercial">New commercial construction</option>
+              <option value="commercial-renovation">Commercial renovation (occupied)</option>
+              <option value="k12-summer">K-12 summer work</option>
+              <option value="healthcare">Healthcare / senior living</option>
+              <option value="higher-ed">Higher education</option>
+              <option value="public-works">Public works / government</option>
+            </select>
+          </div>
+          <div>
+            <label>Vertical / Industry</label>
+            <select name="vertical">
+              <option value="commercial">Commercial / Industrial</option>
+              <option value="k12">K-12 Education</option>
+              <option value="higher-ed">Higher Education</option>
+              <option value="healthcare">Senior Living / Healthcare</option>
+              <option value="public-works">Public Works</option>
+              <option value="residential">Residential</option>
+            </select>
+          </div>
+        </div>
+
+        <label>Square Footage <span class="hint">(for density-based estimation)</span></label>
+        <input type="number" name="square_footage" placeholder="120000" />
+      </div>
+
+      <div class="residential-only">
+        <label>Project Address</label>
+        <input type="text" name="project_address" placeholder="123 Oak Ln, Creve Coeur, MO" />
+
+        <label>What the homeowner is trying to solve <span class="hint">(reference in Hi letter)</span></label>
+        <textarea name="homeowner_goal" placeholder="Weak WiFi upstairs and wants to add cameras before the new baby arrives in October."></textarea>
+
+        <div class="grid-2">
+          <div>
+            <label>Home Square Footage</label>
+            <input type="number" name="home_sqft" placeholder="3200" />
+          </div>
+          <div>
+            <label>Structured-Media Panel Location</label>
+            <input type="text" name="panel_location" placeholder="Basement utility closet" />
+          </div>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset class="commercial-only">
+      <legend>The "Proof We Read the Docs" Hook</legend>
+      <label>One sentence that proves GCC read the RFP / toured the site <span class="hint">(used in Cover Letter para 1)</span></label>
+      <textarea name="project_specific_hook" placeholder="The campus phasing in Exhibit B — nine IDFs coming online across three weekends in August — drives our rough-in sequence from north to south, starting week one."></textarea>
+    </fieldset>
+
+    <fieldset>
+      <legend>Services Included</legend>
+
+      <div class="commercial-only">
+        <strong style="color:var(--slate);font-size:13px;">Commercial scopes</strong>
+        <div class="services-grid" style="margin-top:8px;">
+          <label class="service-checkbox"><input type="checkbox" name="services" value="structured-cabling" checked/>Structured Cabling</label>
+          <label class="service-checkbox"><input type="checkbox" name="services" value="electronic-security"/>Electronic Security</label>
+          <label class="service-checkbox"><input type="checkbox" name="services" value="av-and-paging"/>AV &amp; Paging</label>
+          <label class="service-checkbox"><input type="checkbox" name="services" value="telecom-room"/>Telecom Room Buildout</label>
+          <label class="service-checkbox"><input type="checkbox" name="services" value="pathway-and-support"/>Pathway &amp; Support</label>
+          <label class="service-checkbox"><input type="checkbox" name="services" value="certification" checked/>Certification &amp; Documentation</label>
+          <label class="service-checkbox"><input type="checkbox" name="services" value="project-management" checked/>Project Management</label>
+        </div>
+      </div>
+
+      <div class="residential-only">
+        <strong style="color:var(--slate);font-size:13px;">Residential scopes</strong>
+        <div class="services-grid" style="margin-top:8px;">
+          <label class="service-checkbox"><input type="checkbox" name="services" value="home-network" checked/>Home Network</label>
+          <label class="service-checkbox"><input type="checkbox" name="services" value="home-security"/>Home Security</label>
+          <label class="service-checkbox"><input type="checkbox" name="services" value="home-av"/>Home AV</label>
+          <label class="service-checkbox"><input type="checkbox" name="services" value="home-service"/>Home Service</label>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Quantified Scope Items</legend>
+      <p class="hint" style="margin-top:0;">Add the counts that matter for pricing. Leave blank if unknown and Claude will apply density-based estimation from sqft.</p>
+      <div id="quantified-items"></div>
+      <button type="button" class="small-btn" onclick="addQtyRow()">+ Add Item</button>
+    </fieldset>
+
+    <fieldset>
+      <legend>Schedule</legend>
+      <div class="grid-2">
+        <div>
+          <label>Mobilization / Start</label>
+          <input type="text" name="schedule_start" placeholder="Week of Jan 15, 2027" />
+        </div>
+        <div>
+          <label>Substantial Completion Target</label>
+          <input type="text" name="schedule_end" placeholder="Mar 31, 2027" />
+        </div>
+      </div>
+      <label>Schedule Constraints <span class="hint">(phasing, access windows, weekend requirements, etc.)</span></label>
+      <textarea name="schedule_constraints" placeholder="Nine IDFs across three weekends in August; no weekday access once school is in session on Aug 25."></textarea>
+    </fieldset>
+
+    <fieldset>
+      <legend>Pricing</legend>
+      <div class="commercial-only">
+        <div class="grid-3">
+          <div>
+            <label>Base Bid $</label>
+            <input type="number" name="base_bid_amount" placeholder="425000" />
+          </div>
+          <div>
+            <label>MS Alternate $/month</label>
+            <input type="number" name="ms_alternate_monthly" placeholder="950" />
+          </div>
+          <div>
+            <label>D1 Weekend DEDUCT</label>
+            <input type="number" name="d1_amount" placeholder="8500" />
+          </div>
+        </div>
+        <div class="grid-2" style="margin-top:8px;">
+          <div>
+            <label>Loyalty Discount $</label>
+            <input type="number" name="loyalty_discount_amount" placeholder="0" />
+          </div>
+          <div>
+            <label>GCC Bid Number <span class="hint">(auto-gen OK)</span></label>
+            <input type="text" name="gcc_bid_number" placeholder="GCC-2027-0115-01" />
+          </div>
+        </div>
+      </div>
+      <div class="residential-only">
+        <div class="grid-2">
+          <div>
+            <label>Total Price $</label>
+            <input type="number" name="total_price" placeholder="8500" />
+          </div>
+          <div>
+            <label>Managed Services $/month (optional)</label>
+            <input type="number" name="managed_services_monthly" placeholder="75" />
+          </div>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Exclusions &amp; Notes (optional)</legend>
+      <label>Project-specific exclusions <span class="hint">(beyond the standard Hard Rules list)</span></label>
+      <textarea name="project_exclusions" placeholder="e.g., Owner-furnished phone-system head-end programming; integration to legacy Bosch B-series intrusion panel"></textarea>
+    </fieldset>
+
+    <fieldset>
+      <legend>Meta</legend>
+      <div class="grid-2">
+        <div>
+          <label>Proposal Date</label>
+          <input type="date" name="proposal_date" />
+        </div>
+        <div>
+          <label>Validity <span class="hint">(default: +60 days)</span></label>
+          <input type="date" name="validity_date" />
+        </div>
+      </div>
+    </fieldset>
+
+  </form>
+
+  <div id="output-panel" class="hidden"></div>
+
+</div>
+
+<div class="actions">
+  <button class="btn btn-secondary" onclick="clearForm()">Reset</button>
+  <button class="btn btn-primary" onclick="exportJSON()">Export Briefing (JSON)</button>
+  <button class="btn btn-gold" onclick="generateMarkdown()">Generate Markdown Draft</button>
+</div>
+
+<script>
+  // Audience picker
+  document.querySelectorAll('.audience-option').forEach(opt => {
+    opt.addEventListener('click', () => {
+      document.querySelectorAll('.audience-option').forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+      document.body.setAttribute('data-audience', opt.dataset.value);
+    });
+  });
+
+  // Populate default dates
+  (function () {
+    const today = new Date();
+    const validity = new Date(today);
+    validity.setDate(validity.getDate() + 60);
+    document.querySelector('[name=proposal_date]').value = today.toISOString().slice(0, 10);
+    document.querySelector('[name=validity_date]').value = validity.toISOString().slice(0, 10);
+  })();
+
+  function addQtyRow(item = '', qty = '', unit = 'each') {
+    const container = document.getElementById('quantified-items');
+    const row = document.createElement('div');
+    row.className = 'quantity-input';
+    row.innerHTML = `
+      <input type="text" placeholder="Item (e.g., Cat6A data drops)" value="${item}" class="qty-item"/>
+      <input type="number" placeholder="Qty" value="${qty}" class="qty-num"/>
+      <div style="display:flex;gap:4px;align-items:center;">
+        <input type="text" placeholder="Unit" value="${unit}" class="qty-unit" style="flex:1"/>
+        <button type="button" class="small-btn" onclick="this.parentElement.parentElement.remove()" style="padding:4px 8px">×</button>
+      </div>
+    `;
+    container.appendChild(row);
+  }
+  // Seed with a couple starter rows
+  addQtyRow('Cat6A plenum data drops', '', 'each');
+  addQtyRow('IP camera installs', '', 'each');
+
+  function collect() {
+    const form = document.getElementById('brief-form');
+    const fd = new FormData(form);
+    const obj = {};
+    const audience = document.body.getAttribute('data-audience');
+    obj.audience = audience;
+
+    for (const [k, v] of fd.entries()) {
+      if (k === 'services') {
+        obj.services_included = obj.services_included || [];
+        obj.services_included.push(v);
+      } else {
+        obj[k] = v;
+      }
+    }
+
+    // Collect quantified items
+    const items = [];
+    document.querySelectorAll('#quantified-items .quantity-input').forEach(row => {
+      const item = row.querySelector('.qty-item').value.trim();
+      const qty = row.querySelector('.qty-num').value.trim();
+      const unit = row.querySelector('.qty-unit').value.trim();
+      if (item && qty) items.push({ item, qty, unit: unit || 'each' });
+    });
+    obj.quantified_items = items;
+
+    return obj;
+  }
+
+  function exportJSON() {
+    const data = collect();
+    const pretty = JSON.stringify(data, null, 2);
+    const panel = document.getElementById('output-panel');
+    panel.classList.remove('hidden');
+    panel.textContent = pretty;
+
+    // Copy to clipboard
+    navigator.clipboard.writeText(pretty).then(() => {
+      const note = document.createElement('div');
+      note.textContent = '✓ Copied to clipboard — paste into Claude with the master system prompt loaded.';
+      note.style.cssText = 'background:#F1F8F1;border-left:4px solid #2E7D32;padding:10px 16px;margin-top:8px;font-size:13px;color:#1A1A1A;';
+      panel.parentNode.insertBefore(note, panel);
+      setTimeout(() => note.remove(), 4000);
+    }).catch(() => {
+      // Clipboard blocked — just show it
+    });
+  }
+
+  function generateMarkdown() {
+    const d = collect();
+    const audience = d.audience;
+    let md = '';
+
+    if (audience === 'gc') {
+      md = generateGCMarkdown(d);
+    } else if (audience === 'owner') {
+      md = generateOwnerMarkdown(d);
+    } else {
+      md = generateResidentialMarkdown(d);
+    }
+
+    const panel = document.getElementById('output-panel');
+    panel.classList.remove('hidden');
+    panel.textContent = md;
+
+    // Offer download
+    const blob = new Blob([md], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const slug = (d.project_name || 'proposal').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    a.download = `gcc-${audience}-${slug}-draft.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function generateGCMarkdown(d) {
+    const itemsTable = (d.quantified_items || []).map(i => `| ${i.item} | ${i.qty} | ${i.unit} |`).join('\n');
+    const serviceMap = {
+      'structured-cabling': 'Structured Cabling',
+      'electronic-security': 'Electronic Security',
+      'av-and-paging': 'AV & Paging',
+      'telecom-room': 'Telecom Room Buildout',
+      'pathway-and-support': 'Pathway & Support',
+      'certification': 'Certification & Documentation',
+      'project-management': 'Project Management'
+    };
+    const svcList = (d.services_included || []).map(s => `- ${serviceMap[s] || s}`).join('\n');
+
+    return `# PROPOSAL — ${d.project_name || '[Project Name]'}
+
+**Bid to:** ${d.client_company_name || '[GC Name]'}
+**Attn:** ${d.client_contact_name || '[Estimator]'}, ${d.client_contact_title || '[Title]'}
+**Date:** ${d.proposal_date || ''}
+**Valid through:** ${d.validity_date || ''}
+**Our reference:** ${d.gcc_bid_number || '[GCC-bid-no]'}
+
+---
+
+## 01 — Cover Letter
+
+${d.client_contact_name || '[Estimator]'},
+
+${d.project_specific_hook || '[One-sentence project-specific hook proving we read the docs]'}
+
+GCC LLC is pleased to submit the enclosed bid for ${d.project_name || 'this project'}. Our scope covers the services checked below, delivered to our standard specifications:
+
+- **Cat6A plenum** included on every data drop — no upcharge vs. Cat6 spec
+- **Fluke DSX-8000 certification** on every port, LinkWare PDF at closeout
+- **TIA-606-C Class 3 labeling** on every outlet, patch, rack, and cable end
+- **Lifetime workmanship warranty** — transfers with the property
+
+This proposal is valid for 60 days. Bid, performance, and payment bonds available per project.
+
+Sincerely,
+
+**Kaitlyn Lim Morris**
+President & CEO, GCC LLC
+(636) 224-8192 · corporate@greencommllc.com
+
+---
+
+## 02 — Bid Overview
+
+**Base Bid: $${(d.base_bid_amount || 0).toLocaleString()}**
+
+| Alternate | Type | Amount |
+|---|---|---:|
+| A1 — Managed Services (month-to-month) | ADD | $${(d.ms_alternate_monthly || 0).toLocaleString()}/month |
+| D1 — Weekend / After-Hours | DEDUCT | -$${(d.d1_amount || 0).toLocaleString()} |
+
+Schedule: ${d.schedule_start || '[Start]'} → ${d.schedule_end || '[Substantial Completion]'}
+
+---
+
+## 03 — Scope of Work
+
+### 3.1 Services Included
+
+${svcList}
+
+### 3.2 Quantified Items
+
+| Item | Quantity | Unit |
+|---|---:|---|
+${itemsTable || '| [To be quantified] | | |'}
+
+### 3.3 Exclusions
+
+- Fire alarm and FACP work (NICET scope)
+- ERCES / BDA / DAS public-safety radio
+- Lighting controls (WaveLinx, nLight, DLM, Lutron)
+- Building management and HVAC controls
+- EV charger network data
+- Mass notification beyond standard paging speakers
+- Permit fees beyond low-voltage permits
+- 120V electrical work
+${d.project_exclusions ? '- ' + d.project_exclusions.split('\n').join('\n- ') : ''}
+
+---
+
+## 04 — About GCC
+
+GCC LLC is a Division 27 / Division 28 low-voltage contractor based in O'Fallon, Missouri, serving the Kansas City and St. Louis metros. Baseline scope includes Cat6A plenum on every data drop, Fluke DSX-8000 certification on every port, and TIA-606-C Class 3 labeling. Licensed and insured. Lifetime workmanship warranty transfers with the property.
+
+---
+
+## 05 — Qualifications
+
+**Insurance:** $1M/$2M Commercial General Liability (Next Insurance), Workers' Compensation (AmGUARD, policy GRWC763142), $1M Employer's Liability.
+
+**Bonding:** Bid, performance, and payment bonds available per project.
+
+**Team:** Led by Kaitlyn Lim Morris (President & CEO) and Nathan Morris (CTO / Director of Operations, 600+ hospital site projects). Two-person minimum crew on site; foreman ratio 1:3 maximum. OSHA 10 installers, OSHA 30 supervisors.
+
+---
+
+## 06 — Warranty
+
+**LIFETIME WORKMANSHIP — TRANSFERS WITH THE PROPERTY**
+
+Every cable we install, every termination we make, for as long as the infrastructure is in service. Manufacturer warranties pass through on equipment. Five-year coverage on GCC-furnished hardware.
+
+---
+
+## 07 — Schedule
+
+Schedule dates are contingent on timely award and material availability. ${d.schedule_constraints || 'Standard commercial phasing applies.'}
+
+---
+
+## 08 — Investment Summary
+
+| Line | Amount |
+|---|---:|
+| Base Bid | $${(d.base_bid_amount || 0).toLocaleString()} |
+${d.loyalty_discount_amount && d.loyalty_discount_amount > 0 ? `| Loyalty Discount | -$${(+d.loyalty_discount_amount).toLocaleString()} |\n` : ''}| **Net Bid** | **$${((+d.base_bid_amount || 0) - (+d.loyalty_discount_amount || 0)).toLocaleString()}** |
+
+Payment terms: Progress billing monthly, 5% retention, Net 30 from invoice date.
+
+---
+
+## 09 — Acceptance
+
+By signing below, ${d.client_company_name || '[GC Name]'} accepts GCC LLC's proposal for ${d.project_name || '[Project]'} at the Base Bid of $${(d.base_bid_amount || 0).toLocaleString()}, subject to the attached Terms and Conditions.
+
+Signature: ________________________________
+
+Name: ________________________________
+
+Title: ________________________________
+
+Date: ________________________________
+
+---
+
+*GCC LLC · Proprietary & Confidential · Licensed & Insured · KCMO & STL*
+
+> _[This is a draft skeleton. For the full proposal with T&C, prior work references, and polished prose, paste this document's JSON briefing into Claude with the master system prompt loaded.]_
+`;
+  }
+
+  function generateOwnerMarkdown(d) {
+    return `# ${d.project_name || '[Project Name]'}
+
+**Prepared for:** ${d.client_company_name || '[Client]'}
+**Attn:** ${d.client_contact_name || '[Contact]'}
+**Date:** ${d.proposal_date || ''}
+**Valid through:** ${d.validity_date || ''}
+
+---
+
+## 01 — A Note from Kaitlyn
+
+${d.client_contact_name || '[Name]'},
+
+Thanks for bringing us in to look at ${d.project_name || 'this project'}. ${d.project_specific_hook || "[Reference their specific situation here.]"}
+
+What we're proposing covers the work itemized below. You get Cat6A cabling on every data run — the kind that'll handle gigabit today and whatever shows up in the next generation of devices — independent testing on every cable with the report delivered at closeout, and a lifetime workmanship warranty that transfers with the property if you ever sell.
+
+I'd be happy to walk the building with you if that's helpful. When you're ready, sign the acceptance block on the last page or reply with "accepted."
+
+Sincerely,
+
+**Kaitlyn Lim Morris**
+President & CEO, GCC LLC
+(636) 224-8192 · corporate@greencommllc.com
+
+---
+
+## 02 — What You're Getting
+
+**Total Price: $${(d.base_bid_amount || 0).toLocaleString()}**
+
+- Lifetime workmanship warranty — transfers with the property
+- 100% on-time delivery record
+- Fluke DSX-8000 certification on every cable — LinkWare PDF at closeout
+- Cat6A plenum included on every data drop — no upcharge vs. Cat6 spec
+
+Schedule: ${d.schedule_start || '[Start]'} → ${d.schedule_end || '[Completion]'}
+
+---
+
+## 03 — Who You're Working With
+
+GCC LLC is a Division 27 / Division 28 low-voltage contractor in the KCMO / STL metros. Led by Kaitlyn Morris (President & CEO) and Nathan Morris (CTO, 600+ hospital sites across 50 states). Licensed and insured ($1M/$2M general liability, statutory workers' comp).
+
+---
+
+## 04 — What We're Installing
+
+${(d.services_included || []).map(s => `- ${s.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}`).join('\n')}
+
+**Quantified items:**
+
+${(d.quantified_items || []).map(i => `- ${i.qty} ${i.unit} — ${i.item}`).join('\n') || '- [To be quantified]'}
+
+---
+
+## 05 — How It'll Go
+
+${d.schedule_constraints || 'Standard commercial phasing applies — we mobilize on start date, rough-in per the construction sequence, certify everything at the end, and hand off a complete closeout package.'}
+
+---
+
+## 06 — Warranty
+
+**Lifetime workmanship — transfers with the property.**
+
+If a cable we installed ever stops working, you call us and we fix it. If you sell the building, the next owner has the same guarantee.
+
+---
+
+## 07 — Investment Summary
+
+**Total: $${(d.base_bid_amount || 0).toLocaleString()}**
+
+Managed Services option: $${(d.ms_alternate_monthly || 0).toLocaleString()}/month — month-to-month, no lock-in.
+
+Payment: Progress billing monthly, Net 30.
+
+---
+
+## 08 — Acceptance
+
+By signing below, ${d.client_company_name || '[Client]'} accepts this quote for ${d.project_name || '[Project]'} at $${(d.base_bid_amount || 0).toLocaleString()}.
+
+[signature lines]
+
+---
+
+*GCC LLC · Proprietary & Confidential · Licensed & Insured · KCMO & STL*
+
+> _[This is a draft skeleton. For the full polished proposal with T&C and references, paste this JSON briefing into Claude with the master system prompt loaded.]_
+`;
+  }
+
+  function generateResidentialMarkdown(d) {
+    return `# ${d.project_name || '[Project Name]'}
+
+**Prepared for:** ${d.homeowner_name || '[Homeowner]'}
+**Address:** ${d.project_address || ''}
+**Date:** ${d.proposal_date || ''}
+**Valid through:** ${d.validity_date || ''}
+
+---
+
+## 01 — Hi ${d.homeowner_first_name || '[Name]'}
+
+Thanks for having us out. ${d.homeowner_goal ? 'You mentioned ' + d.homeowner_goal.toLowerCase().replace(/\.$/, '') + ' — ' : ''}here's what we'd do.
+
+Our work comes with a lifetime warranty on the workmanship. If a cable we install ever gives you trouble, we come back and fix it — whether that's next month or fifteen years from now. If you sell the house, the warranty transfers to the next owner.
+
+Happy to answer questions. When you're ready, sign the last page and send it back — photo, scan, or DocuSign.
+
+**Kaitlyn Lim Morris**
+President & CEO, GCC LLC
+(636) 224-8192 · corporate@greencommllc.com
+
+---
+
+## 02 — What You're Getting
+
+**Total Price: $${(d.total_price || 0).toLocaleString()}**
+
+- Every cable certified with a professional tester — you get the report when we're done
+- Future-proof data cables — handles gigabit speeds and whatever comes next
+- Lifetime warranty on our workmanship — transfers if you sell
+- Two-person crew minimum; never a lone tech at your house
+
+---
+
+## 03 — What We're Installing
+
+${(d.services_included || []).map(s => `- ${s.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}`).join('\n')}
+
+${(d.quantified_items || []).length > 0 ? `**Details:**\n\n${d.quantified_items.map(i => `- ${i.qty} ${i.unit} — ${i.item}`).join('\n')}` : ''}
+
+Panel location: ${d.panel_location || '[Utility room]'}
+
+---
+
+## 04 — How It'll Go
+
+${d.schedule_start ? `We'd start the week of ${d.schedule_start}. ` : ''}${d.schedule_constraints || 'Typical residential install is 2–4 consecutive days on site — you\'ll want to be home at least for the first morning so we can confirm placement decisions together.'}
+
+---
+
+## 05 — What It Costs
+
+- **Total: $${(d.total_price || 0).toLocaleString()}**
+- 30% deposit at contract signing
+- 40% when material arrives on site
+- 30% at completion walkthrough
+
+${d.managed_services_monthly ? `Optional Managed Services: $${(d.managed_services_monthly).toLocaleString()}/month — we monitor the network, push updates, swap gear under warranty. Month-to-month, cancel any time.` : ''}
+
+---
+
+## 06 — Warranty
+
+**Lifetime workmanship — transfers with the property.**
+
+Equipment carries its own manufacturer warranty, and our hardware is covered for five years.
+
+---
+
+## 07 — Acceptance
+
+By signing below, ${d.homeowner_name || '[Homeowner]'} accepts this proposal for ${d.project_name || '[Project]'} at $${(d.total_price || 0).toLocaleString()}.
+
+[signature lines]
+
+---
+
+*GCC LLC · Licensed & Insured · (636) 224-8192*
+
+> _[This is a draft skeleton. For the full polished proposal with T&C, paste this JSON briefing into Claude with the master system prompt loaded.]_
+`;
+  }
+
+  function clearForm() {
+    if (!confirm('Clear all fields and start over?')) return;
+    document.getElementById('brief-form').reset();
+    document.getElementById('quantified-items').innerHTML = '';
+    addQtyRow('Cat6A plenum data drops', '', 'each');
+    addQtyRow('IP camera installs', '', 'each');
+    document.getElementById('output-panel').classList.add('hidden');
+
+    const today = new Date();
+    const validity = new Date(today);
+    validity.setDate(validity.getDate() + 60);
+    document.querySelector('[name=proposal_date]').value = today.toISOString().slice(0, 10);
+    document.querySelector('[name=validity_date]').value = validity.toISOString().slice(0, 10);
+  }
+</script>
+
+</body>
+</html>

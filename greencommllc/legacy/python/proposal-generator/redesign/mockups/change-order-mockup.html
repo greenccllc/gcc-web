@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CO-001 · MOCSA — Redesign v2</title>
+<style>
+  :root{
+    --forest:#2E7D32; --forest-dark:#1E5622;
+    --slate:#455A64; --slate-light:#788A93;
+    --gold:#D4AF37; --gold-deep:#B8941E; --gold-tint:#FAF3DC;
+    --cream:#FDFBF4; --green-tint:#F1F8F1;
+    --ink:#1A1A1A; --rule:#D8D8D8;
+  }
+  @page{ size:Letter; margin:0.75in;
+    @bottom-left{ content:"GCC LLC  ·  Proprietary & Confidential  ·  GCC-2026-0104-CO-001  ·  2026-04-20"; font-family:"Liberation Sans",Arial,sans-serif; font-size:7.5pt; color:#788A93; }
+    @bottom-right{ content:"Page " counter(page); font-family:"Liberation Sans",Arial,sans-serif; font-size:7.5pt; color:#788A93; }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:#EFEFEF;color:var(--ink);font-family:"Liberation Sans",Arial,sans-serif;font-size:10.5pt;line-height:1.42}
+  .page{background:var(--cream);width:8.5in;min-height:11in;padding:0.75in;margin:0.25in auto;box-shadow:0 2px 14px rgba(0,0,0,0.08);position:relative;page-break-after:always}
+  .page:last-child{page-break-after:auto}
+  .run-footer{position:absolute;left:0.75in;right:0.75in;bottom:0.42in;display:flex;justify-content:space-between;font-size:7.5pt;color:var(--slate-light);border-top:0.5pt solid var(--rule);padding-top:6pt}
+  .serifB{font-family:"Liberation Serif",Georgia,serif;font-weight:700;letter-spacing:-0.005em}
+  .caps{text-transform:uppercase;letter-spacing:0.12em;font-size:8pt;color:var(--slate)}
+  h1,h2,h3{margin:0;font-family:"Liberation Serif",Georgia,serif;font-weight:700;letter-spacing:-0.005em}
+  .num{font-variant-numeric:tabular-nums}
+
+  /* === COVER === the math IS the cover */
+  .co-cover{ padding-top:0.25in }
+  .co-ident{ display:flex; justify-content:space-between; align-items:baseline; border-bottom:0.5pt solid var(--rule); padding-bottom:10pt }
+  .co-ident .brand{ font-family:"Liberation Serif",Georgia,serif; font-weight:700; font-size:14pt; color:var(--forest-dark) }
+  .co-ident .tag{ font-size:8pt; letter-spacing:0.14em; color:var(--gold-deep); text-transform:uppercase; font-weight:700 }
+
+  .co-hero{
+    margin-top:0.45in;
+    border:1pt solid var(--rule);
+    background:#FFFFFF;
+    padding:28pt 26pt 30pt;
+    position:relative;
+  }
+  .co-hero::before{ content:""; position:absolute; top:0; left:0; right:0; height:3pt; background:var(--gold) }
+  .co-hero .kicker{ font-size:7.5pt; letter-spacing:0.18em; text-transform:uppercase; color:var(--gold-deep); font-weight:700; margin-bottom:4pt }
+  .co-hero h1{ font-size:22pt; color:var(--ink); margin-bottom:2pt }
+  .co-hero .sub{ font-style:italic; color:var(--slate); font-size:11pt; margin-bottom:18pt }
+
+  .math{ display:grid; grid-template-columns:1fr auto 1fr auto 1fr; gap:14pt; align-items:end; margin-top:8pt }
+  .math .cell .lbl{ font-size:7.5pt; letter-spacing:0.14em; text-transform:uppercase; color:var(--slate-light); font-weight:700; margin-bottom:6pt }
+  .math .cell .val{ font-family:"Liberation Serif",Georgia,serif; font-weight:700; font-size:28pt; line-height:1; color:var(--ink); font-variant-numeric:tabular-nums }
+  .math .cell.accent .val{ color:var(--gold-deep) }
+  .math .cell.final .val{ color:var(--forest-dark); font-size:34pt }
+  .math .op{ font-family:"Liberation Serif",Georgia,serif; font-size:22pt; color:var(--slate-light); font-weight:400; padding-bottom:4pt }
+
+  .co-hero .stamp{ margin-top:22pt; padding-top:14pt; border-top:0.5pt solid var(--rule); display:grid; grid-template-columns:repeat(4,1fr); gap:12pt }
+  .co-hero .stamp .stat .lbl{ font-size:7pt; letter-spacing:0.14em; text-transform:uppercase; color:var(--slate-light); font-weight:700; margin-bottom:2pt }
+  .co-hero .stamp .stat .val{ font-size:10pt; color:var(--ink); font-weight:600 }
+
+  .cover-foot{ margin-top:0.35in; display:grid; grid-template-columns:1.2fr 1fr; gap:20pt; font-size:9.5pt }
+  .cover-foot .k{ color:var(--slate-light); font-size:7.5pt; letter-spacing:0.14em; text-transform:uppercase; font-weight:700; margin-bottom:3pt }
+  .cover-foot .v{ color:var(--ink) }
+  .cover-foot .row{ margin-bottom:8pt }
+
+  /* === P2 === why + delta */
+  .section-rule{ border-top:2pt solid var(--forest-dark); padding-top:10pt; margin-top:6pt; display:flex; justify-content:space-between; align-items:baseline }
+  .section-rule h1{ font-size:22pt; color:var(--forest-dark) }
+  .section-rule .pg{ font-size:8pt; letter-spacing:0.14em; text-transform:uppercase; color:var(--slate-light) }
+
+  .why{ margin-top:14pt; background:var(--green-tint); border-left:3pt solid var(--gold); padding:16pt 18pt }
+  .why .k{ font-size:7.5pt; letter-spacing:0.16em; text-transform:uppercase; color:var(--forest-dark); font-weight:700; margin-bottom:6pt }
+  .why p{ margin:0; font-size:10.5pt; line-height:1.55 }
+
+  .lead{ margin-top:14pt; font-size:10.5pt; line-height:1.55; color:var(--ink) }
+
+  h2.section{ font-size:14pt; color:var(--forest-dark); margin-top:20pt; margin-bottom:8pt; font-family:"Liberation Serif",Georgia,serif }
+  table.scope{ width:100%; border-collapse:collapse; font-size:9.5pt; margin-top:6pt }
+  table.scope thead th{ background:var(--forest-dark); color:var(--cream); font-weight:700; font-size:8pt; letter-spacing:0.1em; text-transform:uppercase; padding:7pt 8pt; text-align:left }
+  table.scope thead th.n{ text-align:right }
+  table.scope tr.band td{ background:var(--gold-tint); color:var(--gold-deep); font-weight:700; font-size:7.5pt; letter-spacing:0.14em; text-transform:uppercase; padding:5pt 8pt; border-bottom:0.25pt solid var(--gold); border-top:0.25pt solid var(--gold) }
+  table.scope tbody td{ padding:8pt; border-bottom:0.25pt solid var(--rule); vertical-align:top; font-variant-numeric:tabular-nums }
+  table.scope tbody td.n{ text-align:right; white-space:nowrap }
+  table.scope tfoot td{ padding:10pt 8pt; border-top:1pt solid var(--forest-dark); font-weight:700 }
+
+  .sub-strip{ margin-top:14pt; background:var(--forest-dark); color:var(--cream); padding:12pt 16pt; display:flex; justify-content:space-between; align-items:baseline }
+  .sub-strip .k{ font-size:8pt; letter-spacing:0.16em; text-transform:uppercase; font-weight:700; opacity:0.85 }
+  .sub-strip .v{ font-family:"Liberation Serif",Georgia,serif; font-weight:700; font-size:18pt; font-variant-numeric:tabular-nums }
+
+  .carry{ margin-top:20pt; border:0.5pt solid var(--rule); border-left:3pt solid var(--slate); padding:14pt 16pt; background:#FFFFFF }
+  .carry .k{ font-size:7.5pt; letter-spacing:0.14em; text-transform:uppercase; color:var(--slate); font-weight:700; margin-bottom:6pt }
+  .carry ul{ margin:0; padding-left:18pt; font-size:10pt; line-height:1.55 }
+
+  .notes{ margin-top:14pt; font-size:10pt; font-style:italic; color:var(--slate); line-height:1.5 }
+  .notes li{ margin-bottom:3pt }
+
+  /* === P3 === accept */
+  .terms{ margin-top:14pt; display:grid; grid-template-columns:repeat(2,1fr); gap:6pt 22pt; font-size:10pt; padding:14pt 0; border-top:0.5pt solid var(--rule); border-bottom:0.5pt solid var(--rule) }
+  .terms .row{ display:grid; grid-template-columns:1.1fr 2fr; gap:6pt; padding:3pt 0 }
+  .terms .k{ color:var(--slate); font-size:9pt; font-weight:600 }
+
+  .accept{ margin-top:22pt; display:grid; grid-template-columns:1fr 1fr; gap:26pt }
+  .accept h3{ font-size:11pt; color:var(--forest-dark); margin-bottom:6pt }
+  .accept .k{ font-size:7.5pt; letter-spacing:0.14em; text-transform:uppercase; color:var(--slate-light); font-weight:700 }
+  .accept .name{ font-weight:600; font-size:10.5pt; margin-top:8pt }
+  .accept .sub{ font-size:9.5pt; color:var(--slate) }
+  .sig-line{ border-bottom:0.75pt solid var(--ink); height:24pt; margin-top:18pt }
+  .sig-cap{ display:flex; justify-content:space-between; font-size:8pt; color:var(--slate-light); margin-top:3pt }
+
+  .reassure{ margin-top:26pt; padding:12pt 16pt; background:var(--green-tint); border-left:3pt solid var(--gold); font-size:9.5pt; color:var(--forest-dark) }
+</style>
+</head>
+<body>
+
+<!-- ============ PAGE 1 — MATH-FIRST COVER ============ -->
+<div class="page co-cover">
+  <div class="co-ident">
+    <div class="brand">GCC LLC</div>
+    <div class="tag">Change Order · CO-001</div>
+  </div>
+
+  <div class="co-hero">
+    <div class="kicker">Amendment to executed contract GCC-2023-019</div>
+    <h1>MOCSA Secure Facility Build</h1>
+    <div class="sub">CO-001 — Added access-control points (4 interior doors)</div>
+
+    <div class="math">
+      <div class="cell">
+        <div class="lbl">Original contract</div>
+        <div class="val num">$64,520</div>
+      </div>
+      <div class="op">+</div>
+      <div class="cell accent">
+        <div class="lbl">This change order</div>
+        <div class="val num">$3,500</div>
+      </div>
+      <div class="op">=</div>
+      <div class="cell final">
+        <div class="lbl">Revised contract</div>
+        <div class="val num">$68,020</div>
+      </div>
+    </div>
+
+    <div class="stamp">
+      <div class="stat"><div class="lbl">Change %</div><div class="val">+5.4%</div></div>
+      <div class="stat"><div class="lbl">Schedule impact</div><div class="val">0 days</div></div>
+      <div class="stat"><div class="lbl">Issued</div><div class="val">2026-04-20</div></div>
+      <div class="stat"><div class="lbl">Valid through</div><div class="val">2026-05-04</div></div>
+    </div>
+  </div>
+
+  <div class="cover-foot">
+    <div>
+      <div class="row"><div class="k">Prepared for</div><div class="v">Dawn Richardson · Director of Facilities · MOCSA</div></div>
+      <div class="row"><div class="k">Property</div><div class="v">3100 Broadway Blvd., Kansas City, MO 64111</div></div>
+      <div class="row"><div class="k">Original contract</div><div class="v">GCC-2023-019 · executed 2023-10-14</div></div>
+    </div>
+    <div>
+      <div class="row"><div class="k">Proposal no.</div><div class="v">GCC-2026-0104-CO-001</div></div>
+      <div class="row"><div class="k">Submitter</div><div class="v">Nathan Morris · Director of Operations & CTO</div></div>
+      <div class="row"><div class="k">Approver</div><div class="v">Kaitlyn Lim Morris · President & CEO</div></div>
+    </div>
+  </div>
+
+  <div class="run-footer"><span>GCC LLC  ·  Proprietary &amp; Confidential  ·  GCC-2026-0104-CO-001  ·  2026-04-20</span><span>Page 1</span></div>
+</div>
+
+<!-- ============ PAGE 2 — WHY + DELTA ============ -->
+<div class="page">
+  <div class="section-rule"><h1>Why this change order</h1><div class="pg">Delta &nbsp;·&nbsp; 2 / 3</div></div>
+
+  <div class="why">
+    <div class="k">Reason</div>
+    <p>During the 2026-04-14 pre-construction walkdown with MOCSA facilities and the architect of record, four additional interior doors were identified as needing access-control coverage that were not in the original GCC-2023-019 scope: the IT closet (room 142), the records room (room 148), and two client-intake doors on the north corridor. This CO adds the rough-in, device labor, and head-end programming for those four doors only. All other executed scope under GCC-2023-019 remains in force without modification.</p>
+  </div>
+
+  <p class="lead">The added work is additive and non-disruptive. It runs in parallel with the existing scope and does not push the project finish date. The pricing below uses the same unit rates that were established in GCC-2023-019, with no mobilization surcharge because our crew is already on site.</p>
+
+  <h2 class="section">Added scope</h2>
+  <table class="scope">
+    <thead><tr><th>Qty</th><th>Unit</th><th>Description</th><th class="n">Unit price</th><th class="n">Extended</th></tr></thead>
+    <tbody>
+      <tr class="band"><td colspan="5">Access control</td></tr>
+      <tr><td class="num">4</td><td>ea</td><td>Access-control rough-in — door position switch, REX, reader cable, strike cable to door, terminated at IDF</td><td class="n">$485.00</td><td class="n">$1,940.00</td></tr>
+      <tr><td class="num">4</td><td>ea</td><td>Device labor — reader &amp; strike install, door contact alignment, factory test</td><td class="n">$285.00</td><td class="n">$1,140.00</td></tr>
+      <tr class="band"><td colspan="5">Labor</td></tr>
+      <tr><td class="num">1</td><td>ls</td><td>Head-end programming — add 4 doors to existing Genetec configuration, update access tiers, commissioning test</td><td class="n">$420.00</td><td class="n">$420.00</td></tr>
+    </tbody>
+  </table>
+
+  <div class="sub-strip"><div class="k">Change order subtotal</div><div class="v num">$3,500.00</div></div>
+
+  <div class="carry">
+    <div class="k">What does not change under this CO</div>
+    <ul>
+      <li>Managed service plan already in place under GCC-2023-019 — no new MSP alternate presented with this CO.</li>
+      <li>Original exclusions list governs — this CO does not re-open those exclusions.</li>
+      <li>Standard loyalty discount does not stack with change-order pricing; not applied here.</li>
+      <li>Balance of original scope remains in force, priced and scheduled per the executed contract.</li>
+    </ul>
+  </div>
+
+  <ul class="notes">
+    <li><em>Four doors identified 2026-04-14; pricing uses the rates already established under GCC-2023-019.</em></li>
+    <li><em>No mobilization — crew is on site; head-end is already commissioned.</em></li>
+  </ul>
+
+  <div class="run-footer"><span>GCC LLC  ·  Proprietary &amp; Confidential  ·  GCC-2026-0104-CO-001  ·  2026-04-20</span><span>Page 2</span></div>
+</div>
+
+<!-- ============ PAGE 3 — TERMS & ACCEPT ============ -->
+<div class="page">
+  <div class="section-rule"><h1>Terms &amp; acceptance</h1><div class="pg">Close &nbsp;·&nbsp; 3 / 3</div></div>
+
+  <div class="terms">
+    <div class="row"><div class="k">Payment</div><div>Per original GCC-2023-019 — Net 30 from invoice</div></div>
+    <div class="row"><div class="k">Deposit</div><div>Waived for this CO — additive to executed contract</div></div>
+    <div class="row"><div class="k">Insurance</div><div>Per original — COI on file with MOCSA</div></div>
+    <div class="row"><div class="k">Licensure</div><div>Per original — MO low-voltage contractor, in good standing</div></div>
+    <div class="row"><div class="k">Supersession</div><div>This CO amends GCC-2023-019 and does not supersede any other clause</div></div>
+    <div class="row"><div class="k">Validity</div><div>14 days from issue — through 2026-05-04</div></div>
+  </div>
+
+  <div class="accept">
+    <div>
+      <h3>GCC LLC</h3>
+      <div class="k">Prepared by</div>
+      <div class="name">Nathan Morris</div>
+      <div class="sub">Director of Operations &amp; CTO</div>
+      <div class="sub">nmorris@greencommllc.com</div>
+      <div class="sig-line"></div>
+      <div class="sig-cap"><span>Signature</span><span>Date</span></div>
+      <div style="margin-top:16pt" class="k">Approved by</div>
+      <div class="name">Kaitlyn Lim Morris</div>
+      <div class="sub">President &amp; CEO</div>
+      <div class="sig-line"></div>
+      <div class="sig-cap"><span>Signature</span><span>Date</span></div>
+    </div>
+    <div>
+      <h3>MOCSA acceptance</h3>
+      <div class="k">Authorized signer</div>
+      <div class="name">Dawn Richardson</div>
+      <div class="sub">Director of Facilities</div>
+      <div class="sub">drichardson@mocsa.org · (816) 531-0233</div>
+      <div class="sig-line"></div>
+      <div class="sig-cap"><span>Signature</span><span>Date</span></div>
+      <div style="margin-top:16pt" class="k">Printed name</div>
+      <div class="sig-line"></div>
+      <div class="sig-cap"><span>Title</span><span>Date</span></div>
+    </div>
+  </div>
+
+  <div class="reassure">Acceptance below authorizes GCC LLC to begin the added scope under this change order and amends GCC-2023-019 to reflect the revised contract total of $68,020.00.</div>
+
+  <div class="run-footer"><span>GCC LLC  ·  Proprietary &amp; Confidential  ·  GCC-2026-0104-CO-001  ·  2026-04-20</span><span>Page 3</span></div>
+</div>
+
+</body></html>

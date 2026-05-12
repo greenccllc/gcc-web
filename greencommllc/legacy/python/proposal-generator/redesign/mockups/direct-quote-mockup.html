@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AdHoc Center CCTV Expansion · Direct Quote — Redesign v2</title>
+<style>
+  :root{
+    --forest:#2E7D32; --forest-dark:#1E5622;
+    --slate:#455A64; --slate-light:#788A93;
+    --gold:#D4AF37; --gold-deep:#B8941E; --gold-tint:#FAF3DC;
+    --cream:#FDFBF4; --green-tint:#F1F8F1;
+    --ink:#1A1A1A; --rule:#D8D8D8;
+  }
+  @page{ size:Letter; margin:0.75in;
+    @bottom-left{ content:"GCC LLC  ·  Proprietary & Confidential  ·  GCC-2026-0102  ·  2026-04-20"; font-family:"Liberation Sans",Arial,sans-serif; font-size:7.5pt; color:#788A93; }
+    @bottom-right{ content:"Page " counter(page); font-family:"Liberation Sans",Arial,sans-serif; font-size:7.5pt; color:#788A93; }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:#EFEFEF;color:var(--ink);font-family:"Liberation Sans",Arial,sans-serif;font-size:10.5pt;line-height:1.45}
+  .page{background:var(--cream);width:8.5in;min-height:11in;padding:0.75in;margin:0.25in auto;box-shadow:0 2px 14px rgba(0,0,0,0.08);position:relative;page-break-after:always}
+  .page:last-child{page-break-after:auto}
+  .run-footer{position:absolute;left:0.75in;right:0.75in;bottom:0.42in;display:flex;justify-content:space-between;font-size:7.5pt;color:var(--slate-light);border-top:0.5pt solid var(--rule);padding-top:6pt}
+  h1,h2,h3{margin:0;font-family:"Liberation Serif",Georgia,serif;font-weight:700;letter-spacing:-0.005em}
+  .num{font-variant-numeric:tabular-nums}
+  .caps{text-transform:uppercase;letter-spacing:0.14em;font-size:7.5pt;color:var(--slate-light);font-weight:700}
+
+  /* === COVER — price + loyalty is the hero === */
+  .brandline{ display:flex; justify-content:space-between; align-items:baseline; border-bottom:0.5pt solid var(--rule); padding-bottom:10pt }
+  .brandline .brand{ font-family:"Liberation Serif",Georgia,serif; font-weight:700; font-size:14pt; color:var(--forest-dark) }
+  .brandline .tag{ font-size:8pt; letter-spacing:0.16em; text-transform:uppercase; color:var(--forest); font-weight:700 }
+
+  .cover-setup{ margin-top:0.35in }
+  .cover-setup .kicker{ font-size:8pt; letter-spacing:0.2em; color:var(--slate-light); text-transform:uppercase; font-weight:700 }
+  .cover-setup h1{ font-size:30pt; line-height:1.1; color:var(--forest-dark); margin-top:10pt; margin-bottom:6pt; max-width:6.2in }
+  .cover-setup .sub{ font-size:11.5pt; color:var(--slate); font-style:italic; max-width:6in }
+
+  /* price hero band */
+  .price-hero{ margin-top:0.45in; background:#FFFFFF; border:1pt solid var(--rule); padding:26pt 28pt 22pt; position:relative }
+  .price-hero::before{ content:""; position:absolute; top:0; left:0; bottom:0; width:4pt; background:var(--gold) }
+  .ph-top{ display:flex; justify-content:space-between; align-items:baseline }
+  .ph-top .k{ font-size:7.5pt; letter-spacing:0.16em; text-transform:uppercase; color:var(--slate-light); font-weight:700 }
+  .ph-top .loyal{ font-size:8.5pt; color:var(--forest); font-weight:700; letter-spacing:0.06em; text-transform:uppercase }
+
+  .price-math{ margin-top:12pt; display:grid; grid-template-columns:1fr auto; gap:16pt; align-items:end }
+  .price-math .ledger{ display:grid; gap:4pt; font-size:10pt }
+  .price-math .ledger .row{ display:grid; grid-template-columns:1fr auto; padding:4pt 0; border-bottom:0.25pt dashed var(--rule); font-variant-numeric:tabular-nums }
+  .price-math .ledger .row .k{ color:var(--slate) }
+  .price-math .ledger .row.disc .k{ color:var(--forest); font-weight:600 }
+  .price-math .ledger .row.disc .v{ color:var(--forest); font-weight:600 }
+  .price-math .ledger .row:last-child{ border-bottom:none }
+  .price-math .final{ text-align:right }
+  .price-math .final .k{ font-size:7.5pt; letter-spacing:0.16em; text-transform:uppercase; color:var(--slate-light); font-weight:700; margin-bottom:4pt }
+  .price-math .final .v{ font-family:"Liberation Serif",Georgia,serif; font-weight:700; font-size:44pt; line-height:1; color:var(--forest-dark); font-variant-numeric:tabular-nums }
+
+  .cover-foot{ margin-top:0.4in; display:grid; grid-template-columns:1fr 1fr; gap:22pt; font-size:9.5pt }
+  .cover-foot .row{ display:grid; grid-template-columns:1.2fr 2fr; gap:8pt; padding:3pt 0 }
+  .cover-foot .k{ color:var(--slate-light); font-size:8pt; letter-spacing:0.1em; text-transform:uppercase; font-weight:700 }
+
+  /* === P2 — one-page summary === */
+  .section-rule{ border-top:2pt solid var(--forest-dark); padding-top:10pt; display:flex; justify-content:space-between; align-items:baseline }
+  .section-rule h1{ font-size:22pt; color:var(--forest-dark) }
+  .section-rule .pg{ font-size:8pt; letter-spacing:0.14em; text-transform:uppercase; color:var(--slate-light) }
+
+  .lead{ margin-top:14pt; font-size:10.5pt; line-height:1.55 }
+
+  .tri{ margin-top:18pt; display:grid; grid-template-columns:repeat(3,1fr); gap:14pt }
+  .tri .card{ background:#FFFFFF; border:0.5pt solid var(--rule); padding:14pt 16pt; min-height:2.1in; position:relative }
+  .tri .card .k{ font-size:7.5pt; letter-spacing:0.16em; text-transform:uppercase; color:var(--forest-dark); font-weight:700; margin-bottom:8pt }
+  .tri .card h3{ font-size:14pt; color:var(--ink); margin-bottom:8pt; font-family:"Liberation Serif",Georgia,serif }
+  .tri .card p, .tri .card ul{ margin:0; font-size:9.5pt; line-height:1.5; color:var(--slate) }
+  .tri .card ul{ padding-left:16pt }
+  .tri .card.price{ background:var(--green-tint); border-left:3pt solid var(--gold) }
+  .tri .card.price h3{ font-family:"Liberation Serif",Georgia,serif; font-size:26pt; color:var(--forest-dark); font-variant-numeric:tabular-nums; line-height:1 }
+  .tri .card.price .meta{ font-size:8.5pt; color:var(--forest); font-weight:600; margin-top:6pt; text-transform:uppercase; letter-spacing:0.06em }
+
+  h2.section{ font-size:14pt; color:var(--forest-dark); margin-top:24pt; margin-bottom:8pt; font-family:"Liberation Serif",Georgia,serif }
+
+  .timeline{ margin-top:10pt; display:grid; grid-template-columns:repeat(4,1fr); gap:10pt; padding:14pt 0; border-top:0.5pt solid var(--rule); border-bottom:0.5pt solid var(--rule) }
+  .timeline .step{ position:relative; padding-left:18pt }
+  .timeline .step::before{ content:""; position:absolute; left:0; top:3pt; width:10pt; height:10pt; border:1.5pt solid var(--gold); border-radius:50% }
+  .timeline .step .k{ font-size:7pt; letter-spacing:0.14em; text-transform:uppercase; color:var(--slate-light); font-weight:700; margin-bottom:2pt }
+  .timeline .step .v{ font-size:10pt; color:var(--ink); font-weight:600 }
+  .timeline .step .sub{ font-size:8.5pt; color:var(--slate); margin-top:2pt; font-style:italic }
+
+  /* === P3 — scope appendix === */
+  table.scope{ width:100%; border-collapse:collapse; font-size:9.5pt; margin-top:8pt }
+  table.scope thead th{ background:var(--forest-dark); color:var(--cream); font-weight:700; font-size:8pt; letter-spacing:0.1em; text-transform:uppercase; padding:7pt 8pt; text-align:left }
+  table.scope thead th.n{ text-align:right }
+  table.scope tr.band td{ background:var(--gold-tint); color:var(--gold-deep); font-weight:700; font-size:7.5pt; letter-spacing:0.14em; text-transform:uppercase; padding:5pt 8pt; border-bottom:0.25pt solid var(--gold); border-top:0.25pt solid var(--gold) }
+  table.scope tbody td{ padding:7pt 8pt; border-bottom:0.25pt solid var(--rule); vertical-align:top; font-variant-numeric:tabular-nums }
+  table.scope tbody td.n{ text-align:right; white-space:nowrap }
+  table.scope tfoot td{ padding:10pt 8pt; border-top:1pt solid var(--forest-dark); font-weight:700; font-size:10pt }
+  table.scope tfoot td.n{ text-align:right; font-variant-numeric:tabular-nums }
+
+  .two{ display:grid; grid-template-columns:1fr 1fr; gap:18pt; margin-top:10pt }
+  .warranty{ background:var(--green-tint); border-left:3pt solid var(--gold); padding:14pt 16pt }
+  .warranty .pull{ font-style:italic; font-size:11pt; color:var(--forest-dark); line-height:1.4; margin-bottom:8pt }
+  .warranty p{ font-size:9pt; line-height:1.5; color:var(--slate); margin:0 }
+
+  .excl h2{ font-family:"Liberation Serif",Georgia,serif; font-size:11pt; color:var(--forest-dark); margin:0 0 6pt }
+  .excl ul{ margin:0; padding-left:16pt; font-size:9pt; line-height:1.55; color:var(--slate) }
+
+  .msp{ margin-top:18pt; border:0.5pt solid var(--rule); padding:14pt 16pt; background:#FFFFFF; display:grid; grid-template-columns:2fr 1fr; gap:14pt; align-items:center }
+  .msp .left .k{ font-size:7.5pt; letter-spacing:0.16em; text-transform:uppercase; color:var(--slate-light); font-weight:700 }
+  .msp .left h3{ font-size:15pt; color:var(--forest-dark); margin-top:3pt; margin-bottom:6pt }
+  .msp .left p{ margin:0; font-size:9.5pt; line-height:1.5; color:var(--slate) }
+  .msp .right{ text-align:right; border-left:0.5pt solid var(--rule); padding-left:14pt }
+  .msp .right .price{ font-family:"Liberation Serif",Georgia,serif; font-weight:700; font-size:20pt; color:var(--forest-dark); font-variant-numeric:tabular-nums }
+  .msp .right .sub{ font-size:8.5pt; color:var(--slate); margin-top:2pt }
+
+  /* === P4 — accept === */
+  .terms{ margin-top:14pt; display:grid; grid-template-columns:repeat(2,1fr); gap:4pt 22pt; font-size:9.5pt; padding:14pt 0; border-top:0.5pt solid var(--rule); border-bottom:0.5pt solid var(--rule) }
+  .terms .row{ display:grid; grid-template-columns:1.1fr 2fr; gap:6pt; padding:2pt 0 }
+  .terms .k{ color:var(--slate); font-size:9pt; font-weight:600 }
+
+  .accept{ margin-top:22pt; display:grid; grid-template-columns:1fr 1fr; gap:26pt }
+  .accept h3{ font-size:11pt; color:var(--forest-dark); margin-bottom:6pt }
+  .accept .k{ font-size:7.5pt; letter-spacing:0.14em; text-transform:uppercase; color:var(--slate-light); font-weight:700 }
+  .accept .name{ font-weight:600; font-size:10.5pt; margin-top:8pt }
+  .accept .sub{ font-size:9.5pt; color:var(--slate) }
+  .sig-line{ border-bottom:0.75pt solid var(--ink); height:24pt; margin-top:18pt }
+  .sig-cap{ display:flex; justify-content:space-between; font-size:8pt; color:var(--slate-light); margin-top:3pt }
+
+  .reassure{ margin-top:22pt; padding:12pt 16pt; background:var(--green-tint); border-left:3pt solid var(--gold); font-size:9.5pt; color:var(--forest-dark) }
+</style>
+</head>
+<body>
+
+<!-- ============ PAGE 1 — PRICE-FIRST COVER ============ -->
+<div class="page">
+  <div class="brandline">
+    <div class="brand">GCC LLC</div>
+    <div class="tag">Quote for repeat client · AdHoc Center</div>
+  </div>
+
+  <div class="cover-setup">
+    <div class="kicker">A quote from Green Communications</div>
+    <h1>East Wing CCTV expansion — 24 added cameras, head-end re-zoned.</h1>
+    <div class="sub">Rachel, this one's scoped for off-hours over a single weekend so your staff never sees a ladder.</div>
+  </div>
+
+  <div class="price-hero">
+    <div class="ph-top">
+      <div class="k">Your price</div>
+      <div class="loyal">★ Repeat-client loyalty applied — 3%</div>
+    </div>
+    <div class="price-math">
+      <div class="ledger">
+        <div class="row"><div class="k">Scope subtotal · 4 line items</div><div class="v num">$9,948.00</div></div>
+        <div class="row disc"><div class="k">Loyalty discount · 3% returning customer</div><div class="v num">−$298.44</div></div>
+        <div class="row"><div class="k">Taxes &amp; mobilization</div><div class="v num">Included</div></div>
+      </div>
+      <div class="final">
+        <div class="k">Final investment</div>
+        <div class="v num">$9,649.56</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cover-foot">
+    <div>
+      <div class="row"><div class="k">Prepared for</div><div>Rachel Ortiz · Operations Manager · AdHoc Center</div></div>
+      <div class="row"><div class="k">Property</div><div>AdHoc Center, East Wing · Kansas City, MO</div></div>
+      <div class="row"><div class="k">Prior project</div><div>GCC-2024-0076 · West-wing CCTV · completed 2024-08</div></div>
+    </div>
+    <div>
+      <div class="row"><div class="k">Proposal no.</div><div>GCC-2026-0102</div></div>
+      <div class="row"><div class="k">Issued</div><div>2026-04-20</div></div>
+      <div class="row"><div class="k">Valid through</div><div>2026-05-20 · 30 days</div></div>
+      <div class="row"><div class="k">Submitter</div><div>Nathan Morris · Director of Operations &amp; CTO</div></div>
+    </div>
+  </div>
+
+  <div class="run-footer"><span>GCC LLC  ·  Proprietary &amp; Confidential  ·  GCC-2026-0102  ·  2026-04-20</span><span>Page 1</span></div>
+</div>
+
+<!-- ============ PAGE 2 — ONE-PAGE "WHAT / WHEN / HOW MUCH" ============ -->
+<div class="page">
+  <div class="section-rule"><h1>What this quote covers</h1><div class="pg">Summary &nbsp;·&nbsp; 2 / 4</div></div>
+
+  <p class="lead">We're expanding coverage on the east wing to match what we installed for you on the west side in 2024 — same camera models, same Genetec VMS, same NVR platform, just re-zoned to pick up the new cameras. All work is scheduled off-hours across a single weekend so your daytime operations are not disturbed. We test, label, and document every run to our standard Fluke certification before we leave.</p>
+
+  <div class="tri">
+    <div class="card">
+      <div class="k">What you get</div>
+      <h3>24 cameras, live</h3>
+      <ul>
+        <li>24 Cat6A home-runs from each camera location to the east-wing IDF, terminated both ends</li>
+        <li>24 mount installs — ceiling &amp; wall brackets, plumb &amp; aligned</li>
+        <li>Genetec VMS integration + new camera zone configured &amp; named</li>
+        <li>Fluke DSX-8000 certification for all 24 runs · LinkWare PDF at closeout</li>
+      </ul>
+    </div>
+    <div class="card price">
+      <div class="k">Your investment</div>
+      <h3>$9,649.56</h3>
+      <div class="meta">After 3% loyalty · tax included</div>
+      <p style="margin-top:12pt; color:var(--slate)">Net 30 from invoice · no deposit required for returning clients. See page 4 for terms.</p>
+    </div>
+    <div class="card">
+      <div class="k">When</div>
+      <h3>One weekend</h3>
+      <ul>
+        <li>Proposed start · Saturday 2026-05-16, 6 pm</li>
+        <li>Proposed finish · Sunday 2026-05-17, 10 pm</li>
+        <li>Off-hours only — no interference with your M–F operations</li>
+        <li>Single crew, lead tech is Jordan (same lead from the 2024 west-wing job)</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2 class="section">Schedule at a glance</h2>
+  <div class="timeline">
+    <div class="step"><div class="k">Pre-work</div><div class="v">Quote accepted</div><div class="sub">Within 5 days · kicks schedule</div></div>
+    <div class="step"><div class="k">Walk &amp; mark</div><div class="v">Fri 2026-05-15</div><div class="sub">1-hour walk with Rachel</div></div>
+    <div class="step"><div class="k">Install</div><div class="v">Sat–Sun 2026-05-16/17</div><div class="sub">Off-hours, 1 crew</div></div>
+    <div class="step"><div class="k">Closeout</div><div class="v">Mon 2026-05-18</div><div class="sub">LinkWare PDF + zone map</div></div>
+  </div>
+
+  <div class="run-footer"><span>GCC LLC  ·  Proprietary &amp; Confidential  ·  GCC-2026-0102  ·  2026-04-20</span><span>Page 2</span></div>
+</div>
+
+<!-- ============ PAGE 3 — SCOPE DETAIL + WARRANTY + MSP ============ -->
+<div class="page">
+  <div class="section-rule"><h1>The detail</h1><div class="pg">Scope · Warranty · MSP &nbsp;·&nbsp; 3 / 4</div></div>
+
+  <h2 class="section">Line-by-line scope</h2>
+  <table class="scope">
+    <thead><tr><th>Qty</th><th>Unit</th><th>Description</th><th class="n">Unit price</th><th class="n">Extended</th></tr></thead>
+    <tbody>
+      <tr class="band"><td colspan="5">Cabling</td></tr>
+      <tr><td class="num">24</td><td>ea</td><td>Cat6A plenum home-runs — camera location to east-wing IDF, terminated both ends (Cat6 spec; GCC supplies Cat6A at spec price)</td><td class="n">$182.00</td><td class="n">$4,368.00</td></tr>
+      <tr class="band"><td colspan="5">CCTV</td></tr>
+      <tr><td class="num">24</td><td>ea</td><td>Camera mount installation — ceiling &amp; wall brackets, plumb &amp; aligned, connector hand-off (cameras by owner)</td><td class="n">$145.00</td><td class="n">$3,480.00</td></tr>
+      <tr class="band"><td colspan="5">Integration</td></tr>
+      <tr><td class="num">1</td><td>ls</td><td>Genetec VMS integration — new camera zone configured, streams validated, named &amp; published to operators</td><td class="n">$1,650.00</td><td class="n">$1,650.00</td></tr>
+      <tr class="band"><td colspan="5">Labor</td></tr>
+      <tr><td class="num">1</td><td>ls</td><td>Fluke DSX-8000 certification — all 24 data runs tested pass/fail, LinkWare PDF at closeout</td><td class="n">$450.00</td><td class="n">$450.00</td></tr>
+    </tbody>
+    <tfoot>
+      <tr><td colspan="4">Subtotal</td><td class="n">$9,948.00</td></tr>
+      <tr><td colspan="4" style="color:var(--forest); font-weight:600">Loyalty discount — 3% returning customer</td><td class="n" style="color:var(--forest); font-weight:600">−$298.44</td></tr>
+      <tr><td colspan="4" style="background:var(--forest-dark); color:var(--cream); font-size:11pt">Final investment</td><td class="n" style="background:var(--forest-dark); color:var(--cream); font-size:13pt">$9,649.56</td></tr>
+    </tfoot>
+  </table>
+
+  <div class="two">
+    <div class="warranty">
+      <div class="caps" style="color:var(--forest-dark); margin-bottom:6pt">Warranty</div>
+      <div class="pull">"If we put the cable in, we stand behind the cable. For as long as you own it."</div>
+      <p>GCC provides a lifetime workmanship warranty on all cabling, fiber, and termination work performed under this proposal. Manufacturer warranties apply to hardware. Active electronics (cameras, switches, NVRs) carry their respective manufacturer coverage; GCC will manage claim coordination at no charge.</p>
+    </div>
+    <div class="excl">
+      <h2>What's not in this quote</h2>
+      <ul>
+        <li>Camera heads &amp; firmware (owner-furnished, per your standard)</li>
+        <li>Additional VMS user licenses (existing pool used)</li>
+        <li>Modifications to existing mounts or housings (new runs only)</li>
+        <li>Any network-switch replacement beyond the existing east-wing IDF</li>
+        <li>Standard exclusions apply — see terms on page 4</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="msp">
+    <div class="left">
+      <div class="k">Optional monthly service</div>
+      <h3>Keep it running — MSP Standard</h3>
+      <p>Monitoring &amp; remote support, 20 hr/quarter MAC labor allowance, warranty administration, on-site response (4-hr standard with drive-time billed T&amp;M; after-hours available). Monthly or annual — no contract tie-in.</p>
+    </div>
+    <div class="right">
+      <div class="price num">$425.00<span style="font-size:10pt; color:var(--slate);">/mo</span></div>
+      <div class="sub">Monthly · $425.00<br>Annual · $5,100.00</div>
+    </div>
+  </div>
+
+  <div class="run-footer"><span>GCC LLC  ·  Proprietary &amp; Confidential  ·  GCC-2026-0102  ·  2026-04-20</span><span>Page 3</span></div>
+</div>
+
+<!-- ============ PAGE 4 — TERMS + ACCEPT ============ -->
+<div class="page">
+  <div class="section-rule"><h1>Terms &amp; acceptance</h1><div class="pg">Close &nbsp;·&nbsp; 4 / 4</div></div>
+
+  <div class="terms">
+    <div class="row"><div class="k">Payment</div><div>Net 30 from invoice · ACH or check</div></div>
+    <div class="row"><div class="k">Deposit</div><div>Waived for repeat clients</div></div>
+    <div class="row"><div class="k">Change orders</div><div>Any scope change documented via CO, priced T&amp;M or lump-sum</div></div>
+    <div class="row"><div class="k">Insurance</div><div>GL $2M · Auto $1M · WC $1M · COI available on request</div></div>
+    <div class="row"><div class="k">Licensure</div><div>Licensed in MO &amp; KS · low-voltage contractor in good standing</div></div>
+    <div class="row"><div class="k">Validity</div><div>30 days from issue — through 2026-05-20</div></div>
+  </div>
+
+  <div class="accept">
+    <div>
+      <h3>GCC LLC</h3>
+      <div class="caps">Prepared by</div>
+      <div class="name">Nathan Morris</div>
+      <div class="sub">Director of Operations &amp; CTO</div>
+      <div class="sub">nmorris@greencommllc.com · (636) 224-8192</div>
+      <div class="sig-line"></div>
+      <div class="sig-cap"><span>Signature</span><span>Date</span></div>
+    </div>
+    <div>
+      <h3>AdHoc Center acceptance</h3>
+      <div class="caps">Authorized signer</div>
+      <div class="name">Rachel Ortiz</div>
+      <div class="sub">Operations Manager</div>
+      <div class="sub">rortiz@adhoccenter.org</div>
+      <div class="sig-line"></div>
+      <div class="sig-cap"><span>Printed name</span><span>Title</span></div>
+      <div class="sig-line"></div>
+      <div class="sig-cap"><span>Signature</span><span>Date</span></div>
+    </div>
+  </div>
+
+  <div class="reassure">Thanks, Rachel — we kept this tight because the east wing doesn't need another round of discovery. Sign this and we're on your calendar for 2026-05-16. Call me if anything needs to move: (636) 224-8192.</div>
+
+  <div class="run-footer"><span>GCC LLC  ·  Proprietary &amp; Confidential  ·  GCC-2026-0102  ·  2026-04-20</span><span>Page 4</span></div>
+</div>
+
+</body></html>

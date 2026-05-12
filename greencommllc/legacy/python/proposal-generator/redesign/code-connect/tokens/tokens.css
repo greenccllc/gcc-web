@@ -1,0 +1,57 @@
+/* GCC brand tokens — shared contract between Jinja + React.
+   Edit here, both libraries update. */
+
+:root {
+  /* === Color === */
+  --gcc-forest:         #2E7D32;
+  --gcc-forest-dark:    #1E5622;
+  --gcc-slate:          #455A64;
+  --gcc-slate-light:    #788A93;
+  --gcc-gold:           #D4AF37;
+  --gcc-gold-deep:      #B8941E;
+  --gcc-gold-tint:      #FAF3DC;
+  --gcc-cream:          #FDFBF4;
+  --gcc-green-tint:     #F1F8F1;
+  --gcc-ink:            #1A1A1A;
+  --gcc-rule:           #D8D8D8;
+  --gcc-white:          #FFFFFF;
+
+  /* === Type === */
+  --gcc-font-sans:      "Liberation Sans", Arial, sans-serif;
+  --gcc-font-serif:     "Liberation Serif", Georgia, serif;
+
+  --gcc-size-display:   44pt;
+  --gcc-size-h1:        22pt;
+  --gcc-size-h2:        14pt;
+  --gcc-size-h3:        11pt;
+  --gcc-size-body:      10.5pt;
+  --gcc-size-small:     9pt;
+  --gcc-size-caps:      7.5pt;
+  --gcc-size-footer:    7.5pt;
+
+  --gcc-line-body:      1.45;
+  --gcc-line-tight:     1.15;
+
+  --gcc-track-caps:     0.14em;
+  --gcc-track-caps-lg:  0.18em;
+
+  /* === Space / layout === */
+  --gcc-page-margin:    0.75in;
+  --gcc-live-width:     7in;
+  --gcc-col-gap:        0.5in;
+  --gcc-gutter-sm:      10pt;
+  --gcc-gutter-md:      14pt;
+  --gcc-gutter-lg:      22pt;
+
+  /* === Rules === */
+  --gcc-rule-hair:      0.25pt;
+  --gcc-rule-thin:      0.5pt;
+  --gcc-rule-std:       1pt;
+  --gcc-rule-heavy:     2pt;
+  --gcc-rule-accent:    3pt;
+
+  /* === Components === */
+  --gcc-panel-pad:      14pt 16pt;
+  --gcc-panel-pad-lg:   22pt 26pt;
+  --gcc-cover-band-h:   2.8in;
+}

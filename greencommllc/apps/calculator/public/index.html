@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>GCC Calc</title>
+  <meta name="robots" content="noindex,nofollow" />
+  <link rel="icon" href="data:image/svg+xml;utf8,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'&gt;&lt;rect width='16' height='16' rx='3' fill='%23006B3F'/&gt;&lt;text x='8' y='12' text-anchor='middle' font-size='10' font-family='Arial' font-weight='700' fill='white'&gt;G&lt;/text&gt;&lt;/svg&gt;" />
+  <style>
+    :root {
+      --gcc-green: #006B3F;
+      --gcc-slate: #2B3340;
+      --gcc-bg: #F4F6F4;
+      --gcc-card: #FFFFFF;
+      --gcc-border: #DDE3DE;
+      --gcc-muted: #5A6470;
+      --gcc-focus: #FFB300;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; height: 100%; }
+    body {
+      font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      color: var(--gcc-slate);
+      background: var(--gcc-bg);
+      -webkit-font-smoothing: antialiased;
+    }
+    header {
+      background: var(--gcc-green);
+      color: #fff;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    header .brand { font-weight: 700; letter-spacing: 0.3px; }
+    header .meta  { font-size: 12px; opacity: 0.85; }
+    main { max-width: 960px; margin: 0 auto; padding: 32px 20px; }
+    .card {
+      background: var(--gcc-card);
+      border: 1px solid var(--gcc-border);
+      border-radius: 8px;
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+    h1 { margin: 0 0 8px; font-size: 22px; }
+    h2 { margin: 0 0 12px; font-size: 16px; color: var(--gcc-slate); }
+    label { display: block; margin: 12px 0 4px; font-weight: 600; font-size: 13px; }
+    input, select {
+      width: 100%; padding: 8px 10px; border: 1px solid var(--gcc-border);
+      border-radius: 6px; font-size: 14px;
+    }
+    button {
+      background: var(--gcc-green); color: #fff; border: 0; padding: 10px 16px;
+      border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px;
+    }
+    button.ghost { background: transparent; color: var(--gcc-green); border: 1px solid var(--gcc-green); }
+    button[disabled] { opacity: 0.5; cursor: not-allowed; }
+
+    /* WCAG 2.4.7 — keyboard focus must be unambiguous on green AND white surfaces */
+    :focus-visible {
+      outline: 2px solid var(--gcc-focus);
+      outline-offset: 2px;
+    }
+    /* Subtle focus ring for inputs — keep the form layout calm */
+    input:focus-visible, select:focus-visible {
+      outline: 2px solid var(--gcc-green);
+      outline-offset: 1px;
+    }
+
+    /* Anchor styled as a button — replaces the invalid <a><button> nesting */
+    .btn-google {
+      display: block; text-align: center; width: 100%;
+      background: #fff; color: #444; border: 1px solid #DDD;
+      padding: 10px 16px; border-radius: 6px; font-weight: 600;
+      font-size: 14px; text-decoration: none; cursor: pointer;
+    }
+    .btn-google:hover { background: #FAFAFA; }
+
+    /* WCAG 1.4.1 — flag errors with more than just color */
+    .err::before { content: "⚠ "; }
+    .err:empty::before { content: ""; }
+
+    .sr-only {
+      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+    }
+
+    .row { display: flex; gap: 8px; align-items: center; }
+    .row > * { flex: 1; }
+    .muted { color: var(--gcc-muted); font-size: 12px; }
+    .err { color: #B23A3A; font-size: 13px; margin-top: 8px; }
+    .ok  { color: #207A4A; font-size: 13px; margin-top: 8px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--gcc-border); font-size: 13px; }
+    th { color: var(--gcc-muted); font-weight: 600; }
+    .pill {
+      display: inline-block; padding: 2px 8px; border-radius: 999px;
+      font-size: 11px; background: #EEF3EF; color: var(--gcc-green);
+    }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <header role="banner">
+    <h1 class="brand" style="font-size:14px;margin:0;font-weight:700;">GCC Calc · LV Div 27/28</h1>
+    <div class="meta">
+      <span id="who" aria-live="polite" aria-busy="true">checking session…</span>
+      <button id="logoutBtn" class="ghost hidden" style="margin-left:12px;background:transparent;border:1px solid #fff;color:#fff;padding:4px 10px;font-size:12px;">Sign out</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- ─── logged-out: sign-in card ────────────────────────────────── -->
+    <section id="signinCard" class="card hidden" aria-labelledby="signinHeading">
+      <h2 id="signinHeading">Sign in</h2>
+      <p class="muted">Calc is gated. If you came in through greencommllc.com you should have been signed in automatically — try refreshing.</p>
+
+      <div id="googleRow" class="row hidden" style="margin-bottom:16px;">
+        <a href="/auth/google" class="btn-google">Continue with Google</a>
+      </div>
+
+      <h3 style="margin:0 0 12px;font-size:14px;">Email + password</h3>
+      <form id="signinForm" novalidate>
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" autocomplete="email" required />
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required />
+        <div class="row" style="margin-top:14px;">
+          <button id="loginBtn" type="submit">Sign in</button>
+          <button id="signupBtn" type="button" class="ghost">Create account</button>
+        </div>
+      </form>
+      <div id="signinMsg" class="err" role="alert" aria-live="assertive"></div>
+    </section>
+
+    <!-- ─── logged-in: project shell ────────────────────────────────── -->
+    <section id="appCard" class="card hidden" aria-labelledby="projectsHeading">
+      <h2 id="projectsHeading">Projects</h2>
+      <p class="muted">Choose a project to open Stage 1–4. New projects can be created from the GC intake form on greencommllc.com or via the form below.</p>
+
+      <form id="createForm">
+        <div class="row" style="max-width:420px;">
+          <div style="flex:1;">
+            <label for="newSlug">Slug</label>
+            <input id="newSlug" name="slug" placeholder="new-project-slug" autocomplete="off" required />
+          </div>
+          <div style="flex:1;">
+            <label for="newName">Display name</label>
+            <input id="newName" name="displayName" placeholder="e.g. Hawthorne PE Bldg" autocomplete="off" required />
+          </div>
+          <div style="flex:0 0 auto;align-self:flex-end;">
+            <button id="createBtn" type="submit">Create</button>
+          </div>
+        </div>
+      </form>
+      <div id="createMsg" class="err" role="alert" aria-live="assertive"></div>
+
+      <table id="projTable" style="margin-top:18px;">
+        <thead>
+          <tr>
+            <th scope="col">Project</th>
+            <th scope="col">Status</th>
+            <th scope="col">Updated</th>
+            <th scope="col"><span class="sr-only">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+  </main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+
+async function api(path, opts) {
+  const res = await fetch(path, {
+    credentials: 'include',
+    headers: { 'content-type': 'application/json', ...(opts && opts.headers) },
+    ...opts
+  });
+  const text = await res.text();
+  let body;
+  try { body = text ? JSON.parse(text) : null; } catch { body = text; }
+  return { ok: res.ok, status: res.status, body };
+}
+
+// Toggle visibility AND aria-hidden together so AT state mirrors the eye.
+function setHidden(el, hidden) {
+  if (!el) return;
+  if (hidden) { el.classList.add('hidden'); el.setAttribute('aria-hidden', 'true'); }
+  else        { el.classList.remove('hidden'); el.removeAttribute('aria-hidden'); }
+}
+
+async function refreshSession() {
+  const me = await api('/auth/me');
+  const signin = $('signinCard');
+  const appc   = $('appCard');
+  const staff  = $('staffCard');
+  const who    = $('who');
+  const logout = $('logoutBtn');
+
+  // Session resolved — drop the aria-busy from the header status
+  who.removeAttribute('aria-busy');
+
+  if (me.ok && me.body && me.body.user) {
+    const u = me.body.user;
+    who.textContent = u.fullName ? (u.fullName + ' · ' + u.email) : u.email;
+    setHidden(logout, false);
+    setHidden(signin, true);
+    setHidden(appc,   false);
+    setHidden(staff,  u.role !== 'staff');
+    await loadProjects();
+  } else {
+    who.textContent = 'not signed in';
+    setHidden(logout, true);
+    setHidden(signin, false);
+    setHidden(appc,   true);
+    setHidden(staff,  true);
+    // Show Google button if the server has it configured (we discover by attempting)
+    fetch('/auth/google', { redirect: 'manual' }).then(() => {
+      setHidden($('googleRow'), false);
+    }).catch(() => {});
+  }
+}
+
+async function loadProjects() {
+  const r = await api('/api/projects');
+  const tbody = $('projTable').querySelector('tbody');
+  tbody.innerHTML = '';
+  if (!r.ok || !Array.isArray(r.body.projects)) return;
+  for (const p of r.body.projects) {
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td><strong>' + escape(p.displayName) + '</strong>' +
+        '<div class="muted">' + escape(p.slug) + '</div></td>' +
+      '<td><span class="pill">' + escape(p.status) + '</span></td>' +
+      '<td class="muted">' + new Date(p.updatedAt).toLocaleString() + '</td>' +
+      '<td><a href="/projects/' + encodeURIComponent(p.slug) + '">open →</a></td>';
+    tbody.appendChild(tr);
+  }
+  if (r.body.projects.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" class="muted" style="padding:16px;text-align:center;">No projects yet.</td></tr>';
+  }
+}
+
+function escape(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+// Sign-in form — Enter on email/password posts /auth/login
+$('signinForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  $('signinMsg').textContent = '';
+  const r = await api('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ email: $('email').value, password: $('password').value })
+  });
+  if (r.ok) refreshSession();
+  else $('signinMsg').textContent = (r.body && r.body.error) || 'Login failed';
+});
+
+// Create-account button is type="button" so Enter doesn't accidentally trigger it
+$('signupBtn').addEventListener('click', async () => {
+  $('signinMsg').textContent = '';
+  const r = await api('/auth/signup', {
+    method: 'POST',
+    body: JSON.stringify({ email: $('email').value, password: $('password').value })
+  });
+  if (r.ok) refreshSession();
+  else $('signinMsg').textContent =
+    (r.body && r.body.error) === 'email_in_use' ? 'That email is already registered. Try signing in.' :
+    (r.body && r.body.error) || 'Signup failed';
+});
+
+$('logoutBtn').addEventListener('click', async () => {
+  await api('/auth/logout', { method: 'POST' });
+  refreshSession();
+});
+
+$('createForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  $('createMsg').textContent = '';
+  const slug = $('newSlug').value.trim();
+  const name = $('newName').value.trim();
+  if (!slug || !name) { $('createMsg').textContent = 'Slug and name required'; return; }
+  const r = await api('/api/projects', {
+    method: 'POST',
+    body: JSON.stringify({ slug, displayName: name, projectLabel: name })
+  });
+  if (r.ok) { $('newSlug').value = ''; $('newName').value = ''; loadProjects(); }
+  else $('createMsg').textContent = (r.body && r.body.error) || 'Create failed';
+});
+
+refreshSession();
+</script>
+</body>
+</html>

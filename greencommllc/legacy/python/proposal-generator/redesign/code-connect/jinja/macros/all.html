@@ -1,0 +1,417 @@
+{#
+  GCC Proposal component library — Jinja macros.
+  Mirror of react/src/components.tsx. Props use snake_case here.
+
+  Usage:
+    {% import "macros/all.html" as c %}
+    {{ c.brand_line(brand="GCC LLC", tag="Quote for repeat client") }}
+
+  Tokens (tokens/tokens.css) must be imported once in the base template.
+#}
+
+{# ───────── 1. CHROME ───────── #}
+
+{% macro brand_line(brand, tag) -%}
+<div class="gcc-brandline">
+  <div class="gcc-brand">{{ brand }}</div>
+  <div class="gcc-tag">{{ tag }}</div>
+</div>
+{%- endmacro %}
+
+{% macro forest_cover_band(brand, classification, ids) -%}
+<div class="gcc-cover-band">
+  <div class="gcc-cover-band__top">
+    <div class="gcc-brand">{{ brand }}</div>
+    <div class="gcc-classification">{{ classification }}</div>
+  </div>
+  <div class="gcc-cover-id">
+    {% for cell in ids %}
+      <div class="gcc-cover-id__cell">
+        <div class="gcc-cover-id__k">{{ cell.k }}</div>
+        <div class="gcc-cover-id__v">{{ cell.v }}</div>
+        {% if cell.sub %}<div class="gcc-cover-id__sub">{{ cell.sub }}</div>{% endif %}
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{%- endmacro %}
+
+{% macro running_footer(proposal_no, issue_date, page) -%}
+<div class="gcc-footer">
+  <span>GCC LLC · Proprietary &amp; Confidential · {{ proposal_no }} · {{ issue_date }}</span>
+  <span>Page {{ page }}</span>
+</div>
+{%- endmacro %}
+
+{% macro section_rule(title, pg_caption="") -%}
+<div class="gcc-section-rule">
+  <h1>{{ title }}</h1>
+  {% if pg_caption %}<div class="gcc-section-rule__pg">{{ pg_caption }}</div>{% endif %}
+</div>
+{%- endmacro %}
+
+{# ───────── 2. COVER HEROES ───────── #}
+
+{% macro price_hero_band(subtotal, loyalty_row=none, final, show_loyalty_badge=false, extras=[]) -%}
+<div class="gcc-price-hero">
+  <div class="gcc-price-hero__top">
+    <div class="gcc-caps">Your price</div>
+    {% if show_loyalty_badge %}<div class="gcc-price-hero__loyal">★ Repeat-client loyalty applied{% if loyalty_row %} — {{ loyalty_row.pct }}{% endif %}</div>{% endif %}
+  </div>
+  <div class="gcc-price-hero__math">
+    <div class="gcc-ledger">
+      <div class="gcc-ledger__row"><div class="gcc-ledger__k">Scope subtotal</div><div class="gcc-ledger__v gcc-num">{{ subtotal }}</div></div>
+      {% if loyalty_row %}
+      <div class="gcc-ledger__row gcc-ledger__row--disc">
+        <div class="gcc-ledger__k">{{ loyalty_row.label }}</div>
+        <div class="gcc-ledger__v gcc-num">{{ loyalty_row.amount }}</div>
+      </div>
+      {% endif %}
+      {% for extra in extras %}
+      <div class="gcc-ledger__row"><div class="gcc-ledger__k">{{ extra.k }}</div><div class="gcc-ledger__v">{{ extra.v }}</div></div>
+      {% endfor %}
+    </div>
+    <div class="gcc-price-hero__final">
+      <div class="gcc-caps">Final investment</div>
+      <div class="gcc-price-hero__val gcc-num">{{ final }}</div>
+    </div>
+  </div>
+</div>
+{%- endmacro %}
+
+{% macro loyalty_ledger(rows) -%}
+<div class="gcc-ledger">
+  {% for row in rows %}
+  <div class="gcc-ledger__row{% if row.variant %} gcc-ledger__row--{{ row.variant }}{% endif %}">
+    <div class="gcc-ledger__k">{{ row.k }}</div>
+    <div class="gcc-ledger__v gcc-num">{{ row.v }}</div>
+  </div>
+  {% endfor %}
+</div>
+{%- endmacro %}
+
+{% macro summary_strip_4(cells, gold_top=true) -%}
+<div class="gcc-summary-strip{% if gold_top %} gcc-summary-strip--gold{% endif %}">
+  {% for cell in cells %}
+  <div class="gcc-summary-strip__cell{% if cell.variant %} gcc-summary-strip__cell--{{ cell.variant }}{% endif %}">
+    <div class="gcc-caps">{{ cell.k }}</div>
+    <div class="gcc-summary-strip__v">{{ cell.v }}</div>
+    {% if cell.sub %}<div class="gcc-summary-strip__sub">{{ cell.sub }}</div>{% endif %}
+  </div>
+  {% endfor %}
+</div>
+{%- endmacro %}
+
+{% macro math_panel_3cell(original, delta, revised, kicker, title, sub) -%}
+<div class="gcc-math-panel">
+  <div class="gcc-math-panel__kicker">{{ kicker }}</div>
+  <h1>{{ title }}</h1>
+  <div class="gcc-math-panel__sub">{{ sub }}</div>
+  <div class="gcc-math">
+    <div class="gcc-math__cell">
+      <div class="gcc-caps">Original contract</div>
+      <div class="gcc-math__v gcc-num">{{ original }}</div>
+    </div>
+    <div class="gcc-math__op">+</div>
+    <div class="gcc-math__cell gcc-math__cell--accent">
+      <div class="gcc-caps">This change order</div>
+      <div class="gcc-math__v gcc-num">{{ delta }}</div>
+    </div>
+    <div class="gcc-math__op">=</div>
+    <div class="gcc-math__cell gcc-math__cell--final">
+      <div class="gcc-caps">Revised contract</div>
+      <div class="gcc-math__v gcc-num">{{ revised }}</div>
+    </div>
+  </div>
+</div>
+{%- endmacro %}
+
+{% macro stamp_row_4(stats) -%}
+<div class="gcc-stamp-row">
+  {% for s in stats %}
+  <div class="gcc-stamp-row__cell">
+    <div class="gcc-caps">{{ s.k }}</div>
+    <div class="gcc-stamp-row__v">{{ s.v }}</div>
+  </div>
+  {% endfor %}
+</div>
+{%- endmacro %}
+
+{% macro family_dear(prefix, family, suffix) -%}
+<div class="gcc-dear">{{ prefix }} <span class="gcc-dear__family">{{ family }}</span>{{ suffix }}</div>
+{%- endmacro %}
+
+{% macro cover_id_triple(cells) -%}
+{{ forest_cover_band(brand="", classification="", ids=cells) }}
+{%- endmacro %}
+
+{% macro cover_foot(left_rows, right_rows) -%}
+<div class="gcc-cover-foot">
+  <div>
+    {% for r in left_rows %}<div class="gcc-cover-foot__row"><div class="gcc-caps">{{ r.k }}</div><div class="gcc-cover-foot__v">{{ r.v }}</div></div>{% endfor %}
+  </div>
+  <div>
+    {% for r in right_rows %}<div class="gcc-cover-foot__row"><div class="gcc-caps">{{ r.k }}</div><div class="gcc-cover-foot__v">{{ r.v }}</div></div>{% endfor %}
+  </div>
+</div>
+{%- endmacro %}
+
+{# ───────── 3. TRANSMITTAL / COMMITMENTS ───────── #}
+
+{% macro commitments_grid_4(items) -%}
+<div class="gcc-commitments">
+  {% for item in items %}
+  <div class="gcc-cx">
+    <div class="gcc-caps">{{ item.k }}</div>
+    <h3>{{ item.title }}</h3>
+    <p>{{ item.body|safe }}</p>
+  </div>
+  {% endfor %}
+</div>
+{%- endmacro %}
+
+{% macro to_from_pair(to, from) -%}
+<div class="gcc-to-from">
+  <div class="gcc-to-from__col">
+    <div class="gcc-caps">Submitted to</div>
+    <h3>{{ to.org }}</h3>
+    <div class="gcc-to-from__meta">{{ to.meta|safe }}</div>
+  </div>
+  <div class="gcc-to-from__col">
+    <div class="gcc-caps">Submitted by</div>
+    <h3>{{ from.org }}</h3>
+    <div class="gcc-to-from__meta">{{ from.meta|safe }}</div>
+  </div>
+</div>
+{%- endmacro %}
+
+{# ───────── 4. ROOM PLAN ───────── #}
+
+{% macro room_card(k, title, body, highlight=false) -%}
+<div class="gcc-room{% if highlight %} gcc-room--highlight{% endif %}">
+  <div class="gcc-caps">{{ k }}</div>
+  <h3>{{ title }}</h3>
+  <p>{{ body }}</p>
+</div>
+{%- endmacro %}
+
+{% macro room_grid(rooms) -%}
+<div class="gcc-rooms">
+  {% for r in rooms %}
+    {{ room_card(r.k, r.title, r.body, r.highlight|default(false)) }}
+  {% endfor %}
+</div>
+{%- endmacro %}
+
+{# ───────── 5. SCOPE ───────── #}
+
+{% macro scope_table(lines, foot_variant="standard", subtotal=none, loyalty_row=none, final=none, final_label="Total") -%}
+<table class="gcc-scope">
+  <thead><tr><th>Qty</th><th>Unit</th><th>Description</th><th class="gcc-n">Unit price</th><th class="gcc-n">Extended</th></tr></thead>
+  <tbody>
+    {% set ns = namespace(last_cat="") %}
+    {% for l in lines %}
+      {% if l.category and l.category != ns.last_cat %}
+        {{ category_band(l.category) }}
+        {% set ns.last_cat = l.category %}
+      {% endif %}
+      <tr>
+        <td class="gcc-num">{{ l.qty }}</td>
+        <td>{{ l.unit }}</td>
+        <td>{{ l.description }}</td>
+        <td class="gcc-n">{{ l.unit_price }}</td>
+        <td class="gcc-n">{{ l.line_total }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+  {% if foot_variant == "standard" and subtotal %}
+    {{ scope_foot_standard(subtotal, final, final_label) }}
+  {% elif foot_variant == "loyalty" %}
+    {{ scope_foot_loyalty(subtotal, loyalty_row, final, final_label) }}
+  {% endif %}
+</table>
+{%- endmacro %}
+
+{% macro category_band(label) -%}
+<tr class="gcc-scope__band"><td colspan="5">{{ label }}</td></tr>
+{%- endmacro %}
+
+{% macro scope_foot_standard(subtotal, final, final_label="Total") -%}
+<tfoot>
+  <tr><td colspan="4">Subtotal</td><td class="gcc-n">{{ subtotal }}</td></tr>
+  <tr><td colspan="4" class="gcc-scope__final">{{ final_label }}</td><td class="gcc-n gcc-scope__final-val">{{ final }}</td></tr>
+</tfoot>
+{%- endmacro %}
+
+{% macro scope_foot_loyalty(subtotal, loyalty_row, final, final_label="Final investment") -%}
+<tfoot>
+  <tr><td colspan="4">Subtotal</td><td class="gcc-n">{{ subtotal }}</td></tr>
+  <tr><td colspan="4" class="gcc-scope__disc">{{ loyalty_row.label }}</td><td class="gcc-n gcc-scope__disc">{{ loyalty_row.amount }}</td></tr>
+  <tr><td colspan="4" class="gcc-scope__final">{{ final_label }}</td><td class="gcc-n gcc-scope__final-val">{{ final }}</td></tr>
+</tfoot>
+{%- endmacro %}
+
+{# ───────── 6. FINANCIAL ───────── #}
+
+{% macro financial_hero(caps, ledger_rows, final_label, final_value, final_unit="") -%}
+<div class="gcc-fin-hero">
+  <div class="gcc-fin-hero__top">
+    <div>
+      <div class="gcc-caps">{{ caps }}</div>
+      <table class="gcc-fin-hero__ledger">
+        {% for r in ledger_rows %}
+        <tr><td class="gcc-fin-hero__k">{{ r.k }}</td><td class="gcc-fin-hero__v gcc-num">{{ r.v }}</td></tr>
+        {% endfor %}
+      </table>
+    </div>
+    <div class="gcc-fin-hero__final">
+      <div class="gcc-caps">{{ final_label }}</div>
+      <div class="gcc-fin-hero__val gcc-num">{{ final_value }}</div>
+      {% if final_unit %}<div class="gcc-fin-hero__unit">{{ final_unit }}</div>{% endif %}
+    </div>
+  </div>
+</div>
+{%- endmacro %}
+
+{% macro price_card(kicker, title, body, price, sub) -%}
+<div class="gcc-price-card">
+  <div class="gcc-price-card__left">
+    <div class="gcc-caps">{{ kicker }}</div>
+    <h3>{{ title }}</h3>
+    <p>{{ body }}</p>
+  </div>
+  <div class="gcc-price-card__right">
+    <div class="gcc-price-card__v gcc-num">{{ price }}</div>
+    <div class="gcc-price-card__sub">{{ sub }}</div>
+  </div>
+</div>
+{%- endmacro %}
+
+{% macro sub_strip(k, v) -%}
+<div class="gcc-sub-strip">
+  <div class="gcc-sub-strip__k">{{ k }}</div>
+  <div class="gcc-sub-strip__v gcc-num">{{ v }}</div>
+</div>
+{%- endmacro %}
+
+{% macro msp_card(kicker, title, body, price_display, monthly, annual) -%}
+<div class="gcc-msp">
+  <div class="gcc-msp__left">
+    <div class="gcc-caps">{{ kicker }}</div>
+    <h3>{{ title }}</h3>
+    <p>{{ body }}</p>
+  </div>
+  <div class="gcc-msp__right">
+    <div class="gcc-msp__price gcc-num">{{ price_display }}<span class="gcc-msp__price-unit">/mo</span></div>
+    <div class="gcc-msp__sub">Monthly · {{ monthly }}<br>Annual · {{ annual }}</div>
+  </div>
+</div>
+{%- endmacro %}
+
+{# ───────── 7. WARRANTY / EXCLUSIONS ───────── #}
+
+{% macro warranty_callout(pull_quote, body) -%}
+<div class="gcc-warranty">
+  <div class="gcc-caps gcc-warranty__caps">Warranty</div>
+  <div class="gcc-warranty__pull">"{{ pull_quote }}"</div>
+  <p>{{ body }}</p>
+</div>
+{%- endmacro %}
+
+{% macro exclusions_list(title, items) -%}
+<div class="gcc-excl">
+  <h2>{{ title }}</h2>
+  <ul>
+    {% for item in items %}<li>{{ item }}</li>{% endfor %}
+  </ul>
+</div>
+{%- endmacro %}
+
+{# ───────── 8. TIMELINE ───────── #}
+
+{% macro timeline_4_dot(steps) -%}
+<div class="gcc-timeline">
+  {% for s in steps %}
+  <div class="gcc-timeline__step">
+    <div class="gcc-caps">{{ s.k }}</div>
+    <div class="gcc-timeline__v">{{ s.v }}</div>
+    {% if s.sub %}<div class="gcc-timeline__sub">{{ s.sub }}</div>{% endif %}
+  </div>
+  {% endfor %}
+</div>
+{%- endmacro %}
+
+{% macro timeline_card(title, rows, alert=none) -%}
+<div class="gcc-timeline-card">
+  <h3>{{ title }}</h3>
+  {% for r in rows %}
+  <div class="gcc-timeline-card__row"><div class="gcc-timeline-card__k">{{ r.k }}</div><div>{{ r.v }}</div></div>
+  {% endfor %}
+  {% if alert %}<div class="gcc-timeline-card__alert">{{ alert }}</div>{% endif %}
+</div>
+{%- endmacro %}
+
+{# ───────── 9. CHANGE-ORDER SPECIFIC ───────── #}
+
+{% macro why_callout(kicker, body) -%}
+<div class="gcc-why">
+  <div class="gcc-caps gcc-why__caps">{{ kicker }}</div>
+  <p>{{ body }}</p>
+</div>
+{%- endmacro %}
+
+{% macro carry_card(kicker, items) -%}
+<div class="gcc-carry">
+  <div class="gcc-caps">{{ kicker }}</div>
+  <ul>
+    {% for item in items %}<li>{{ item }}</li>{% endfor %}
+  </ul>
+</div>
+{%- endmacro %}
+
+{# ───────── 10. CLOSE ───────── #}
+
+{% macro terms_grid(rows) -%}
+<div class="gcc-terms">
+  {% for r in rows %}
+  <div class="gcc-terms__row"><div class="gcc-terms__k">{{ r.k }}</div><div>{{ r.v|safe }}</div></div>
+  {% endfor %}
+</div>
+{%- endmacro %}
+
+{% macro acceptance_block(left, right) -%}
+<div class="gcc-accept">
+  {% for party in [left, right] %}
+  <div>
+    <h3>{{ party.heading }}</h3>
+    {% if party.kicker %}<div class="gcc-caps">{{ party.kicker }}</div>{% endif %}
+    {% if party.name %}<div class="gcc-accept__name">{{ party.name }}</div>{% endif %}
+    {% for sub in party.subs %}<div class="gcc-accept__sub">{{ sub }}</div>{% endfor %}
+    {% for sig in party.signatures %}
+      <div class="gcc-sig-line"></div>
+      <div class="gcc-sig-cap"><span>{{ sig.left|default("Signature") }}</span><span>{{ sig.right|default("Date") }}</span></div>
+    {% endfor %}
+    {% if party.approver %}
+      <div class="gcc-caps" style="margin-top:16pt">{{ party.approver.kicker }}</div>
+      <div class="gcc-accept__name">{{ party.approver.name }}</div>
+      <div class="gcc-accept__sub">{{ party.approver.title }}</div>
+      <div class="gcc-sig-line"></div>
+      <div class="gcc-sig-cap"><span>Signature</span><span>Date</span></div>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{%- endmacro %}
+
+{% macro notes_box(kicker, items) -%}
+<div class="gcc-notes">
+  <div class="gcc-notes__k">{{ kicker }}</div>
+  <ul>
+    {% for item in items %}<li>{{ item }}</li>{% endfor %}
+  </ul>
+</div>
+{%- endmacro %}
+
+{% macro reassure_strip(body) -%}
+<div class="gcc-reassure">{{ body }}</div>
+{%- endmacro %}

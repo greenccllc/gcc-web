@@ -1,0 +1,19 @@
+# Treat Office and image files as binary so git doesn't try to merge or
+# compute LF/CRLF normalization on them.
+*.docx  binary
+*.xlsx  binary
+*.pptx  binary
+*.pdf   binary
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.zip   binary
+
+# Text files: normalize to LF in repo, working tree gets native line endings.
+*.md    text eol=lf
+*.txt   text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.json  text eol=lf

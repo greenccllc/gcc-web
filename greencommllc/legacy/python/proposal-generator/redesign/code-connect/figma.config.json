@@ -1,0 +1,24 @@
+{
+  "codeConnect": {
+    "parser": "react",
+    "include": [
+      "figma.code-connect.ts",
+      "react/src/components.tsx"
+    ],
+    "exclude": [
+      "**/node_modules/**",
+      "**/*.test.*",
+      "jinja/**",
+      "tokens/**"
+    ],
+    "importPaths": {
+      "react/src/*": "@gcc/proposal-components"
+    },
+    "documentUrlSubstitutions": {
+      "TBD_FILE_KEY": "TBD_FILE_KEY"
+    }
+  },
+  "_comment_1": "Parser is 'react' — Jinja side isn't Code-Connect-parseable but mirrors this library 1:1 (see jinja/macros/all.html).",
+  "_comment_2": "When the Figma file exists: replace TBD_FILE_KEY in figma.code-connect.ts and in documentUrlSubstitutions with the real file key, and the TBD-<SLUG> node ids with real node-ids.",
+  "_comment_3": "Publish: cd react && npm install && npm run cc:publish (requires FIGMA_TOKEN env var)."
+}

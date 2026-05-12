@@ -1,0 +1,109 @@
+# Example: Direct Quote — commercial owner, repeat client
+# Loosely based on the AdHoc Center pattern (repeat engagement).
+
+proposal_type: direct-quote
+proposal_no:   GCC-2026-0102
+issue_date:    2026-04-20
+validity_days: 30
+
+client:
+  name:    AdHoc Center
+  contact: Rachel Sim
+  title:   Facility Operations Manager
+  email:   rsim@adhoccenter.org
+  phone:   "+1 816 555 0218"
+  address:
+    street: 1500 Union Ave.
+    city:   Kansas City
+    state:  MO
+    zip:    "64101"
+  is_repeat_client: true
+  prior_project_refs:
+    - "AdHoc Center — 2024 low-voltage buildout (GCC-2024-037)"
+
+project:
+  name: AdHoc Center — East Wing CCTV Expansion
+  address:
+    street: 1500 Union Ave.
+    city:   Kansas City
+    state:  MO
+    zip:    "64101"
+  description: |
+    AdHoc is expanding IP video coverage into the east wing following
+    the Q1 2026 buildout. Scope is cable + rough-in + camera mount;
+    camera heads supplied by AdHoc's IT team and installed by GCC.
+    Off-hours cutover preferred to minimize impact on programming.
+  vertical:       commercial
+  is_public_work: false
+  target_start:   2026-05-19
+  target_finish:  2026-05-30
+
+scope_lines:
+  - category:    cabling
+    qty:         24
+    unit:        ea
+    description: Cat6A plenum home-run from each new camera position to the east-wing IDF, terminated at both ends
+    unit_price:  182.00
+    line_total:  4368.00
+
+  - category:    cctv
+    qty:         24
+    unit:        ea
+    description: IP camera mount, alignment, and commissioning (owner-furnished heads — Axis M-series per existing standard)
+    unit_price:  145.00
+    line_total:  3480.00
+
+  - category:    labor
+    qty:         1
+    unit:        ls
+    description: Integration into existing Genetec VMS — device add, zone map, test-record verification
+    unit_price:  1650.00
+    line_total:  1650.00
+
+  - category:    labor
+    qty:         1
+    unit:        ls
+    description: Fluke DSX-8000 certification on all new cabling; LinkWare PDF at closeout
+    unit_price:  450.00
+    line_total:  450.00
+
+alternates:
+  - name:        "Managed Services — Monthly"
+    monthly:     425.00
+    annual:      5100.00
+    description: |
+      Monitoring & remote support for the AdHoc video plant (existing +
+      new), 8 hr/quarter MAC labor, warranty administration, and
+      4-hr on-site response with drive-time billed T&M.
+
+exclusions:
+  standard_excluded_auto: true
+  extra:
+    - Camera heads (owner-furnished)
+    - VMS license expansion beyond device adds (publisher licensing at AdHoc's expense)
+    - Any structural mount modification beyond pre-approved locations
+
+loyalty_discount_pct: 3                   # Repeat client — standard 3%
+
+value_engineering: []
+
+notes:
+  - Repeat client from the Q1 2026 east-wing buildout — apply loyalty discount.
+  - Rachel asked for off-hours scheduling; we'll confirm dates before mobilization.
+  - Integration with existing Genetec VMS was done by us originally —
+    same zone-mapping conventions.
+
+prepared_by:
+  name:  Nathan Morris
+  title: CTO
+  email: nmorris@greencommllc.com
+  phone: "636-224-8192"
+
+approved_by: null                         # under $25k threshold
+
+terms:
+  payment: "Net 30 from invoice date"
+  deposit: "25% mobilization deposit, balance at invoice"
+  change_order_policy: "Any scope change documented via CO, priced T&M or lump-sum"
+  insurance: "GL $2M · Auto $1M · WC $1M. Certificate furnished on request."
+  licensure: "Licensed & insured in MO."
