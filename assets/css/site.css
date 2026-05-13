@@ -639,6 +639,28 @@ section {
 .contact-info .ci-block p { color: var(--color-text-secondary); margin: 0; font-size: 0.95em; }
 .contact-info .ci-block strong { color: var(--color-text-primary); }
 
+/* ── Contact sidebar ─────────────────────────────────────────── */
+.contact-side .info-block {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+.contact-side .info-block:last-child { border-bottom: 0; }
+.contact-side .info-block h3 {
+  font-size: 12px; font-weight: 700; color: var(--color-accent-primary);
+  text-transform: uppercase; letter-spacing: .08em; margin: 0 0 8px;
+}
+.contact-side .info-block strong,
+.contact-side .info-block a {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  color: var(--color-text-primary);
+  text-decoration: none;
+  margin-bottom: 4px;
+}
+.contact-side .info-block a:hover { color: var(--color-accent-primary); }
+.contact-side .info-block p { font-size: 13px; color: var(--color-text-secondary); margin: 4px 0 0; }
+
 /* Quick utility classes */
 .text-center { text-align: center; }
 .mt-0 { margin-top: 0; }
@@ -934,21 +956,12 @@ p, li, td, dd, h1, h2, h3, h4 { overflow-wrap: break-word; }
 .tbl tbody tr:last-child td { border-bottom: 0; }
 .tbl tbody tr:hover { background: var(--paper); }
 
-/* Mobile: when a .tbl would overflow narrow viewports, the parent should
-   scroll horizontally rather than overflow off-screen. Apply by wrapping
-   the table in <div class="tbl-scroll">…</div>, OR rely on the auto-fallback
-   below: any direct parent of a .tbl whose width is constrained by its
-   surrounding container will get a horizontal scroll bar at narrow widths. */
 .tbl-scroll {
   width: 100%; max-width: 100%;
   overflow-x: auto; -webkit-overflow-scrolling: touch;
   border-radius: var(--radius-md);
 }
 @media (max-width: 720px) {
-  /* Auto-fallback: any .tbl that's NOT wrapped in .tbl-scroll still gets
-     horizontal scrolling on narrow screens via display:block. Less ideal
-     than wrapping (rounded corners get clipped) but it stops the layout
-     from breaking. */
   .tbl:not(.tbl-scroll > *) {
     display: block; max-width: 100%; overflow-x: auto;
     -webkit-overflow-scrolling: touch;
