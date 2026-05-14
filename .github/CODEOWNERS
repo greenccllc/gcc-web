@@ -1,0 +1,11 @@
+# Default ownership
+* @greenccllc/nathan-morris
+
+# Proposal/admin surfaces
+/admin/proposalgen.html @greenccllc/nathan-morris
+/admin/proposals.html @greenccllc/nathan-morris
+/assets/js/** @greenccllc/nathan-morris
+/assets/css/** @greenccllc/nathan-morris
+
+# CI/guardrails
+/.github/workflows/** @greenccllc/nathan-morris
