@@ -1,0 +1,32 @@
+name: deprecated-ref-guard
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  block-deprecated-references:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan for deprecated repo references
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Match deprecated repo names, but do not flag live MyAIDrive identifiers.
+          forbidden='(^|[^[:alnum:]_-])(aidrive|docai-training)([^[:alnum:]_-]|$)'
+          allowed='myaidrive|aidrive-sync|AIDrive Sync|/api/aidrive|key:[[:space:]]*.aidrive.'
+          # Allow the consolidation docs folder name itself if present in copied notes.
+          matches=$(rg -n -i "$forbidden" . \
+            --glob '!**/.git/**' \
+            --glob '!**/.github/workflows/deprecated-ref-guard.yml' \
+            --glob '!**/_consolidation/**' \
+            | rg -v -i "$allowed" || true)
+          if [ -n "${matches}" ]; then
+            echo "Deprecated references found:"
+            echo "${matches}"
+            exit 1
+          fi
+          echo "No deprecated references found."
