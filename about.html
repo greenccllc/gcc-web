@@ -5,13 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>About — A small, sharp Missouri LLC · GCC LLC</title>
   <meta name="description" content="Green Communications Contracting LLC is a Missouri Division 27/28 contractor working across Kansas City and St. Louis. Two-person ownership, lean field crew, tight standards, direct line to ownership." />
+  <meta name="keywords" content="about GCC LLC, Green Communications Contracting, low voltage contractor Missouri, Division 27 28 contractor KCMO STL, Cat6A cabling Missouri LLC, structured cabling company Kansas City" />
   <meta name="author" content="Green Communications Contracting LLC" />
+  <meta name="robots" content="index, follow" />
   <meta name="theme-color" content="#1E4D2B" />
+  <meta name="geo.region" content="US-MO" />
+  <meta name="geo.placename" content="O'Fallon, Missouri" />
+  <meta name="geo.position" content="38.8109;-90.6998" />
+  <meta name="ICBM" content="38.8109, -90.6998" />
   <link rel="canonical" href="https://greencommllc.com/about.html" />
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
-  <link rel="stylesheet" href="/assets/css/site.css?v=20260509" />
-  <link rel="stylesheet" href="/assets/css/chrome.css?v=20260509" />
+  <link rel="stylesheet" href="/assets/css/site.css?v=20260514" />
+  <link rel="stylesheet" href="/assets/css/chrome.css?v=20260514" />
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="en_US" />
@@ -37,6 +43,8 @@
       "name": "Green Communications Contracting LLC",
       "alternateName": "GCC LLC",
       "url": "https://greencommllc.com/",
+      "logo": "https://greencommllc.com/assets/og/logo.png",
+      "image": "https://greencommllc.com/assets/og/og-default.png",
       "description": "Division 27/28 low-voltage contractor delivering structured cabling, IP surveillance, access control, and smart-home work across Kansas City and St. Louis.",
       "telephone": "+16362248192",
       "email": "info@greencommllc.com",
@@ -48,10 +56,22 @@
         "postalCode": "63366",
         "addressCountry": "US"
       },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 38.8109,
+        "longitude": -90.6998
+      },
       "areaServed": [
         {"@type": "City", "name": "Kansas City"},
         {"@type": "City", "name": "St. Louis"}
       ],
+      "priceRange": "$$",
+      "openingHoursSpecification": {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+        "opens": "07:00",
+        "closes": "18:00"
+      },
       "employee": [
         {
           "@type": "Person",
@@ -65,6 +85,14 @@
           "jobTitle": "Director of Operations",
           "worksFor": {"@id": "https://greencommllc.com/#business"}
         }
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://greencommllc.com/"},
+        {"@type": "ListItem", "position": 2, "name": "About", "item": "https://greencommllc.com/about.html"}
       ]
     }
   ]
@@ -88,7 +116,31 @@
       </div>
     </section>
 
-    <section class="section">
+    <!-- ── Stats strip ───────────────────────────────────── -->
+    <section id="stats" class="section section-flush">
+      <div class="container">
+        <div class="stat-strip">
+          <div class="stat-item">
+            <div class="stat-num">12+ yrs</div>
+            <div class="stat-lbl">Field experience</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num">$2M GL</div>
+            <div class="stat-lbl">General liability</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num">600+</div>
+            <div class="stat-lbl">Projects bid</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num">Lifetime</div>
+            <div class="stat-lbl">Workmanship + parts</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="ownership" class="section">
       <div class="container">
         <div class="section-head"><h2>Ownership</h2></div>
         <div class="card-grid">
@@ -106,7 +158,7 @@
       </div>
     </section>
 
-    <section class="section section-tinted">
+    <section id="standards" class="section section-tinted">
       <div class="container">
         <div class="section-head"><h2>Standards we hold to</h2></div>
         <div class="card-grid">
@@ -123,7 +175,7 @@
       </div>
     </section>
 
-    <section class="section">
+    <section id="how-we-work" class="section">
       <div class="container">
         <div class="section-head"><h2>How we work</h2></div>
         <div class="card-grid">
@@ -155,7 +207,7 @@
       </div>
     </section>
 
-    <section class="section section-tinted">
+    <section id="coverage" class="section section-tinted">
       <div class="container">
         <div class="section-head"><h2>Coverage</h2></div>
         <div class="card-grid">
