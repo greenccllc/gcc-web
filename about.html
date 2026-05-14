@@ -32,7 +32,7 @@
   [
     {
       "@context": "https://schema.org",
-      "@type": "LocalBusiness",
+      "@type": ["LocalBusiness", "Electrician"],
       "@id": "https://greencommllc.com/#business",
       "name": "Green Communications Contracting LLC",
       "alternateName": "GCC LLC",
@@ -48,6 +48,11 @@
         "postalCode": "63366",
         "addressCountry": "US"
       },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 38.8175,
+        "longitude": -90.6990
+      },
       "areaServed": [
         {"@type": "City", "name": "Kansas City"},
         {"@type": "City", "name": "St. Louis"}
@@ -56,7 +61,7 @@
         {
           "@type": "Person",
           "name": "Kaitlyn Lim Morris",
-          "jobTitle": "President",
+          "jobTitle": "President & CEO",
           "worksFor": {"@id": "https://greencommllc.com/#business"}
         },
         {
@@ -66,6 +71,22 @@
           "worksFor": {"@id": "https://greencommllc.com/#business"}
         }
       ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "AboutPage",
+      "@id": "https://greencommllc.com/about.html",
+      "url": "https://greencommllc.com/about.html",
+      "name": "About GCC LLC — A small, sharp Missouri LLC",
+      "description": "Green Communications Contracting LLC is a Missouri Division 27/28 contractor working across Kansas City and St. Louis.",
+      "about": {"@id": "https://greencommllc.com/#business"},
+      "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://greencommllc.com/"},
+          {"@type": "ListItem", "position": 2, "name": "About", "item": "https://greencommllc.com/about.html"}
+        ]
+      }
     }
   ]
   </script>
