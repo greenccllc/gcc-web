@@ -114,22 +114,6 @@
                 <div id="gbp-card-body">Loading…</div>
               </div>
 
-              <!-- Thumbtack -->
-              <div class="card">
-                <h3>Thumbtack</h3>
-                <p class="lede">Receive lead, message, and review webhooks. No auth required by Thumbtack.</p>
-                <div class="integration-card">
-                  <div class="icon">🎯</div>
-                  <div class="info">
-                    <strong>Webhook endpoint</strong>
-                    <div class="small">Paste this into Thumbtack → Create webhook → Endpoint URL.</div>
-                    <code style="display:block; margin-top:8px; padding:8px 10px; background:var(--paper); border:1px solid var(--hairline); border-radius:6px; font-size:12px; word-break:break-all;">https://api.greencommllc.com/api/webhooks/thumbtack</code>
-                  </div>
-                  <div class="integration-actions">
-                    <button class="btn btn-sm" id="copy-thumbtack-url" style="background:white; border:1px solid var(--hairline-strong);">Copy URL</button>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -394,23 +378,9 @@ gccPage.requireRole(["client","staff","admin"]).then(async (me) => {
     });
   }
 
-  // ─── Thumbtack URL copy ──────────────────────────────────
-  function wireThumbtackCopy() {
-    const ttCopy = document.getElementById('copy-thumbtack-url');
-    if (ttCopy && !ttCopy.dataset.wired) {
-      ttCopy.dataset.wired = '1';
-      ttCopy.addEventListener('click', () => {
-        navigator.clipboard.writeText('https://api.greencommllc.com/api/webhooks/thumbtack');
-        ttCopy.textContent = '✓ Copied';
-        setTimeout(() => { ttCopy.textContent = 'Copy URL'; }, 1600);
-      });
-    }
-  }
-
   // ─── Integrations refresher (called when section becomes visible) ─
   async function refreshIntegrations() {
     await refreshBundler();
-    wireThumbtackCopy();
     if (me.role === 'admin') {
       refreshQb();
       refreshGbp();
