@@ -2,11 +2,11 @@
 
 ## Project overview
 
-This repo (`gcc-site`) is the static HTML/CSS/JS marketing site + customer/staff/admin portal for GCC LLC (Green Communications Contracting) — a Division 27/28 low-voltage cabling contractor. No build step, no package manager, no bundler. Deployed to IIS via git-pull scheduled task (`publish.ps1`).
+This repo (`gcc-web`, formerly `gcc-site`) is the static HTML/CSS/JS marketing site + customer/staff/admin portal for GCC LLC (Green Communications Contracting) — a Division 27/28 low-voltage cabling contractor. No build step, no package manager, no bundler. Deployed to IIS via git-pull scheduled task (`publish.ps1`).
 
 Production: https://greencommllc.com
 
-The GCC + MAJIC ecosystem is consolidated into parent repos in the `greenccllc` GitHub org. In this workspace, GCC repos live under `D:\GCC_LLC\Repos\_github\greenccllc\GCC\`.
+The GCC + MAJIC ecosystem is consolidated into 5 parent repos in the `greenccllc` GitHub org: `gcc-web`, `gcc-api`, `gcc-tooling`, `majic`, `jug`. On the prod host (`gcc-svr-web`), they live under `D:\Repos\<repo-name>\`. On dev/agent boxes, the network share `Z:\` (= `\\majic-svr-hv1\repos`) mirrors the same layout.
 
 ## Cursor Cloud specific instructions
 

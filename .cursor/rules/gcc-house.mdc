@@ -17,17 +17,17 @@ structured cabling, fiber, IP cameras, access control, intercom, AV).
 Subsidiary of **Majic Holdings**, the parent that also owns Jacked Up Gaming
 (JUG). Admin app for the holding company is at `admin.majicholdings.com`.
 
-## Repos in `D:\GCC_LLC\Repos\_github\greenccllc\GCC\`
+## Repos in `D:\Repos\` on prod (`gcc-svr-web`); mirrored at `Z:\` on dev/agent boxes (network share `\\majic-svr-hv1\repos`)
+
+After the 2026-05-15 consolidation, GCC has 5 repos:
 
 | Repo | What it is |
 | --- | --- |
-| `Website\gcc-api` | ASP.NET Core 8 minimal-API. Kestrel behind IIS as a Windows service at `api.greencommllc.com`. Dapper + SQL Server (`GCCWeb`). |
-| `Website\gcc-site` | Vanilla HTML/JS/CSS marketing + admin + portals. Served from IIS at `C:\GCC_LLC\IIS\gcc-site`. Includes `gcc-brand`, `gcc-ops`, and legacy `greencommllc`. |
-| `Extractor\gcc-scoper` | Scoping service plus merged `bid-extractor`, `gcc-bc-scraper`, `composio-setup`, and `docai-training`. |
-| `Extractor\gcc-proposal-generator` | Bid-proposal generation pipeline plus merged `proposal-system`, `proposal-worker`, and `lv-plan-annotator`. |
-| `Tools\gcc-app` | MAJIC desktop / Tauri app frontend plus merged `gcc-tray`. |
-| `Tools\gcc-skills` | GCC skills plus merged `google-admin-mcp`. |
-| `compliance-checker`, `Tools\gcc-phone-sync` | Rule engine and phone sync utility. |
+| `gcc-api` | ASP.NET Core 8 minimal-API. Kestrel behind IIS as a Windows service at `api.greencommllc.com`. Dapper + SQL Server (`GCCWeb`). Subdir: `gcc-shared/` (Python utilities). |
+| `gcc-web` | Vanilla HTML/JS/CSS marketing + admin + portals. Served from IIS at `D:\IIS\gcc-site`. Subdirs: `gcc-brand/`, `greencommllc/`. |
+| `gcc-tooling` | All internal tools as subdirs: `bid-extractor`, `gcc-bc-scraper`, `compliance-checker`, `composio-setup`, `docai-training`, `lv-plan-annotator`, `google-admin-mcp`, `gcc-proposal-generator`, `gcc-scoper`, `proposal-system`, `proposal-worker`, `gcc-phone-sync`, `gcc-app`, `gcc-tray`, `gcc-skills`, `gcc-ops`. |
+| `majic` | Majic Holdings ecosystem. Subdirs: `majic-agent`, `majic-agent-installer`, `majic-ops`, `majic-tauri`. |
+| `jug` | Jacked Up Gaming. Subdir: `jackup-agent`. |
 ## Stack defaults
 
 - **.NET**: `gcc-api` is .NET 8.0, Kestrel-only (no IIS static files). The
