@@ -7,7 +7,6 @@ const qbRoutes = require('./routes/quickbooks');
 const apsRoutes = require('./routes/aps');
 const aidriveRoutes = require('./routes/aidrive');
 const geminiRoutes = require('./routes/gemini');
-const webhookRoutes = require('./routes/webhooks');
 
 const app = express();
 
@@ -49,7 +48,6 @@ app.use('/api/qb', qbRoutes);
 app.use('/api/aps', apsRoutes);
 app.use('/api/aidrive', aidriveRoutes);
 app.use('/api/gemini', geminiRoutes);
-app.use('/api/webhooks', webhookRoutes);
 
 const port = process.env.PORT || 3001;
 app.listen(port, () => console.log(`server listening on port ${port}`));

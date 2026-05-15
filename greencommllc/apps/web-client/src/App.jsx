@@ -5,7 +5,6 @@ import InvoicesTab from './tabs/InvoicesTab.jsx';
 import ItemsTab from './tabs/ItemsTab.jsx';
 import APSTab from './tabs/APSTab.jsx';
 import ExtractTab from './tabs/ExtractTab.jsx';
-import LeadsTab from './tabs/LeadsTab.jsx';
 import SettingsTab from './tabs/SettingsTab.jsx';
 
 const SVG = {
@@ -25,11 +24,6 @@ function NavIcon({ name }) {
       <svg {...SVG}>
         <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
         <polyline points="9 22 9 12 15 12 15 22"/>
-      </svg>
-    );
-    case 'leads': return (
-      <svg {...SVG}>
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
       </svg>
     );
     case 'extract': return (
@@ -84,23 +78,22 @@ const NAV = [
     section: 'Workspace',
     items: [
       { id: 'dashboard', label: 'Dashboard',   icon: 'dashboard', shortcut: '1', component: DashboardTab },
-      { id: 'leads',     label: 'Leads',        icon: 'leads',     shortcut: '2', component: LeadsTab },
-      { id: 'extract',   label: 'Extract',      icon: 'extract',   shortcut: '3', component: ExtractTab },
+      { id: 'extract',   label: 'Extract',      icon: 'extract',   shortcut: '2', component: ExtractTab },
     ],
   },
   {
     section: 'QuickBooks',
     items: [
-      { id: 'customers', label: 'Customers',   icon: 'customers', shortcut: '4', component: CustomersTab },
-      { id: 'invoices',  label: 'Invoices',    icon: 'invoices',  shortcut: '5', component: InvoicesTab },
-      { id: 'items',     label: 'Items',       icon: 'items',     shortcut: '6', component: ItemsTab },
+      { id: 'customers', label: 'Customers',   icon: 'customers', shortcut: '3', component: CustomersTab },
+      { id: 'invoices',  label: 'Invoices',    icon: 'invoices',  shortcut: '4', component: InvoicesTab },
+      { id: 'items',     label: 'Items',       icon: 'items',     shortcut: '5', component: ItemsTab },
     ],
   },
   {
     section: 'Tools',
     items: [
-      { id: 'aps',      label: 'APS Buckets',  icon: 'aps',      shortcut: '7', component: APSTab },
-      { id: 'settings', label: 'Settings',     icon: 'settings', shortcut: '8', component: SettingsTab },
+      { id: 'aps',      label: 'APS Buckets',  icon: 'aps',      shortcut: '6', component: APSTab },
+      { id: 'settings', label: 'Settings',     icon: 'settings', shortcut: '7', component: SettingsTab },
     ],
   },
 ];
