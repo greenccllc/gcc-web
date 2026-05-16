@@ -87,8 +87,8 @@
   <script src="/assets/js/footer.js"></script>
 <script src="/assets/js/page.js"></script>
 <script>
-  // Bundler is hosted at proposal.greencommllc.com (IIS site `proposalgen`,
-  // physical path C:\GCC_LLC\IIS\proposalgen\). We iframe it so the staff
+  // Bundler is hosted at proposal.greencommllc.com (IIS site `proposalgen` on
+  // gcc-svr-web, physical path D:\IIS\proposalgen\). We iframe it so the staff
   // header.js navigation wraps every visit, matching the "consistent nav
   // across pages" rule. Cross-origin iframe is fine — bundler doesn't need
   // postMessage to the parent for its core flow.
@@ -133,17 +133,19 @@
 
     sel.addEventListener('change', function () { load(sel.value); });
 
-    // ── Compliance bridge ────────────────────────────────────────────
+    // ── Cross-origin bridges (compliance + LLM) ──────────────────────
     // The bundler iframe runs at proposal.greencommllc.com — cross-origin,
-    // so it can't reuse our staff session cookie. When the bundler is
-    // about to ship a proposal (Send via Gmail / Print PDF) it posts a
-    // {type:'compliance-check-request', ...} message; we forward to
-    // /api/compliance/check with our admin session and post the report
-    // back. This is the gate's only auth path — the bundler has no other
-    // way to reach gcc-api.
+    // so it can't reuse our staff session cookie. It posts request messages
+    // and we forward to gcc-api endpoints with our admin session, then post
+    // the response back. Two flows:
+    //   compliance-check-request  → /api/compliance/check   (proposal review)
+    //   llm-messages-request      → /api/llm/messages       (Anthropic-shape
+    //                                                        proxy to majic-svr-llm)
+    // The LLM bridge is what keeps the Majic API key out of the browser —
+    // the bundler doesn't need to store one when it runs inside this iframe.
     window.addEventListener('message', async function (ev) {
       var d = ev && ev.data;
-      if (!d || d.type !== 'compliance-check-request') return;
+      if (!d || (d.type !== 'compliance-check-request' && d.type !== 'llm-messages-request')) return;
       var reqId   = d.reqId || '';
       var bundler = ev.source;
       var origin  = ev.origin || '';
@@ -152,33 +154,62 @@
         var bundlerOrigin = new URL(BUNDLER_BASE).origin;
         if (origin !== bundlerOrigin) return;
       } catch (_) { return; }
+
+      if (d.type === 'compliance-check-request') {
+        try {
+          var resp = await fetch('/api/compliance/check', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              content:         d.content || '',
+              docType:         d.docType || 'proposal',
+              job:             d.job || '',
+              otherJobs:       d.otherJobs       || [],
+              otherClients:    d.otherClients    || [],
+              sourcesProvided: !!(d.sources && d.sources.length),
+              sources:         d.sources         || [],
+            }),
+          });
+          var report = null, err = null;
+          if (resp.ok) report = await resp.json();
+          else err = 'HTTP ' + resp.status + ': ' + (await resp.text()).slice(0, 300);
+          bundler.postMessage({
+            type:   'compliance-check-response',
+            reqId:  reqId,
+            report: report,
+            error:  err,
+          }, bundlerOrigin);
+        } catch (e) {
+          bundler.postMessage({
+            type:   'compliance-check-response',
+            reqId:  reqId,
+            error:  'bridge fetch failed: ' + (e && e.message ? e.message : String(e)),
+          }, origin);
+        }
+        return;
+      }
+
+      // type === 'llm-messages-request'
       try {
-        var resp = await fetch('/api/compliance/check', {
+        var resp = await fetch('/api/llm/messages', {
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            content:         d.content || '',
-            docType:         d.docType || 'proposal',
-            job:             d.job || '',
-            otherJobs:       d.otherJobs       || [],
-            otherClients:    d.otherClients    || [],
-            sourcesProvided: !!(d.sources && d.sources.length),
-            sources:         d.sources         || [],
-          }),
+          body: JSON.stringify(d.body || {}),
         });
-        var report = null, err = null;
-        if (resp.ok) report = await resp.json();
-        else err = 'HTTP ' + resp.status + ': ' + (await resp.text()).slice(0, 300);
+        var data = null, err = null;
+        if (resp.ok) data = await resp.json();
+        else err = 'HTTP ' + resp.status + ': ' + (await resp.text()).slice(0, 400);
         bundler.postMessage({
-          type:   'compliance-check-response',
+          type:   'llm-messages-response',
           reqId:  reqId,
-          report: report,
+          data:   data,
           error:  err,
         }, bundlerOrigin);
       } catch (e) {
         bundler.postMessage({
-          type:   'compliance-check-response',
+          type:   'llm-messages-response',
           reqId:  reqId,
           error:  'bridge fetch failed: ' + (e && e.message ? e.message : String(e)),
         }, origin);
