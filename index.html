@@ -20,6 +20,8 @@
   <meta property="og:title" content="GCC LLC — Low-Voltage Cabling, Security &amp; Smart Spaces · KCMO + STL" />
   <meta property="og:description" content="Green Communications Contracting LLC — Division 27 + 28 contractor delivering structured cabling, IP surveillance, access control, and smart-home work across Kansas City and St. Louis." />
   <meta property="og:image" content="https://greencommllc.com/assets/og/og-default.png" />
+  <meta property="og:image:secure_url" content="https://greencommllc.com/assets/og/og-default.png" />
+  <meta property="og:image:type" content="image/png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content="GCC LLC — Low-Voltage Contractor KCMO + STL" />
@@ -31,7 +33,7 @@
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "LocalBusiness",
+    "@type": ["LocalBusiness", "Electrician"],
     "@id": "https://greencommllc.com/#business",
     "name": "Green Communications Contracting LLC",
     "alternateName": "GCC LLC",
@@ -49,10 +51,34 @@
       "postalCode": "63366",
       "addressCountry": "US"
     },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 38.8175,
+      "longitude": -90.6990
+    },
     "areaServed": [
       {"@type": "City", "name": "Kansas City"},
       {"@type": "City", "name": "St. Louis"}
     ],
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "+16362248192",
+      "email": "info@greencommllc.com",
+      "contactType": "customer service",
+      "areaServed": "US",
+      "availableLanguage": "English"
+    },
+    "hasOfferCatalog": {
+      "@type": "OfferCatalog",
+      "name": "Low-Voltage Construction Services",
+      "itemListElement": [
+        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Division 27 Structured Cabling", "description": "Cat6A plenum, OM3/OM4 + OS1/OS2 fiber, telecom rooms grounded to TIA-607. Fluke DSX-8000 certified."}},
+        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Division 28 IP Security", "description": "Ubiquiti cameras, UniFi Access door control, NVR/VMS, intercom, AI analytics."}},
+        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Network and Managed Services", "description": "UniFi end-to-end VLAN design, controller setup, firmware management, monthly managed service plans."}},
+        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Residential Low-Voltage", "description": "Whole-home Cat6, Wi-Fi 7 mesh, Ubiquiti smart-home, multi-trade renovation low-voltage."}},
+        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Service Contracts", "description": "Monthly Care, Annual Plan, or Lifetime documentation and support — closeout packages kept current."}}
+      ]
+    },
     "knowsAbout": ["Structured Cabling", "Cat6A", "IP Security", "UniFi", "Low Voltage", "Division 27", "Division 28"],
     "priceRange": "$$",
     "openingHoursSpecification": {
@@ -63,6 +89,29 @@
     }
   }
   </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": "https://greencommllc.com/#website",
+    "url": "https://greencommllc.com/",
+    "name": "GCC LLC — Green Communications Contracting",
+    "publisher": {"@id": "https://greencommllc.com/#business"}
+  }
+  </script>
+  <style>
+    /* SVG card icons */
+    .card-icon svg {
+      display: block;
+      width: 36px;
+      height: 36px;
+      stroke: #1E4D2B;
+      stroke-width: 1.75;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+  </style>
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to content</a>
@@ -122,31 +171,41 @@
         </div>
         <div class="card-grid">
           <a class="card" href="/services/cabling.html" aria-label="Structured cabling — Cat6A, fiber, telecom rooms">
-            <div class="card-icon">⚡</div>
+            <div class="card-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+            </div>
             <h3>Structured cabling</h3>
             <p>Cat6A plenum, OM3/OM4 + OS1/OS2 fiber, telecom rooms grounded to TIA-607. Fluke DSX-8000 certs with LinkWare PDFs at closeout.</p>
             <span class="card-arrow">Cabling →</span>
           </a>
           <a class="card" href="/services/security.html" aria-label="IP security — cameras, access control, intercom">
-            <div class="card-icon">🛡</div>
+            <div class="card-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+            </div>
             <h3>IP security</h3>
             <p>Ubiquiti G6 cameras, UniFi Access door hubs, IP intercom, NVR storage with retention plans, AI motion/person/vehicle analytics.</p>
             <span class="card-arrow">Security →</span>
           </a>
           <a class="card" href="/services/network.html" aria-label="Network and managed services — UniFi end-to-end">
-            <div class="card-icon">📡</div>
+            <div class="card-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+            </div>
             <h3>Network &amp; managed</h3>
             <p>UniFi end-to-end. VLAN design, controller setup, firmware tracking, and a Managed Services alternate on every whole-building bid.</p>
             <span class="card-arrow">Network →</span>
           </a>
           <a class="card" href="/services/residential.html" aria-label="Residential — smart home, Wi-Fi, renovations">
-            <div class="card-icon">🏡</div>
+            <div class="card-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </div>
             <h3>Residential</h3>
             <p>Whole-home Cat6, Wi-Fi 7 mesh, Ubiquiti smart-home, Govee + Alexa + Google integration, plus the multi-trade reno work other LV shops won't touch.</p>
             <span class="card-arrow">Residential →</span>
           </a>
           <a class="card" href="/services/contracts.html" aria-label="Service contracts — monthly, annual, lifetime">
-            <div class="card-icon">📋</div>
+            <div class="card-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>
+            </div>
             <h3>Service contracts</h3>
             <p>Monthly Care, Annual Plan, or one-time Lifetime. Documentation kept forever — closeout packages updated as long as you own the building.</p>
             <span class="card-arrow">Contracts →</span>
@@ -198,8 +257,32 @@
       </div>
     </section>
 
-    <!-- ── Closing CTA ───────────────────────────────────── -->
+    <!-- ── Trusted partners ──────────────────────────────── -->
     <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <h2>Trusted by GCs and end clients across Missouri</h2>
+        </div>
+        <div class="card-grid">
+          <div class="card card-accent">
+            <h3>Straub Construction</h3>
+            <p>General contractor — commercial new construction and renovation projects across KCMO. Recurring sub relationship.</p>
+          </div>
+          <div class="card card-accent">
+            <h3>Arrowhead Electric &amp; Mishler Electric</h3>
+            <p>Electrical contractors — coordinated Division 26/27/28 scope handoffs; telecom room grounding and bonding interfaces.</p>
+          </div>
+          <div class="card card-accent">
+            <h3>John Knox Village &amp; Independence School District</h3>
+            <p>End clients — senior living campus LV infrastructure and K-12 education projects with prevailing wage and background-check-compliant crews.</p>
+          </div>
+        </div>
+        <p class="text-meta-center mt-lg">Named references and redacted reference packages furnished on request.</p>
+      </div>
+    </section>
+
+    <!-- ── Closing CTA ───────────────────────────────────── -->
+    <section class="section section-tinted">
       <div class="container section-cta-center">
         <h2 class="section-title-xl">
           Send us a plan set. We'll send a real range back inside two business days.

@@ -20,6 +20,8 @@
   <meta property="og:title" content="About — A small, sharp Missouri LLC · GCC LLC" />
   <meta property="og:description" content="Green Communications Contracting LLC is a Missouri Division 27/28 contractor working across Kansas City and St. Louis. Two-person ownership, lean field crew, tight standards, direct line to ownership." />
   <meta property="og:image" content="https://greencommllc.com/assets/og/og-default.png" />
+  <meta property="og:image:secure_url" content="https://greencommllc.com/assets/og/og-default.png" />
+  <meta property="og:image:type" content="image/png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content="GCC LLC — Low-Voltage Contractor KCMO + STL" />
@@ -32,11 +34,13 @@
   [
     {
       "@context": "https://schema.org",
-      "@type": "LocalBusiness",
+      "@type": ["LocalBusiness", "Electrician"],
       "@id": "https://greencommllc.com/#business",
       "name": "Green Communications Contracting LLC",
       "alternateName": "GCC LLC",
       "url": "https://greencommllc.com/",
+      "logo": "https://greencommllc.com/assets/og/logo.png",
+      "image": "https://greencommllc.com/assets/og/og-default.png",
       "description": "Division 27/28 low-voltage contractor delivering structured cabling, IP surveillance, access control, and smart-home work across Kansas City and St. Louis.",
       "telephone": "+16362248192",
       "email": "info@greencommllc.com",
@@ -48,10 +52,23 @@
         "postalCode": "63366",
         "addressCountry": "US"
       },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 38.8175,
+        "longitude": -90.6990
+      },
       "areaServed": [
         {"@type": "City", "name": "Kansas City"},
         {"@type": "City", "name": "St. Louis"}
       ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+16362248192",
+        "email": "info@greencommllc.com",
+        "contactType": "customer service",
+        "areaServed": "US",
+        "availableLanguage": "English"
+      },
       "employee": [
         {
           "@type": "Person",
@@ -65,10 +82,68 @@
           "jobTitle": "Director of Operations",
           "worksFor": {"@id": "https://greencommllc.com/#business"}
         }
-      ]
+      ],
+      "foundingDate": "2026-02-25",
+      "knowsAbout": ["Structured Cabling", "Cat6A", "IP Security", "UniFi", "Low Voltage", "Division 27", "Division 28"]
     }
   ]
   </script>
+  <style>
+    /* ── About-page stats strip ── */
+    .about-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      background: #1E4D2B;
+      border-top: 3px solid #D4AF37;
+      border-bottom: 3px solid #D4AF37;
+    }
+    .about-stat {
+      padding: 22px 16px;
+      text-align: center;
+      border-right: 1px solid rgba(255,255,255,.15);
+    }
+    .about-stat:last-child { border-right: none; }
+    .about-stat-num {
+      display: block;
+      font-size: 30px;
+      font-weight: 700;
+      color: #D4AF37;
+      line-height: 1.1;
+      font-family: 'Georgia', serif;
+    }
+    .about-stat-lbl {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: #EAF3EB;
+      margin-top: 5px;
+    }
+    @media (max-width: 600px) {
+      .about-stats { grid-template-columns: repeat(2, 1fr); }
+      .about-stat:nth-child(2) { border-right: none; }
+      .about-stat:nth-child(3) { border-right: 1px solid rgba(255,255,255,.15); }
+    }
+
+    /* ── Owner avatar initials ── */
+    .owner-avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: #1E4D2B;
+      color: #D4AF37;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: .02em;
+      margin-bottom: 14px;
+      flex-shrink: 0;
+      border: 2px solid #D4AF37;
+    }
+  </style>
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to content</a>
@@ -88,16 +163,38 @@
       </div>
     </section>
 
+    <!-- ── Stats strip ────────────────────────────────────── -->
+    <div class="about-stats" aria-label="Company highlights">
+      <div class="about-stat">
+        <span class="about-stat-num">12+</span>
+        <span class="about-stat-lbl">Years LV Experience</span>
+      </div>
+      <div class="about-stat">
+        <span class="about-stat-num">$2M</span>
+        <span class="about-stat-lbl">GL Aggregate</span>
+      </div>
+      <div class="about-stat">
+        <span class="about-stat-num">600+</span>
+        <span class="about-stat-lbl">Site Projects</span>
+      </div>
+      <div class="about-stat">
+        <span class="about-stat-num">Lifetime</span>
+        <span class="about-stat-lbl">Workmanship Warranty</span>
+      </div>
+    </div>
+
     <section class="section">
       <div class="container">
         <div class="section-head"><h2>Ownership</h2></div>
         <div class="card-grid">
           <div class="card">
+            <div class="owner-avatar" aria-hidden="true">KL</div>
             <h3>Kaitlyn Lim Morris — President</h3>
             <p class="owner-meta">90% owner · Sales · Estimating · Financial admin</p>
             <p>Signs every cover letter and 02 Bid Overview. Owns sales strategy, estimating, financial administration, procurement, customer relations, COIs, W9s, and certified payroll. Background in medical operations and hospital administration; BSN in progress.</p>
           </div>
           <div class="card">
+            <div class="owner-avatar" aria-hidden="true">NM</div>
             <h3>Nathan Morris — Director of Operations</h3>
             <p class="owner-meta">10% owner · Field · Design · QA</p>
             <p>10+ years in structured cabling, network design, and field foreman work. Owns technical operations, BICSI/TIA design, field coordination, QA, and the Ubiquiti specialty practice. Walks every site we bid.</p>
