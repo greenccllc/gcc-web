@@ -10,8 +10,10 @@
   <link rel="canonical" href="https://greencommllc.com/services.html" />
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
-  <link rel="stylesheet" href="/assets/css/site.css?v=20260509" />
-  <link rel="stylesheet" href="/assets/css/chrome.css?v=20260509" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="/assets/css/site.css?v=20260513" />
+  <link rel="stylesheet" href="/assets/css/chrome.css?v=20260513" />
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="en_US" />
@@ -25,9 +27,26 @@
   <meta property="og:image:alt" content="GCC LLC — Low-Voltage Contractor KCMO + STL" />
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@greencommllc" />
   <meta name="twitter:title" content="Services — Cabling, Security, Network, Residential · GCC LLC" />
   <meta name="twitter:description" content="The full GCC LLC service catalog: structured cabling, IP security, UniFi network &amp; managed services, residential smart home, and ongoing service contracts." />
   <meta name="twitter:image" content="https://greencommllc.com/assets/og/og-default.png" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "GCC LLC Services",
+    "description": "Division 27/28 low-voltage contractor service catalog",
+    "url": "https://greencommllc.com/services.html",
+    "itemListElement": [
+      {"@type": "ListItem", "position": 1, "name": "Structured Cabling", "url": "https://greencommllc.com/services/cabling.html"},
+      {"@type": "ListItem", "position": 2, "name": "IP Security", "url": "https://greencommllc.com/services/security.html"},
+      {"@type": "ListItem", "position": 3, "name": "Network & Managed Services", "url": "https://greencommllc.com/services/network.html"},
+      {"@type": "ListItem", "position": 4, "name": "Residential", "url": "https://greencommllc.com/services/residential.html"},
+      {"@type": "ListItem", "position": 5, "name": "Service Contracts", "url": "https://greencommllc.com/services/contracts.html"}
+    ]
+  }
+  </script>
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to content</a>
@@ -51,31 +70,31 @@
       <div class="container">
         <div class="card-grid">
           <a class="card" href="/services/cabling.html" aria-label="Structured cabling — Cat6A, fiber, telecom rooms">
-            <div class="card-icon">⚡</div>
+            <div class="card-icon" aria-hidden="true">⚡</div>
             <h3>Structured cabling</h3>
             <p>Cat6A plenum baseline · OM3/OM4 multimode + OS1/OS2 single-mode fiber backbone · TIA-607-grounded telecom rooms · Fluke DSX-8000 cert + LinkWare PDFs · Bluebeam as-builts.</p>
             <span class="card-arrow">Cabling detail →</span>
           </a>
           <a class="card" href="/services/security.html" aria-label="IP security — cameras, access control, intercom">
-            <div class="card-icon">🛡</div>
+            <div class="card-icon" aria-hidden="true">🛡</div>
             <h3>IP security</h3>
             <p>Ubiquiti G6 IP cameras · UniFi Access door hubs · POE intercom + overhead paging · NVR storage with retention plan · AI motion / person / vehicle analytics · plate reads.</p>
             <span class="card-arrow">Security detail →</span>
           </a>
           <a class="card" href="/services/network.html" aria-label="Network and managed services — UniFi end-to-end">
-            <div class="card-icon">📡</div>
+            <div class="card-icon" aria-hidden="true">📡</div>
             <h3>Network &amp; managed</h3>
             <p>UniFi end-to-end (Network · Protect · Access · Talk) · VLAN design · controller setup · firmware tracking. Mandatory Managed Services alternate on every whole-building bid.</p>
             <span class="card-arrow">Network detail →</span>
           </a>
           <a class="card" href="/services/residential.html" aria-label="Residential — smart home, Wi-Fi, renovations">
-            <div class="card-icon">🏡</div>
+            <div class="card-icon" aria-hidden="true">🏡</div>
             <h3>Residential</h3>
             <p>Whole-home Cat6 + Wi-Fi 7 mesh · Ubiquiti smart-home · Govee + Alexa + Google Home · plus multi-trade renos: bath, kitchen, fencing, decking, electrical, HVAC, light plumbing.</p>
             <span class="card-arrow">Residential detail →</span>
           </a>
           <a class="card" href="/services/contracts.html" aria-label="Service contracts — monthly, annual, lifetime">
-            <div class="card-icon">📋</div>
+            <div class="card-icon" aria-hidden="true">📋</div>
             <h3>Service contracts</h3>
             <p>Monthly Care · Annual Plan · Lifetime (one-time). Lifetime workmanship + lifetime parts on GCC-installed components, transfers with the property.</p>
             <span class="card-arrow">Contracts detail →</span>
