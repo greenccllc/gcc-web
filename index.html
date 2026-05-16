@@ -10,8 +10,8 @@
   <link rel="canonical" href="https://greencommllc.com/" />
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
-  <link rel="stylesheet" href="/assets/css/site.css?v=20260509" />
-  <link rel="stylesheet" href="/assets/css/chrome.css?v=20260509" />
+  <link rel="stylesheet" href="/assets/css/site.css?v=20260510" />
+  <link rel="stylesheet" href="/assets/css/chrome.css?v=20260510" />
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="en_US" />
@@ -63,13 +63,69 @@
     }
   }
   </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What areas does GCC LLC serve?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "GCC LLC serves the Kansas City (KCMO) and St. Louis (STL) metros. KCMO coverage includes inside the 435 ring plus Johnson and Wyandotte counties. STL covers Greater St. Louis, the Metro East (Illinois), and St. Charles County. GCC also bids in Missouri, Kansas, and Illinois statewide (Illinois case-by-case)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How quickly does GCC LLC return a bid?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "GCC LLC has a 48-hour quote SLA. Send a plan set and GCC returns a complete bid package inside two business days. GCC bids as drawn — no outbound calls to the GC during the bid window. If a spec is ambiguous, the assumption, exclusion, or density allowance is documented in sections 3–4 of the proposal."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What warranty does GCC LLC provide?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "GCC LLC provides a lifetime workmanship and parts warranty on all GCC-installed components. The warranty transfers with the property — the next tenant or owner inherits it at no cost. Cabling manufacturer system warranties (typically 15–25 years) are passed through separately when installed under a certified-installer program."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does GCC LLC carry general liability insurance and workers' compensation?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. GCC LLC carries Next Insurance commercial general liability ($1M per occurrence / $2M aggregate) and AmGUARD workers' compensation (NAIC #42390, statutory limits). ACORD certificates of insurance and W9 are available same day on request. Bonding capacity letters are available for projects requiring bid, performance, or payment bonds."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is a Division 27 and Division 28 contractor?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Division 27 (Communications) covers structured cabling — Cat6A copper, fiber optic, telecom rooms, WAP cabling, and distributed antenna system (DAS) pathways. Division 28 (Electronic Safety and Security) covers access control, IP video surveillance cameras, intrusion detection, and IP intercom systems. GCC LLC self-performs both divisions on commercial, institutional, and residential projects."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does GCC LLC support prevailing wage and certified payroll?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. GCC LLC handles prevailing wage and certified payroll on public projects. Compliance documents — certified payroll letters, prevailing wage certifications, EMR letters, and site safety plans — are furnished on request. GCC is open-shop and works on both private and public projects."
+        }
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to content</a>
   <div id="gcc-header"></div>
 
   <main id="main">
-    <!-- ── Hero ──────────────────────────────────────────── -->
+    <!-- ── Hero ──────────────────────────────────────────────── -->
     <section class="page-hero">
       <div class="container">
         <span class="eyebrow">Division 27/28 · KCMO + STL</span>
@@ -198,8 +254,72 @@
       </div>
     </section>
 
-    <!-- ── Closing CTA ───────────────────────────────────── -->
+    <!-- ── FAQ ──────────────────────────────────────────────── -->
     <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Common questions from GCs and owners</h2>
+            <p>Direct answers — no qualifier clutter.</p>
+          </div>
+          <a href="/contact.html" class="hero-cta-secondary">Ask us directly →</a>
+        </div>
+        <style>
+          .faq-list{list-style:none;margin:var(--s-4,16px) 0 0;padding:0;display:flex;flex-direction:column;gap:var(--s-2,8px)}
+          .faq-list details{background:var(--paper,#F4F4EE);border:1px solid rgba(27,56,33,.15);border-radius:6px;transition:box-shadow .15s}
+          .faq-list details[open]{box-shadow:0 2px 10px rgba(27,56,33,.1)}
+          .faq-list summary{padding:var(--s-4,16px) var(--s-5,20px);font-weight:600;font-size:1rem;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;color:var(--ink,#15201A);gap:var(--s-4,16px)}
+          .faq-list summary::-webkit-details-marker{display:none}
+          .faq-list summary::after{content:'+';font-size:1.375rem;color:var(--forest,#1E4D2B);flex-shrink:0;line-height:1;font-weight:300}
+          .faq-list details[open]>summary::after{content:'\2212'}
+          .faq-list summary:hover{color:var(--forest,#1E4D2B)}
+          .faq-list .faq-body{padding:0 var(--s-5,20px) var(--s-4,16px);border-top:1px solid rgba(27,56,33,.1);color:var(--slate,#4F5B57);line-height:1.65}
+          .faq-list .faq-body p{margin:var(--s-3,12px) 0 0}
+          @media(prefers-reduced-motion:reduce){.faq-list details{transition:none}}
+        </style>
+        <ul class="faq-list">
+          <li>
+            <details>
+              <summary>What areas does GCC LLC serve?</summary>
+              <div class="faq-body"><p>Kansas City (KCMO) and St.&nbsp;Louis (STL) metros. KCMO coverage includes inside the 435 ring plus Johnson and Wyandotte counties. STL covers Greater St.&nbsp;Louis, Metro East (Illinois), and St.&nbsp;Charles County. We also bid in Missouri, Kansas, and Illinois statewide (Illinois case-by-case).</p></div>
+            </details>
+          </li>
+          <li>
+            <details>
+              <summary>How quickly can you return a bid?</summary>
+              <div class="faq-body"><p>48-hour SLA. Send a plan set and we return a complete package inside two business days. We bid as drawn &mdash; no outbound calls to the GC during the bid window. If a spec is ambiguous we document the assumption, exclusion, or density allowance in &sect;3&ndash;&sect;4 of the proposal.</p></div>
+            </details>
+          </li>
+          <li>
+            <details>
+              <summary>What warranty do you provide?</summary>
+              <div class="faq-body"><p>Lifetime workmanship and parts on all GCC-installed components. The warranty transfers with the property &mdash; the next tenant or owner inherits it at no cost. Cabling manufacturer system warranties (15&ndash;25 years) are passed through separately when we install under a certified-installer program.</p></div>
+            </details>
+          </li>
+          <li>
+            <details>
+              <summary>Do you carry GL insurance and workers&rsquo; comp?</summary>
+              <div class="faq-body"><p>Yes. Next Insurance GL ($1M per occurrence&nbsp;/&nbsp;$2M aggregate) and AmGUARD WC (NAIC&nbsp;#42390, statutory). ACORD certificates and W9 same day on request. Bonding capacity letters available for projects requiring bid, performance, or payment bonds.</p></div>
+            </details>
+          </li>
+          <li>
+            <details>
+              <summary>What&rsquo;s the difference between Division 27 and Division 28?</summary>
+              <div class="faq-body"><p>Division 27 (Communications) covers structured cabling &mdash; Cat6A copper, fiber, telecom rooms, WAP runs, and DAS pathways. Division 28 (Electronic Safety &amp; Security) covers access control, IP cameras, intrusion detection, and intercom. GCC self-performs both on commercial, institutional, and residential projects.</p></div>
+            </details>
+          </li>
+          <li>
+            <details>
+              <summary>Do you handle prevailing wage and certified payroll?</summary>
+              <div class="faq-body"><p>Yes. GCC handles prevailing wage and certified payroll on public jobs. Compliance docs &mdash; CPL, prevailing wage cert, EMR letter, and site safety plan &mdash; furnished on request. Open-shop; we work private and public alike.</p></div>
+            </details>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ── Closing CTA ───────────────────────────────────── -->
+    <section class="section section-tinted">
       <div class="container section-cta-center">
         <h2 class="section-title-xl">
           Send us a plan set. We'll send a real range back inside two business days.
