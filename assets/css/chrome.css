@@ -695,3 +695,82 @@ body.ew-locked { overflow: hidden; }
   color: var(--forest, #1E4D2B);
   text-decoration: none;
 }
+
+/* ── Process steps ──────────────────────────────────────── */
+.process-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+@media (max-width: 760px) {
+  .process-steps { grid-template-columns: 1fr; }
+}
+.process-step {
+  background: white;
+  border: 1px solid var(--hairline, rgba(21,32,26,.09));
+  border-radius: 14px;
+  padding: 28px 24px;
+}
+.process-step .process-num {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 12px; font-weight: 700;
+  color: var(--forest, #1E4D2B);
+  background: rgba(30, 77, 43, 0.09);
+  border: 1px solid rgba(30, 77, 43, 0.16);
+  border-radius: 6px; padding: 4px 10px;
+  display: inline-block; margin-bottom: 16px;
+  letter-spacing: 0.06em;
+}
+.process-step h3 { font-size: 18px; margin-bottom: 10px; }
+.process-step p { font-size: 14px; color: var(--slate, #4F5B57); margin: 0; line-height: 1.6; }
+.process-step p a { color: var(--forest, #1E4D2B); text-decoration: none; }
+.process-step p a:hover { text-decoration: underline; }
+
+/* ── FAQ accordion ──────────────────────────────────────── */
+.faq-list {
+  max-width: 760px; margin: 0 auto;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.faq-item {
+  background: white;
+  border: 1px solid var(--hairline, rgba(21,32,26,.09));
+  border-radius: 10px; overflow: hidden;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.faq-item[open] {
+  border-color: rgba(30, 77, 43, 0.22);
+  box-shadow: 0 4px 14px rgba(10, 24, 15, 0.06);
+}
+.faq-q {
+  padding: 18px 20px; font-size: 15.5px; font-weight: 700;
+  color: var(--ink, #15201A); cursor: pointer; list-style: none;
+  display: flex; justify-content: space-between; align-items: center;
+  user-select: none; gap: 12px;
+}
+.faq-q::-webkit-details-marker { display: none; }
+.faq-q::after {
+  content: "+"; font-size: 20px; font-weight: 400;
+  color: var(--forest, #1E4D2B); flex-shrink: 0;
+  transition: transform .2s ease;
+}
+details[open] .faq-q::after { transform: rotate(45deg); }
+.faq-a {
+  padding: 14px 20px 18px; margin: 0;
+  font-size: 14.5px; color: var(--slate, #4F5B57);
+  line-height: 1.6;
+  border-top: 1px solid var(--hairline, rgba(21,32,26,.07));
+}
+
+/* ── Featured card (e.g. "most picked" contract tier) ───── */
+.card-featured {
+  border-color: var(--forest, #1E4D2B);
+  background: linear-gradient(180deg, rgba(232,240,234,.6), white 56%);
+}
+.card-badge {
+  display: inline-block; font-size: 11px; font-weight: 700;
+  color: var(--forest, #1E4D2B); text-transform: uppercase;
+  letter-spacing: .06em; margin-left: 8px;
+  background: rgba(30, 77, 43, 0.10);
+  border: 1px solid rgba(30, 77, 43, 0.20);
+  border-radius: 4px; padding: 2px 6px; vertical-align: middle;
+}
