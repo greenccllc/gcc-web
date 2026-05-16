@@ -34,7 +34,10 @@
     "@type": "LocalBusiness",
     "@id": "https://greencommllc.com/#business",
     "name": "Green Communications Contracting LLC",
+    "legalName": "Green Communications Contracting LLC",
     "alternateName": "GCC LLC",
+    "foundingDate": "2026",
+    "slogan": "Low-voltage that lasts longer than the building lease.",
     "url": "https://greencommllc.com/",
     "logo": "https://greencommllc.com/assets/og/logo.png",
     "image": "https://greencommllc.com/assets/og/og-default.png",
@@ -53,7 +56,22 @@
       {"@type": "City", "name": "Kansas City"},
       {"@type": "City", "name": "St. Louis"}
     ],
+    "numberOfEmployees": {
+      "@type": "QuantitativeValue",
+      "value": 2
+    },
     "knowsAbout": ["Structured Cabling", "Cat6A", "IP Security", "UniFi", "Low Voltage", "Division 27", "Division 28"],
+    "hasOfferCatalog": {
+      "@type": "OfferCatalog",
+      "name": "Low-Voltage Services",
+      "itemListElement": [
+        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Structured Cabling", "url": "https://greencommllc.com/services/cabling.html"}},
+        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "IP Security Systems", "url": "https://greencommllc.com/services/security.html"}},
+        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Network & Managed Services", "url": "https://greencommllc.com/services/network.html"}},
+        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Residential Low-Voltage", "url": "https://greencommllc.com/services/residential.html"}},
+        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Service Contracts", "url": "https://greencommllc.com/services/contracts.html"}}
+      ]
+    },
     "priceRange": "$$",
     "openingHoursSpecification": {
       "@type": "OpeningHoursSpecification",
@@ -90,6 +108,10 @@
     <section class="section section-flush">
       <div class="container">
         <div class="stat-strip">
+          <div class="stat-item">
+            <div class="stat-num">600+</div>
+            <div class="stat-lbl">Projects completed</div>
+          </div>
           <div class="stat-item">
             <div class="stat-num">48 hr</div>
             <div class="stat-lbl">Quote SLA</div>
