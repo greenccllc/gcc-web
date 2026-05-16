@@ -29,35 +29,46 @@
   <meta name="twitter:description" content="Whole-home Cat6 + Wi-Fi 7, Ubiquiti smart-home ecosystem, Govee + Alexa + Google Home integration, and the multi-trade renovation work other low-voltage shops won't touch." />
   <meta name="twitter:image" content="https://greencommllc.com/assets/og/og-default.png" />
   <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Service",
-    "serviceType": "Residential Low-Voltage and Smart Home",
-    "name": "Residential Wiring, Smart Home & Renovation",
-    "description": "Whole-home Cat6 and Wi-Fi 7, Ubiquiti smart-home, Govee/Alexa/Google Home integration, plus multi-trade renovation work including bath, kitchen, fencing, and decking.",
-    "url": "https://greencommllc.com/services/residential.html",
-    "provider": {
-      "@type": "LocalBusiness",
-      "@id": "https://greencommllc.com/#business",
-      "name": "Green Communications Contracting LLC"
+  [
+    {
+      "@context": "https://schema.org",
+      "@type": "Service",
+      "serviceType": "Residential Low-Voltage and Smart Home",
+      "name": "Residential Wiring, Smart Home & Renovation",
+      "description": "Whole-home Cat6 and Wi-Fi 7, Ubiquiti smart-home, Govee/Alexa/Google Home integration, plus multi-trade renovation work including bath, kitchen, fencing, and decking.",
+      "url": "https://greencommllc.com/services/residential.html",
+      "provider": {
+        "@type": "LocalBusiness",
+        "@id": "https://greencommllc.com/#business",
+        "name": "Green Communications Contracting LLC"
+      },
+      "areaServed": [
+        {"@type": "City", "name": "Kansas City"},
+        {"@type": "City", "name": "St. Louis"}
+      ],
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Residential Services",
+        "itemListElement": [
+          {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Whole-home Cat6 and fiber wiring"}},
+          {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Wi-Fi 7 mesh design and installation"}},
+          {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Smart home integration (Alexa, Google, Govee)"}},
+          {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "IP camera and smart doorbell installation"}},
+          {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Bath and kitchen renovation"}},
+          {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "TV mounting and AV setup"}}
+        ]
+      }
     },
-    "areaServed": [
-      {"@type": "City", "name": "Kansas City"},
-      {"@type": "City", "name": "St. Louis"}
-    ],
-    "hasOfferCatalog": {
-      "@type": "OfferCatalog",
-      "name": "Residential Services",
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
       "itemListElement": [
-        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Whole-home Cat6 and fiber wiring"}},
-        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Wi-Fi 7 mesh design and installation"}},
-        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Smart home integration (Alexa, Google, Govee)"}},
-        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "IP camera and smart doorbell installation"}},
-        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Bath and kitchen renovation"}},
-        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "TV mounting and AV setup"}}
+        {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://greencommllc.com/"},
+        {"@type": "ListItem", "position": 2, "name": "Services", "item": "https://greencommllc.com/services.html"},
+        {"@type": "ListItem", "position": 3, "name": "Residential", "item": "https://greencommllc.com/services/residential.html"}
       ]
     }
-  }
+  ]
   </script>
 </head>
 <body>
@@ -65,6 +76,18 @@
   <div id="gcc-header"></div>
 
   <main id="main">
+    <nav aria-label="Breadcrumb" style="background:var(--paper,#F4F4EE);border-bottom:1px solid rgba(21,32,26,.08);">
+      <div class="container" style="padding-top:10px;padding-bottom:10px;">
+        <ol style="list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:4px 2px;font-size:13px;color:var(--slate,#5a6b60);align-items:center;">
+          <li><a href="/" style="color:var(--forest,#1E4D2B);text-decoration:none;">Home</a></li>
+          <li style="padding:0 6px;opacity:.4;">/</li>
+          <li><a href="/services.html" style="color:var(--forest,#1E4D2B);text-decoration:none;">Services</a></li>
+          <li style="padding:0 6px;opacity:.4;">/</li>
+          <li aria-current="page">Residential</li>
+        </ol>
+      </div>
+    </nav>
+
     <section class="page-hero">
       <div class="container">
         <span class="eyebrow">Residential · KCMO + STL</span>
