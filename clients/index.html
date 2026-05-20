@@ -33,11 +33,11 @@
       <span class="audience-label">Client</span>
       <span class="audience-sub">Portal access · estimates · projects</span>
     </button>
-    <a class="audience-pick audience-staff" id="aud-staff" href="/admin/">
+    <button type="button" class="audience-pick" id="aud-staff" aria-pressed="false">
       <span class="audience-icon">🔧</span>
       <span class="audience-label">Staff</span>
-      <span class="audience-sub">@greencommllc.com · SSO sign-in</span>
-    </a>
+      <span class="audience-sub">@greencommllc.com · sign in below</span>
+    </button>
   </div>
 
   <!-- Sign in / Sign up tabs (client only) -->
@@ -211,6 +211,18 @@
     // Not signed in (or me() failed) — show the sign-in form. Fall through.
   }
 })();
+
+// ── Audience picker ──────────────────────────────────────
+const audClient = document.getElementById('aud-client');
+const audStaff  = document.getElementById('aud-staff');
+[audClient, audStaff].forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    audClient.classList.toggle('active', btn === audClient);
+    audClient.setAttribute('aria-pressed', btn === audClient);
+    audStaff.classList.toggle('active', btn === audStaff);
+    audStaff.setAttribute('aria-pressed', btn === audStaff);
+  });
+});
 
 // ── Tab switcher ─────────────────────────────────────────
 const tabSignIn = document.getElementById('tab-signin');
