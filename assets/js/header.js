@@ -145,12 +145,10 @@
     ];
   }
 
-  // Staff nav (when greencommllc.com SSO user lands on /admin/*). Shows
-  // direct links to operator surfaces; CF Access already authenticated
-  // them so we can surface every page they have access to.
-  function navStaff(me, isAdmin) {
+  // Staff / admin nav (greencommllc.com SSO users on /admin/*).
+  function navStaff(me) {
     const items = [
-      { href: isAdmin ? '/admin/console/' : '/admin/', label: 'Dashboard' },
+      { href: '/admin/', label: 'Dashboard' },
       { href: '/admin/bc-leads.html',    label: 'Projects' },
       { label: 'Tools', group: [
           { href: '/admin/proposalgen.html', label: 'Proposal Generator' },
@@ -299,12 +297,9 @@
     if (window.gccApi && !onPublic) {
       try {
         const me = await gccApi.me();
-        if (me.role === 'admin') {
-          items = navStaff(me, true);
+        if (me.role === 'admin' || me.role === 'staff') {
+          items = navStaff(me);
           badge = 'Admin';
-        } else if (me.role === 'staff') {
-          items = navStaff(me, false);
-          badge = 'Staff Portal';
         } else {
           items = navClient(me);
           badge = 'Client Portal';
