@@ -150,7 +150,7 @@
   // them so we can surface every page they have access to.
   function navStaff(me, isAdmin) {
     const items = [
-      { href: '/admin/console/',         label: 'Dashboard' },
+      { href: isAdmin ? '/admin/console/' : '/admin/', label: 'Dashboard' },
       { href: '/admin/bc-leads.html',    label: 'Projects' },
       { label: 'Tools', group: [
           { href: '/admin/proposalgen.html', label: 'Proposal Generator' },
