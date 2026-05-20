@@ -10,9 +10,8 @@
   <link rel="canonical" href="https://greencommllc.com/contact.html" />
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
-  <link rel="stylesheet" href="/assets/css/site.css?v=20260509" />
-  <link rel="stylesheet" href="/assets/css/chrome.css?v=20260509" />
-  <!-- Open Graph -->
+  <link rel="stylesheet" href="/assets/css/site.css?v=20260520" />
+  <link rel="stylesheet" href="/assets/css/chrome.css?v=20260520" />
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="en_US" />
   <meta property="og:site_name" content="GCC LLC" />
@@ -23,92 +22,24 @@
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content="GCC LLC — Low-Voltage Contractor KCMO + STL" />
-  <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Contact — 48-hour quote turnaround · GCC LLC" />
   <meta name="twitter:description" content="Request a quote, send plans for review, or schedule a site walk. Direct phone, email, and form — answered by ownership. 48-hour proposal turnaround. Same-day COI and W9." />
   <meta name="twitter:image" content="https://greencommllc.com/assets/og/og-default.png" />
-  <style>
-    .contact-grid {
-      display: grid;
-      grid-template-columns: 1.2fr 1fr;
-      gap: 48px;
-      align-items: start;
-    }
-    @media (max-width: 880px) { .contact-grid { grid-template-columns: 1fr; gap: 32px; } }
-    .contact-form {
-      background: white;
-      border: 1px solid var(--hairline, rgba(21,32,26,.09));
-      border-radius: 12px;
-      padding: 28px;
-    }
-    .contact-form .field { margin-bottom: 16px; }
-    .contact-form label {
-      display: block; font-size: 12px; font-weight: 600; color: var(--ink);
-      text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px;
-    }
-    .contact-form input, .contact-form textarea, .contact-form select {
-      width: 100%;
-      padding: 10px 12px;
-      font-size: 14px;
-      font-family: inherit;
-      border: 1px solid var(--hairline, rgba(21,32,26,.12));
-      border-radius: 8px;
-      background: var(--paper, #F4F4EE);
-      transition: border-color .12s ease;
-    }
-    .contact-form input:focus, .contact-form textarea:focus, .contact-form select:focus {
-      outline: none;
-      border-color: var(--forest, #1E4D2B);
-      background: white;
-    }
-    .contact-form textarea { min-height: 120px; resize: vertical; }
-    .contact-form button {
-      width: 100%;
-      padding: 14px;
-      background: var(--forest, #1E4D2B);
-      color: white;
-      border: 0;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 15px;
-      cursor: pointer;
-      transition: background .12s ease;
-    }
-    .contact-form button:hover { background: var(--forest-dark, #143821); }
-    .contact-side .info-block {
-      padding: 20px 0;
-      border-bottom: 1px solid var(--hairline);
-    }
-    .contact-side .info-block:last-child { border-bottom: 0; }
-    .contact-side h3 {
-      font-size: 12px; font-weight: 700; color: var(--forest);
-      text-transform: uppercase; letter-spacing: .08em; margin: 0 0 8px;
-    }
-    .contact-side .info-block strong, .contact-side .info-block a {
-      display: block;
-      font-family: 'JetBrains Mono', ui-monospace, monospace;
-      font-size: 16px;
-      color: var(--ink);
-      text-decoration: none;
-      margin-bottom: 4px;
-    }
-    .contact-side .info-block a:hover { color: var(--forest); }
-    .contact-side .info-block p { font-size: 13px; color: var(--slate); margin: 4px 0 0; }
-  </style>
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to content</a>
   <div id="gcc-header"></div>
 
   <main id="main">
+
     <section class="page-hero">
       <div class="container">
         <span class="eyebrow">Contact · 48&nbsp;hr quote SLA</span>
-        <h1>Send us a plan set. Get a real range back in 48 hours.</h1>
+        <h1>Send us a plan set. Get a real range back in 48&nbsp;hours.</h1>
         <p class="lead">
           Pricing benchmarks come from the estimator. Hard numbers come from the proposal.
-          Either way, the email goes to ownership and the answer comes back the same day.
+          Either way, the message goes directly to ownership and the answer comes back the same day.
         </p>
       </div>
     </section>
@@ -116,108 +47,217 @@
     <section class="section">
       <div class="container">
         <div class="contact-grid">
-          <form class="contact-form" id="contact-form" novalidate>
-            <div class="field">
-              <label for="c-name">Name</label>
-              <input type="text" id="c-name" name="name" required autocomplete="name" />
-            </div>
-            <div class="field">
-              <label for="c-email">Email</label>
-              <input type="email" id="c-email" name="email" required autocomplete="email" />
-            </div>
-            <div class="field">
-              <label for="c-company">Company / property name</label>
-              <input type="text" id="c-company" name="company" autocomplete="organization" />
-            </div>
-            <div class="field">
-              <label for="c-phone">Phone</label>
-              <input type="tel" id="c-phone" name="phone" autocomplete="tel" />
-            </div>
-            <div class="field">
-              <label for="c-kind">What's the project?</label>
-              <select id="c-kind" name="kind">
-                <option value="commercial-bid">Commercial — RFP / GC-direct bid</option>
-                <option value="commercial-direct">Commercial — owner-direct quote</option>
-                <option value="residential">Residential</option>
-                <option value="service">Service contract / takeover audit</option>
-                <option value="other">Something else</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="c-msg">Project notes</label>
-              <textarea id="c-msg" name="message" placeholder="Drop count, timeline, anything you want us to know."></textarea>
-            </div>
-            <div aria-hidden="true" style="position:absolute;left:-9999px;">
-              <input type="text" name="_hp" tabindex="-1" autocomplete="off" />
-            </div>
-            <button type="submit">Send →</button>
-            <p style="font-size:11px; color:var(--slate); margin: 12px 0 0;">
-              Plans? Email <a href="mailto:info@greencommllc.com" style="color:var(--forest);">info@greencommllc.com</a> directly. We accept attachments up to 50 MB; for larger sets, send a link.
-            </p>
-          </form>
 
-          <aside class="contact-side" aria-label="Contact details">
-            <div class="info-block">
-              <h3>Phone</h3>
-              <a href="tel:+16362248192">636-224-8192</a>
+          <!-- Form -->
+          <div class="form-wrap">
+            <form class="contact-form" id="contact-form" novalidate>
+
+              <div class="field-row">
+                <div class="field">
+                  <label for="c-name">Name <span style="color:var(--forest)">*</span></label>
+                  <input type="text" id="c-name" name="name" required autocomplete="name" placeholder="Your name" />
+                </div>
+                <div class="field">
+                  <label for="c-phone">Phone</label>
+                  <input type="tel" id="c-phone" name="phone" autocomplete="tel" placeholder="636-555-0100" />
+                </div>
+              </div>
+
+              <div class="field">
+                <label for="c-email">Email <span style="color:var(--forest)">*</span></label>
+                <input type="email" id="c-email" name="email" required autocomplete="email" placeholder="you@company.com" />
+              </div>
+
+              <div class="field">
+                <label for="c-company">Company / property name</label>
+                <input type="text" id="c-company" name="company" autocomplete="organization" placeholder="Acme Properties LLC" />
+              </div>
+
+              <div class="field">
+                <label for="c-kind">What's the project?</label>
+                <select id="c-kind" name="kind">
+                  <option value="commercial-bid">Commercial — RFP / GC-direct bid</option>
+                  <option value="commercial-direct">Commercial — owner-direct quote</option>
+                  <option value="residential">Residential</option>
+                  <option value="service">Service contract / takeover audit</option>
+                  <option value="other">Something else</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="c-msg">Project notes</label>
+                <textarea id="c-msg" name="message" placeholder="Drop count, square footage, timeline, or anything else you want us to know. Plans? Attach them to the email or send a link."></textarea>
+              </div>
+
+              <!-- honeypot -->
+              <div aria-hidden="true" style="position:absolute;left:-9999px;">
+                <input type="text" name="_hp" tabindex="-1" autocomplete="off" />
+              </div>
+
+              <div id="form-error" style="display:none; margin-bottom:12px; padding:10px 14px; background:rgba(185,28,28,.08); border:1px solid rgba(185,28,28,.25); border-radius:8px; color:#B91C1C; font-size:13px;"></div>
+
+              <button type="submit" class="btn btn-primary btn-block" id="submit-btn">
+                Send message →
+              </button>
+
+              <p style="font-size:12px; color:var(--slate); margin:12px 0 0;">
+                Have plans? Email them to
+                <a href="mailto:info@greencommllc.com" style="color:var(--forest);">info@greencommllc.com</a>
+                directly — attachments up to 50&nbsp;MB, or send a link for larger sets.
+              </p>
+            </form>
+
+            <!-- Success state replaces the form -->
+            <div class="contact-form contact-success" id="contact-success">
+              <div class="success-icon">✓</div>
+              <h3>Message sent!</h3>
+              <p>
+                We'll have a response back to you within one business day — usually the same afternoon.
+                If you have plans to send, email them to
+                <a href="mailto:info@greencommllc.com" style="color:var(--forest);">info@greencommllc.com</a>.
+              </p>
+            </div>
+          </div><!-- /form-wrap -->
+
+          <!-- Contact sidebar -->
+          <aside class="contact-info" aria-label="Contact details">
+            <div class="ci-block">
+              <h4>
+                <svg class="icon" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                Phone
+              </h4>
+              <strong><a href="tel:+16362248192" style="font-family:'JetBrains Mono',ui-monospace,monospace; font-size:18px; color:var(--ink);">636-224-8192</a></strong>
               <p>Direct line to ownership. We answer or call back the same day.</p>
             </div>
-            <div class="info-block">
-              <h3>Email</h3>
-              <a href="mailto:info@greencommllc.com">info@greencommllc.com</a>
+            <div class="ci-block">
+              <h4>
+                <svg class="icon" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                Email
+              </h4>
+              <strong><a href="mailto:info@greencommllc.com" style="font-family:'JetBrains Mono',ui-monospace,monospace; font-size:15px; color:var(--ink); word-break:break-all;">info@greencommllc.com</a></strong>
               <p>Plans, RFPs, and questions. 48-hour turnaround on proposals.</p>
             </div>
-            <div class="info-block">
-              <h3>HQ</h3>
-              <strong>603 Seib Dr, O'Fallon, MO 63366</strong>
+            <div class="ci-block">
+              <h4>
+                <svg class="icon" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                HQ
+              </h4>
+              <strong style="color:var(--ink); display:block; margin-bottom:4px;">603 Seib Dr, O'Fallon, MO 63366</strong>
               <p>STL metro. Site walks anywhere in KCMO + STL — schedule via call or email.</p>
             </div>
-            <div class="info-block">
-              <h3>Quote SLA</h3>
-              <strong>48 hours</strong>
+            <div class="ci-block">
+              <h4>Quote SLA</h4>
+              <strong style="color:var(--ink); font-size:22px; font-weight:800; display:block; margin-bottom:4px;">48 hours</strong>
               <p>Same-day COI, W9, and bondability letter on request.</p>
             </div>
-            <div class="info-block">
-              <h3>Coverage</h3>
-              <strong>KCMO + STL</strong>
+            <div class="ci-block" style="border-bottom:0;">
+              <h4>Coverage</h4>
+              <strong style="color:var(--ink); font-size:18px; font-weight:700; display:block; margin-bottom:4px;">KCMO + STL</strong>
               <p>Plus anywhere in MO / KS / IL with a mobilization line item.</p>
             </div>
           </aside>
+
         </div>
       </div>
     </section>
 
+    <!-- ── Estimator nudge ─────────────────────────────────── -->
     <section class="section section-tinted">
-      <div class="container" style="text-align: center; max-width: 720px;">
-        <h2>Want a number before you talk to us?</h2>
-        <p class="lead" style="margin: 12px auto 24px;">Free instant ballpark. 30 seconds. No sign-up.</p>
+      <div class="container" style="text-align:center; max-width:640px;">
+        <h2>Want a number before you reach out?</h2>
+        <p class="lead" style="margin:12px auto 24px;">Free instant ballpark. 30 seconds. No sign-up required.</p>
         <a class="hero-cta" href="/estimate/">Open the estimator →</a>
       </div>
     </section>
+
   </main>
 
   <div id="gcc-footer"></div>
-
   <script src="/assets/js/api.js"></script>
   <script src="/assets/js/header.js"></script>
   <script src="/assets/js/footer.js"></script>
   <script>
-    document.getElementById('contact-form').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const data = Object.fromEntries(new FormData(e.target));
-      if (data._hp) return;
-      const subject = encodeURIComponent(`[GCC contact] ${data.kind} — ${data.company || data.name}`);
-      const body = encodeURIComponent([
-        `Name: ${data.name}`,
-        `Email: ${data.email}`,
-        `Company: ${data.company || ''}`,
-        `Phone: ${data.phone || ''}`,
-        `Project: ${data.kind}`,
-        '',
-        data.message || ''
-      ].join('\n'));
-      window.location.href = `mailto:info@greencommllc.com?subject=${subject}&body=${body}`;
-    });
+    (function () {
+      var form    = document.getElementById('contact-form');
+      var success = document.getElementById('contact-success');
+      var errBox  = document.getElementById('form-error');
+      var btn     = document.getElementById('submit-btn');
+      if (!form) return;
+
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        // Honeypot check
+        var data = Object.fromEntries(new FormData(form));
+        if (data._hp) return;
+
+        // Client-side validation
+        var name  = (data.name  || '').trim();
+        var email = (data.email || '').trim();
+        if (!name || !email) {
+          showErr('Please fill in your name and email.');
+          return;
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          showErr('Please enter a valid email address.');
+          return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Sending…';
+        errBox.style.display = 'none';
+
+        try {
+          var payload = {
+            name:    name,
+            email:   email,
+            phone:   (data.phone   || '').trim(),
+            company: (data.company || '').trim(),
+            kind:    data.kind    || 'other',
+            message: (data.message || '').trim(),
+            source:  'contact-form',
+            url:     location.href
+          };
+
+          // Use gccApi if available, otherwise fall back to mailto
+          if (window.gccApi && gccApi.submitLead) {
+            await gccApi.submitLead(payload);
+          } else {
+            // Fallback: mailto (API not available in dev without the backend)
+            var subject = encodeURIComponent('[GCC contact] ' + payload.kind + ' — ' + (payload.company || payload.name));
+            var body = encodeURIComponent(
+              'Name: '    + payload.name    + '\n' +
+              'Email: '   + payload.email   + '\n' +
+              'Phone: '   + payload.phone   + '\n' +
+              'Company: ' + payload.company + '\n' +
+              'Project: ' + payload.kind    + '\n\n' +
+              payload.message
+            );
+            window.location.href = 'mailto:info@greencommllc.com?subject=' + subject + '&body=' + body;
+            return;
+          }
+
+          // Show success
+          form.style.display = 'none';
+          success.classList.add('is-visible');
+          success.focus();
+        } catch (err) {
+          btn.disabled = false;
+          btn.textContent = 'Send message →';
+          showErr(
+            err && err.data && err.data.error
+              ? err.data.error
+              : 'Something went wrong — please try again or email us directly.'
+          );
+        }
+      });
+
+      function showErr(msg) {
+        errBox.textContent = msg;
+        errBox.style.display = 'block';
+        errBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    })();
   </script>
 </body>
 </html>
