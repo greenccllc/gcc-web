@@ -18,8 +18,13 @@
     <div id="root" aria-label="GCC Manager application root"></div>
       </main>
     <script src="/assets/js/api.js"></script>
-    <script src="/assets/js/page.js"></script>
-    <script>gccPage.requireRole(['admin']).catch(function(){});</script>
     <script src="/assets/js/header.js"></script>
+    <script>
+      // Redirect staff to the ops dashboard; admins stay here for the SPA.
+      // No requireRole — unauthenticated users fall through to the SPA's own auth flow.
+      gccApi.me().then(function(me) {
+        if (me.role === 'staff') window.location.replace('/admin/');
+      }).catch(function() {});
+    </script>
 </body>
 </html>
