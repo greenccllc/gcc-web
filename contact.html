@@ -7,6 +7,11 @@
   <meta name="description" content="Request a quote, send plans for review, or schedule a site walk. Direct phone, email, and form — answered by ownership. 48-hour proposal turnaround. Same-day COI and W9." />
   <meta name="author" content="Green Communications Contracting LLC" />
   <meta name="theme-color" content="#1E4D2B" />
+  <!-- Geo / local SEO -->
+  <meta name="geo.region" content="US-MO" />
+  <meta name="geo.placename" content="O'Fallon, Missouri" />
+  <meta name="geo.position" content="38.8059;-90.6962" />
+  <meta name="ICBM" content="38.8059, -90.6962" />
   <link rel="canonical" href="https://greencommllc.com/contact.html" />
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
@@ -22,6 +27,7 @@
   <meta property="og:image" content="https://greencommllc.com/assets/og/og-default.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
+  <meta property="og:image:type" content="image/png" />
   <meta property="og:image:alt" content="GCC LLC — Low-Voltage Contractor KCMO + STL" />
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
@@ -76,6 +82,30 @@
       transition: background .12s ease;
     }
     .contact-form button:hover { background: var(--forest-dark, #143821); }
+    .contact-form button:disabled { opacity: .6; cursor: default; }
+    /* Validation states */
+    .contact-form .field-invalid {
+      border-color: #c00 !important;
+      background: #fff5f5 !important;
+    }
+    .contact-form .field-error {
+      display: block;
+      color: #c00;
+      font-size: 11px;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+    /* Success banner */
+    #contact-success {
+      background: var(--forest, #1E4D2B);
+      color: #fff;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-top: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.4;
+    }
     .contact-side .info-block {
       padding: 20px 0;
       border-bottom: 1px solid var(--hairline);
@@ -150,7 +180,10 @@
             <div aria-hidden="true" style="position:absolute;left:-9999px;">
               <input type="text" name="_hp" tabindex="-1" autocomplete="off" />
             </div>
-            <button type="submit">Send →</button>
+            <button type="submit" id="contact-submit">Send →</button>
+            <div id="contact-success" hidden role="status" aria-live="polite">
+              ✓ Email client opened — send the message and we'll be back within 48 hours.
+            </div>
             <p style="font-size:11px; color:var(--slate); margin: 12px 0 0;">
               Plans? Email <a href="mailto:info@greencommllc.com" style="color:var(--forest);">info@greencommllc.com</a> directly. We accept attachments up to 50 MB; for larger sets, send a link.
             </p>
@@ -202,22 +235,85 @@
   <script src="/assets/js/header.js"></script>
   <script src="/assets/js/footer.js"></script>
   <script>
-    document.getElementById('contact-form').addEventListener('submit', (e) => {
+  (function () {
+    var form = document.getElementById('contact-form');
+    if (!form) return;
+
+    function clearErrors() {
+      form.querySelectorAll('.field-error').forEach(function (el) { el.remove(); });
+      form.querySelectorAll('.field-invalid').forEach(function (el) {
+        el.classList.remove('field-invalid');
+        el.removeAttribute('aria-invalid');
+        el.removeAttribute('aria-describedby');
+      });
+    }
+
+    function showFieldError(inputId, msg) {
+      var input = document.getElementById(inputId);
+      if (!input) return;
+      input.classList.add('field-invalid');
+      input.setAttribute('aria-invalid', 'true');
+      var errId = inputId + '-error';
+      input.setAttribute('aria-describedby', errId);
+      var err = document.createElement('span');
+      err.id = errId;
+      err.className = 'field-error';
+      err.setAttribute('role', 'alert');
+      err.textContent = msg;
+      input.parentElement.appendChild(err);
+    }
+
+    form.addEventListener('submit', function (e) {
       e.preventDefault();
-      const data = Object.fromEntries(new FormData(e.target));
+      var data = Object.fromEntries(new FormData(form));
       if (data._hp) return;
-      const subject = encodeURIComponent(`[GCC contact] ${data.kind} — ${data.company || data.name}`);
-      const body = encodeURIComponent([
-        `Name: ${data.name}`,
-        `Email: ${data.email}`,
-        `Company: ${data.company || ''}`,
-        `Phone: ${data.phone || ''}`,
-        `Project: ${data.kind}`,
+
+      clearErrors();
+      var valid = true;
+
+      if (!data.name || !data.name.trim()) {
+        showFieldError('c-name', 'Name is required.');
+        valid = false;
+      }
+      if (!data.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email.trim())) {
+        showFieldError('c-email', 'Please enter a valid email address.');
+        valid = false;
+      }
+
+      if (!valid) {
+        var first = form.querySelector('.field-invalid');
+        if (first) first.focus();
+        return;
+      }
+
+      var btn = document.getElementById('contact-submit');
+      btn.disabled = true;
+      btn.textContent = 'Opening email client…';
+
+      var subject = encodeURIComponent('[GCC contact] ' + data.kind + ' — ' + (data.company || data.name));
+      var body = encodeURIComponent([
+        'Name: ' + data.name,
+        'Email: ' + data.email,
+        'Company: ' + (data.company || ''),
+        'Phone: ' + (data.phone || ''),
+        'Project: ' + data.kind,
         '',
         data.message || ''
       ].join('\n'));
-      window.location.href = `mailto:info@greencommllc.com?subject=${subject}&body=${body}`;
+
+      window.location.href = 'mailto:info@greencommllc.com?subject=' + subject + '&body=' + body;
+
+      setTimeout(function () {
+        btn.disabled = false;
+        btn.textContent = 'Send →';
+        var banner = document.getElementById('contact-success');
+        if (banner) {
+          banner.hidden = false;
+          banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }, 700);
     });
+  })();
   </script>
 </body>
 </html>
