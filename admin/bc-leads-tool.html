@@ -16,7 +16,7 @@
   <meta name="theme-color" content="#1E4D2B" />
   <link rel="stylesheet" href="/assets/css/site.css?v=20260501-redesign" />
   <link rel="stylesheet" href="/assets/css/chrome.css?v=20260501-admin-pass" />
-  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260501-admin-tab" />
+  <link rel="stylesheet" href="/assets/css/bc-leads.css?v=20260520-preview-col" />
 </head>
 <body>
   <header>
@@ -41,6 +41,13 @@
 
   <!-- =================== Leads tab =================== -->
   <section id="tab-leads">
+    <div id="bc-backfill-banner" class="bc-backfill-banner" hidden>
+      <div class="bc-backfill-head">
+        <strong>BC detail scrape</strong>
+        <span id="bc-backfill-meta" class="small"></span>
+      </div>
+      <div class="preview-progress-bar"><span id="bc-backfill-fill" style="width:0%"></span></div>
+    </div>
     <div class="intake-filters" id="intake-filters">
       <span class="if-label">Filter</span>
       <span class="if-group"><label class="if-label" style="text-transform:none;font-weight:500" for="if-status">Status</label>
@@ -350,7 +357,11 @@ const SECRET = URL_PARAMS.get('secret') || localStorage.getItem('gccAdminSecret'
 if (URL_PARAMS.get('secret')) localStorage.setItem('gccAdminSecret', URL_PARAMS.get('secret'));
 
 // API base: same origin by default; override with ?api=... for local-host probes.
-const API_BASE = URL_PARAMS.get('api') || ('https://api.' + location.hostname.replace(/^www\./, '').replace(/^staff\./, ''));
+const API_BASE = URL_PARAMS.get('api') || (
+  (location.hostname === '127.0.0.1' || location.hostname === 'localhost')
+    ? 'http://127.0.0.1:5099'
+    : ('https://api.' + location.hostname.replace(/^www\./, '').replace(/^staff\./, ''))
+);
 
 const $  = (id) => document.getElementById(id);
 const fmt = (d) => d ? new Date(d).toLocaleString([], { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' }) : '—';
@@ -442,6 +453,44 @@ function extractionPct(r) {
   return null;
 }
 
+/** BC package files stored vs expected (every invite has ≥1 attachment). */
+function attachmentPct(r) {
+  const s = r.scrape || {};
+  if (s.attachmentsPct != null) return Math.min(100, Math.max(0, Math.round(s.attachmentsPct)));
+  const stored = s.attachmentsStored ?? s.attachmentsCount ?? r.attachmentsStored ?? 0;
+  const expected = s.attachmentsExpected ?? r.attachmentsExpected ?? Math.max(r.filesTotal || 0, 1);
+  if (expected <= 0) return stored > 0 ? 100 : 0;
+  return Math.min(100, Math.round(100 * stored / expected));
+}
+
+function attachmentCounts(r) {
+  const s = r.scrape || {};
+  const stored = s.attachmentsStored ?? s.attachmentsCount ?? r.attachmentsStored ?? 0;
+  const expected = s.attachmentsExpected ?? r.attachmentsExpected ?? Math.max(r.filesTotal || 0, 1);
+  return { stored, expected };
+}
+
+function previewProgressBar(pct, label, sub) {
+  const p = pct == null ? 0 : Math.min(100, Math.max(0, pct));
+  return `<div class="preview-progress">
+    <div class="preview-progress-head"><span class="lbl">${label}</span><strong>${safeHtml(sub)}</strong></div>
+    <div class="preview-progress-bar"><span style="width:${p}%"></span></div>
+  </div>`;
+}
+
+function previewCell(r) {
+  const { stored, expected } = attachmentCounts(r);
+  const attPct = attachmentPct(r);
+  const pp = r.extraction?.pagesProcessed || 0;
+  const pt = r.extraction?.pagesTotal     || 0;
+  const extPct = extractionPct(r);
+  const pagesSub = pt > 0 ? `${pp} of ${pt} pages` : '—';
+  return `<div class="cell-preview" data-stop>
+    ${previewProgressBar(attPct, 'BC attachments', `${stored} of ${expected}`)}
+    ${previewProgressBar(extPct, 'Extraction', pagesSub)}
+  </div>`;
+}
+
 // safeHtml: escape user-controlled strings before injecting into innerHTML.
 function safeHtml(s) {
   return String(s || '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
@@ -472,18 +521,18 @@ const COLS = [
       const sibBadge = (r._siblingJobIds && r._siblingJobIds.length)
         ? `<span class="sib-badge" title="${r._siblingJobIds.length} sibling RFP${r._siblingJobIds.length === 1 ? '' : 's'} for the same physical job (different trade scopes)">🔗 +${r._siblingJobIds.length}</span>`
         : '';
-      const att = r.scrape?.attachmentsCount || 0;
-      const msg = r.scrape?.messagesCount    || 0;
-      const subscript = (att || msg)
-        ? `<sub class="proj-subscript">${att ? att + ' att' : ''}${att && msg ? '<span class="dot">·</span>' : ''}${msg ? msg + ' msg' : ''}</sub>`
-        : '';
+      const { stored: att, expected: attExp } = attachmentCounts(r);
+      const msg = r.scrape?.messagesCount || 0;
+      const attPct = attachmentPct(r);
+      const subscript = `<sub class="proj-subscript">${att}/${attExp} att${msg ? '<span class="dot">·</span>' + msg + ' msg' : ''}</sub>`;
+      const attBar = `<span class="proj-att-bar" title="BC attachments in Originals"><span style="width:${attPct}%"></span></span>`;
       // Project name -> Manage Job. BC link is preserved in the
       // expand pane footer.
       const mjQs = new URLSearchParams({ jobId: r.jobId });
       if (URL_PARAMS.get('secret')) mjQs.set('secret', URL_PARAMS.get('secret'));
       if (URL_PARAMS.get('api'))    mjQs.set('api',    URL_PARAMS.get('api'));
       const mjHref = `/admin/manage-job.html?${mjQs.toString()}`;
-      return `<span class="toggle">▶</span> ${fIcon}<span class="proj-link"><a href="${mjHref}" data-act="open-manage" data-href="${mjHref}" title="${safeHtml(projectLabel(r))}">${safeHtml(projectLabel(r))}</a>${tip}</span>${sibBadge}${subscript}`;
+      return `<span class="toggle">▶</span> ${fIcon}${attBar}<span class="proj-link"><a href="${mjHref}" data-act="open-manage" data-href="${mjHref}" title="${safeHtml(projectLabel(r))}">${safeHtml(projectLabel(r))}</a>${tip}</span>${sibBadge}${subscript}`;
     } },
 
   { id:'location', label:'Location',
@@ -514,6 +563,10 @@ const COLS = [
       const titleAttr = conf == null ? '' : ` title="Agent confidence: ${Math.round(conf)}%"`;
       return `<strong${titleAttr}>${pp}</strong> <span class="small">pages of ${pt}</span>`;
     } },
+
+  { id:'preview', label:'Preview',
+    sort:(a,b) => attachmentPct(a) - attachmentPct(b),
+    cell:(r) => previewCell(r) },
 
   // Syn Conf -- the synthesis pass's self-reported confidence in the
   // canonical scope numbers ("our AI's confidence that the LV scope it
@@ -581,7 +634,13 @@ function projTip(r) {
     ? `<div class="tip-reason">${safeHtml(step.reason || '')}</div>
        <button class="tip-step-btn" data-act="next-step" data-id="${r.jobId}" data-step-act="${safeHtml(step.action)}">${safeHtml(step.label)}</button>`
     : `<div class="tip-reason">No specific recommendation -- this row looks good.</div>`;
+  const { stored, expected } = attachmentCounts(r);
+  const attPct = attachmentPct(r);
+  const pp = r.extraction?.pagesProcessed || 0;
+  const pt = r.extraction?.pagesTotal     || 0;
   return `<span class="proj-tip" data-stop>
+    <div class="tip-progress">${previewProgressBar(attPct, 'BC attachments', `${stored} of ${expected}`)}
+      ${previewProgressBar(extractionPct(r), 'Extraction', pt > 0 ? `${pp} of ${pt} pages` : '—')}</div>
     <div class="tip-conf">${bar}<span>${conf}</span></div>
     ${stepBlock}
   </span>`;
@@ -597,7 +656,8 @@ function expandTopStrip(r) {
   const pt   = r.extraction?.pagesTotal     || 0;
   const cost = r.ai?.costUsd;
   const tok  = r.ai?.tokensUsed;
-  const att  = r.scrape?.attachmentsCount || 0;
+  const { stored: att, expected: attExp } = attachmentCounts(r);
+  const attPct = attachmentPct(r);
   const msg  = r.scrape?.messagesCount    || 0;
   const trades = Array.isArray(r.trades) && r.trades.length
     ? r.trades.map(t => `<span class="scope-chip"><span class="ico">${tradeIcon(t)}</span>${safeHtml(t)}</span>`).join('')
@@ -636,12 +696,15 @@ function expandTopStrip(r) {
       <span class="chip"><span class="lbl">Scope</span> <span style="display:inline-flex;flex-wrap:wrap;gap:3px;vertical-align:middle">${trades}</span></span>
     </div>
     <div class="strip-row strip-extract">
-      <span class="chip"><span class="lbl">Pages</span> <strong>${progressVal}</strong></span>
       <span class="chip"><span class="lbl">Confidence</span> ${confVal}</span>
       <span class="chip"><span class="lbl">AI cost</span> ${costVal}</span>
-      <span class="chip"><span class="lbl">Files</span> ${att} att · ${msg} msg</span>
+      <span class="chip"><span class="lbl">BC files</span> <strong>${att} / ${attExp}</strong> · ${msg} msg</span>
       <span class="chip"><span class="lbl">Last file</span> ${fmt(r.lastFileAt || r.lastSeenAt) || '—'}</span>
       ${[acceptedBadge, addBadge, pausedBadge].filter(Boolean).map(b => `<span class="chip strip-badge">${b}</span>`).join('')}
+    </div>
+    <div class="strip-row strip-progress">
+      ${previewProgressBar(attPct, 'BC attachments', `${att} of ${attExp} in Originals`)}
+      ${previewProgressBar(extractionPct(r), 'Extraction pages', progressVal)}
     </div>
     <div class="strip-row strip-links">${links}</div>
   </div>`;
@@ -868,7 +931,9 @@ const STATE = {
   intake: loadIntake(),                                             // {status, gc, trade, state, source}
   autoAccepted: new Set(),                                          // jobIds we already POSTed accept for this session
   colWidths: JSON.parse(localStorage.getItem(COL_WIDTHS_KEY) || '{}'),
+  scrapeProgress: null,
 };
+let _leadsScrapeProgressTimer = null;
 function saveIntake()    { localStorage.setItem(INTAKE_KEY, JSON.stringify(STATE.intake)); }
 function saveColWidths() { localStorage.setItem(COL_WIDTHS_KEY, JSON.stringify(STATE.colWidths)); }
 
@@ -881,11 +946,52 @@ function locState(loc) {
   return m ? m[1] : '';
 }
 
+function renderBcBackfillBanner() {
+  const banner = $('bc-backfill-banner');
+  const p = STATE.scrapeProgress?.detail;
+  if (!p || !p.running) {
+    banner.hidden = true;
+    clearInterval(_leadsScrapeProgressTimer);
+    _leadsScrapeProgressTimer = null;
+    return;
+  }
+  banner.hidden = false;
+  const pct = p.pctComplete ?? (p.total ? Math.min(100, Math.round(100 * (p.processed || 0) / p.total)) : 0);
+  $('bc-backfill-fill').style.width = `${pct}%`;
+  const sub = [
+    p.total ? `${p.processed || 0} of ${p.total} RFPs` : 'running',
+    p.currentJobId ? `${p.currentJobId.slice(0, 8)}… ${p.currentStep || ''}` : '',
+  ].filter(Boolean).join(' · ');
+  $('bc-backfill-meta').textContent = sub;
+}
+
+async function pollBcScrapeProgress() {
+  try {
+    STATE.scrapeProgress = await api('GET', '/api/bc/scrape-progress');
+  } catch {
+    STATE.scrapeProgress = null;
+  }
+  renderBcBackfillBanner();
+  if (STATE.scrapeProgress?.detail?.running && !$('tab-leads').hidden) {
+    if (!_leadsScrapeProgressTimer) {
+      _leadsScrapeProgressTimer = setInterval(async () => {
+        await pollBcScrapeProgress();
+        if (!STATE.scrapeProgress?.detail?.running) {
+          clearInterval(_leadsScrapeProgressTimer);
+          _leadsScrapeProgressTimer = null;
+          load();
+        }
+      }, 5000);
+    }
+  }
+}
+
 async function load() {
   $('meta').textContent = 'loading...';
   try {
     const data = await api('GET', '/api/bc/leads-summary');
     STATE.data = data;
+    await pollBcScrapeProgress();
     render();
     $('meta').textContent = `${data.summary.total} RFPs · last list scrape ${fmt(data.summary.lastListScrape)} · last detail scrape ${fmt(data.summary.lastDetailScrape)}`;
   } catch (e) {
@@ -1045,6 +1151,7 @@ function render() {
     // Manage Job rather than acting from inside the table.
     html.push(`<tr class="counts${open ? ' open' : ''}" data-counts-for="${r.jobId}" data-stop><td colspan="${COLS.length}" data-stop>
       <div class="expand-pane">
+        <h4 class="preview-pane-title">Preview</h4>
         ${expandTopStrip(r)}
       </div>
     </td></tr>`);

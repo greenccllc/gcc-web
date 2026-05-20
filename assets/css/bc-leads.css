@@ -361,6 +361,47 @@
                     border-radius:3px; overflow:hidden; vertical-align:middle; margin-right:5px; }
     .progress-bar > span { display:block; height:100%; background:var(--forest); }
 
+    .bc-backfill-banner {
+      padding:10px 16px; background:var(--green-tint); border-bottom:1px solid var(--line);
+    }
+    .bc-backfill-head { display:flex; justify-content:space-between; align-items:baseline;
+                        margin-bottom:6px; font-size:12px; color:var(--forest); }
+    .preview-progress { flex:1 1 220px; min-width:180px; max-width:420px; }
+    .preview-progress-head { display:flex; justify-content:space-between; font-size:11px;
+                             color:var(--slate); margin-bottom:4px; }
+    .preview-progress-head strong { color:var(--forest); font-feature-settings:"tnum" 1; }
+    .preview-progress-bar {
+      height:8px; background:var(--line); border-radius:3px; overflow:hidden;
+    }
+    .preview-progress-bar > span {
+      display:block; height:100%; background:linear-gradient(90deg, var(--forest), #2d6b3f);
+      transition:width .35s ease;
+    }
+    .expand-strip .strip-row.strip-progress {
+      display:flex; flex-wrap:wrap; gap:16px 24px; padding-top:8px;
+      border-top:1px dashed var(--line); margin-top:4px;
+    }
+    .proj-att-bar {
+      display:inline-block; width:28px; height:5px; background:var(--line);
+      border-radius:3px; vertical-align:middle; margin:0 4px 2px 0; overflow:hidden;
+    }
+    .proj-att-bar > span { display:block; height:100%; background:var(--gold); }
+
+    .cell-preview { display:flex; flex-direction:column; gap:6px; min-width:148px; max-width:200px; }
+    .cell-preview .preview-progress { max-width:none; width:100%; flex:none; }
+    .preview-pane-title {
+      margin:0; font-size:10px; font-weight:700; text-transform:uppercase;
+      letter-spacing:.06em; color:var(--forest);
+    }
+    .proj-tip .tip-progress {
+      display:flex; flex-direction:column; gap:6px; margin-bottom:8px;
+      padding-bottom:8px; border-bottom:1px solid rgba(255,255,255,.12);
+    }
+    .proj-tip .tip-progress .preview-progress-head { color:rgba(255,255,255,.75); }
+    .proj-tip .tip-progress .preview-progress-head strong { color:#fff; }
+    .proj-tip .tip-progress .preview-progress-bar { background:rgba(255,255,255,.15); }
+    .proj-tip .tip-progress .preview-progress-bar > span { background:var(--gold); }
+
     /* (responsive overrides for .counts-grid removed -- 4-col is now fixed regardless of width) */
     #status-bar { position:fixed; right:14px; bottom:10px; background:var(--ink); color:white;
                   padding:7px 13px; border-radius:var(--r-md); font-size:11px;

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>BC Leads preview boot</title>
+</head>
+<body>
+  <p>Loading GCC Manager…</p>
+  <script>
+    (function () {
+      var params = new URLSearchParams(location.search);
+      var secret = params.get('secret');
+      if (secret) localStorage.setItem('gccAdminSecret', secret);
+      var api = params.get('api') || 'http://127.0.0.1:5099';
+      location.replace('/admin/bc-leads-tool.html?api=' + encodeURIComponent(api));
+    })();
+  </script>
+</body>
+</html>
