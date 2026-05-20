@@ -1065,15 +1065,16 @@ function render() {
       if (sub) sub.classList.toggle('open');
     });
   });
-  // Folder + BC project-name links use window.open: Chrome --app windows
+  // Folder + BC project-name links use (window.top||window).open: Chrome --app windows
   // silently swallow target="_blank" navigations from <a> tags, so we
-  // intercept the click and call window.open() ourselves. Folder icon is
-  // now a <span> (not an <a>) so it can sit inline with the project name.
+  // intercept the click and call open() on the top-level window. Calling
+  // window.open() from inside an iframe can be silently blocked in --app
+  // mode; routing through window.top is more reliable.
   $('rows').querySelectorAll('[data-act="open-folder"]').forEach(el => {
     el.addEventListener('click', (e) => {
       e.preventDefault(); e.stopPropagation();
       const fid = el.dataset.folderId;
-      if (fid) window.open(`https://drive.google.com/drive/folders/${fid}`, '_blank', 'noopener,noreferrer');
+      if (fid) (window.top || window).open(`https://drive.google.com/drive/folders/${fid}`, '_blank', 'noopener,noreferrer');
     });
   });
   // Local Filestore folder icon. Browsers refuse to navigate to file:///
@@ -1086,13 +1087,12 @@ function render() {
       if (!path) return;
       try {
         await navigator.clipboard.writeText(path);
-        // brief flash so the operator knows the click registered
+        toast('📋 Path copied — paste into Explorer address bar');
         const orig = el.textContent;
-        el.textContent = '📋';
+        el.textContent = '📋 Copied';
         el.title = `Copied: ${path}`;
-        setTimeout(() => { el.textContent = orig; el.title = `Open local Filestore: ${path}`; }, 1200);
+        setTimeout(() => { el.textContent = orig; el.title = `Click to copy path: ${path}`; }, 2000);
       } catch (err) {
-        // Fallback: prompt() so the user can copy manually
         prompt('Local Filestore path (Ctrl+C to copy):', path);
       }
     });
@@ -1101,7 +1101,7 @@ function render() {
     a.addEventListener('click', (e) => {
       e.preventDefault(); e.stopPropagation();
       const href = a.dataset.href;
-      if (href) window.open(href, '_blank', 'noopener,noreferrer');
+      if (href) (window.top || window).open(href, '_blank', 'noopener,noreferrer');
     });
   });
   // Project-name click -> Manage Job. Navigate IN PLACE rather than
@@ -1123,7 +1123,7 @@ function render() {
     a.addEventListener('click', (e) => {
       e.preventDefault(); e.stopPropagation();
       const href = a.dataset.href;
-      if (href) window.open(href, '_blank', 'noopener,noreferrer');
+      if (href) (window.top || window).open(href, '_blank', 'noopener,noreferrer');
     });
   });
   // (Counts grid no longer has a "Show all" toggle -- 4x5 always shown.)
