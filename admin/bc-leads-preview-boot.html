@@ -11,7 +11,7 @@
       var params = new URLSearchParams(location.search);
       var secret = params.get('secret');
       if (secret) localStorage.setItem('gccAdminSecret', secret);
-      var api = params.get('api') || 'http://127.0.0.1:5099';
+      var api = params.get('api') || 'https://api.greencommllc.com';
       location.replace('/admin/bc-leads-tool.html?api=' + encodeURIComponent(api));
     })();
   </script>

@@ -275,8 +275,8 @@
       function uploadFile(q) {
         return new Promise(function(resolve, reject) {
           q.status = 'uploading'; q.pct = 0; render();
-          var base = (window.gccApi && gccApi._base)
-            ? gccApi._base.replace(/\/$/, '') : 'https://api.greencommllc.com';
+          var base = (window.gccApi && gccApi.base)
+            ? gccApi.base.replace(/\/$/, '') : 'https://api.greencommllc.com';
           fetch(base + '/uploads/presign', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

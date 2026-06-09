@@ -348,17 +348,8 @@ async function api(method, path, body) {
   return text ? JSON.parse(text) : {};
 }
 
-// Debug session 12bc58: POST to Cursor NDJSON ingest + mirror to console (HTTPS
-// pages often block fetch to http://127.0.0.1 — filter Console by [gcc-debug]).
-function _gccDbg(row) {
-  const payload = Object.assign({ sessionId: '12bc58', timestamp: Date.now() }, row);
-  try { console.info('[gcc-debug]', payload); } catch (e) {}
-  fetch('http://127.0.0.1:7768/ingest/622ee950-c691-44e9-bdf4-ebc45d78cd0d', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '12bc58' },
-    body: JSON.stringify(payload),
-  }).catch(function () {});
-}
+// Debug stub (Cursor session removed — calls are no-ops).
+function _gccDbg() {}
 
 // LEAD = the bc/leads-summary item for this JobId. Has the full row payload:
 // description, counts, extraction state, scrape state, ai cost, etc.
