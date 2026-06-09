@@ -79,7 +79,7 @@
           <span>603 Seib Dr, O'Fallon, MO 63366</span>
         </div>
         <div class="gcc-footer-base-right">
-          <a href="/admin/console/" class="gcc-footer-admin" title="Internal — Cloudflare Access SSO required">Admin</a>
+          <a href="/admin/" class="gcc-footer-admin" title="Internal — Cloudflare Access SSO required">Admin</a>
         </div>
       </div>
     </footer>
