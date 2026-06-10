@@ -25,7 +25,8 @@
 
   <!-- Audience picker: Client | Staff. Clients land in the existing
        portal flow below; staff are bounced through Cloudflare Access
-       (Google Workspace SSO restricted to @greencommllc.com) at the
+       (Google Workspace SSO — any trusted alias domain: greencommllc.com,
+       appmajic.ai, or majicholdings.com, all the same profile) at the
        /admin/ path. -->
   <div class="audience-picker" role="tablist" aria-label="I am a">
     <button type="button" class="audience-pick active" id="aud-client" aria-pressed="true">
@@ -36,7 +37,7 @@
     <button type="button" class="audience-pick" id="aud-staff" aria-pressed="false">
       <span class="audience-icon">🔧</span>
       <span class="audience-label">Staff</span>
-      <span class="audience-sub">@greencommllc.com · sign in below</span>
+      <span class="audience-sub">company email — greencommllc, appmajic.ai or majicholdings · sign in below</span>
     </button>
   </div>
 
@@ -187,10 +188,15 @@
     const me = await gccApi.me();
     const params = new URLSearchParams(location.search);
     const next   = params.get('next');
+    // Multi-domain auth: a user may arrive from / want to return to any of the
+    // trusted alias domains (greencommllc.com / appmajic.ai / majicholdings.com
+    // all resolve to the same profile). Allow safe redirects back to those.
     const SAFE_HOSTS = new Set([
       'greencommllc.com', 'www.greencommllc.com',
       'proposal.greencommllc.com', 'staff.greencommllc.com',
       'api.greencommllc.com',
+      'appmajic.ai', 'www.appmajic.ai', 'app.appmajic.ai', 'admin.appmajic.ai', 'chat.appmajic.ai',
+      'majicholdings.com', 'www.majicholdings.com', 'app.majicholdings.com', 'admin.majicholdings.com',
     ]);
     function safeNext(raw) {
       if (!raw) return null;
@@ -256,10 +262,15 @@ if (location.hash === '#signup') showPanel('signup');
 //        client business    -> /clients/dashboard.html
 // `next` is validated against an allowlist to prevent open-redirect attacks.
 
+// Multi-domain auth: trusted alias domains (greencommllc.com / appmajic.ai /
+// majicholdings.com) all resolve to the same profile, so a post-login ?next=
+// pointing at any of them is a safe redirect target.
 const SAFE_HOSTS = new Set([
   'greencommllc.com', 'www.greencommllc.com',
   'proposal.greencommllc.com', 'staff.greencommllc.com',
   'api.greencommllc.com',
+  'appmajic.ai', 'www.appmajic.ai', 'app.appmajic.ai', 'admin.appmajic.ai', 'chat.appmajic.ai',
+  'majicholdings.com', 'www.majicholdings.com', 'app.majicholdings.com', 'admin.majicholdings.com',
 ]);
 
 function safeNextUrl(rawNext) {
