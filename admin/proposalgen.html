@@ -62,6 +62,12 @@
     min-height: 0;
   }
   #page-loading { padding: 40px; text-align: center; color: var(--slate-light); }
+  /* This is a height-locked iframe wrapper page — the global public-marketing
+     footer would consume vertical space and squeeze the bundler iframe down
+     to a sliver (its natural-height block beats .pg-shell's flex:1). Hide it.
+     Header.js still renders the role-aware top nav into #gcc-header, which is
+     what we want. */
+  #gcc-footer { display: none !important; }
 </style>
 </head>
 <body class="dash">
