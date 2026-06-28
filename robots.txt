@@ -25,5 +25,20 @@ Disallow: /
 User-agent: anthropic-ai
 Disallow: /
 
+User-agent: PerplexityBot
+Disallow: /
+
+User-agent: Meta-ExternalAgent
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: TikTokBot
+Disallow: /
+
+User-agent: Applebot-Extended
+Disallow: /
+
 # Search engines should index public marketing only.
 Sitemap: https://greencommllc.com/sitemap.xml
