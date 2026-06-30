@@ -7,6 +7,7 @@ Allow: /
 Disallow: /admin/
 Disallow: /clients/
 Disallow: /staff/
+Disallow: /phone/
 Disallow: /api/
 
 # Common AI-training bots — opt out by default. Override per-bot here if needed.
