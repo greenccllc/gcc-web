@@ -3,94 +3,334 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="robots" content="noindex" />
+<meta name="robots" content="noindex" />
 <title>Admin · Proposal Generator · GCC LLC</title>
 <meta name="theme-color" content="#1E4D2B" />
-<meta name="robots" content="noindex" />
 <link rel="icon" href="/assets/favicon.ico" sizes="any" /><link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
 <link rel="stylesheet" href="/assets/css/site.css?v=20260501-redesign" />
-  <link rel="stylesheet" href="/assets/css/chrome.css?v=20260501-admin-pass" />
+<link rel="stylesheet" href="/assets/css/chrome.css?v=20260501-admin-pass" />
 <style>
-  /* Make the bundler iframe fill what's left after the gcc-site header. */
+  /* ── Proposal Generator cockpit shell ───────────────────────────────
+     This page is a height-locked wrapper around the cross-origin bundler
+     iframe (proposal.greencommllc.com). It owns the chrome: command bar,
+     version control, connection status, and fullscreen — the bundler owns
+     everything inside the frame. Styles are page-scoped (prefix .pg-) so
+     they never leak into other admin pages. */
   html, body { height: 100%; margin: 0; }
-  body { display: flex; flex-direction: column; }
+  body { display: flex; flex-direction: column; background: var(--paper); }
   #gcc-header { flex: 0 0 auto; }
-  .pg-shell { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; background: var(--paper); }
+  /* Public marketing footer would steal vertical space from the frame. */
+  #gcc-footer { display: none !important; }
+
+  .pg-shell {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    background: var(--paper);
+  }
+
+  /* ── Command bar ──────────────────────────────────────────────────── */
   .pg-bar {
     flex: 0 0 auto;
-    padding: 10px 20px;
-    background: white;
-    border-bottom: 1px solid var(--hairline);
     display: flex;
     align-items: center;
-    gap: 12px;
-    font-size: 13px;
-    color: var(--slate);
+    gap: var(--s-4);
+    padding: var(--s-3) var(--s-5);
+    background: var(--color-surface-elevated);
+    border-bottom: 1px solid var(--hairline);
+    box-shadow: var(--shadow-xs);
   }
-  .pg-bar h1 {
-    font-size: 15px;
+  .pg-title {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+  .pg-title h1 {
+    font-size: 16px;
     font-weight: 700;
+    line-height: 1.1;
     color: var(--forest);
     margin: 0;
     font-family: var(--font-display);
+    letter-spacing: -0.01em;
   }
-  .pg-bar .spacer { flex: 1; }
-  .pg-bar select {
-    padding: 5px 10px;
+  .pg-title p {
+    margin: 0;
+    font-size: 12px;
+    color: var(--slate-light);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .pg-bar .spacer { flex: 1 1 auto; }
+
+  /* Connection status pill — reflects the wrapper↔frame load state only,
+     never the bundler's internal workflow steps. */
+  .pg-status {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    padding: 5px 11px 5px 9px;
+    border-radius: var(--r-pill);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    border: 1px solid transparent;
+    white-space: nowrap;
+  }
+  .pg-status .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex: 0 0 auto;
+    background: currentColor;
+  }
+  .pg-status[data-state="loading"] {
+    color: var(--sky);
+    background: var(--sky-tint);
+    border-color: color-mix(in srgb, var(--sky) 22%, transparent);
+  }
+  .pg-status[data-state="loading"] .dot { animation: pg-pulse 1.1s var(--ease, ease) infinite; }
+  .pg-status[data-state="ready"] {
+    color: var(--forest);
+    background: var(--forest-tint);
+    border-color: color-mix(in srgb, var(--forest) 22%, transparent);
+  }
+  .pg-status[data-state="slow"],
+  .pg-status[data-state="error"] {
+    color: var(--amber);
+    background: var(--amber-tint);
+    border-color: color-mix(in srgb, var(--amber) 30%, transparent);
+  }
+  @keyframes pg-pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+
+  /* Version control group */
+  .pg-version {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    padding: 4px 4px 4px 10px;
+    background: var(--paper);
     border: 1px solid var(--hairline-strong);
     border-radius: var(--r-sm);
+  }
+  .pg-version label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--slate);
+  }
+  .pg-version select {
+    appearance: none;
+    -webkit-appearance: none;
+    padding: 6px 26px 6px 10px;
+    border: 1px solid var(--hairline-strong);
+    border-radius: 6px;
     font-size: 13px;
-    background: white;
+    font-weight: 600;
+    background: var(--color-surface-elevated)
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234F5B57' d='M2.5 4.5 6 8l3.5-3.5z'/%3E%3C/svg%3E")
+      no-repeat right 8px center;
     color: var(--ink);
     cursor: pointer;
+    min-height: 32px;
   }
-  .pg-bar a {
-    padding: 5px 12px;
-    border: 1px solid var(--hairline-strong);
+  .pg-version select:hover { border-color: var(--forest); }
+  .pg-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    border-radius: var(--r-pill);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+  }
+  .pg-tag.is-latest { color: var(--forest); background: var(--forest-tint); }
+  .pg-tag.is-older  { color: var(--amber); background: var(--amber-tint); }
+
+  /* Action buttons */
+  .pg-actions { display: inline-flex; align-items: center; gap: var(--s-2); }
+  .pg-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 38px;
+    padding: 0 14px;
     border-radius: var(--r-sm);
     font-size: 13px;
-    color: var(--forest);
-    text-decoration: none;
     font-weight: 600;
+    font-family: inherit;
+    text-decoration: none;
+    cursor: pointer;
+    border: 1px solid var(--hairline-strong);
+    background: var(--color-surface-elevated);
+    color: var(--ink);
+    transition: background .15s var(--ease, ease), border-color .15s var(--ease, ease), transform .05s var(--ease, ease);
   }
-  .pg-bar a:hover { background: var(--paper); border-color: var(--forest); }
+  .pg-btn svg { width: 15px; height: 15px; flex: 0 0 auto; }
+  .pg-btn:hover { background: var(--paper); border-color: var(--forest); }
+  .pg-btn:active { transform: translateY(1px); }
+  .pg-btn--primary {
+    background: var(--forest);
+    border-color: var(--forest);
+    color: #fff;
+    box-shadow: var(--shadow-sm);
+  }
+  .pg-btn--primary:hover { background: var(--forest-dark); border-color: var(--forest-dark); }
+  .pg-btn--icon { padding: 0; width: 38px; }
+  .pg-btn--icon .pg-btn__label { display: none; }
+
+  /* Accessible focus for keyboard users across every control. */
+  .pg-btn:focus-visible,
+  .pg-version select:focus-visible {
+    outline: 2px solid var(--forest);
+    outline-offset: 2px;
+    box-shadow: var(--shadow-ring);
+  }
+
+  /* ── Frame stage ──────────────────────────────────────────────────── */
+  .pg-stage { position: relative; flex: 1 1 auto; min-height: 0; background: #fff; }
   #pg-frame {
-    flex: 1 1 auto;
-    width: 100%;
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
     border: none;
-    background: white;
-    min-height: 0;
+    background: #fff;
   }
-  #page-loading { padding: 40px; text-align: center; color: var(--slate-light); }
-  /* This is a height-locked iframe wrapper page — the global public-marketing
-     footer would consume vertical space and squeeze the bundler iframe down
-     to a sliver (its natural-height block beats .pg-shell's flex:1). Hide it.
-     Header.js still renders the role-aware top nav into #gcc-header, which is
-     what we want. */
-  #gcc-footer { display: none !important; }
+
+  /* Overlays sit above the frame for load / error states. */
+  .pg-overlay {
+    position: absolute; inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--s-4);
+    text-align: center;
+    padding: var(--s-8);
+    background: var(--paper);
+  }
+  .pg-overlay[hidden] { display: none; }
+  .pg-spinner {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    border: 3px solid color-mix(in srgb, var(--forest) 20%, transparent);
+    border-top-color: var(--forest);
+    animation: pg-spin .7s linear infinite;
+  }
+  @keyframes pg-spin { to { transform: rotate(360deg); } }
+  .pg-overlay h2 { margin: 0; font-size: 16px; color: var(--ink); font-family: var(--font-display); }
+  .pg-overlay p  { margin: 0; font-size: 13px; color: var(--slate); max-width: 42ch; line-height: 1.5; }
+  .pg-overlay .pg-overlay__actions { display: flex; gap: var(--s-3); flex-wrap: wrap; justify-content: center; margin-top: var(--s-2); }
+  .pg-overlay__icon {
+    width: 44px; height: 44px;
+    display: grid; place-items: center;
+    border-radius: var(--r-md);
+    background: var(--amber-tint);
+    color: var(--amber);
+  }
+  .pg-overlay__icon svg { width: 24px; height: 24px; }
+
+  /* ── Fullscreen mode ──────────────────────────────────────────────── */
+  body.pg-fullscreen #gcc-header { display: none; }
+  body.pg-fullscreen .pg-bar { padding-top: var(--s-2); padding-bottom: var(--s-2); }
+
+  #page-loading { padding: var(--s-10); text-align: center; color: var(--slate-light); }
+
+  /* ── Responsive ───────────────────────────────────────────────────── */
+  @media (max-width: 900px) {
+    .pg-bar { flex-wrap: wrap; row-gap: var(--s-2); }
+    .pg-title { order: 0; flex: 1 1 auto; }
+    .pg-status { order: 1; }
+    .pg-bar .spacer { display: none; }
+    .pg-version { order: 2; flex: 1 1 100%; justify-content: space-between; }
+    .pg-actions { order: 3; flex: 1 1 100%; }
+    .pg-actions .pg-btn { flex: 1 1 auto; }
+  }
+  @media (max-width: 560px) {
+    .pg-title p { display: none; }
+    .pg-btn__label { display: none; }
+    .pg-btn { width: 44px; padding: 0; }
+    .pg-btn--primary { flex: 1 1 100%; width: auto; padding: 0 14px; }
+    .pg-btn--primary .pg-btn__label { display: inline; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pg-spinner, .pg-status[data-state="loading"] .dot { animation: none; }
+    .pg-btn { transition: none; }
+  }
 </style>
 </head>
 <body class="dash">
 
 <div id="gcc-header"></div>
 
-<div id="page-loading">Loading...</div>
+<div id="page-loading">Loading…</div>
 
 <div class="pg-shell" id="page-content" hidden>
   <div class="pg-bar">
-    <h1>Proposal Generator</h1>
-    <span style="color: var(--slate-light);">Embedded bundler — same content as proposal.greencommllc.com</span>
+    <div class="pg-title">
+      <h1>Proposal Generator</h1>
+      <p>Embedded bundler — same content as proposal.greencommllc.com</p>
+    </div>
+
+    <span class="pg-status" id="pg-status" data-state="loading" role="status" aria-live="polite">
+      <span class="dot" aria-hidden="true"></span>
+      <span id="pg-status-text">Connecting…</span>
+    </span>
+
     <div class="spacer"></div>
-    <label for="pg-version" style="font-weight:600;">Version:</label>
-    <select id="pg-version" aria-label="Bundler version"></select>
-    <a id="pg-popout" href="#" target="_blank" rel="noopener" title="Open this version in a new tab">Pop out ↗</a>
+
+    <div class="pg-version">
+      <label for="pg-version">Version</label>
+      <select id="pg-version" aria-label="Bundler version"></select>
+      <span class="pg-tag" id="pg-version-tag" hidden></span>
+    </div>
+
+    <div class="pg-actions">
+      <button type="button" class="pg-btn pg-btn--icon" id="pg-reload" title="Reload the bundler" aria-label="Reload the bundler">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+        <span class="pg-btn__label">Reload</span>
+      </button>
+      <button type="button" class="pg-btn" id="pg-fullscreen" title="Toggle fullscreen (Esc to exit)" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3m13-5v3a2 2 0 0 1-2 2h-3"/></svg>
+        <span class="pg-btn__label">Fullscreen</span>
+      </button>
+      <a class="pg-btn pg-btn--primary" id="pg-popout" href="#" target="_blank" rel="noopener" title="Open this version in a new tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+        <span class="pg-btn__label">Open full window</span>
+      </a>
+    </div>
   </div>
-  <iframe id="pg-frame" title="Proposal bundler" loading="lazy"></iframe>
+
+  <div class="pg-stage">
+    <iframe id="pg-frame" title="Proposal bundler" loading="lazy"></iframe>
+
+    <div class="pg-overlay" id="pg-loading-overlay">
+      <div class="pg-spinner" aria-hidden="true"></div>
+      <p>Loading the proposal bundler…</p>
+    </div>
+
+    <div class="pg-overlay" id="pg-error-overlay" hidden>
+      <div class="pg-overlay__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <h2>The bundler is taking a while to load</h2>
+      <p>It may be starting up or temporarily unreachable. Retry, or open it in a full browser window.</p>
+      <div class="pg-overlay__actions">
+        <button type="button" class="pg-btn pg-btn--primary" id="pg-retry">Retry</button>
+        <a class="pg-btn" id="pg-error-popout" href="#" target="_blank" rel="noopener">Open in new tab</a>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script src="/assets/js/api.js"></script>
 <script src="/assets/js/header.js"></script>
-  <script src="/assets/js/footer.js"></script>
+<script src="/assets/js/footer.js"></script>
 <script src="/assets/js/page.js"></script>
 <script>
   // Bundler is hosted at proposal.greencommllc.com (IIS site `proposalgen` on
@@ -109,14 +349,25 @@
     { value: 'Bundler V05.html',         label: 'V05' },
     { value: 'bundle-builder.html',      label: 'Working copy (bundle-builder.html)' }
   ];
+  // How long to wait for the frame's load event before offering a retry.
+  var LOAD_TIMEOUT_MS = 15000;
 
   gccPage.requireRole(['staff','admin']).then(function (me) {
     document.getElementById('page-loading').hidden = true;
     document.getElementById('page-content').hidden = false;
 
-    var sel = document.getElementById('pg-version');
-    var iframe = document.getElementById('pg-frame');
-    var popout = document.getElementById('pg-popout');
+    var sel        = document.getElementById('pg-version');
+    var iframe     = document.getElementById('pg-frame');
+    var popout     = document.getElementById('pg-popout');
+    var errPopout  = document.getElementById('pg-error-popout');
+    var reloadBtn  = document.getElementById('pg-reload');
+    var fsBtn      = document.getElementById('pg-fullscreen');
+    var retryBtn   = document.getElementById('pg-retry');
+    var statusEl   = document.getElementById('pg-status');
+    var statusText = document.getElementById('pg-status-text');
+    var versionTag = document.getElementById('pg-version-tag');
+    var loadOverlay = document.getElementById('pg-loading-overlay');
+    var errOverlay  = document.getElementById('pg-error-overlay');
 
     VERSIONS.forEach(function (v) {
       var opt = document.createElement('option');
@@ -125,12 +376,49 @@
       sel.appendChild(opt);
     });
 
+    function setStatus(state, text) {
+      statusEl.setAttribute('data-state', state);
+      statusText.textContent = text;
+    }
+
+    function updateVersionTag(version) {
+      var isLatest = version === VERSIONS[0].value;
+      versionTag.hidden = false;
+      versionTag.textContent = isLatest ? 'Latest' : 'Older version';
+      versionTag.className = 'pg-tag ' + (isLatest ? 'is-latest' : 'is-older');
+    }
+
+    var loadTimer = null;
+
     function load(version) {
       var url = BUNDLER_BASE + encodeURI(version);
+      // Reset overlays + status for the fresh load.
+      errOverlay.hidden = true;
+      loadOverlay.hidden = false;
+      setStatus('loading', 'Connecting…');
+      updateVersionTag(version);
+
       iframe.src = url;
       popout.href = url;
+      errPopout.href = url;
       try { localStorage.setItem('gcc.proposalgen.version', version); } catch (_) {}
+
+      if (loadTimer) clearTimeout(loadTimer);
+      loadTimer = setTimeout(function () {
+        // Frame never fired `load` — surface a retry affordance. The frame is
+        // cross-origin so we can't inspect it; this is a soft, recoverable state.
+        loadOverlay.hidden = true;
+        errOverlay.hidden = false;
+        setStatus('slow', 'Slow to respond');
+      }, LOAD_TIMEOUT_MS);
     }
+
+    iframe.addEventListener('load', function () {
+      if (loadTimer) { clearTimeout(loadTimer); loadTimer = null; }
+      loadOverlay.hidden = true;
+      errOverlay.hidden = true;
+      setStatus('ready', 'Ready');
+    });
 
     var saved = null;
     try { saved = localStorage.getItem('gcc.proposalgen.version'); } catch (_) {}
@@ -139,6 +427,24 @@
     load(initial);
 
     sel.addEventListener('change', function () { load(sel.value); });
+    reloadBtn.addEventListener('click', function () { load(sel.value); });
+    retryBtn.addEventListener('click', function () { load(sel.value); });
+
+    // ── Fullscreen (in-page) ─────────────────────────────────────────
+    function setFullscreen(on) {
+      document.body.classList.toggle('pg-fullscreen', on);
+      fsBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      var label = fsBtn.querySelector('.pg-btn__label');
+      if (label) label.textContent = on ? 'Exit fullscreen' : 'Fullscreen';
+    }
+    fsBtn.addEventListener('click', function () {
+      setFullscreen(!document.body.classList.contains('pg-fullscreen'));
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && document.body.classList.contains('pg-fullscreen')) {
+        setFullscreen(false);
+      }
+    });
 
     // ── Cross-origin bridges (compliance + LLM) ──────────────────────
     // The bundler iframe runs at proposal.greencommllc.com — cross-origin,
@@ -224,6 +530,6 @@
     });
   }).catch(function () { /* gccPage redirected to login */ });
 </script>
-  <div id="gcc-footer"></div>
+<div id="gcc-footer"></div>
 </body>
 </html>
