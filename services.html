@@ -12,6 +12,12 @@
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <link rel="stylesheet" href="/assets/css/site.css?v=20260520c" />
   <link rel="stylesheet" href="/assets/css/chrome.css?v=20260520c" />
+  <!-- Robots + geo targeting -->
+  <meta name="robots" content="index, follow" />
+  <meta name="geo.region" content="US-MO" />
+  <meta name="geo.placename" content="Kansas City, Missouri" />
+  <meta name="geo.position" content="39.0997;-94.5786" />
+  <meta name="ICBM" content="39.0997, -94.5786" />
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="en_US" />
@@ -28,6 +34,77 @@
   <meta name="twitter:title" content="Services — Cabling, Security, Network, Residential · GCC LLC" />
   <meta name="twitter:description" content="The full GCC LLC service catalog: structured cabling, IP security, UniFi network &amp; managed services, residential smart home, and ongoing service contracts." />
   <meta name="twitter:image" content="https://greencommllc.com/assets/og/og-default.png" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "GCC LLC Service Catalog",
+    "description": "Division 27/28 low-voltage contractor services in Kansas City and St. Louis — structured cabling, IP security, network, residential smart home, and service contracts.",
+    "url": "https://greencommllc.com/services.html",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "item": {
+          "@type": "Service",
+          "name": "Structured Cabling",
+          "url": "https://greencommllc.com/services/cabling.html",
+          "description": "Cat6A plenum on every drop, multimode and single-mode fiber backbone, TIA-607-grounded telecom rooms, Fluke DSX-8000 certification.",
+          "provider": {"@type": "LocalBusiness", "@id": "https://greencommllc.com/#business"},
+          "areaServed": [{"@type": "City", "name": "Kansas City"}, {"@type": "City", "name": "St. Louis"}]
+        }
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "item": {
+          "@type": "Service",
+          "name": "IP Security",
+          "url": "https://greencommllc.com/services/security.html",
+          "description": "Ubiquiti G6 IP cameras, UniFi Access door hubs, POE intercom, NVR storage with retention plans, AI motion and person analytics.",
+          "provider": {"@type": "LocalBusiness", "@id": "https://greencommllc.com/#business"},
+          "areaServed": [{"@type": "City", "name": "Kansas City"}, {"@type": "City", "name": "St. Louis"}]
+        }
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "item": {
+          "@type": "Service",
+          "name": "Network & Managed Services",
+          "url": "https://greencommllc.com/services/network.html",
+          "description": "UniFi end-to-end (Network, Protect, Access, Talk), VLAN design, controller setup, firmware tracking, managed services.",
+          "provider": {"@type": "LocalBusiness", "@id": "https://greencommllc.com/#business"},
+          "areaServed": [{"@type": "City", "name": "Kansas City"}, {"@type": "City", "name": "St. Louis"}]
+        }
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "item": {
+          "@type": "Service",
+          "name": "Residential Smart Home",
+          "url": "https://greencommllc.com/services/residential.html",
+          "description": "Whole-home Cat6 and Wi-Fi 7 mesh, Ubiquiti smart-home, Govee, Alexa, and Google integration.",
+          "provider": {"@type": "LocalBusiness", "@id": "https://greencommllc.com/#business"},
+          "areaServed": [{"@type": "City", "name": "Kansas City"}, {"@type": "City", "name": "St. Louis"}]
+        }
+      },
+      {
+        "@type": "ListItem",
+        "position": 5,
+        "item": {
+          "@type": "Service",
+          "name": "Service Contracts",
+          "url": "https://greencommllc.com/services/contracts.html",
+          "description": "Monthly Care, Annual Plan, and Lifetime service contracts with workmanship and parts warranty on GCC-installed components, transferable with the property.",
+          "provider": {"@type": "LocalBusiness", "@id": "https://greencommllc.com/#business"},
+          "areaServed": [{"@type": "City", "name": "Kansas City"}, {"@type": "City", "name": "St. Louis"}]
+        }
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to content</a>
@@ -51,31 +128,31 @@
       <div class="container">
         <div class="card-grid">
           <a class="card" href="/services/cabling.html" aria-label="Structured cabling — Cat6A, fiber, telecom rooms">
-            <div class="card-icon">⚡</div>
+            <div class="card-icon" aria-hidden="true">⚡</div>
             <h3>Structured cabling</h3>
             <p>Cat6A plenum baseline · OM3/OM4 multimode + OS1/OS2 single-mode fiber backbone · TIA-607-grounded telecom rooms · Fluke DSX-8000 cert + LinkWare PDFs · Bluebeam as-builts.</p>
             <span class="card-arrow">Cabling detail →</span>
           </a>
           <a class="card" href="/services/security.html" aria-label="IP security — cameras, access control, intercom">
-            <div class="card-icon">🛡</div>
+            <div class="card-icon" aria-hidden="true">🛡</div>
             <h3>IP security</h3>
             <p>Ubiquiti G6 IP cameras · UniFi Access door hubs · POE intercom + overhead paging · NVR storage with retention plan · AI motion / person / vehicle analytics · plate reads.</p>
             <span class="card-arrow">Security detail →</span>
           </a>
           <a class="card" href="/services/network.html" aria-label="Network and managed services — UniFi end-to-end">
-            <div class="card-icon">📡</div>
+            <div class="card-icon" aria-hidden="true">📡</div>
             <h3>Network &amp; managed</h3>
             <p>UniFi end-to-end (Network · Protect · Access · Talk) · VLAN design · controller setup · firmware tracking. Mandatory Managed Services alternate on every whole-building bid.</p>
             <span class="card-arrow">Network detail →</span>
           </a>
           <a class="card" href="/services/residential.html" aria-label="Residential — smart home, Wi-Fi, renovations">
-            <div class="card-icon">🏡</div>
+            <div class="card-icon" aria-hidden="true">🏡</div>
             <h3>Residential</h3>
             <p>Whole-home Cat6 + Wi-Fi 7 mesh · Ubiquiti smart-home · Govee + Alexa + Google Home · plus multi-trade renos: bath, kitchen, fencing, decking, electrical, HVAC, light plumbing.</p>
             <span class="card-arrow">Residential detail →</span>
           </a>
           <a class="card" href="/services/contracts.html" aria-label="Service contracts — monthly, annual, lifetime">
-            <div class="card-icon">📋</div>
+            <div class="card-icon" aria-hidden="true">📋</div>
             <h3>Service contracts</h3>
             <p>Monthly Care · Annual Plan · Lifetime (one-time). Lifetime workmanship + lifetime parts on GCC-installed components, transfers with the property.</p>
             <span class="card-arrow">Contracts detail →</span>
