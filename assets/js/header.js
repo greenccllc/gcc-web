@@ -117,6 +117,7 @@
   function navAnonymous() {
     return [
       { href: '/services.html',                 label: 'Services' },
+      { href: '/ai-proposals.html',              label: 'AI Proposals' },
       { href: '/projects.html',                 label: 'Projects' },
       { href: '/about.html',                    label: 'About' },
       { href: '/estimate/',                     label: 'Estimate' },
