@@ -7,6 +7,11 @@
   <meta name="description" content="Green Communications Contracting LLC — Division 27 + 28 contractor delivering structured cabling, IP surveillance, access control, and smart-home work across Kansas City and St. Louis." />
   <meta name="author" content="Green Communications Contracting LLC" />
   <meta name="theme-color" content="#1E4D2B" />
+  <!-- Local SEO geo signals -->
+  <meta name="geo.region" content="US-MO" />
+  <meta name="geo.placename" content="O'Fallon, Missouri" />
+  <meta name="geo.position" content="38.8106;-90.6998" />
+  <meta name="ICBM" content="38.8106, -90.6998" />
   <link rel="canonical" href="https://greencommllc.com/" />
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
@@ -29,39 +34,60 @@
   <meta name="twitter:description" content="Green Communications Contracting LLC — Division 27 + 28 contractor delivering structured cabling, IP surveillance, access control, and smart-home work across Kansas City and St. Louis." />
   <meta name="twitter:image" content="https://greencommllc.com/assets/og/og-default.png" />
   <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    "@id": "https://greencommllc.com/#business",
-    "name": "Green Communications Contracting LLC",
-    "alternateName": "GCC LLC",
-    "url": "https://greencommllc.com/",
-    "logo": "https://greencommllc.com/assets/og/logo.png",
-    "image": "https://greencommllc.com/assets/og/og-default.png",
-    "description": "Division 27/28 low-voltage contractor delivering structured cabling, IP surveillance, access control, and smart-home work across Kansas City and St. Louis.",
-    "telephone": "+16362248192",
-    "email": "info@greencommllc.com",
-    "address": {
-      "@type": "PostalAddress",
-      "streetAddress": "603 Seib Dr",
-      "addressLocality": "O'Fallon",
-      "addressRegion": "MO",
-      "postalCode": "63366",
-      "addressCountry": "US"
+  [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "@id": "https://greencommllc.com/#website",
+      "url": "https://greencommllc.com/",
+      "name": "Green Communications Contracting LLC",
+      "publisher": {"@id": "https://greencommllc.com/#business"}
     },
-    "areaServed": [
-      {"@type": "City", "name": "Kansas City"},
-      {"@type": "City", "name": "St. Louis"}
-    ],
-    "knowsAbout": ["Structured Cabling", "Cat6A", "IP Security", "UniFi", "Low Voltage", "Division 27", "Division 28"],
-    "priceRange": "$$",
-    "openingHoursSpecification": {
-      "@type": "OpeningHoursSpecification",
-      "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"],
-      "opens": "07:00",
-      "closes": "18:00"
+    {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "@id": "https://greencommllc.com/#business",
+      "name": "Green Communications Contracting LLC",
+      "alternateName": "GCC LLC",
+      "url": "https://greencommllc.com/",
+      "logo": "https://greencommllc.com/assets/og/logo.png",
+      "image": "https://greencommllc.com/assets/og/og-default.png",
+      "description": "Division 27/28 low-voltage contractor delivering structured cabling, IP surveillance, access control, and smart-home work across Kansas City and St. Louis.",
+      "telephone": "+16362248192",
+      "email": "info@greencommllc.com",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "603 Seib Dr",
+        "addressLocality": "O'Fallon",
+        "addressRegion": "MO",
+        "postalCode": "63366",
+        "addressCountry": "US"
+      },
+      "areaServed": [
+        {"@type": "City", "name": "Kansas City"},
+        {"@type": "City", "name": "St. Louis"}
+      ],
+      "knowsAbout": ["Structured Cabling", "Cat6A", "IP Security", "UniFi", "Low Voltage", "Division 27", "Division 28"],
+      "priceRange": "$$",
+      "openingHoursSpecification": {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"],
+        "opens": "07:00",
+        "closes": "18:00"
+      },
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "GCC LLC Services",
+        "itemListElement": [
+          {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Structured Cabling", "url": "https://greencommllc.com/services/cabling.html"}},
+          {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "IP Security Systems", "url": "https://greencommllc.com/services/security.html"}},
+          {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Network & Managed Services", "url": "https://greencommllc.com/services/network.html"}},
+          {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Residential Smart Home", "url": "https://greencommllc.com/services/residential.html"}},
+          {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Service Contracts", "url": "https://greencommllc.com/services/contracts.html"}}
+        ]
+      }
     }
-  }
+  ]
   </script>
 </head>
 <body>
@@ -70,7 +96,7 @@
 
   <main id="main">
 
-    <!-- ── HERO ──────────────────────────────────────────────── -->
+    <!-- ── HERO ──────────────────────────────────────────── -->
     <section class="hero-dark">
       <div class="container">
         <div class="hero-dark-grid">
@@ -122,7 +148,7 @@
       </div>
     </section>
 
-    <!-- ── SERVICES ──────────────────────────────────────────── -->
+    <!-- ── SERVICES ──────────────────────────────────────── -->
     <section class="section section-tinted">
       <div class="container">
         <div class="section-head">
@@ -135,35 +161,35 @@
         <div class="card-grid">
 
           <a class="card" href="/services/cabling.html" aria-label="Structured cabling">
-            <div class="card-icon" style="font-size:26px;">⚡</div>
+            <div class="card-icon" aria-hidden="true" style="font-size:26px;">⚡</div>
             <h3>Structured cabling</h3>
             <p>Cat6A plenum baseline on every drop. OM3/OM4 + OS1/OS2 fiber backbone. Telecom rooms grounded to TIA-607. Fluke DSX-8000 certification with LinkWare PDF deliverables and Bluebeam as-builts.</p>
             <span class="card-arrow">Cabling detail →</span>
           </a>
 
           <a class="card" href="/services/security.html" aria-label="IP security">
-            <div class="card-icon" style="font-size:26px;">🛡</div>
+            <div class="card-icon" aria-hidden="true" style="font-size:26px;">🛡</div>
             <h3>IP security</h3>
             <p>Ubiquiti G6 cameras · UniFi Access door hubs · POE intercom + overhead paging · NVR storage with retention plans · AI motion, person, vehicle, and plate-read analytics.</p>
             <span class="card-arrow">Security detail →</span>
           </a>
 
           <a class="card" href="/services/network.html" aria-label="Network and managed services">
-            <div class="card-icon" style="font-size:26px;">📡</div>
+            <div class="card-icon" aria-hidden="true" style="font-size:26px;">📡</div>
             <h3>Network &amp; managed</h3>
             <p>UniFi end-to-end — Network, Protect, Access, Talk. VLAN design, controller setup, firmware tracking. A Managed Services alternate ships on every whole-building bid.</p>
             <span class="card-arrow">Network detail →</span>
           </a>
 
           <a class="card" href="/services/residential.html" aria-label="Residential">
-            <div class="card-icon" style="font-size:26px;">🏡</div>
+            <div class="card-icon" aria-hidden="true" style="font-size:26px;">🏡</div>
             <h3>Residential</h3>
             <p>Whole-home Cat6 + Wi-Fi 7 mesh · Ubiquiti smart-home · Govee, Alexa, Google integration · plus the multi-trade renovation work other LV shops won't touch.</p>
             <span class="card-arrow">Residential detail →</span>
           </a>
 
           <a class="card" href="/services/contracts.html" aria-label="Service contracts">
-            <div class="card-icon" style="font-size:26px;">📋</div>
+            <div class="card-icon" aria-hidden="true" style="font-size:26px;">📋</div>
             <h3>Service contracts</h3>
             <p>Monthly Care · Annual Plan · one-time Lifetime. Documentation kept and updated for as long as you own the building. Transfers with the property.</p>
             <span class="card-arrow">Contracts detail →</span>
@@ -173,7 +199,7 @@
       </div>
     </section>
 
-    <!-- ── WHY GCC ─────────────────────────────────────────────── -->
+    <!-- ── WHY GCC ───────────────────────────────────────────── -->
     <section class="section">
       <div class="container">
         <div class="section-head">
@@ -182,19 +208,19 @@
         <div class="card-grid">
 
           <div class="card card-accent">
-            <div class="card-icon" style="font-size:24px;">📞</div>
+            <div class="card-icon" aria-hidden="true" style="font-size:24px;">📞</div>
             <h3>Direct line to ownership</h3>
             <p>Kaitlyn signs every cover letter. Nathan walks every site. No salesperson hand-off. No pre-bid call you can't get on the calendar. The number on the proposal is the number you call.</p>
           </div>
 
           <div class="card card-accent">
-            <div class="card-icon" style="font-size:24px;">🔒</div>
+            <div class="card-icon" aria-hidden="true" style="font-size:24px;">🔒</div>
             <h3>Cat6A plenum is the floor, not an upsell</h3>
             <p>Every drop, every job — included silently as the baseline. We never quote a Cat6 substitute. The 25-year backbone life is paid for once and inherited by every future tenant.</p>
           </div>
 
           <div class="card card-accent">
-            <div class="card-icon" style="font-size:24px;">📁</div>
+            <div class="card-icon" aria-hidden="true" style="font-size:24px;">🗁</div>
             <h3>Documentation that outlasts the project</h3>
             <p>Bluebeam as-builts, Brady labels per TIA-606-B, every drop certified, every result archived. We update the closeout package for as long as you own the building — no extra charge.</p>
           </div>
@@ -203,7 +229,7 @@
       </div>
     </section>
 
-    <!-- ── VERTICALS ──────────────────────────────────────────── -->
+    <!-- ── VERTICALS ───────────────────────────────────────── -->
     <section class="section section-tinted">
       <div class="container">
         <div class="section-head">
@@ -242,7 +268,7 @@
       </div>
     </section>
 
-    <!-- ── CONSTRUCTION INTELLIGENCE ─────────────────────────── -->
+    <!-- ── CONSTRUCTION INTELLIGENCE ─────────────────────── -->
     <section class="section">
       <div class="container">
         <div class="section-head">
@@ -253,17 +279,17 @@
         </div>
         <div class="card-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
           <div class="card card-accent">
-            <div class="card-icon" style="font-size:24px;">📐</div>
+            <div class="card-icon" aria-hidden="true" style="font-size:24px;">📐</div>
             <h3>Bid extraction pipeline</h3>
             <p>Automated scope extraction from plan sets and specs — structured counts, symbol legends, and riser/schedule decode for Division 27/28 takeoffs.</p>
           </div>
           <div class="card card-accent">
-            <div class="card-icon" style="font-size:24px;">🤖</div>
+            <div class="card-icon" aria-hidden="true" style="font-size:24px;">🤖</div>
             <h3>Construction AI</h3>
             <p>Layered LLM routing on domain GPU hosts for plan review, RFP drafting, and delta notes vs design — powered by <a href="https://appmajic.ai/" style="color:inherit;text-decoration:underline">AppMajic.ai</a> (Dad's Toolbox plugin for Cursor).</p>
           </div>
           <div class="card card-accent">
-            <div class="card-icon" style="font-size:24px;">📊</div>
+            <div class="card-icon" aria-hidden="true" style="font-size:24px;">📊</div>
             <h3>Pipeline monitor</h3>
             <p>Internal job health dashboard for extraction lanes, GPU probes, and method status across the GCC stack. Staff access via the client portal.</p>
           </div>
@@ -272,7 +298,7 @@
       </div>
     </section>
 
-    <!-- ── CLOSING CTA BAND ──────────────────────────────────── -->
+    <!-- ── CLOSING CTA BAND ──────────────────────────────── -->
     <section class="cta-band">
       <div class="container">
         <div class="cta-band-inner">
