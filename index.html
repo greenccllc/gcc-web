@@ -7,9 +7,14 @@
   <meta name="description" content="Green Communications Contracting LLC — Division 27 + 28 contractor delivering structured cabling, IP surveillance, access control, and smart-home work across Kansas City and St. Louis." />
   <meta name="author" content="Green Communications Contracting LLC" />
   <meta name="theme-color" content="#1E4D2B" />
+  <meta name="geo.region" content="US-MO" />
+  <meta name="geo.placename" content="O'Fallon, Missouri" />
+  <meta name="geo.position" content="38.7835;-90.6974" />
+  <meta name="ICBM" content="38.7835, -90.6974" />
   <link rel="canonical" href="https://greencommllc.com/" />
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
+  <link rel="preload" href="/assets/svg/icons.svg" as="image" type="image/svg+xml" />
   <link rel="stylesheet" href="/assets/css/site.css?v=20260520c" />
   <link rel="stylesheet" href="/assets/css/chrome.css?v=20260520c" />
   <!-- Open Graph -->
@@ -41,6 +46,7 @@
     "description": "Division 27/28 low-voltage contractor delivering structured cabling, IP surveillance, access control, and smart-home work across Kansas City and St. Louis.",
     "telephone": "+16362248192",
     "email": "info@greencommllc.com",
+    "foundingDate": "2026",
     "address": {
       "@type": "PostalAddress",
       "streetAddress": "603 Seib Dr",
@@ -49,9 +55,19 @@
       "postalCode": "63366",
       "addressCountry": "US"
     },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 38.7835,
+      "longitude": -90.6974
+    },
     "areaServed": [
       {"@type": "City", "name": "Kansas City"},
-      {"@type": "City", "name": "St. Louis"}
+      {"@type": "City", "name": "St. Louis"},
+      {"@type": "AdministrativeArea", "name": "O'Fallon, Missouri"},
+      {"@type": "AdministrativeArea", "name": "Johnson County, Kansas"},
+      {"@type": "AdministrativeArea", "name": "Wyandotte County, Kansas"},
+      {"@type": "AdministrativeArea", "name": "St. Charles County, Missouri"},
+      {"@type": "AdministrativeArea", "name": "Metro East, Illinois"}
     ],
     "knowsAbout": ["Structured Cabling", "Cat6A", "IP Security", "UniFi", "Low Voltage", "Division 27", "Division 28"],
     "priceRange": "$$",
@@ -60,6 +76,17 @@
       "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"],
       "opens": "07:00",
       "closes": "18:00"
+    },
+    "hasOfferCatalog": {
+      "@type": "OfferCatalog",
+      "name": "Low-Voltage Services",
+      "itemListElement": [
+        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Structured Cabling", "url": "https://greencommllc.com/services/cabling.html"}},
+        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "IP Security", "url": "https://greencommllc.com/services/security.html"}},
+        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Network & Managed Services", "url": "https://greencommllc.com/services/network.html"}},
+        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Residential Smart Home", "url": "https://greencommllc.com/services/residential.html"}},
+        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Service Contracts", "url": "https://greencommllc.com/services/contracts.html"}}
+      ]
     }
   }
   </script>
@@ -135,35 +162,35 @@
         <div class="card-grid">
 
           <a class="card" href="/services/cabling.html" aria-label="Structured cabling">
-            <div class="card-icon" style="font-size:26px;">⚡</div>
+            <div class="card-icon"><svg aria-hidden="true" width="26" height="26"><use href="/assets/svg/icons.svg#icon-cable"></use></svg></div>
             <h3>Structured cabling</h3>
             <p>Cat6A plenum baseline on every drop. OM3/OM4 + OS1/OS2 fiber backbone. Telecom rooms grounded to TIA-607. Fluke DSX-8000 certification with LinkWare PDF deliverables and Bluebeam as-builts.</p>
             <span class="card-arrow">Cabling detail →</span>
           </a>
 
           <a class="card" href="/services/security.html" aria-label="IP security">
-            <div class="card-icon" style="font-size:26px;">🛡</div>
+            <div class="card-icon"><svg aria-hidden="true" width="26" height="26"><use href="/assets/svg/icons.svg#icon-shield"></use></svg></div>
             <h3>IP security</h3>
             <p>Ubiquiti G6 cameras · UniFi Access door hubs · POE intercom + overhead paging · NVR storage with retention plans · AI motion, person, vehicle, and plate-read analytics.</p>
             <span class="card-arrow">Security detail →</span>
           </a>
 
           <a class="card" href="/services/network.html" aria-label="Network and managed services">
-            <div class="card-icon" style="font-size:26px;">📡</div>
+            <div class="card-icon"><svg aria-hidden="true" width="26" height="26"><use href="/assets/svg/icons.svg#icon-network"></use></svg></div>
             <h3>Network &amp; managed</h3>
             <p>UniFi end-to-end — Network, Protect, Access, Talk. VLAN design, controller setup, firmware tracking. A Managed Services alternate ships on every whole-building bid.</p>
             <span class="card-arrow">Network detail →</span>
           </a>
 
           <a class="card" href="/services/residential.html" aria-label="Residential">
-            <div class="card-icon" style="font-size:26px;">🏡</div>
+            <div class="card-icon"><svg aria-hidden="true" width="26" height="26"><use href="/assets/svg/icons.svg#icon-home"></use></svg></div>
             <h3>Residential</h3>
             <p>Whole-home Cat6 + Wi-Fi 7 mesh · Ubiquiti smart-home · Govee, Alexa, Google integration · plus the multi-trade renovation work other LV shops won't touch.</p>
             <span class="card-arrow">Residential detail →</span>
           </a>
 
           <a class="card" href="/services/contracts.html" aria-label="Service contracts">
-            <div class="card-icon" style="font-size:26px;">📋</div>
+            <div class="card-icon"><svg aria-hidden="true" width="26" height="26"><use href="/assets/svg/icons.svg#icon-clipboard"></use></svg></div>
             <h3>Service contracts</h3>
             <p>Monthly Care · Annual Plan · one-time Lifetime. Documentation kept and updated for as long as you own the building. Transfers with the property.</p>
             <span class="card-arrow">Contracts detail →</span>
@@ -182,19 +209,19 @@
         <div class="card-grid">
 
           <div class="card card-accent">
-            <div class="card-icon" style="font-size:24px;">📞</div>
+            <div class="card-icon"><svg aria-hidden="true" width="24" height="24"><use href="/assets/svg/icons.svg#icon-phone"></use></svg></div>
             <h3>Direct line to ownership</h3>
             <p>Kaitlyn signs every cover letter. Nathan walks every site. No salesperson hand-off. No pre-bid call you can't get on the calendar. The number on the proposal is the number you call.</p>
           </div>
 
           <div class="card card-accent">
-            <div class="card-icon" style="font-size:24px;">🔒</div>
+            <div class="card-icon"><svg aria-hidden="true" width="24" height="24"><use href="/assets/svg/icons.svg#icon-cable"></use></svg></div>
             <h3>Cat6A plenum is the floor, not an upsell</h3>
             <p>Every drop, every job — included silently as the baseline. We never quote a Cat6 substitute. The 25-year backbone life is paid for once and inherited by every future tenant.</p>
           </div>
 
           <div class="card card-accent">
-            <div class="card-icon" style="font-size:24px;">📁</div>
+            <div class="card-icon"><svg aria-hidden="true" width="24" height="24"><use href="/assets/svg/icons.svg#icon-clipboard"></use></svg></div>
             <h3>Documentation that outlasts the project</h3>
             <p>Bluebeam as-builts, Brady labels per TIA-606-B, every drop certified, every result archived. We update the closeout package for as long as you own the building — no extra charge.</p>
           </div>
@@ -215,26 +242,32 @@
         </div>
         <div class="card-grid" style="grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:14px;">
           <div class="card" style="padding:20px 18px; gap:6px;">
+            <div class="card-icon" style="margin-bottom:4px;"><svg aria-hidden="true" width="20" height="20"><use href="/assets/svg/icons.svg#icon-building"></use></svg></div>
             <h3 style="font-size:15px; margin:0 0 4px;">Hotel</h3>
             <p style="font-size:13px;">Marriott GPNS standard. Brand-program coordination. BoH + GoH zoning.</p>
           </div>
           <div class="card" style="padding:20px 18px; gap:6px;">
+            <div class="card-icon" style="margin-bottom:4px;"><svg aria-hidden="true" width="20" height="20"><use href="/assets/svg/icons.svg#icon-graduation"></use></svg></div>
             <h3 style="font-size:15px; margin:0 0 4px;">K-12 + Higher Ed</h3>
             <p style="font-size:13px;">Public-bid posture. Prevailing wage. E-Rate cooperation. Phased over breaks.</p>
           </div>
           <div class="card" style="padding:20px 18px; gap:6px;">
+            <div class="card-icon" style="margin-bottom:4px;"><svg aria-hidden="true" width="20" height="20"><use href="/assets/svg/icons.svg#icon-stethoscope"></use></svg></div>
             <h3 style="font-size:15px; margin:0 0 4px;">Healthcare</h3>
             <p style="font-size:13px;">Quiet drop install. Infection-control coordination. After-hours as a deduct.</p>
           </div>
           <div class="card" style="padding:20px 18px; gap:6px;">
+            <div class="card-icon" style="margin-bottom:4px;"><svg aria-hidden="true" width="20" height="20"><use href="/assets/svg/icons.svg#icon-building"></use></svg></div>
             <h3 style="font-size:15px; margin:0 0 4px;">Office TI</h3>
             <p style="font-size:13px;">Tenant-paid scope, GC-coordinated. Telecom room to TIA-607. Wi-Fi heat-mapped.</p>
           </div>
           <div class="card" style="padding:20px 18px; gap:6px;">
+            <div class="card-icon" style="margin-bottom:4px;"><svg aria-hidden="true" width="20" height="20"><use href="/assets/svg/icons.svg#icon-heart-pulse"></use></svg></div>
             <h3 style="font-size:15px; margin:0 0 4px;">Senior Living</h3>
             <p style="font-size:13px;">POE intercoms, Wi-Fi blanket, room-level access. Resident-friendly schedule.</p>
           </div>
           <div class="card" style="padding:20px 18px; gap:6px;">
+            <div class="card-icon" style="margin-bottom:4px;"><svg aria-hidden="true" width="20" height="20"><use href="/assets/svg/icons.svg#icon-landmark"></use></svg></div>
             <h3 style="font-size:15px; margin:0 0 4px;">Government</h3>
             <p style="font-size:13px;">BICSI / TIA baseline. CFC + FAR compliance read against spec, not after-the-fact.</p>
           </div>
@@ -253,17 +286,17 @@
         </div>
         <div class="card-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
           <div class="card card-accent">
-            <div class="card-icon" style="font-size:24px;">📐</div>
+            <div class="card-icon"><svg aria-hidden="true" width="24" height="24"><use href="/assets/svg/icons.svg#icon-ruler"></use></svg></div>
             <h3>Bid extraction pipeline</h3>
             <p>Automated scope extraction from plan sets and specs — structured counts, symbol legends, and riser/schedule decode for Division 27/28 takeoffs.</p>
           </div>
           <div class="card card-accent">
-            <div class="card-icon" style="font-size:24px;">🤖</div>
+            <div class="card-icon"><svg aria-hidden="true" width="24" height="24"><use href="/assets/svg/icons.svg#icon-server"></use></svg></div>
             <h3>Construction AI</h3>
             <p>Layered LLM routing on domain GPU hosts for plan review, RFP drafting, and delta notes vs design — powered by <a href="https://appmajic.ai/" style="color:inherit;text-decoration:underline">AppMajic.ai</a> (Dad's Toolbox plugin for Cursor).</p>
           </div>
           <div class="card card-accent">
-            <div class="card-icon" style="font-size:24px;">📊</div>
+            <div class="card-icon"><svg aria-hidden="true" width="24" height="24"><use href="/assets/svg/icons.svg#icon-bar-chart"></use></svg></div>
             <h3>Pipeline monitor</h3>
             <p>Internal job health dashboard for extraction lanes, GPU probes, and method status across the GCC stack. Staff access via the client portal.</p>
           </div>
