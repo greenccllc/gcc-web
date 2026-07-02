@@ -26,6 +26,16 @@
   <meta name="twitter:title" content="Contact — 48-hour quote turnaround · GCC LLC" />
   <meta name="twitter:description" content="Request a quote, send plans for review, or schedule a site walk. Direct phone, email, and form — answered by ownership. 48-hour proposal turnaround. Same-day COI and W9." />
   <meta name="twitter:image" content="https://greencommllc.com/assets/og/og-default.png" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    "name": "Contact GCC LLC",
+    "url": "https://greencommllc.com/contact.html",
+    "description": "Contact Green Communications Contracting LLC for a quote, site walk, or project inquiry. 48-hour proposal turnaround. Same-day COI and W9.",
+    "mainEntity": {"@id": "https://greencommllc.com/#business"}
+  }
+  </script>
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to content</a>
@@ -172,7 +182,7 @@
       </div>
     </section>
 
-    <!-- ── Estimator nudge ─────────────────────────────────── -->
+    <!-- ── Estimator nudge ────────────────────────────────── -->
     <section class="section section-tinted">
       <div class="container" style="text-align:center; max-width:640px;">
         <h2>Want a number before you reach out?</h2>
@@ -198,7 +208,7 @@
       var fileList  = document.getElementById('file-list');
       if (!form) return;
 
-      // ── File queue ────────────────────────────────────────
+      // ── File queue ──────────────────────────────────────────
       var queue  = [];
       var nextId = 0;
 
@@ -206,7 +216,7 @@
         return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
       }
       function fmtSize(b) {
-        return b >= 1048576 ? (b/1048576).toFixed(1)+' MB' : Math.max(1,Math.round(b/1024))+' KB';
+        return b >= 1048576 ? (b/1048576).toFixed(1)+' MB' : Math.max(1,Math.round(b/1024))+' KB';
       }
 
       function addFiles(files) {
@@ -223,7 +233,7 @@
         if (!fileList) return;
         fileList.innerHTML = '';
         queue.forEach(function(q) {
-          var labels = { pending:'Ready', uploading:'Uploading…', done:'✓ Done', error:'× Error' };
+          var labels = { pending:'Ready', uploading:'Uploading…', done:'✓ Done', error:'× Error' };
           var el = document.createElement('div');
           el.className = 'file-item' + (q.status === 'done' ? ' is-done' : '');
           el.id = 'fi-' + q.id;
@@ -269,7 +279,7 @@
         });
       }
 
-      // ── Upload one file to R2 via presigned URL ───────────
+      // ── Upload one file to R2 via presigned URL ─────────────────────
       // API contract: POST /uploads/presign { filename, contentType, size }
       //               → { uploadUrl: string, fileUrl: string }
       function uploadFile(q) {
@@ -307,7 +317,7 @@
         });
       }
 
-      // ── Form submit ───────────────────────────────────────
+      // ── Form submit ───────────────────────────────────────────
       form.addEventListener('submit', async function(e) {
         e.preventDefault();
         var data = Object.fromEntries(new FormData(form));
