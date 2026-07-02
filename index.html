@@ -7,6 +7,10 @@
   <meta name="description" content="Green Communications Contracting LLC — Division 27 + 28 contractor delivering structured cabling, IP surveillance, access control, and smart-home work across Kansas City and St. Louis." />
   <meta name="author" content="Green Communications Contracting LLC" />
   <meta name="theme-color" content="#1E4D2B" />
+  <meta name="geo.region" content="US-MO" />
+  <meta name="geo.placename" content="O'Fallon, Missouri" />
+  <meta name="geo.position" content="38.8109;-90.6998" />
+  <meta name="ICBM" content="38.8109, -90.6998" />
   <link rel="canonical" href="https://greencommllc.com/" />
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
@@ -41,6 +45,7 @@
     "description": "Division 27/28 low-voltage contractor delivering structured cabling, IP surveillance, access control, and smart-home work across Kansas City and St. Louis.",
     "telephone": "+16362248192",
     "email": "info@greencommllc.com",
+    "foundingDate": "2026",
     "address": {
       "@type": "PostalAddress",
       "streetAddress": "603 Seib Dr",
@@ -54,6 +59,17 @@
       {"@type": "City", "name": "St. Louis"}
     ],
     "knowsAbout": ["Structured Cabling", "Cat6A", "IP Security", "UniFi", "Low Voltage", "Division 27", "Division 28"],
+    "hasOfferCatalog": {
+      "@type": "OfferCatalog",
+      "name": "GCC LLC Service Catalog",
+      "itemListElement": [
+        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Structured Cabling", "url": "https://greencommllc.com/services/cabling.html"}},
+        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "IP Security Systems", "url": "https://greencommllc.com/services/security.html"}},
+        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Network & Managed Services", "url": "https://greencommllc.com/services/network.html"}},
+        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Residential Smart Home", "url": "https://greencommllc.com/services/residential.html"}},
+        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Service Contracts", "url": "https://greencommllc.com/services/contracts.html"}}
+      ]
+    },
     "priceRange": "$$",
     "openingHoursSpecification": {
       "@type": "OpeningHoursSpecification",
@@ -63,6 +79,74 @@
     }
   }
   </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What areas does GCC LLC serve?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Primary territory is Kansas City and St. Louis — inside the 435 ring into Johnson + Wyandotte counties for KCMO, and Greater St. Louis, St. Charles County, and the Metro East (Illinois) for STL. We bid anywhere in Missouri, Kansas, and Illinois; outside the two metros we add a small, itemized mobilization line."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does 'Cat6A plenum on every drop' mean?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Cat6A plenum-rated cable is our baseline on every project at no upcharge. We never substitute Cat6. Plenum rating is required in air-handling spaces and provides a 25-year backbone life paid for once, inherited by every future tenant."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How quickly can I get a quote from GCC LLC?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "48 hours from the time we receive the plan set. We do not ask for pre-bid calls during the bid window. COIs, W9s, and bondability letters are same-day."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is Division 27 and Division 28?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Division 27 covers Telecommunications — structured cabling, fiber, and network infrastructure. Division 28 covers Electronic Safety and Security — IP cameras, access control, intercoms, and overhead paging. GCC LLC specializes in both MasterFormat CSI divisions."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does GCC LLC carry insurance and bonding?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. GCC LLC carries general liability, commercial auto, and AmGUARD workers' compensation (NAIC #42390). Same-day COIs and W9s. Bonding letter on request."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does GCC LLC do residential work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Residential services include whole-home Cat6 structured wiring, Wi-Fi 7 mesh via UniFi, Ubiquiti smart-home integration, and multi-trade renovation work including electrical, HVAC, and plumbing rough-ins that other low-voltage shops decline."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .faq-list { max-width: 760px; margin: 0 auto; display: grid; gap: 10px; }
+    .faq-item { background: white; border: 1px solid var(--color-border-subtle); border-radius: var(--r-lg); overflow: hidden; transition: border-color .15s var(--ease); }
+    .faq-item[open] { border-color: var(--color-accent-primary); }
+    .faq-q { display: flex; justify-content: space-between; align-items: center; padding: 18px 22px; font-weight: 700; font-size: 1.02em; cursor: pointer; list-style: none; color: var(--color-text-primary); gap: 12px; }
+    .faq-q::-webkit-details-marker { display: none; }
+    .faq-q::after { content: "+"; font-size: 22px; font-weight: 400; color: var(--color-accent-primary); flex-shrink: 0; line-height: 1; transition: transform .2s var(--ease); }
+    .faq-item[open] .faq-q::after { transform: rotate(45deg); }
+    .faq-a { padding: 0 22px 18px; color: var(--color-text-secondary); line-height: 1.65; border-top: 1px solid var(--color-border-subtle); padding-top: 14px; }
+    .faq-a p { margin: 0; }
+    .faq-a a { color: var(--color-accent-primary); text-decoration: underline; }
+  </style>
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to content</a>
@@ -269,6 +353,44 @@
           </div>
         </div>
         <p style="margin-top:20px;font-size:14px;color:var(--slate);">Questions on AI-assisted takeoffs for your bid? <a href="/contact.html">Contact estimating</a> — MSP and domain tooling lives at <a href="https://majicholdings.com/">majicholdings.com</a>, not here.</p>
+      </div>
+    </section>
+
+    <!-- ── FAQ ───────────────────────────────────────────────── -->
+    <section class="section section-tinted">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Common questions</h2>
+            <p>Straight answers before the pre-bid call we won't take during the bid window anyway.</p>
+          </div>
+        </div>
+        <div class="faq-list">
+          <details class="faq-item">
+            <summary class="faq-q">What areas does GCC LLC serve?</summary>
+            <div class="faq-a"><p>Primary territory is Kansas City and St. Louis — inside the 435 ring into Johnson + Wyandotte counties for KCMO, and Greater St. Louis, St. Charles County, and the Metro East (Illinois) for STL. We'll bid anywhere in Missouri, Kansas, and Illinois; outside the two metros we add a small, itemized mobilization line.</p></div>
+          </details>
+          <details class="faq-item">
+            <summary class="faq-q">What does "Cat6A plenum on every drop" actually mean?</summary>
+            <div class="faq-a"><p>Cat6A plenum-rated cable — the highest commercial copper grade — is our baseline at no upcharge. We never substitute Cat6. Plenum rating is required in air-handling spaces (and often required by code even when the spec doesn't call for it). You get a 25-year backbone life paid for once, inherited by every future tenant.</p></div>
+          </details>
+          <details class="faq-item">
+            <summary class="faq-q">How quickly can I get a quote?</summary>
+            <div class="faq-a"><p>48 hours from the time we receive the plan set. No pre-bid calls during the bid window — if a spec is ambiguous, we resolve it in §3 or §4 of the proposal. COIs, W9s, and bondability letters are same-day.</p></div>
+          </details>
+          <details class="faq-item">
+            <summary class="faq-q">What is Division 27 / 28?</summary>
+            <div class="faq-a"><p>Division 27 covers Telecommunications — structured cabling, fiber, and network infrastructure. Division 28 covers Electronic Safety &amp; Security — IP cameras, access control, intercoms, and overhead paging. These are the two MasterFormat CSI divisions we live in.</p></div>
+          </details>
+          <details class="faq-item">
+            <summary class="faq-q">Do you carry insurance and bonding?</summary>
+            <div class="faq-a"><p>Yes — general liability, commercial auto, and AmGUARD workers' comp (NAIC&nbsp;#42390). Same-day COIs and W9s. Bonding letter on request. All delivered before your deadline.</p></div>
+          </details>
+          <details class="faq-item">
+            <summary class="faq-q">Do you do residential work?</summary>
+            <div class="faq-a"><p>Yes. Whole-home Cat6 structured wiring, Wi-Fi 7 mesh, Ubiquiti smart-home, Govee integration — plus multi-trade renos (electrical, HVAC, light plumbing) that other low-voltage shops decline. See <a href="/services/residential.html">residential services</a>.</p></div>
+          </details>
+        </div>
       </div>
     </section>
 
