@@ -154,6 +154,7 @@
           { href: '/admin/proposalgen.html', label: 'Proposal Generator' },
           { href: '/admin/calendar.html',    label: 'Calendar' },
           { href: '/admin/files.html',       label: 'Files' },
+          { href: '/admin/connectors.html',  label: 'Connectors' },
       ]},
       { label: 'Manage', group: [
           { href: '/admin/users.html',       label: 'Users' },
