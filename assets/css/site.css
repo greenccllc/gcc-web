@@ -107,7 +107,7 @@ section {
 }
 [id] { scroll-margin-top: 80px; }
 
-/* ── Header ─────────────────────────────────────────────────── */
+/* ── Header ────────────────────────────────────────────────── */
 .site-header {
   position: sticky; top: 0; z-index: 50;
   background: rgba(253, 251, 244, 0.92);
@@ -222,7 +222,7 @@ section {
   .brand-mark .monogram { width: 36px; height: 36px; font-size: 14px; }
 }
 
-/* ── Buttons ─────────────────────────────────────────────────── */
+/* ── Buttons ──────────────────────────────────────────────── */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   padding: 14px 24px;
@@ -272,7 +272,7 @@ section {
 .btn-lg { padding: 16px 28px; font-size: 16px; min-height: 52px; }
 .btn-block { width: 100%; }
 
-/* ── Hero ─────────────────────────────────────────────────── */
+/* ── Hero ──────────────────────────────────────────────── */
 .hero {
   position: relative;
   padding: clamp(72px, 10vw, 140px) 0 clamp(64px, 8vw, 120px);
@@ -383,7 +383,7 @@ section {
   letter-spacing: 0.08em;
 }
 
-/* ── Sections ─────────────────────────────────────────────────── */
+/* ── Sections ──────────────────────────────────────────────── */
 .section-eyebrow {
   font-size: 12px; font-weight: 800;
   color: var(--color-accent-primary);
@@ -445,7 +445,7 @@ section {
   content: "→"; position: absolute; left: 0; color: var(--color-accent-primary); font-weight: 700;
 }
 
-/* ── Strip / banner sections ─────────────────────────────────────── */
+/* ── Strip / banner sections ──────────────────────────────────── */
 .strip {
   background: linear-gradient(135deg, var(--color-accent-primary) 0%, var(--color-accent-strong) 100%);
   color: white;
@@ -485,7 +485,7 @@ section {
   display: block;
 }
 
-/* ── Footer ─────────────────────────────────────────────────── */
+/* ── Footer ──────────────────────────────────────────────── */
 .site-footer {
   background: var(--color-text-primary);
   color: rgba(255, 255, 255, 0.78);
@@ -525,7 +525,7 @@ section {
   font-size: 13px;
 }
 
-/* ── Login pages ─────────────────────────────────────────────── */
+/* ── Login pages ────────────────────────────────────────────── */
 .login-page {
   /* Min-height kept so the gradient background fills tall viewports
      even when the card is short, but the layout is now driven by the
@@ -583,7 +583,7 @@ section {
   color: var(--color-text-muted);
 }
 
-/* ── Contact form ─────────────────────────────────────────────── */
+/* ── Contact form ───────────────────────────────────────────── */
 .contact-grid {
   display: grid;
   grid-template-columns: 0.9fr 1.1fr;
@@ -645,7 +645,7 @@ section {
 .mb-0 { margin-bottom: 0; }
 .cta-row { display: flex; gap: 12px; flex-wrap: wrap; }
 
-/* ── Skip-link (a11y) ────────────────────────────────────────── */
+/* ── Skip-link (a11y) ──────────────────────────────────────────── */
 .skip-link {
   position: absolute;
   left: -9999px;
@@ -664,7 +664,7 @@ section {
   color: white;
 }
 
-/* ── Inline icon (SVG sprite) ────────────────────────────────── */
+/* ── Inline icon (SVG sprite) ──────────────────────────────────────── */
 .icon {
   width: 1em; height: 1em;
   display: inline-block;
@@ -676,7 +676,7 @@ section {
 .v-icon .icon, .vis-icon .icon { width: 28px; height: 28px; }
 .contact-info .ci-block h4 .icon { margin-right: 6px; width: 18px; height: 18px; }
 
-/* ── Button focus-visible (a11y) ─────────────────────────────── */
+/* ── Button focus-visible (a11y) ───────────────────────────────────── */
 .btn:focus-visible,
 .site-nav a:focus-visible,
 .site-nav .nav-trigger:focus-visible {
@@ -684,7 +684,7 @@ section {
   outline-offset: 2px;
 }
 
-/* ── Footer touch-target bump ────────────────────────────────── */
+/* ── Footer touch-target bump ─────────────────────────────────────── */
 .footer-col li { padding: 8px 0; }
 .footer-col li a { display: inline-block; padding: 2px 0; }
 
@@ -1097,3 +1097,11 @@ p, li, td, dd, h1, h2, h3, h4 { overflow-wrap: break-word; }
   .section-top-xl { padding-top: var(--s-12); }
   .mt-xl { margin-top: var(--s-8); }
 }
+
+/* ── Compact card variant (verticals section) ── */
+.card-sm { padding: 20px 18px; }
+.card-grid-sm { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+
+/* ── Inline text link on accent/colored backgrounds ── */
+.text-link { color: inherit; text-decoration: underline; }
+.text-link:hover { opacity: 0.8; }
