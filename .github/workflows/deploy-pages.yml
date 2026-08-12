@@ -51,7 +51,6 @@ jobs:
             services.html \
             styleguide.html \
             support.html \
-            404.html \
             robots.txt \
             sitemap.xml \
             services \
