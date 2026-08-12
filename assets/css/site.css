@@ -1097,3 +1097,27 @@ p, li, td, dd, h1, h2, h3, h4 { overflow-wrap: break-word; }
   .section-top-xl { padding-top: var(--s-12); }
   .mt-xl { margin-top: var(--s-8); }
 }
+
+/* ============================================================
+   Card grid variant classes — replaces inline grid-template-columns
+   ============================================================ */
+
+/* Compact verticals grid — min card width 220px */
+.card-grid-verticals {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+/* Wider feature/CI card grid — min card width 280px */
+.card-grid-wide {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+/* Compact card — tighter padding and smaller type for dense industry grids */
+.card-sm { padding: 20px 18px; }
+.card-sm h3 { font-size: 15px; margin: 0 0 4px; }
+.card-sm p  { font-size: 13px; }
+
+/* Inline link inside a card paragraph — inherits text color with subtle underline */
+.card-inlink { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.card-inlink:hover { color: var(--color-accent-primary); }
