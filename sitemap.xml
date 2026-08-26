@@ -96,4 +96,8 @@
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
+  <url><loc>https://greencommllc.com/tools/majic-workforce</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://greencommllc.com/tools/majic-takeoff</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://greencommllc.com/tools/majic-outreach</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://greencommllc.com/tools/majic-quotes</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
 </urlset>
