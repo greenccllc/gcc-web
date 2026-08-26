@@ -38,6 +38,10 @@
               <li><a href="/services/network.html">Network &amp; managed</a></li>
               <li><a href="/services/residential.html">Residential</a></li>
               <li><a href="/services/contracts.html">Service contracts</a></li>
+<li><a href="/tools/majic-workforce.html">Majic Workforce</a></li>
+<li><a href="/tools/majic-takeoff.html">Majic Takeoff</a></li>
+<li><a href="/tools/majic-outreach.html">Majic Outreach</a></li>
+<li><a href="/tools/majic-quotes.html">Majic Quotes</a></li>
             </ul>
           </div>
           <div class="gcc-footer-col">
