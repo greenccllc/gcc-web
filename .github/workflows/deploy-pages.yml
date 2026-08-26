@@ -55,6 +55,7 @@ jobs:
             robots.txt \
             sitemap.xml \
             services \
+            tools \
             estimate \
             legal \
             assets \
