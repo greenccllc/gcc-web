@@ -105,3 +105,12 @@
   background: var(--forest); color: white;
   box-shadow: var(--shadow-xs);
 }
+
+/* Oct 2026 reprice: condition notes under the breakdown, and the
+   "included in every number" list at the foot of the form. */
+.est-note { font-size: 13px; line-height: 1.45; color: rgba(255,255,255,0.88); margin: 0 0 8px; padding-left: 14px; position: relative; }
+.est-note::before { content: ""; position: absolute; left: 0; top: 7px; width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.55); }
+#est-notes:not(:empty), #res-est-notes:not(:empty) { margin-bottom: 16px; }
+.est-included ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.est-included li { font-size: 14px; color: var(--ink); line-height: 1.4; padding-left: 24px; position: relative; }
+.est-included li::before { content: "\2713"; position: absolute; left: 0; top: 0; color: var(--forest); font-weight: 700; }

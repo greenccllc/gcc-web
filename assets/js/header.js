@@ -117,14 +117,13 @@
   function navAnonymous() {
     return [
       { href: '/services.html',                 label: 'Services' },
-      { href: '/ai-proposals.html',              label: 'AI Proposals' },
       { href: '/projects.html',                 label: 'Projects' },
       { href: '/about.html',                    label: 'About' },
       { href: '/estimate/',                     label: 'Estimate' },
       { label: 'Tools we built', group: [ { href: '/tools/majic-workforce.html', label: 'Majic Workforce' }, { href: '/tools/majic-takeoff.html', label: 'Majic Takeoff' }, { href: '/tools/majic-outreach.html', label: 'Majic Outreach' }, { href: '/tools/majic-quotes.html', label: 'Majic Quotes' } ] },
 { href: '/contact.html',                  label: 'Contact' },
       { spacer: true },
-      { href: '/clients/',                      label: 'Sign in', cta: true }
+      { href: 'https://bidboard.appmajic.ai/',  label: 'Sign in', cta: true }
     ];
   }
 

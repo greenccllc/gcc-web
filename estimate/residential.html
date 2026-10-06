@@ -4,13 +4,13 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Home Estimator — Smart wiring, security, AV, outdoor · GCC LLC</title>
-<meta name="description" content="Free residential estimate for whole-home Wi-Fi, smart cameras, doorbell, smart home, TV mounts, fencing, decking, and light electrical. KCMO + STL." />
+<meta name="description" content="Free residential estimate for whole-home Wi-Fi, smart cameras, doorbell, smart home, TV mounts, fencing, decking, and light electrical. St. Louis and Kansas City." />
 <meta name="theme-color" content="#1E4D2B" />
 <link rel="icon" href="/assets/favicon.ico" sizes="any" /><link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
-<link rel="stylesheet" href="/assets/css/site.css" />
-  <link rel="stylesheet" href="/assets/css/chrome.css?v=20260501-wizard" />
+<link rel="stylesheet" href="/assets/css/site.css?v=20261006" />
+  <link rel="stylesheet" href="/assets/css/chrome.css?v=20261006" />
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://greencommllc.com/"},{"@type":"ListItem","position":2,"name":"Estimator","item":"https://greencommllc.com/estimate/commercial.html"},{"@type":"ListItem","position":3,"name":"Residential","item":"https://greencommllc.com/estimate/residential.html"}]}</script>
-<link rel="stylesheet" href="/assets/css/estimator-residential.css?v=20260501-no-renos" />
+<link rel="stylesheet" href="/assets/css/estimator-residential.css?v=20261006-pricing" />
 <link rel="canonical" href="https://greencommllc.com/estimate/residential" />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="GCC LLC" />
@@ -55,12 +55,12 @@
           <div class="cat-grid">
             <div class="cat-row" data-cat="drops">
               <div class="cat-icon"><svg class="icon" aria-hidden="true"><use href="/assets/svg/icons.svg#icon-cable"/></svg></div>
-              <div class="cat-text"><span class="cat-name">Cat6 drops</span><span class="cat-hint">Hard-wired runs to office, TVs, cameras, APs. ~1 per room is typical.</span></div>
+              <div class="cat-text"><span class="cat-name">Wired drops (Cat6A)</span><span class="cat-hint">A hard-wired run to an office, TV or game console — terminated, tested and labeled. Cameras and access points below already include theirs.</span></div>
               <div class="num-stepper"><button type="button" data-step="drops" data-delta="-1">−</button><input type="number" id="drops" value="0" min="0" max="50" /><button type="button" data-step="drops" data-delta="+1">+</button></div>
             </div>
             <div class="cat-row" data-cat="aps">
               <div class="cat-icon"><svg class="icon" aria-hidden="true"><use href="/assets/svg/icons.svg#icon-wifi"/></svg></div>
-              <div class="cat-text"><span class="cat-name">Wi-Fi 7 mesh APs</span><span class="cat-hint">Plan ~1 AP per 1,500 sq ft. We mount and cable them.</span></div>
+              <div class="cat-text"><span class="cat-name">Wi-Fi 7 access points</span><span class="cat-hint">Plan about one per 1,500 sq ft. Ceiling-mounted, wired back to the gateway and set up.</span></div>
               <div class="num-stepper"><button type="button" data-step="aps" data-delta="-1">−</button><input type="number" id="aps" value="0" min="0" max="20" /><button type="button" data-step="aps" data-delta="+1">+</button></div>
             </div>
           </div>
@@ -72,17 +72,17 @@
           <div class="cat-grid">
             <div class="cat-row" data-cat="camIn">
               <div class="cat-icon">📷</div>
-              <div class="cat-text"><span class="cat-name">Interior cameras</span><span class="cat-hint">Living areas, garage, basement. PoE-cabled to NVR.</span></div>
+              <div class="cat-text"><span class="cat-name">Interior cameras</span><span class="cat-hint">Living areas, garage, basement. Includes the wired run and mount.</span></div>
               <div class="num-stepper"><button type="button" data-step="camIn" data-delta="-1">−</button><input type="number" id="camIn" value="0" min="0" max="50" /><button type="button" data-step="camIn" data-delta="+1">+</button></div>
             </div>
             <div class="cat-row" data-cat="camOut">
               <div class="cat-icon">📸</div>
-              <div class="cat-text"><span class="cat-name">Exterior cameras</span><span class="cat-hint">Weatherized, eaves-mount, IR. Coverage of doors + driveway.</span></div>
+              <div class="cat-text"><span class="cat-name">Exterior cameras</span><span class="cat-hint">Doors, driveway, yard. Includes the wired run, weather-rated box and mount.</span></div>
               <div class="num-stepper"><button type="button" data-step="camOut" data-delta="-1">−</button><input type="number" id="camOut" value="0" min="0" max="20" /><button type="button" data-step="camOut" data-delta="+1">+</button></div>
             </div>
             <div class="cat-row" data-cat="doorbell">
               <div class="cat-icon">🔔</div>
-              <div class="cat-text"><span class="cat-name">Smart doorbell</span><span class="cat-hint">UniFi G4 / Doorbird with chime + intercom. Per door.</span></div>
+              <div class="cat-text"><span class="cat-name">Smart doorbell</span><span class="cat-hint">UniFi doorbell, wired, with two-way talk and package detection. Per door.</span></div>
               <div class="num-stepper"><button type="button" data-step="doorbell" data-delta="-1">−</button><input type="number" id="doorbell" value="0" min="0" max="5" /><button type="button" data-step="doorbell" data-delta="+1">+</button></div>
             </div>
           </div>
@@ -147,7 +147,8 @@
         <!-- ─── Conditions ─── -->
         <div class="est-step">
           <h4>🏘️ Conditions</h4>
-          <div class="chk-row"><input type="checkbox" id="metro" /><label for="metro">Outside KCMO + STL metros<span class="chk-hint">Adds a small mobilization line.</span></label></div>
+          <div class="chk-row"><input type="checkbox" id="ownGear" /><label for="ownGear">I already have the cameras, access points or doorbell<span class="chk-hint">We run, terminate and test the cable to each one. Your devices, your choice of brand.</span></label></div>
+          <div class="chk-row"><input type="checkbox" id="metro" /><label for="metro">Outside the St. Louis and Kansas City metros<span class="chk-hint">Travel is priced with your quote.</span></label></div>
           <div class="chk-row"><input type="checkbox" id="rush" /><label for="rush">Need it done in &lt; 2 weeks<span class="chk-hint">+10% rush surcharge for accelerated scheduling.</span></label></div>
           <div class="chk-row"><input type="checkbox" id="permit" checked /><label for="permit">Pull required permits (typical for outdoor work)<span class="chk-hint">We pull, inspect, and close out. Adds permit fees + admin.</span></label></div>
         </div>
@@ -156,17 +157,18 @@
       <aside class="est-result empty" id="res-est-result" aria-live="polite">
         <h3>Your home estimate</h3>
         <div class="est-range" id="res-est-range">Add something to begin →</div>
-        <div class="est-basis" id="res-est-basis">Real numbers, based on GCC's 2026 residential pricing.</div>
+        <div class="est-basis" id="res-est-basis">Real numbers at GCC's current residential pricing.</div>
 
         <div class="est-breakdown" id="res-est-breakdown" style="display: none;">
           <h4>Breakdown (midpoint)</h4>
           <div id="res-est-lines"></div>
         </div>
+        <div id="res-est-notes"></div>
 
         <a href="/contact.html" class="btn btn-primary" id="res-est-cta">Turn this into a firm quote →</a>
 
         <div class="est-disclaimer">
-          <strong>Quick note:</strong> Final prices depend on your home's specifics — wall type, attic access, age of wiring/plumbing, finish materials. Renovations especially vary widely. We'll walk it with you and lock the number before any work starts.
+          <strong>Quick note:</strong> Final prices depend on your home — wall type, attic access, the age of the wiring, the finish materials. We walk it with you and lock the number before any work starts. Want it bundled? See our <a href="/services/residential.html#packages">whole-home Wi-Fi, security and cabling packages</a>.
         </div>
       </aside>
     </div>
@@ -178,10 +180,10 @@
 <script src="/assets/js/site.js"></script>
 
 <script src="/assets/js/api.js"></script>
-<script src="/assets/js/header.js"></script>
-  <script src="/assets/js/footer.js"></script>
-<script src="/assets/js/estimator-save.js"></script>
-<script src="/assets/js/estimator-residential.js"></script>
-<script src="/assets/js/estimator-wizard.js?v=20260501-wizard"></script>
+<script src="/assets/js/header.js?v=20261006"></script>
+  <script src="/assets/js/footer.js?v=20261006"></script>
+<script src="/assets/js/estimator-save.js?v=20261006-pricing"></script>
+<script src="/assets/js/estimator-residential.js?v=20261006-pricing"></script>
+<script src="/assets/js/estimator-wizard.js?v=20261006-pricing"></script>
 </body>
 </html>

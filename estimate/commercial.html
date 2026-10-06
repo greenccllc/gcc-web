@@ -3,20 +3,20 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Instant Estimate — Cabling, cameras, doors, speakers · GCC LLC</title>
-<meta name="description" content="Free instant ballpark for your structured cabling, IP surveillance, access control, paging, fiber, or server-room project. Answer 30 seconds of questions and get a real range — no sales call required." />
+<title>Instant Estimate — Cabling, Wi-Fi, cameras, doors, fiber · GCC LLC</title>
+<meta name="description" content="Free instant budget range for structured cabling, Wi-Fi, IP cameras, access control, paging, fiber and telecom rooms at GCC's current pricing. Thirty seconds, no sales call." />
 <meta name="theme-color" content="#1E4D2B" />
 <link rel="icon" href="/assets/favicon.ico" sizes="any" /><link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
-<link rel="stylesheet" href="/assets/css/site.css" />
-  <link rel="stylesheet" href="/assets/css/chrome.css?v=20260501-wizard" />
+<link rel="stylesheet" href="/assets/css/site.css?v=20261006" />
+  <link rel="stylesheet" href="/assets/css/chrome.css?v=20261006" />
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://greencommllc.com/"},{"@type":"ListItem","position":2,"name":"Estimator","item":"https://greencommllc.com/estimate/commercial.html"}]}</script>
-<link rel="stylesheet" href="/assets/css/estimator.css?v=20260501-contrast" />
+<link rel="stylesheet" href="/assets/css/estimator.css?v=20261006-pricing" />
 <link rel="canonical" href="https://greencommllc.com/estimate/commercial" />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="GCC LLC" />
 <meta property="og:locale" content="en_US" />
-<meta property="og:title" content="Estimator — Instant low-voltage budget · GCC LLC" />
-<meta property="og:description" content="Get a quick, unitized budget for your low-voltage project. Drops, cameras, doors, AV — all the major scope categories with ranged pricing." />
+<meta property="og:title" content="Estimator — Instant technology budget · GCC LLC" />
+<meta property="og:description" content="A quick budget range for the technology scope on your project: drops, Wi-Fi, cameras, doors, speakers, fiber and telecom rooms." />
 <meta property="og:url" content="https://greencommllc.com/estimate/commercial" />
 <meta property="og:image" content="https://greencommllc.com/assets/og/og-default.png" />
 <meta property="og:image:width" content="1200" />
@@ -38,8 +38,8 @@
     </div>
     <span class="eyebrow">Instant Estimate · Public</span>
     <h1>30 seconds. <span class="highlight">Real ballpark.</span></h1>
-    <p class="lead" style="max-width: 720px;">Tell us roughly what you need — drops, cameras, doors, speakers, fiber, server room — and we'll show a live range based on GCC's actual 2026 pricing. No lead form, no "we'll get back to you," no upsell.</p>
-    <p style="color: var(--slate); font-size: 0.95em; max-width: 720px; margin-top: 8px;">Need a more precise breakdown (20+ categories: HDMI, IoT, ladder rack, switches, MDF/IDF rooms, etc.)? <a href="/clients/" style="color: var(--forest); font-weight: 600;">Request a client login</a> and we'll send you the full estimator.</p>
+    <p class="lead" style="max-width: 720px;">Tell us roughly what you need — drops, access points, cameras, doors, speakers, fiber, telecom rooms — and we'll show a live range at GCC's current pricing. No lead form, no upsell.</p>
+    <p style="color: var(--slate); font-size: 0.95em; max-width: 720px; margin-top: 8px;">Already have drawings? <a href="/contact.html" style="color: var(--forest); font-weight: 600;">Send them</a> and a priced proposal comes back the same day. Hiring by the hour? <a href="/estimate/#rates" style="color: var(--forest); font-weight: 600;">See our hourly rates</a>.</p>
     <button type="button" class="estimator-wizard-cta" data-estimator-wizard>Start the guided wizard</button>
   </div>
 </section>
@@ -49,7 +49,7 @@
     <div class="est-wrap">
       <form class="est-form" id="estimator-form" autocomplete="off">
         <h3>Project details</h3>
-        <p class="form-sub">All fields optional. The more you fill in, the tighter the range.</p>
+        <p class="form-sub">All fields optional. Each device below already includes its own cable, so count a camera as a camera, not as a camera plus a drop.</p>
 
         <!-- Project type defaulted to "commercial" via the URL — the
              est-mode-toggle pill at the top swaps to /estimate/residential.html
@@ -64,7 +64,7 @@
 
             <div class="cat-row" data-cat="drops">
               <div class="cat-icon"><svg class="icon" aria-hidden="true"><use href="/assets/svg/icons.svg#icon-cable"/></svg></div>
-              <div class="cat-text"><span class="cat-name">Data drops</span><span class="cat-hint">Cat6/6A — one per workstation, camera, AP, printer, door reader, TV</span></div>
+              <div class="cat-text"><span class="cat-name">Data drops</span><span class="cat-hint">Cat6A plenum, terminated both ends, certified and labeled. One per workstation, printer, phone or TV.</span></div>
               <div class="num-stepper">
                 <button type="button" data-step="drops" data-delta="-1" aria-label="Decrease">−</button>
                 <input type="number" id="drops" name="drops" value="0" min="0" max="5000" inputmode="numeric" />
@@ -72,9 +72,19 @@
               </div>
             </div>
 
+            <div class="cat-row" data-cat="aps">
+              <div class="cat-icon"><svg class="icon" aria-hidden="true"><use href="/assets/svg/icons.svg#icon-wifi"/></svg></div>
+              <div class="cat-text"><span class="cat-name">Wi-Fi access points</span><span class="cat-hint">UniFi U7 Pro or comparable. Includes the cable, mounting and configuration.</span></div>
+              <div class="num-stepper">
+                <button type="button" data-step="aps" data-delta="-1" aria-label="Decrease">−</button>
+                <input type="number" id="aps" name="aps" value="0" min="0" max="1000" inputmode="numeric" />
+                <button type="button" data-step="aps" data-delta="+1" aria-label="Increase">+</button>
+              </div>
+            </div>
+
             <div class="cat-row" data-cat="cameras">
               <div class="cat-icon">📹</div>
-              <div class="cat-text"><span class="cat-name">Cameras</span><span class="cat-hint">IP cameras (Ubiquiti G6 or comparable). Includes mount, PoE cabling, NVR channel.</span></div>
+              <div class="cat-text"><span class="cat-name">Cameras</span><span class="cat-hint">UniFi G6 or comparable. Includes the cable, mount, aiming and setup. Recorder quoted with the job.</span></div>
               <div class="num-stepper">
                 <button type="button" data-step="cameras" data-delta="-1" aria-label="Decrease">−</button>
                 <input type="number" id="cameras" name="cameras" value="0" min="0" max="500" inputmode="numeric" />
@@ -84,7 +94,7 @@
 
             <div class="cat-row" data-cat="doors">
               <div class="cat-icon">🚪</div>
-              <div class="cat-text"><span class="cat-name">Door access</span><span class="cat-hint">Door hub, card reader, maglock or strike, intercom-ready, first-year licensing.</span></div>
+              <div class="cat-text"><span class="cat-name">Door access</span><span class="cat-hint">Door hub, reader, strike, exit button and door contact — cabled, installed and programmed.</span></div>
               <div class="num-stepper">
                 <button type="button" data-step="doors" data-delta="-1" aria-label="Decrease">−</button>
                 <input type="number" id="doors" name="doors" value="0" min="0" max="100" inputmode="numeric" />
@@ -94,7 +104,7 @@
 
             <div class="cat-row" data-cat="speakers">
               <div class="cat-icon">🔊</div>
-              <div class="cat-text"><span class="cat-name">Speakers</span><span class="cat-hint">70V ceiling speakers for paging or background music. Amp + zone wiring included.</span></div>
+              <div class="cat-text"><span class="cat-name">Speakers</span><span class="cat-hint">Ceiling speakers for paging or background music: cable, support, install and zone connection. Amplifier quoted with the job.</span></div>
               <div class="num-stepper">
                 <button type="button" data-step="speakers" data-delta="-1" aria-label="Decrease">−</button>
                 <input type="number" id="speakers" name="speakers" value="0" min="0" max="500" inputmode="numeric" />
@@ -104,7 +114,7 @@
 
             <div class="cat-row" data-cat="fiberRuns">
               <div class="cat-icon"><svg class="icon" aria-hidden="true"><use href="/assets/svg/icons.svg#icon-globe"/></svg></div>
-              <div class="cat-text"><span class="cat-name">Fiber backbones</span><span class="cat-hint">Single-mode or multimode runs between IDFs / buildings. Fusion-spliced, OTDR-tested.</span></div>
+              <div class="cat-text"><span class="cat-name">Fiber backbones</span><span class="cat-hint">Fiber between telecom rooms or buildings, fusion-terminated and OTDR-tested at both ends.</span></div>
               <div class="num-stepper">
                 <button type="button" data-step="fiberRuns" data-delta="-1" aria-label="Decrease">−</button>
                 <input type="number" id="fiberRuns" name="fiberRuns" value="0" min="0" max="100" inputmode="numeric" />
@@ -113,8 +123,8 @@
             </div>
 
             <div class="cat-row" data-cat="serverRooms">
-              <div class="cat-icon"><svg class="icon" aria-hidden="true"><use href="/assets/svg/icons.svg#icon-server"/></svg>️</div>
-              <div class="cat-text"><span class="cat-name">Server rooms / IDFs</span><span class="cat-hint">Full build-out: rack, patch panels, ladder rack, grounding to TIA-607.</span></div>
+              <div class="cat-icon"><svg class="icon" aria-hidden="true"><use href="/assets/svg/icons.svg#icon-server"/></svg></div>
+              <div class="cat-text"><span class="cat-name">Telecom rooms (MDF / IDF)</span><span class="cat-hint">Rack or cabinet, patch panels, cable management, ladder rack, bonding and grounding, UPS. Switches quoted with the job.</span></div>
               <div class="num-stepper">
                 <button type="button" data-step="serverRooms" data-delta="-1" aria-label="Decrease">−</button>
                 <input type="number" id="serverRooms" name="serverRooms" value="0" min="0" max="20" inputmode="numeric" />
@@ -125,36 +135,41 @@
           </div>
         </div>
 
-        <!-- Step 3: extras -->
+        <!-- Step 2: conditions -->
         <div class="est-step">
           <h4>2 · Project conditions</h4>
-          <div class="chk-row"><input type="checkbox" id="pw" name="pw" /><label for="pw">Prevailing-wage project<span class="chk-hint">Government, public schools, federal. Adds certified-payroll line items.</span></label></div>
-          <div class="chk-row"><input type="checkbox" id="testing" name="testing" checked /><label for="testing">Full Fluke DSX-8000 + OTDR certification<span class="chk-hint">Included by default. Uncheck only if a separate cert shop is handling it.</span></label></div>
-          <div class="chk-row"><input type="checkbox" id="asBuilts" name="asBuilts" checked /><label for="asBuilts">As-built drawings + closeout package<span class="chk-hint">Bluebeam-marked plans, per-drop cert reports, rack photos.</span></label></div>
-          <div class="chk-row"><input type="checkbox" id="afterHours" name="afterHours" /><label for="afterHours">Weekend / night work required<span class="chk-hint">+5% off-hours surcharge.</span></label></div>
-          <div class="chk-row"><input type="checkbox" id="metro" name="metro" /><label for="metro">Outside KCMO + STL metros<span class="chk-hint">Adds a mobilization line (depends on distance).</span></label></div>
+          <div class="chk-row"><input type="checkbox" id="ownerDevices" name="ownerDevices" /><label for="ownerDevices">We're supplying our own cameras, access points and door hardware<span class="chk-hint">We cable, mount, aim and configure your equipment.</span></label></div>
+          <div class="chk-row"><input type="checkbox" id="pw" name="pw" /><label for="pw">Prevailing-wage project<span class="chk-hint">Public schools, municipal, state and federal work. Certified payroll is included at no charge.</span></label></div>
+          <div class="chk-row"><input type="checkbox" id="afterHours" name="afterHours" /><label for="afterHours">Work has to happen nights or weekends<span class="chk-hint">No premium. Same rate at any hour, so an occupied building stays open.</span></label></div>
+          <div class="chk-row"><input type="checkbox" id="metro" name="metro" /><label for="metro">Outside the St. Louis and Kansas City metros<span class="chk-hint">We work across Missouri, Kansas, Illinois, Iowa, Nebraska, Oklahoma, Arkansas, Tennessee and Kentucky. Travel is priced with your quote.</span></label></div>
+        </div>
+
+        <div class="est-step est-included">
+          <h4>Included in every number</h4>
+          <ul>
+            <li>Cat6A plenum on every drop, no upcharge</li>
+            <li>Fluke DSX-8000 certification on every drop, OTDR on every fiber strand</li>
+            <li>TIA-606 labels at both ends, test reports and as-built markups at closeout</li>
+            <li>Lifetime workmanship warranty on our cabling</li>
+          </ul>
         </div>
       </form>
 
       <aside class="est-result empty" id="est-result" aria-live="polite">
         <h3>Your estimate</h3>
         <div class="est-range" id="est-range">Add something to the form →</div>
-        <div class="est-basis" id="est-basis">We'll show the range here as you type. Based on GCC's actual 2026 pricing model + benchmarked against 2026 industry data.</div>
+        <div class="est-basis" id="est-basis">We'll show the range here as you type, at GCC's current pricing.</div>
 
         <div class="est-breakdown" id="est-breakdown" style="display: none;">
           <h4>Breakdown (midpoint)</h4>
           <div id="est-lines"></div>
         </div>
+        <div id="est-notes"></div>
 
         <a href="/contact.html" class="btn btn-primary" id="est-cta">Turn this into a firm quote →</a>
 
-        <div class="upgrade-banner">
-          <span class="ub-icon">🔐</span>
-          <span><strong>Need full detail?</strong> The client portal estimator covers <strong>20+ scope categories</strong> (HDMI, IoT, intercoms, elevator phones, UPS, MDF, IDF, switches, patch panels, ladder rack, etc.). <a href="/clients/">Request access →</a></span>
-        </div>
-
         <div class="est-disclaimer">
-          <strong>Quick note:</strong> This is a ballpark range. Real pricing depends on site conditions, wall type, plenum vs. riser requirements, and the gear we end up specifying. Send us plans and we'll send a hard number back inside 48 hours — <a href="/contact.html">get a real quote</a>.
+          <strong>Quick note:</strong> This is a budget range, not a bid. The real number depends on the drawings, cable distances, ceiling access and the equipment specified. Send us the plans and a priced proposal comes back the same day — <a href="/contact.html">get a real quote</a>.
         </div>
       </aside>
     </div>
@@ -166,10 +181,10 @@
 <script src="/assets/js/site.js"></script>
 
 <script src="/assets/js/api.js"></script>
-<script src="/assets/js/header.js"></script>
-  <script src="/assets/js/footer.js"></script>
-<script src="/assets/js/estimator-save.js"></script>
-<script src="/assets/js/estimator.js"></script>
-<script src="/assets/js/estimator-wizard.js?v=20260501-wizard"></script>
+<script src="/assets/js/header.js?v=20261006"></script>
+  <script src="/assets/js/footer.js?v=20261006"></script>
+<script src="/assets/js/estimator-save.js?v=20261006-pricing"></script>
+<script src="/assets/js/estimator.js?v=20261006-pricing"></script>
+<script src="/assets/js/estimator-wizard.js?v=20261006-pricing"></script>
 </body>
 </html>

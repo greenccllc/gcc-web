@@ -84,3 +84,8 @@
   background: var(--forest); color: white;
   box-shadow: var(--shadow-xs);
 }
+
+/* Oct 2026 reprice: condition notes under the breakdown. */
+.est-note { font-size: 13px; line-height: 1.45; color: rgba(255,255,255,0.88); margin: 0 0 8px; padding-left: 14px; position: relative; }
+.est-note::before { content: ""; position: absolute; left: 0; top: 7px; width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.55); }
+#res-est-notes:not(:empty) { margin-bottom: 16px; }

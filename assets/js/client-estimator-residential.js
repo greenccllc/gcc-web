@@ -7,16 +7,16 @@
 
   const PRICE = {
     // Networking
-    drops:       { min: 175, mid: 240, max: 350, label: 'Cat6 drop(s)' },
-    aps:         { min: 285, mid: 425, max: 600, label: 'Wi-Fi 7 AP(s)' },
+    drops:       { min: 210, mid: 250, max: 300, label: 'Wired drop(s), Cat6A' },
+    aps:         { min: 450, mid: 550, max: 750, label: 'Wi-Fi 7 AP(s)' },
     fiber:       { min: 425, mid: 750, max: 1500, label: 'Fiber to house run(s)' },
     switchq:     { min: 425, mid: 700, max: 1200, label: 'Network switch(es) (PoE)' },
     ups:         { min: 425, mid: 700, max: 1200, label: 'UPS unit(s)' },
     rack:        { min: 850, mid: 1400, max: 2400, label: 'Wiring closet(s)/rack' },
     // Security
-    camIn:       { min: 425, mid: 650, max: 900, label: 'Interior camera(s)' },
-    camOut:      { min: 525, mid: 800, max: 1100, label: 'Exterior camera(s)' },
-    doorbell:    { min: 425, mid: 650, max: 900, label: 'Smart doorbell(s)' },
+    camIn:       { min: 450, mid: 495, max: 600, label: 'Interior camera(s)' },
+    camOut:      { min: 495, mid: 550, max: 700, label: 'Exterior camera(s)' },
+    doorbell:    { min: 495, mid: 650, max: 850, label: 'Smart doorbell(s)' },
     smartLocks:  { min: 425, mid: 600, max: 850, label: 'Smart lock(s)' },
     alarm:       { min: 350, mid: 525, max: 800, label: 'Alarm panel(s)' },
     sensor:      { min: 95, mid: 145, max: 215, label: 'Door/window sensor(s)' },

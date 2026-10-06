@@ -10,8 +10,8 @@
   <link rel="canonical" href="https://greencommllc.com/services/network" />
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
-  <link rel="stylesheet" href="/assets/css/site.css?v=20260520c" />
-  <link rel="stylesheet" href="/assets/css/chrome.css?v=20260520c" />
+  <link rel="stylesheet" href="/assets/css/site.css?v=20261006" />
+  <link rel="stylesheet" href="/assets/css/chrome.css?v=20261006" />
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="en_US" />
@@ -22,7 +22,7 @@
   <meta property="og:image" content="https://greencommllc.com/assets/og/og-default.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="GCC LLC — UniFi Network &amp; Managed Services KCMO + STL" />
+  <meta property="og:image:alt" content="GCC LLC — Wi-Fi and Network, St. Louis + Kansas City" />
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Network &amp; Managed Services — UniFi end-to-end · GCC LLC" />
@@ -34,7 +34,7 @@
     "@type": "Service",
     "serviceType": "Network Design and Managed Services",
     "name": "UniFi Network Design & Managed Services",
-    "description": "UniFi end-to-end network design with VLAN segmentation, Wi-Fi 7, controller setup, firmware tracking, and optional ongoing managed services for commercial buildings.",
+    "description": "UniFi end-to-end network design with VLAN segmentation, Wi-Fi 7, controller setup and firmware tracking, plus five managed-services plans from $150 per site per month.",
     "url": "https://greencommllc.com/services/network.html",
     "provider": {
       "@type": "LocalBusiness",
@@ -42,8 +42,11 @@
       "name": "Green Communications Contracting LLC"
     },
     "areaServed": [
+      {"@type": "City", "name": "St. Louis"},
       {"@type": "City", "name": "Kansas City"},
-      {"@type": "City", "name": "St. Louis"}
+      {"@type": "State", "name": "Missouri"},
+      {"@type": "State", "name": "Kansas"},
+      {"@type": "State", "name": "Illinois"}
     ],
     "hasOfferCatalog": {
       "@type": "OfferCatalog",
@@ -52,9 +55,11 @@
         {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "VLAN design and segmentation"}},
         {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Wi-Fi 6 / 7 predictive design and survey"}},
         {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "UniFi controller setup and firmware management"}},
-        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Monthly Care managed services"}},
-        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Annual Plan managed services"}},
-        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Lifetime service contract"}}
+        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "MS-1 Managed Network"}},
+        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "MS-2 Managed Network Plus"}},
+        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "MS-3 Full IT"}},
+        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "MS-4 Majic AI Cloud"}},
+        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "MS-5 Majic AI Local"}}
       ]
     }
   }
@@ -83,9 +88,11 @@
         <div class="section-head"><h2>Network design</h2></div>
         <div class="card-grid">
           <div class="card"><h3>VLAN segmentation</h3><p>Corporate, guest, IoT, voice, security, BYOD — each on its own VLAN with rules defined up front. Documented in the as-built.</p></div>
-          <div class="card"><h3>Wi-Fi 6 / 7 design</h3><p>Predictive surveys before pull, AP-on-a-stick walks before commissioning. Channels and bands documented per AP.</p></div>
+          <div class="card"><h3>Wi-Fi 7 design</h3><p>Coverage layouts drawn before the pull, access points mounted and configured after it. UniFi U7 Pro is our standard unless the specification names another.</p></div>
           <div class="card"><h3>Switching + routing</h3><p>POE budgets sized to camera + AP load, not nameplate. Layer-3 routing where the topology calls for it. Static + DHCP reservations exported as CSV.</p></div>
-          <div class="card"><h3>Firmware tracking</h3><p>UniFi controller pinned to a known-good release. Firmware updates batched and tested in a staging VLAN before pushing to production.</p></div>
+          <div class="card"><h3>Firmware tracking</h3><p>UniFi controller pinned to a known-good release, with firmware kept current on a tested schedule.</p></div>
+          <div class="card"><h3>Displays and rooms</h3><p>Cable to TVs and displays, conference-room video and room audio. Samsung displays and Logitech conferencing are our standard where the specification names no brand.</p></div>
+          <div class="card"><h3>Multi-building sites</h3><p>One gateway at the property MDF, fiber to each building, and each building's IDFs fed from its own MDF.</p></div>
         </div>
       </div>
     </section>
@@ -93,22 +100,18 @@
     <section class="section section-tinted">
       <div class="container">
         <div class="section-head">
-          <h2>Managed Services — scalable ongoing support for every commercial build</h2>
-          <p>Every commercial bid carries a Managed Services alternate. Sized by drop count: Small (≤50), Team (≤200), Enterprise (≤500), Mega (500+).</p>
+          <div>
+            <h2>Managed services: the crew that cabled it keeps it running</h2>
+            <p>Five monthly plans, each including everything in the one before it. We price every plan for your site the same day from what is actually installed.</p>
+          </div>
+          <a href="/services/contracts.html" class="hero-cta-secondary">Compare the plans →</a>
         </div>
-        <div class="card-grid">
-          <div class="card">
-            <h3>Monthly Care</h3>
-            <p>24/7 monitoring, firmware management, configuration backups, quarterly health report, after-hours dispatch budget. Ideal for standard commercial property needs.</p>
-          </div>
-          <div class="card">
-            <h3>Annual Plan</h3>
-            <p>Two on-site visits per year, full audit + remediation, plus everything in Monthly Care. Best fit for offices with their own IT lead.</p>
-          </div>
-          <div class="card">
-            <h3>Lifetime (one-time)</h3>
-            <p>Pay once at install. We update closeout documentation as long as you own the building. Lifetime workmanship + parts on installed gear, transfers with the property.</p>
-          </div>
+        <div class="card-grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));">
+          <div class="card"><h3>MS-1 · Managed Network</h3><p class="plan-price">$150 <span>per site / month</span></p><p>Gateway, switch and Wi-Fi monitoring, firmware kept current, network health report.</p></div>
+          <div class="card"><h3>MS-2 · Network Plus</h3><p class="plan-price">$260 <span>per site / month</span></p><p>Adds cameras, recorders and access-control doors. Quarterly on-site visit.</p></div>
+          <div class="card"><h3>MS-3 · Full IT</h3><p class="plan-price">$125 <span>per user / month</span></p><p>Adds workstations, help desk, patching and backups. Monthly on-site visit.</p></div>
+          <div class="card"><h3>MS-4 · Majic AI Cloud</h3><p class="plan-price">$149 <span>per user / month</span></p><p>AI IT agents on chat, 24/7, with issues fixed automatically.</p></div>
+          <div class="card"><h3>MS-5 · Majic AI Local</h3><p class="plan-price">$199 <span>per user / month</span></p><p>A private AI server at your site, so your data never leaves the building.</p></div>
         </div>
       </div>
     </section>
@@ -117,9 +120,9 @@
       <div class="container">
         <div class="cta-band-inner">
           <h2>Planning a network upgrade or new build?</h2>
-          <p class="lead">We can run a predictive survey on your floor plan and tell you whether 7 buys you anything over 6E for your density. Twenty-minute call, no commitment.</p>
+          <p class="lead">Send the floor plan. We lay out the coverage, count the access points and price it the same day.</p>
           <div class="hero-cta-row" style="gap:12px;">
-            <a class="hero-cta-gold" href="/contact.html">Schedule a call →</a>
+            <a class="hero-cta-gold" href="/contact.html">Send a floor plan →</a>
             <a class="hero-cta-ghost" href="/estimate/">Try the estimator →</a>
           </div>
         </div>
@@ -130,7 +133,7 @@
   <div id="gcc-footer"></div>
 
   <script src="/assets/js/api.js"></script>
-  <script src="/assets/js/header.js"></script>
-  <script src="/assets/js/footer.js"></script>
+  <script src="/assets/js/header.js?v=20261006"></script>
+  <script src="/assets/js/footer.js?v=20261006"></script>
 </body>
 </html>

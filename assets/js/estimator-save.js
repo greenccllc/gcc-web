@@ -78,6 +78,9 @@
     bar.appendChild(statusEl);
     bar.appendChild(saveBtn);
     bar.appendChild(loadBtn);
+    // Hidden until a signed-in client is confirmed. Anonymous visitors use
+    // the "Turn this into a firm quote" button instead.
+    bar.style.display = 'none';
     document.body.appendChild(bar);
 
     var loadMenu = null;
@@ -86,16 +89,13 @@
     gccApi.me().then(function (me) {
       statusEl.textContent = '👤 ' + (me.email || me.name || 'signed in');
       bar.dataset.signedIn = '1';
+      bar.style.display = 'flex';
     }).catch(function () {
-      statusEl.textContent = '🔒 Not signed in';
       bar.dataset.signedIn = '0';
     });
 
     async function handleSave() {
       if (bar.dataset.signedIn !== '1') {
-        if (confirm('Sign in to save estimates server-side? You can keep working without signing in — values stay in this browser.')) {
-          window.location.href = '/clients/?next=' + encodeURIComponent(location.pathname);
-        }
         return;
       }
       saveBtn.disabled = true;

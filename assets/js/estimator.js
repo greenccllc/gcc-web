@@ -1,139 +1,150 @@
 // ============================================================
-// GCC Public Instant Estimator
-// 6 categories: data drops, cameras, door access, speakers,
-// fiber backbones, server rooms. Pricing benchmarked against
-// industry data (Apr 2026) + GCC's 2026 Business Plan §5.4.
+// GCC Public Instant Estimator (commercial)
+// Seven categories: data drops, access points, cameras, door
+// access, speakers, fiber backbones, telecom rooms.
+// Every price lives in PRICE below. Change it here and nowhere
+// else; the page copy does not repeat any of these figures.
 // ============================================================
 (function () {
   'use strict';
 
-  // ── Pricing constants ──────────────────────────────────────
-  // Sources (industry benchmarks, Apr 2026):
-  // - Cat6 commercial drop: $100-$250 industry mid; GCC $214/drop bundler
-  // - IP camera (full install): $700-$1500 (HW + labor + cabling)
-  // - Access door full system: $3K-$5K typical, low-end $1K-$3K
-  // - 70V ceiling speaker installed: $200-$500 each
-  // - Fiber run (100-200 ft commercial): $450-$1500 incl term
-  // - Server room/IDF build: $3.5K-$8K (GCC: 16-24 hrs @ $120/hr)
+  // ── Pricing constants (2026) ───────────────────────────────
+  // `furnished` = GCC supplies the device. `owner` = the customer
+  // supplies it and GCC cables, mounts, aims and configures.
   const PRICE = {
-    dropCommercial:    { min: 214, mid: 300, max: 425 },
-    dropResidential:   { min: 175, mid: 240, max: 325 },
-    dropMixed:         { min: 195, mid: 270, max: 375 },
-    cameraIp:          { min: 700, mid: 1050, max: 1400 },
-    doorAccess:        { min: 1800, mid: 2700, max: 3500 },
-    speaker70v:        { min: 220, mid: 350, max: 500 },
-    fiberRun:          { min: 450, mid: 850, max: 1500 },
-    serverRoom:        { min: 3500, mid: 5500, max: 8000 },
-    pwMultiplier:      1.55,
-    afterHoursMult:    1.05,
-    mobilizationFlat:  { min: 500, mid: 1200, max: 2500 },
-    closeoutFlat:      { min: 250, mid: 500, max: 900 }
+    drop:        { min: 265, mid: 390, max: 475 },
+    ap:          { furnished: { min: 585,  mid: 750,  max: 1100 }, owner: { min: 320, mid: 490,  max: 840 } },
+    camera:      { furnished: { min: 850,  mid: 1050, max: 1280 }, owner: { min: 345, mid: 560,  max: 1020 } },
+    door:        { furnished: { min: 1390, mid: 1875, max: 2950 }, owner: { min: 950, mid: 1235, max: 1460 } },
+    speaker:     { min: 215, mid: 245, max: 275 },
+    fiberRun:    { min: 1800, mid: 3000, max: 4800 },
+    telecomRoom: { min: 2500, mid: 4500, max: 8000 },
+    pwFactor: 1.12,          // prevailing-wage projects
+    projectMinimum: 5000     // fixed-price commercial projects start here
   };
+
+  const QTY_FIELDS  = ['drops', 'aps', 'cameras', 'doors', 'speakers', 'fiberRuns', 'serverRooms'];
+  const FLAG_FIELDS = ['ownerDevices', 'pw', 'afterHours', 'metro'];
 
   // ── Helpers ─────────────────────────────────────────────────
   const $  = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
   const fmt = n => '$' + Math.round(n).toLocaleString('en-US');
+  const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 
   function getInputs() {
     const form = $('#estimator-form');
     const data = { projectType: 'commercial' };
-    const t = form.querySelector('input[name="projectType"]:checked');
-    if (t) data.projectType = t.value;
-    ['drops','cameras','doors','speakers','fiberRuns','serverRooms'].forEach(k => {
-      const v = parseInt(form.querySelector('#' + k).value, 10);
+    QTY_FIELDS.forEach(k => {
+      const input = form.querySelector('#' + k);
+      const v = input ? parseInt(input.value, 10) : 0;
       data[k] = isNaN(v) || v < 0 ? 0 : v;
     });
-    ['pw','testing','asBuilts','afterHours','metro'].forEach(k => {
-      data[k] = form.querySelector('#' + k).checked;
+    FLAG_FIELDS.forEach(k => {
+      const input = form.querySelector('#' + k);
+      data[k] = !!(input && input.checked);
     });
     return data;
   }
 
   function computeTotals(d) {
-    const isResi = d.projectType === 'residential';
-    const isMixed = d.projectType === 'mixed';
     const lines = [];
+    const mode = d.ownerDevices ? 'owner' : 'furnished';
+    const add = (qty, tier, name) => {
+      if (qty <= 0) return;
+      lines.push({ name, min: tier.min * qty, mid: tier.mid * qty, max: tier.max * qty });
+    };
 
-    if (d.drops > 0) {
-      const tier = isResi ? PRICE.dropResidential : (isMixed ? PRICE.dropMixed : PRICE.dropCommercial);
-      lines.push({ name: `${d.drops} data drop${d.drops === 1 ? '' : 's'} (Cat6/6A)`, min: tier.min * d.drops, mid: tier.mid * d.drops, max: tier.max * d.drops });
-    }
-    if (d.cameras > 0) {
-      lines.push({ name: `${d.cameras} IP camera${d.cameras === 1 ? '' : 's'} (full install)`, min: PRICE.cameraIp.min * d.cameras, mid: PRICE.cameraIp.mid * d.cameras, max: PRICE.cameraIp.max * d.cameras });
-    }
-    if (d.doors > 0) {
-      lines.push({ name: `${d.doors} access-controlled door${d.doors === 1 ? '' : 's'}`, min: PRICE.doorAccess.min * d.doors, mid: PRICE.doorAccess.mid * d.doors, max: PRICE.doorAccess.max * d.doors });
-    }
-    if (d.speakers > 0) {
-      lines.push({ name: `${d.speakers} 70V speaker${d.speakers === 1 ? '' : 's'} + amp/zone wiring`, min: PRICE.speaker70v.min * d.speakers, mid: PRICE.speaker70v.mid * d.speakers, max: PRICE.speaker70v.max * d.speakers });
-    }
-    if (d.fiberRuns > 0) {
-      lines.push({ name: `${d.fiberRuns} fiber backbone run${d.fiberRuns === 1 ? '' : 's'}`, min: PRICE.fiberRun.min * d.fiberRuns, mid: PRICE.fiberRun.mid * d.fiberRuns, max: PRICE.fiberRun.max * d.fiberRuns });
-    }
-    if (d.serverRooms > 0) {
-      lines.push({ name: `${d.serverRooms} server room${d.serverRooms === 1 ? '' : 's'} / IDF build`, min: PRICE.serverRoom.min * d.serverRooms, mid: PRICE.serverRoom.mid * d.serverRooms, max: PRICE.serverRoom.max * d.serverRooms });
-    }
-    if (d.asBuilts && lines.length > 0) {
-      lines.push({ name: 'As-builts + closeout package', min: PRICE.closeoutFlat.min, mid: PRICE.closeoutFlat.mid, max: PRICE.closeoutFlat.max });
-    }
-    if (d.metro && lines.length > 0) {
-      lines.push({ name: 'Mobilization (outside KCMO+STL)', min: PRICE.mobilizationFlat.min, mid: PRICE.mobilizationFlat.mid, max: PRICE.mobilizationFlat.max });
-    }
+    add(d.drops, PRICE.drop, `${plural(d.drops, 'Cat6A data drop', 'Cat6A data drops')}, certified`);
+    add(d.aps, PRICE.ap[mode], d.ownerDevices
+      ? `${plural(d.aps, 'access point location', 'access point locations')} (your APs)`
+      : `${plural(d.aps, 'Wi-Fi access point', 'Wi-Fi access points')}, installed`);
+    add(d.cameras, PRICE.camera[mode], d.ownerDevices
+      ? `${plural(d.cameras, 'camera location', 'camera locations')} (your cameras)`
+      : `${plural(d.cameras, 'IP camera', 'IP cameras')}, installed`);
+    add(d.doors, PRICE.door[mode], d.ownerDevices
+      ? `${plural(d.doors, 'door', 'doors')} cabled and installed (your hardware)`
+      : `${plural(d.doors, 'access-controlled door', 'access-controlled doors')}, complete`);
+    add(d.speakers, PRICE.speaker, plural(d.speakers, 'ceiling speaker', 'ceiling speakers'));
+    add(d.fiberRuns, PRICE.fiberRun, plural(d.fiberRuns, 'fiber backbone', 'fiber backbones'));
+    add(d.serverRooms, PRICE.telecomRoom, plural(d.serverRooms, 'telecom room build', 'telecom room builds'));
 
     let minTotal = lines.reduce((a, l) => a + l.min, 0);
     let midTotal = lines.reduce((a, l) => a + l.mid, 0);
     let maxTotal = lines.reduce((a, l) => a + l.max, 0);
 
-    const modifiers = [];
-    if (d.pw && lines.length > 0) {
-      minTotal *= PRICE.pwMultiplier; midTotal *= PRICE.pwMultiplier; maxTotal *= PRICE.pwMultiplier;
-      modifiers.push(`Prevailing wage ×${PRICE.pwMultiplier}`);
-    }
-    if (d.afterHours && lines.length > 0) {
-      minTotal *= PRICE.afterHoursMult; midTotal *= PRICE.afterHoursMult; maxTotal *= PRICE.afterHoursMult;
-      modifiers.push(`Weekend/night ×${PRICE.afterHoursMult}`);
+    const notes = [];
+    if (lines.length > 0) {
+      if (d.pw) {
+        minTotal *= PRICE.pwFactor; midTotal *= PRICE.pwFactor; maxTotal *= PRICE.pwFactor;
+        lines.forEach(l => { l.min *= PRICE.pwFactor; l.mid *= PRICE.pwFactor; l.max *= PRICE.pwFactor; });
+        notes.push('Prevailing-wage rates applied. Certified payroll is included at no charge.');
+      }
+      if (d.afterHours) notes.push('Nights and weekends carry no premium. Same price.');
+      if (d.metro) notes.push('Travel outside the St. Louis and Kansas City metros is priced with your quote.');
+      if (d.ownerDevices) notes.push('You supply the cameras, access points and door hardware. We cable, mount and configure them.');
     }
 
-    return { lines, minTotal, midTotal, maxTotal, modifiers };
+    const belowMinimum = lines.length > 0 && maxTotal < PRICE.projectMinimum;
+    const flooredMin = Math.max(minTotal, PRICE.projectMinimum);
+    const flooredMid = Math.max(midTotal, PRICE.projectMinimum);
+    const flooredMax = Math.max(maxTotal, PRICE.projectMinimum);
+
+    return {
+      lines, notes, belowMinimum,
+      rawMin: minTotal, rawMid: midTotal, rawMax: maxTotal,
+      minTotal: lines.length ? flooredMin : 0,
+      midTotal: lines.length ? flooredMid : 0,
+      maxTotal: lines.length ? flooredMax : 0
+    };
+  }
+
+  function rangeText(r) {
+    if (r.belowMinimum) return `From ${fmt(PRICE.projectMinimum)}`;
+    if (Math.round(r.minTotal) === Math.round(r.maxTotal)) return fmt(r.minTotal);
+    return `${fmt(r.minTotal)} – ${fmt(r.maxTotal)}`;
   }
 
   function render() {
     const data = getInputs();
-    const { lines, minTotal, midTotal, maxTotal, modifiers } = computeTotals(data);
+    const r = computeTotals(data);
     const result = $('#est-result');
     const rangeEl = $('#est-range');
     const basisEl = $('#est-basis');
     const breakdownEl = $('#est-breakdown');
     const linesEl = $('#est-lines');
+    const notesEl = $('#est-notes');
 
-    if (lines.length === 0) {
+    if (r.lines.length === 0) {
       result.classList.add('empty');
       rangeEl.textContent = 'Add something to the form →';
       basisEl.textContent = "We'll show the range as you fill it in.";
       breakdownEl.style.display = 'none';
-      // clear has-value highlights
-      $$('.cat-row.has-value').forEach(r => r.classList.remove('has-value'));
+      if (notesEl) notesEl.innerHTML = '';
+      $$('.cat-row.has-value').forEach(row => row.classList.remove('has-value'));
       return;
     }
 
     result.classList.remove('empty');
-    rangeEl.textContent = `${fmt(minTotal)} – ${fmt(maxTotal)}`;
+    rangeEl.textContent = rangeText(r);
+    basisEl.textContent = r.belowMinimum
+      ? `Fixed-price commercial projects start at ${fmt(PRICE.projectMinimum)}. Smaller jobs usually run on time and materials at our hourly rates.`
+      : `Typical: ${fmt(r.midTotal)}`;
 
-    let basis = `Typical midpoint: ${fmt(midTotal)}`;
-    if (modifiers.length) basis += ` · ${modifiers.join(', ')}`;
-    basisEl.textContent = basis;
-
-    linesEl.innerHTML = lines.map(l => `<div class="line"><span class="lbl">${l.name}</span><span>${fmt(l.mid)}</span></div>`).join('') +
-      `<div class="line total"><span class="lbl">Midpoint total</span><span>${fmt(midTotal)}</span></div>`;
+    const floored = r.rawMid < PRICE.projectMinimum;
+    linesEl.innerHTML = r.lines.map(l => `<div class="line"><span class="lbl">${l.name}</span><span>${fmt(l.mid)}</span></div>`).join('') +
+      (floored ? `<div class="line"><span class="lbl">Line items</span><span>${fmt(r.rawMid)}</span></div>` : '') +
+      `<div class="line total"><span class="lbl">${floored ? 'Project minimum' : 'Typical total'}</span><span>${fmt(r.midTotal)}</span></div>`;
     breakdownEl.style.display = '';
 
-    // Highlight cat-rows that have non-zero values
-    ['drops','cameras','doors','speakers','fiberRuns','serverRooms'].forEach(k => {
+    if (notesEl) {
+      notesEl.innerHTML = r.notes.map(n => `<p class="est-note">${n}</p>`).join('');
+    }
+
+    QTY_FIELDS.forEach(k => {
       const row = document.querySelector(`.cat-row[data-cat="${k}"]`);
       if (!row) return;
-      const v = parseInt(document.getElementById(k).value, 10) || 0;
-      row.classList.toggle('has-value', v > 0);
+      row.classList.toggle('has-value', data[k] > 0);
     });
   }
 
@@ -146,6 +157,7 @@
       const id = b.dataset.step;
       const delta = parseInt(b.dataset.delta, 10);
       const input = form.querySelector('#' + id);
+      if (!input) return;
       const cur = parseInt(input.value, 10) || 0;
       input.value = Math.max(0, cur + delta);
       render();
@@ -154,15 +166,6 @@
 
   form.addEventListener('input', render);
   form.addEventListener('change', render);
-
-  $$('input[name="projectType"]').forEach(r => {
-    r.addEventListener('change', () => {
-      $$('.choice').forEach(c => c.classList.remove('selected'));
-      if (r.checked) r.closest('.choice').classList.add('selected');
-    });
-  });
-  const checkedType = form.querySelector('input[name="projectType"]:checked');
-  if (checkedType) checkedType.closest('.choice').classList.add('selected');
 
   const cta = $('#est-cta');
   if (cta) {
@@ -173,9 +176,13 @@
       if (r.lines.length > 0) {
         const params = new URLSearchParams({
           source: 'estimator',
-          estimate: `${fmt(r.minTotal)} - ${fmt(r.maxTotal)}`,
-          drops: d.drops, cameras: d.cameras, doors: d.doors,
+          estimate: rangeText(r).replace('–', '-'),
+          drops: d.drops, aps: d.aps, cameras: d.cameras, doors: d.doors,
           speakers: d.speakers, fibers: d.fiberRuns, servers: d.serverRooms,
+          ownerDevices: d.ownerDevices ? 1 : 0,
+          pw: d.pw ? 1 : 0,
+          afterHours: d.afterHours ? 1 : 0,
+          outOfMetro: d.metro ? 1 : 0,
           type: d.projectType
         });
         cta.setAttribute('href', origHref + '?' + params.toString());
@@ -202,17 +209,20 @@
           projectName: null
         };
       },
+      // Estimates saved before the Oct 2026 reprice carry fields that no
+      // longer exist (testing, asBuilts); anything without a matching
+      // input is skipped and the totals are recomputed at current prices.
       applyPayload: function (payload) {
         if (!payload || !payload.form) return;
         var d = payload.form;
-        ['drops','cameras','doors','speakers','fiberRuns','serverRooms'].forEach(function (k) {
-          if (d[k] != null) form.querySelector('#' + k).value = d[k];
+        QTY_FIELDS.forEach(function (k) {
+          var input = form.querySelector('#' + k);
+          if (input && d[k] != null) input.value = d[k];
         });
-        ['pw','testing','asBuilts','afterHours','metro'].forEach(function (k) {
-          if (d[k] != null) form.querySelector('#' + k).checked = !!d[k];
+        FLAG_FIELDS.forEach(function (k) {
+          var input = form.querySelector('#' + k);
+          if (input && d[k] != null) input.checked = !!d[k];
         });
-        var r = form.querySelector('input[name="projectType"][value="' + (d.projectType || 'commercial') + '"]');
-        if (r) { r.checked = true; r.dispatchEvent(new Event('change', { bubbles: true })); }
         render();
       }
     });

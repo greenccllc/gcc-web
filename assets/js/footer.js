@@ -19,13 +19,13 @@
             <img src="/assets/img/gcc-logo-128.png" alt="" aria-hidden="true" />
             <div>
               <strong>GCC LLC</strong>
-              <span>Low-Voltage Div&nbsp;27/28 Contractor</span>
+              <span>Technology Contractor · Div&nbsp;27/28</span>
             </div>
           </div>
           <p class="gcc-footer-tag">Let us handle IT.</p>
           <p class="gcc-footer-meta">
-            Licensed &amp; Insured · KCMO + STL<br>
-            Missouri · Kansas · Illinois (case-by-case)
+            Licensed &amp; Insured · St. Louis + Kansas City<br>
+            MO · KS · IL · IA · NE · OK · AR · TN · KY
           </p>
         </div>
 
@@ -34,10 +34,10 @@
             <h3>Services</h3>
             <ul>
               <li><a href="/services/cabling.html">Structured cabling</a></li>
-              <li><a href="/services/security.html">IP security</a></li>
-              <li><a href="/services/network.html">Network &amp; managed</a></li>
+              <li><a href="/services/security.html">Cameras &amp; access control</a></li>
+              <li><a href="/services/network.html">Wi-Fi &amp; network</a></li>
               <li><a href="/services/residential.html">Residential</a></li>
-              <li><a href="/services/contracts.html">Service contracts</a></li>
+              <li><a href="/services/contracts.html">Managed services</a></li>
 <li><a href="/tools/majic-workforce.html">Majic Workforce</a></li>
 <li><a href="/tools/majic-takeoff.html">Majic Takeoff</a></li>
 <li><a href="/tools/majic-outreach.html">Majic Outreach</a></li>
@@ -65,7 +65,7 @@
           <div class="gcc-footer-col">
             <h3>Sign in</h3>
             <ul>
-              <li><a href="/clients/">Client portal</a></li>
+              <li><a href="https://bidboard.appmajic.ai/">Sign in</a></li>
               <li><a href="/support.html">Support</a></li>
               <li><a href="/legal/privacy.html">Privacy</a></li>
               <li><a href="/legal/terms.html">Terms</a></li>
@@ -78,9 +78,9 @@
         <div class="gcc-footer-base-left">
           <span>&copy; ${new Date().getFullYear()} Green Communications Contracting LLC</span>
           <span class="gcc-footer-base-sep" aria-hidden="true">·</span>
-          <span>Proprietary &amp; Confidential</span>
+          <span>Woman-owned small business</span>
           <span class="gcc-footer-base-sep" aria-hidden="true">·</span>
-          <span>603 Seib Dr, O'Fallon, MO 63366</span>
+          <span>603 Seib Dr, O'Fallon, MO 63366 &nbsp;·&nbsp; Offices in St. Louis and Kansas City</span>
         </div>
         <div class="gcc-footer-base-right">
           <a href="/admin/" class="gcc-footer-admin" title="Internal — Cloudflare Access SSO required">Admin</a>

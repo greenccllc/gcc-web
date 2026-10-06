@@ -27,21 +27,22 @@
 
   const COMMERCIAL_STEPS = [
     ...COMMON_INTRO,
-    { id: 'drops',       mode: 'number', label: 'Data drops',           hint: 'Cat6/6A — one per workstation, camera, AP, printer, door reader, TV.' },
-    { id: 'cameras',     mode: 'number', label: 'IP cameras',           hint: 'Ubiquiti G6 or comparable. PoE-cabled to NVR.' },
-    { id: 'doors',       mode: 'number', label: 'Access-control doors', hint: 'Hub + reader + maglock or strike + REX.' },
-    { id: 'speakers',    mode: 'number', label: 'Ceiling speakers',     hint: '70V paging or background music. Skip if you don\'t need any.' },
-    { id: 'fiberRuns',   mode: 'number', label: 'Fiber backbone runs',  hint: 'Strand count between MDF and IDFs (or 0 if all in one room).' },
-    { id: 'serverRooms', mode: 'number', label: 'Telecom rooms',        hint: 'MDF + IDFs that need ladder rack + grounding.' },
+    { id: 'drops',       mode: 'number', label: 'Data drops',           hint: 'Cat6A plenum, certified. One per workstation, printer, phone or TV.' },
+    { id: 'aps',         mode: 'number', label: 'Wi-Fi access points',  hint: 'Each one includes its cable, mounting and configuration.' },
+    { id: 'cameras',     mode: 'number', label: 'IP cameras',           hint: 'UniFi G6 or comparable. Each one includes its cable, mount and aiming.' },
+    { id: 'doors',       mode: 'number', label: 'Access-control doors', hint: 'Hub, reader, strike, exit button and door contact, cabled and programmed.' },
+    { id: 'speakers',    mode: 'number', label: 'Ceiling speakers',     hint: 'Paging or background music. Skip if you don\'t need any.' },
+    { id: 'fiberRuns',   mode: 'number', label: 'Fiber backbones',      hint: 'One per run between telecom rooms or buildings. Zero if everything lands in one room.' },
+    { id: 'serverRooms', mode: 'number', label: 'Telecom rooms',        hint: 'MDF and IDFs that need a rack, patch panels, ladder rack and grounding.' },
   ];
 
   const RESIDENTIAL_STEPS = [
     ...COMMON_INTRO,
-    { id: 'drops',         mode: 'number', label: 'Cat6 drops',          hint: 'One per office, TV, camera, AP. ~1 per room is typical.' },
-    { id: 'aps',           mode: 'number', label: 'Wi-Fi 7 mesh APs',    hint: 'Plan ~1 per 1,500 sq ft.' },
+    { id: 'drops',         mode: 'number', label: 'Wired drops',         hint: 'A hard-wired run to an office, TV or game console. Cameras and access points include their own.' },
+    { id: 'aps',           mode: 'number', label: 'Wi-Fi 7 access points', hint: 'Plan about one per 1,500 sq ft.' },
     { id: 'camIn',         mode: 'number', label: 'Interior cameras',    hint: 'Living areas, garage, basement.' },
     { id: 'camOut',        mode: 'number', label: 'Exterior cameras',    hint: 'Doors, driveway, yard.' },
-    { id: 'doorbell',      mode: 'number', label: 'Smart doorbells',     hint: 'UniFi G4 or Doorbird with chime.' },
+    { id: 'doorbell',      mode: 'number', label: 'Smart doorbells',     hint: 'UniFi doorbell with two-way talk.' },
     { id: 'smartSwitches', mode: 'number', label: 'Smart switches',      hint: 'Replaces wall switches/dimmers. Alexa or Google compatible.' },
     { id: 'smartLocks',    mode: 'number', label: 'Smart locks',         hint: 'Front, back, garage entry.' },
     { id: 'tvMount',       mode: 'number', label: 'TV mounts',           hint: 'Articulating + power kit. Skip if you don\'t need new mounts.' },

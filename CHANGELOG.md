@@ -4,6 +4,33 @@ All notable changes to the GCC LLC public site + portal land here. The release
 workflow (`.github/workflows/release.yml`) reads the matching section by version
 when a new tag is cut.
 
+## Unreleased — October 2026 pricing and content refresh
+
+### Estimators
+- Commercial estimator repriced to the 2026 unit ranges; Wi-Fi access points
+  added as a category; an "owner supplies the devices" option; fixed-price
+  project minimum applied
+- Removed the night/weekend surcharge, the closeout fee and the flat
+  mobilization line (nights and weekends carry no premium; closeout is
+  included; travel is priced with the quote)
+- Residential estimator repriced to the Majic Quotes price book, with a
+  "bring your own gear" option
+- "Save to my account" bar now shows only to a signed-in client
+
+### Content
+- Published hourly rates and terms on `/estimate/#rates`
+- `/services/contracts.html` rebuilt as the MS-1 to MS-5 managed-services
+  plans, comparison and service levels
+- Projects page replaced with the four completed jobs on the capability sheet
+- Home, services, about, contact and support brought current: same-day
+  proposals, RCDD on staff, nine-state coverage, cable-jacket colors,
+  warranty wording, woman- and minority-owned
+- Capability sheet PDF rebuilt (Arkansas project and installer line)
+- Residential page: fixed garbled characters; added security and
+  cabling-only packages
+- Sign in now points to bidboard.appmajic.ai; removed the dead AI Proposals
+  and client-portal links
+
 ## v2.1.0 — SEO baseline + ops agent + automation gate
 
 Three PRs on top of v2.0.0. No portal or marketing-page behavior changes

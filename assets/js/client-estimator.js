@@ -1,7 +1,7 @@
 // ============================================================
 // GCC Client-portal Estimator — full 20-category breakdown.
-// Pricing reflects internal GCC bundler model, with industry
-// benchmarks (Apr 2026) cross-referenced.
+// Shared categories carry the same 2026 unit ranges as the public
+// estimator (assets/js/estimator.js).
 // ============================================================
 (function () {
   'use strict';
@@ -9,8 +9,8 @@
   // ── 20-category pricing (per-unit min/mid/max) ─────────────
   const PRICE = {
     // Cabling drops
-    data:     { min: 214, mid: 300, max: 425, label: 'Data drops (Cat6/6A)' },
-    fiber:    { min: 65,  mid: 95,  max: 150, label: 'Fiber strand runs (per term)' },
+    data:     { min: 265, mid: 390, max: 475, label: 'Data drops (Cat6A, certified)' },
+    fiber:    { min: 50,  mid: 50,  max: 50,  label: 'Fiber strand ends (terminated, OTDR)' },
     fiberEnc: { min: 425, mid: 650, max: 950, label: 'Fiber enclosure (LIU)' },
     fiberPp:  { min: 285, mid: 425, max: 650, label: 'Fiber patch panel' },
     coax:     { min: 175, mid: 240, max: 325, label: 'Coax (RG6/RG11) drops' },
@@ -18,27 +18,27 @@
     // Endpoints
     tv:       { min: 425, mid: 650, max: 950, label: 'TV mount + drop' },
     iot:      { min: 185, mid: 275, max: 400, label: 'IoT device (sensor/relay)' },
-    aps:      { min: 285, mid: 400, max: 575, label: 'Wi-Fi access points' },
+    aps:      { min: 585, mid: 750, max: 1100, label: 'Wi-Fi access points' },
     intercom: { min: 850, mid: 1200, max: 1750, label: 'Intercom stations' },
-    camInt:   { min: 700, mid: 1050, max: 1400, label: 'Interior IP cameras' },
-    camExt:   { min: 850, mid: 1200, max: 1650, label: 'Exterior IP cameras (weatherized)' },
-    doors:    { min: 1800, mid: 2700, max: 3500, label: 'Access-controlled doors' },
+    camInt:   { min: 850, mid: 1050, max: 1280, label: 'Interior IP cameras' },
+    camExt:   { min: 850, mid: 1050, max: 1280, label: 'Exterior IP cameras (weatherized)' },
+    doors:    { min: 1390, mid: 1875, max: 2950, label: 'Access-controlled doors' },
     elevator: { min: 1100, mid: 1600, max: 2200, label: 'Elevator phones' },
     ups:      { min: 850, mid: 1400, max: 2200, label: 'UPS units (rack-mount)' },
     // Infrastructure
-    mdf:      { min: 4500, mid: 6500, max: 9500, label: 'MDF (main distribution frame)' },
-    idf:      { min: 3500, mid: 5500, max: 8000, label: 'IDF rooms' },
+    mdf:      { min: 4500, mid: 6000, max: 8000, label: 'MDF (main distribution frame)' },
+    idf:      { min: 2500, mid: 3500, max: 5000, label: 'IDF rooms' },
     switchq:  { min: 850, mid: 1400, max: 2400, label: 'Network switches (PoE+)' },
     patch:    { min: 285, mid: 425, max: 650, label: 'Patch panels (24/48-port)' },
     ladder:   { min: 22,  mid: 38,  max: 60,  label: 'Ladder rack (per linear ft)' },
     // Conditions multipliers
-    pwMultiplier:     1.55,
-    afterHoursMult:   1.05,
-    unionMult:        1.18,
+    pwMultiplier:     1.12,
+    afterHoursMult:   1,      // nights and weekends carry no premium
+    unionMult:        1,      // not used
     bondMult:         1.04,
     liftMult:         1.08,
-    closeoutFlat:     { min: 350, mid: 700, max: 1300 },
-    mobilizationFlat: { min: 500, mid: 1200, max: 2500 }
+    closeoutFlat:     { min: 0, mid: 0, max: 0 },   // closeout package is included
+    mobilizationFlat: { min: 0, mid: 0, max: 0 }    // travel is priced with the quote
   };
 
   const CATS = ['data','fiber','fiberEnc','fiberPp','coax','hdmi','tv','iot','aps','intercom','camInt','camExt','doors','elevator','ups','mdf','idf','switchq','patch','ladder'];
@@ -79,23 +79,16 @@
       });
     });
 
-    if (d.asBuilts && lines.length > 0) {
-      lines.push({ cat: 'closeout', name: 'As-builts + closeout package', min: PRICE.closeoutFlat.min, mid: PRICE.closeoutFlat.mid, max: PRICE.closeoutFlat.max });
-    }
-    if (d.metro && lines.length > 0) {
-      lines.push({ cat: 'mob', name: 'Mobilization (outside KCMO+STL)', min: PRICE.mobilizationFlat.min, mid: PRICE.mobilizationFlat.mid, max: PRICE.mobilizationFlat.max });
-    }
 
     let mn = lines.reduce((a, l) => a + l.min, 0);
     let mid = lines.reduce((a, l) => a + l.mid, 0);
     let mx = lines.reduce((a, l) => a + l.max, 0);
 
     const mods = [];
-    if (d.pw) { mn *= PRICE.pwMultiplier; mid *= PRICE.pwMultiplier; mx *= PRICE.pwMultiplier; mods.push(`PW ×${PRICE.pwMultiplier}`); }
-    if (d.union) { mn *= PRICE.unionMult; mid *= PRICE.unionMult; mx *= PRICE.unionMult; mods.push(`Union ×${PRICE.unionMult}`); }
-    if (d.afterHours) { mn *= PRICE.afterHoursMult; mid *= PRICE.afterHoursMult; mx *= PRICE.afterHoursMult; mods.push(`After-hours ×${PRICE.afterHoursMult}`); }
-    if (d.bond) { mn *= PRICE.bondMult; mid *= PRICE.bondMult; mx *= PRICE.bondMult; mods.push(`Bonded ×${PRICE.bondMult}`); }
-    if (d.liftReq) { mn *= PRICE.liftMult; mid *= PRICE.liftMult; mx *= PRICE.liftMult; mods.push(`Lift ×${PRICE.liftMult}`); }
+    if (d.pw) { mn *= PRICE.pwMultiplier; mid *= PRICE.pwMultiplier; mx *= PRICE.pwMultiplier; mods.push('prevailing wage'); }
+        if (d.afterHours) { mods.push('nights and weekends, no premium'); }
+    if (d.bond) { mn *= PRICE.bondMult; mid *= PRICE.bondMult; mx *= PRICE.bondMult; mods.push('performance bond'); }
+    if (d.liftReq) { mn *= PRICE.liftMult; mid *= PRICE.liftMult; mx *= PRICE.liftMult; mods.push('lift rental'); }
 
     return { lines, minTotal: mn, midTotal: mid, maxTotal: mx, mods };
   }
