@@ -65,7 +65,7 @@
           <div class="gcc-footer-col">
             <h3>Sign in</h3>
             <ul>
-              <li><a href="https://bidboard.appmajic.ai/">Sign in</a></li>
+              <li><a href="https://bidboard.appmajic.ai/">Majic Bid Board</a></li>
               <li><a href="/support.html">Support</a></li>
               <li><a href="/legal/privacy.html">Privacy</a></li>
               <li><a href="/legal/terms.html">Terms</a></li>
