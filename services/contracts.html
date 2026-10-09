@@ -11,7 +11,7 @@
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <link rel="stylesheet" href="/assets/css/site.css?v=20261006" />
-  <link rel="stylesheet" href="/assets/css/chrome.css?v=20261006" />
+  <link rel="stylesheet" href="/assets/css/chrome.css?v=20261009" />
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="en_US" />
@@ -131,10 +131,18 @@
       </div>
     </section>
 
-    <section class="section" id="compare">
+    <section class="section" id="plans-side-by-side">
       <div class="container">
-        <div class="section-head"><h2>Compare the plans</h2></div>
-        <div class="table-scroll">
+        <div class="section-head">
+          <div>
+            <h2>The plans side by side</h2>
+            <p>What each plan covers, how fast we respond, and what a typical site pays.</p>
+          </div>
+        </div>
+        <div class="tabset" data-tabs data-tabs-label="Compare the plans">
+          <div class="tab-panel" id="compare" data-tab-label="What’s included">
+            <h3 class="tab-title">Compare the plans</h3>
+            <div class="table-scroll">
           <table class="rate-table">
             <thead><tr><th></th><th>MS-1<small>Managed Network</small></th><th>MS-2<small>Network Plus</small></th><th>MS-3<small>Full IT</small></th><th>MS-4 Cloud<small>Majic AI</small></th><th>MS-5 Local<small>Majic AI</small></th></tr></thead>
             <tbody>
@@ -154,9 +162,10 @@
             </tbody>
           </table>
         </div>
-
-        <div class="section-head" style="margin-top:40px;"><h2>Service levels, seven days a week</h2></div>
-        <div class="table-scroll">
+          </div>
+          <div class="tab-panel" id="service-levels" data-tab-label="Service levels">
+            <h3 class="tab-title">Service levels, seven days a week</h3>
+            <div class="table-scroll">
           <table class="rate-table">
             <thead><tr><th></th><th>MS-1<small>Managed Network</small></th><th>MS-2<small>Network Plus</small></th><th>MS-3<small>Full IT</small></th><th>MS-4 Cloud<small>Majic AI</small></th><th>MS-5 Local<small>Majic AI</small></th></tr></thead>
             <tbody>
@@ -168,18 +177,11 @@
           </table>
         </div>
         <p style="margin-top:16px;font-size:14px;color:var(--slate);"><strong>Critical</strong> means the network, cameras or door access is down for the whole site, or there is a security problem. <strong>Routine</strong> covers one person or device, or a change like adding a user. Times run from your call, chat or our alert. On-site times cover the St. Louis and Kansas City metros; other travel is quoted per job.</p>
-      </div>
-    </section>
-
-    <section class="section section-tinted" id="typical">
-      <div class="container">
-        <div class="section-head">
-          <div>
-            <h2>What a typical site costs</h2>
-            <p>A 15-person office: gateway, 2 switches, 5 access points, 8 cameras, 3 doors. Monthly totals.</p>
           </div>
-        </div>
-        <div class="card-grid" style="grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));">
+          <div class="tab-panel" id="typical" data-tab-label="A typical site’s cost">
+            <h3 class="tab-title">What a typical site costs</h3>
+            <p style="margin:0 0 16px;font-size:14px;color:var(--slate);">A 15-person office: gateway, 2 switches, 5 access points, 8 cameras, 3 doors. Monthly totals.</p>
+            <div class="card-grid" style="grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));">
           <div class="card"><h3>MS-1 network</h3><p class="plan-price">$220</p></div>
           <div class="card"><h3>MS-2 Plus</h3><p class="plan-price">$494</p></div>
           <div class="card"><h3>MS-3 Full IT</h3><p class="plan-price">$2,369</p></div>
@@ -187,6 +189,8 @@
           <div class="card"><h3>MS-5 Local</h3><p class="plan-price">$3,479</p></div>
         </div>
         <p style="margin-top:16px;font-size:14px;color:var(--slate);">MS-4 Cloud works out to about $182 per person, network, cameras and doors included. MS-5 Local adds a private AI server from $9,000, one time.</p>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -244,7 +248,9 @@
   <div id="gcc-footer"></div>
 
   <script src="/assets/js/api.js"></script>
-  <script src="/assets/js/header.js?v=20261006"></script>
+  <script src="/assets/js/site.js?v=20261009"></script>
+  <script src="/assets/js/header.js?v=20261009"></script>
   <script src="/assets/js/footer.js?v=20261006b"></script>
+  <script src="/assets/js/tabs.js?v=20261009" defer></script>
 </body>
 </html>

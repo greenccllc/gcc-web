@@ -11,7 +11,7 @@
   <link rel="icon" href="/assets/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/assets/img/gcc-logo-256.png" />
   <link rel="stylesheet" href="/assets/css/site.css?v=20261006" />
-  <link rel="stylesheet" href="/assets/css/chrome.css?v=20261006" />
+  <link rel="stylesheet" href="/assets/css/chrome.css?v=20261009" />
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="en_US" />
@@ -92,13 +92,21 @@
       </div>
     </section>
 
-        <section class="section" id="packages">
+    <section class="section" id="packages">
       <div class="container">
         <div class="section-head">
-          <h2 id="packet">Whole-home Wi-Fi 7: four packages, one price each</h2>
-          <p>Here is the proposal a Hillsboro customer received from us recently, details included (with permission). Four packages, one price each, no surprises.</p>
+          <div>
+            <h2>Packages, one price each</h2>
+            <p>Wi-Fi 7, cameras and cabling, priced up front with no surprises.</p>
+          </div>
         </div>
-        <div class="card-grid">
+        <div class="tabset" data-tabs data-tabs-label="Residential packages">
+          <div class="tab-panel" id="wifi" data-tab-label="Whole-home Wi-Fi 7">
+            <div class="section-head"><div>
+              <h3 class="tab-title" id="packet">Whole-home Wi-Fi 7: four packages, one price each</h3>
+              <p>Here is the proposal a Hillsboro customer received from us recently, details included (with permission). Four packages, one price each, no surprises.</p>
+            </div></div>
+            <div class="card-grid">
           <div class="card"><h3>Budget · $1,195</h3><p>Most Wi-Fi 7 for the least money. Dream Router 7 in the basement, one ceiling access point upstairs, three networks, the app on your phone.</p></div>
           <div class="card"><h3>Starter · $2,095</h3><p>Proper ceiling access points on both floors, gateway in its own box. The far end is good rather than excellent.</p></div>
           <div class="card"><h3>Pro · $2,845 — what we recommend</h3><p>Three U7 Pro access points and the 6 GHz band, so your phone actually sees 1,000+ Mbps. No weak corner anywhere.</p></div>
@@ -109,31 +117,35 @@
           <div class="card"><h3>Half now, half when it works</h3><p>The deposit orders the gear. The balance isn't due until every room is speed-tested with you standing there. 10-year workmanship, 1-year equipment, and it transfers if you sell.</p></div>
           <div class="card"><h3>Read the real thing</h3><p><a href="/assets/docs/GCC-sample-proposal-whole-home-wifi7.pdf">The proposal (PDF)</a> · <a href="/assets/docs/GCC-sample-order-receipt.pdf">Order confirmation &amp; deposit receipt (PDF)</a> · <a href="/assets/docs/GCC-sample-welcome-flyer.pdf">Welcome flyer with Wi-Fi codes (PDF)</a></p></div>
         </div>
-        <div class="section-head" style="margin-top:44px;">
-          <h2>Cameras and doorbell</h2>
-          <p>Wired runs, terminated, tested and labeled. Recording stays on your own hardware.</p>
-        </div>
-        <div class="card-grid">
+          </div>
+          <div class="tab-panel" id="cameras" data-tab-label="Cameras and doorbell">
+            <div class="section-head"><div>
+              <h3 class="tab-title">Cameras and doorbell</h3>
+              <p>Wired runs, terminated, tested and labeled. Recording stays on your own hardware.</p>
+            </div></div>
+            <div class="card-grid">
           <div class="card"><h3>Doorbell + Entry · $1,295</h3><p>UniFi doorbell at the front door with two-way talk and package detection, plus one camera on the driveway or back door. Thirty days of recording on your gateway.</p></div>
           <div class="card"><h3>Perimeter · $2,695 — what we recommend</h3><p>Doorbell plus four cameras — front, back and both sides. Recorder with 30-day retention, PoE switch and rack shelf. Every approach to the house on camera.</p></div>
           <div class="card"><h3>Full Property · $4,495</h3><p>Doorbell, six to eight cameras including the garage and outbuildings, a card reader with strike at one door, recorder, PoE switch, battery backup and rack.</p></div>
         </div>
         <p style="margin-top:14px;font-size:14px;color:var(--slate);">Add-ons: another camera with its wired run and mount, $495 · door reader and strike with controller, $1,125 · PoE speaker or chime, $500 · extra recorder drive, $275.</p>
-
-        <div class="section-head" style="margin-top:44px;">
-          <h2>Cabling only, for gear you already own</h2>
-          <p>We do the part that lives in the walls. A single wired run is $250.</p>
-        </div>
-        <div class="card-grid">
+          </div>
+          <div class="tab-panel" id="cabling-only" data-tab-label="Cabling only">
+            <div class="section-head"><div>
+              <h3 class="tab-title">Cabling only, for gear you already own</h3>
+              <p>We do the part that lives in the walls. A single wired run is $250.</p>
+            </div></div>
+            <div class="card-grid">
           <div class="card"><h3>Up to 6 drops · $1,495</h3><p>Cat6A to the rooms you choose, terminated both ends, tested and labeled, with a patch panel at the equipment location and a marked plan.</p></div>
           <div class="card"><h3>Up to 12 drops · $2,495</h3><p>A whole-house rough-in without the equipment. Patch panel and a small rack or wall mount.</p></div>
           <div class="card"><h3>Camera cabling · $1,295</h3><p>Up to six exterior camera runs to the spots you pick, weather-rated at the device end. For a camera brand you have already chosen.</p></div>
         </div>
-
+          </div>
+        </div>
         <p class="lead" style="margin-top:18px">Want yours? <a href="/contact.html">Send us the address and what's annoying you</a> — the TV that buffers, the doorbell that drops, the office that has no signal — and you'll have a packet like this back before you've finished your coffee. (That part is <a href="/tools/majic-quotes.html">Majic Quotes</a>. We built it because we got tired of Saturdays.)</p>
       </div>
     </section>
-<section class="section section-tinted">
+    <section class="section section-tinted">
       <div class="container">
         <div class="section-head">
           <h2>The work other shops won't touch</h2>
@@ -165,7 +177,9 @@
   <div id="gcc-footer"></div>
 
   <script src="/assets/js/api.js"></script>
-  <script src="/assets/js/header.js?v=20261006"></script>
+  <script src="/assets/js/site.js?v=20261009"></script>
+  <script src="/assets/js/header.js?v=20261009"></script>
   <script src="/assets/js/footer.js?v=20261006b"></script>
+  <script src="/assets/js/tabs.js?v=20261009" defer></script>
 </body>
 </html>
