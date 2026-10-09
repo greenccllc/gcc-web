@@ -38,6 +38,7 @@
               <li><a href="/services/network.html">Wi-Fi &amp; network</a></li>
               <li><a href="/services/residential.html">Residential</a></li>
               <li><a href="/services/contracts.html">Managed services</a></li>
+<li><a href="https://appmajic.ai/toolbox/">The Majic Toolbox</a></li>
 <li><a href="/tools/majic-workforce.html">Majic Workforce</a></li>
 <li><a href="/tools/majic-takeoff.html">Majic Takeoff</a></li>
 <li><a href="/tools/majic-outreach.html">Majic Outreach</a></li>
