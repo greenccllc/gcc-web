@@ -30,6 +30,29 @@ when a new tag is cut.
   cabling-only packages
 - Sign in now points to bidboard.appmajic.ai; removed the dead AI Proposals
   and client-portal links
+- Payment terms on `/estimate/#rates`: materials and equipment half at
+  signing, half on delivery; labor at milestones (two minimum, one more per
+  full $25,000 over $50,000)
+
+### Less scrolling
+- Tighter section spacing; card rows fill evenly (five across, or three by
+  two, instead of one card left alone on a row)
+- On phones, rows of three or more cards swipe sideways, and comparison
+  tables scroll sideways with the row label pinned
+- Tabs (`assets/js/tabs.js`): the managed-services comparison, service
+  levels and typical-site cost on `/services/contracts.html`, and the Wi-Fi,
+  camera and cabling-only packages on `/services/residential.html`. Without
+  JavaScript every panel shows; links to a panel's id open its tab
+- Home: "Tools we built" moved above the closing call to action; the six
+  verticals fit on one row
+- No content removed
+
+### Fixes
+- The "Tools we built" menu opened sideways and ran off the right edge, so
+  every page scrolled about 80px sideways on a laptop screen. It's a list
+  again, anchored right, and fully hidden while closed
+- The phone menu button did nothing on most public pages because they never
+  loaded `assets/js/site.js`. Every public page now loads it
 
 ## v2.1.0 — SEO baseline + ops agent + automation gate
 

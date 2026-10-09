@@ -58,15 +58,17 @@
         border-radius: var(--r-md);
         box-shadow: var(--shadow-md);
         padding: 6px;
-        opacity: 0; pointer-events: none; transform: translateY(-4px);
-        transition: opacity 0.15s var(--ease), transform 0.15s var(--ease);
+        display: block;
+        opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(-4px);
+        transition: opacity 0.15s var(--ease), transform 0.15s var(--ease), visibility 0s linear 0.15s;
         z-index: 50;
         list-style: none; margin: 0;
       }
       .site-nav .nav-dropdown.right-anchor { left: auto; right: 0; }
       .site-nav .nav-group:hover > .nav-dropdown,
       .site-nav .nav-group.is-open > .nav-dropdown {
-        opacity: 1; pointer-events: auto; transform: translateY(0);
+        opacity: 1; visibility: visible; pointer-events: auto; transform: translateY(0);
+        transition: opacity 0.15s var(--ease), transform 0.15s var(--ease), visibility 0s;
       }
       .site-nav .nav-dropdown li { display: block; }
       .site-nav .nav-dropdown a {
@@ -97,7 +99,7 @@
           border-radius: 0;
         }
         .site-nav .nav-dropdown {
-          position: static; opacity: 1; pointer-events: auto; transform: none;
+          position: static; opacity: 1; visibility: visible; pointer-events: auto; transform: none;
           box-shadow: none; border: 0; border-radius: 0;
           padding: 0 0 6px 14px; min-width: auto;
           display: none;
@@ -120,7 +122,7 @@
       { href: '/projects.html',                 label: 'Projects' },
       { href: '/about.html',                    label: 'About' },
       { href: '/estimate/',                     label: 'Estimate' },
-      { label: 'Tools we built', group: [ { href: '/tools/majic-workforce.html', label: 'Majic Workforce' }, { href: '/tools/majic-takeoff.html', label: 'Majic Takeoff' }, { href: '/tools/majic-outreach.html', label: 'Majic Outreach' }, { href: '/tools/majic-quotes.html', label: 'Majic Quotes' } ] },
+      { label: 'Tools we built', anchor: 'right', group: [ { href: '/tools/majic-workforce.html', label: 'Majic Workforce' }, { href: '/tools/majic-takeoff.html', label: 'Majic Takeoff' }, { href: '/tools/majic-outreach.html', label: 'Majic Outreach' }, { href: '/tools/majic-quotes.html', label: 'Majic Quotes' } ] },
 { href: '/contact.html',                  label: 'Contact' },
       { spacer: true },
       { href: 'https://bidboard.appmajic.ai/',  label: 'Sign in', cta: true }

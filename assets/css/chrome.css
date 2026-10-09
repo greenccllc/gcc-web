@@ -1067,3 +1067,75 @@ body.ew-locked { overflow: hidden; }
 .rate-table td.no { color: var(--slate, #4F5B57); }
 .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .plain-list { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 14px; color: var(--color-text-secondary, #4F5B57); }
+
+/* ── Less scrolling (Oct 2026) ─────────────────────────────
+   Tighter vertical rhythm, card rows that fill evenly (no card left alone on
+   its own row), swipeable card rows on phones, and tabs for sections that
+   hold several tables. No content is hidden from search: every panel and
+   card stays in the HTML. */
+.section { padding: 48px 0; }
+.page-hero { padding: 72px 0 48px; }
+.hero-dark { padding: clamp(56px, 7vw, 80px) 0 clamp(48px, 6vw, 64px); }
+.cta-band { padding: clamp(40px, 6vw, 60px) 0; }
+.section .section-head { margin-bottom: 24px; }
+.card { padding: 20px; }
+
+@media (min-width: 1000px) {
+  .card-grid:has(> :nth-child(4):last-child) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .card-grid:has(> :nth-child(5):last-child) { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }
+  .card-grid:has(> :nth-child(6):last-child) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .card-grid:has(> :nth-child(5):last-child) > .card { padding: 18px 16px; }
+}
+
+@media (max-width: 640px) {
+  .section { padding: 36px 0; }
+  .page-hero { padding: 48px 0 32px; }
+  .hero-dark { padding: 40px 0 36px; }
+  .cta-band { padding: 36px 0; }
+  /* Three or more cards: one row you swipe through, with the next card peeking in. */
+  .card-grid:not(.no-swipe):has(> :nth-child(3)) {
+    grid-template-columns: none !important;
+    grid-auto-flow: column;
+    grid-auto-columns: 82%;
+    gap: 12px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--layout-gutter, 24px);
+    margin-inline: calc(-1 * var(--layout-gutter, 24px));
+    padding: 4px var(--layout-gutter, 24px) 14px;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+  }
+  .card-grid:not(.no-swipe):has(> :nth-child(3)) > * { scroll-snap-align: start; min-width: 0; }
+}
+
+/* Tabs: without JavaScript every panel shows, one after another. */
+.tabset > .tab-list { display: none; }
+.tabset.is-tabbed > .tab-list {
+  display: flex; gap: 4px; padding: 4px; margin: 0 0 20px;
+  background: var(--paper, #F4F4EE); border: 1px solid var(--hairline, rgba(21,32,26,.09));
+  border-radius: 12px; width: fit-content; max-width: 100%; overflow-x: auto;
+}
+.tabset.is-tabbed > .tab-list [role="tab"] {
+  font: inherit; font-size: 14px; font-weight: 600; white-space: nowrap;
+  border: 0; background: transparent; color: var(--slate, #4F5B57);
+  padding: 9px 16px; min-height: 40px; border-radius: 9px; cursor: pointer;
+}
+.tabset.is-tabbed > .tab-list [role="tab"]:hover { color: var(--forest, #1E4D2B); }
+.tabset.is-tabbed > .tab-list [role="tab"][aria-selected="true"] {
+  background: #fff; color: var(--forest, #1E4D2B); box-shadow: 0 1px 3px rgba(15,26,18,.12);
+}
+.tabset.is-tabbed > .tab-list [role="tab"]:focus-visible { outline: 2px solid var(--forest, #1E4D2B); outline-offset: 2px; }
+.tabset:not(.is-tabbed) > .tab-panel + .tab-panel { margin-top: 40px; }
+.tabset.is-tabbed > .tab-panel > .tab-title { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media (max-width: 640px) {
+  /* Comparison tables: scroll sideways with the row label pinned, instead of wrapping every label to four lines. */
+  .table-scroll .rate-table { font-size: 14px; }
+  .table-scroll .rate-table th, .table-scroll .rate-table td { padding: 10px 12px; }
+  .table-scroll .rate-table th:first-child, .table-scroll .rate-table td:first-child {
+    min-width: 168px; position: sticky; left: 0; z-index: 1; background: #fff;
+    box-shadow: 1px 0 0 var(--hairline, #e5e3dd);
+  }
+  .table-scroll .rate-table thead th:first-child { background: var(--forest, #1E4D2B); }
+}
