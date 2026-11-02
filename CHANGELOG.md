@@ -23,7 +23,7 @@ when a new tag is cut.
   plans, comparison and service levels
 - Projects page replaced with the four completed jobs on the capability sheet
 - Home, services, about, contact and support brought current: same-day
-  proposals, RCDD on staff, nine-state coverage, cable-jacket colors,
+  proposals, in-house BICSI/TIA design, nine-state coverage, cable-jacket colors,
   warranty wording, woman- and minority-owned
 - Capability sheet PDF rebuilt (Arkansas project and installer line)
 - Residential page: fixed garbled characters; added security and
